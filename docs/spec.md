@@ -18,6 +18,7 @@ The first version covers **Influence only**. The data and panel code are built s
 | Player panel | Fixed on screen over the canvas. Stays put during pan and zoom. Only the GM can end or hide it. | Justin |
 | Where the panel shows | Every scene, for all players, until the GM ends or hides it. Survives scene changes and reloads. | Justin |
 | Rolling | Players click skills on the panel. The GM can also roll or post chat links from the sheet. | Justin |
+| Roll results | Normal PF2e checks. Players see the degree of success on the chat card as with any other roll, subject to PF2e's own metagame settings. | Justin |
 | Applying points | The module suggests the change and the GM confirms it | Justin |
 | NPCs | One challenge holds one or more NPCs and one shared round clock | Justin |
 | Hidden by default | Everything except the NPC name, Influence Points, rounds remaining and Discovery skill names | Justin |
@@ -58,13 +59,13 @@ Sidebar tab -> Challenge (journal entry + typed page, GM only) -> GM sheet
               Player roll -> chat message -> GM confirms -> points change
 ```
 
-**Storage.** Each challenge is a `JournalEntry` holding one page of type `pf2e-subsystem-manager.influence`. Journal entries bring folders, compendiums, JSON export and duplication for free. Players have no ownership of them, so their clients never receive the challenge.
+**Storage.** Each challenge is a `JournalEntry` holding one page of type `pf2e-subsystem-manager.influence`. Journal entries bring folders, compendiums, JSON export and duplication for free. Players have no ownership of them, so the interface doesn't show them to players.
 
 **Sidebar tab.** The tab lists only challenge entries, with folders, search, create, duplicate and delete. The Journal tab hides them.
 
 **Filtered copy.** The GM's client writes a world setting containing only what players may see. Every client redraws its panel when that setting changes. This needs no socket for display, and it survives reloads.
 
-**Limit on secrecy.** A player-side roll needs the DC, so the copy includes DCs for revealed skills. The panel doesn't show them, but someone reading the browser console could. Unrevealed entries, decoy markers and GM text are never sent to players.
+**Limit on secrecy.** Secrets only need to stay out of the player interface. As elsewhere in Foundry, a player who digs through the browser console may be able to read them, and Justin accepts that. A player-side roll needs the DC, so the copy includes DCs for revealed skills, and the panel doesn't show them. The filtered copy leaves out unrevealed entries, decoy markers and GM text.
 
 **Multiple GMs.** Only the active GM's client writes state and handles roll results.
 
@@ -221,7 +222,7 @@ These are notes to prove that the shared design stretches. They aren't requireme
 | The custom sidebar tab may need more than adding to `Sidebar.TABS` and `CONFIG.ui`, and `DocumentDirectory` assumes a whole collection | Add a tab listing filtered journal entries, with folders | Write a simpler list, or use a marked folder in the Journal tab |
 | Hiding challenge entries from the Journal tab | Filter the directory on render, and check search and folder counts | Keep them in one clearly named folder |
 | A player roll with a hidden DC may reveal the DC or degree of success in chat | Roll as a player and read the chat card | Have the GM's client post the roll result |
-| Panel placement against Foundry's interface layers, including the "hide UI" toggle | Mount the panel and test windows, sidebar collapse and UI toggle | Change the mount point or z-index |
+| Panel placement against Foundry's interface layers | Mount the panel and test windows and sidebar collapse | Change the mount point or z-index |
 | How PF2e records rerolls in chat | Reroll with a Hero Point | The GM adjusts by hand |
 | Finding party markers when the Party actor is empty or has extra members | Test `game.actors.party` | Add a PC list to the challenge |
 

@@ -1,0 +1,16 @@
+{
+  "id": "pf2e-subsystem-manager",
+  "title": "PF2e Subsystem Manager (Phase 0 spike)",
+  "description": "Phase 0 spike only. See docs/phase-0-results.md.",
+  "version": "0.0.0-spike",
+  "compatibility": { "minimum": "14", "verified": "14" },
+  "authors": [{ "name": "Justin" }],
+  "relationships": {
+    "systems": [{ "id": "pf2e", "type": "system", "compatibility": { "minimum": "8.6" } }]
+  },
+  "documentTypes": {
+    "JournalEntryPage": { "influence": {} }
+  },
+  "esmodules": ["spike/phase0.js"],
+  "styles": ["spike/phase0.css"]
+}
