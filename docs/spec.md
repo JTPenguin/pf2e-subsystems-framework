@@ -84,7 +84,7 @@ Sidebar tab -> Challenge (journal entry + typed page, GM only) -> GM sheet
 | Rounds | Current, maximum, and a free-text round length |
 | NPCs | One or more |
 | Counters | Zero or more |
-| Run state | Inactive, active, or finished; the current round's acted list; the log |
+| Run state | Inactive, active, or finished; the current round's acted list |
 
 **NPC**
 
@@ -134,7 +134,6 @@ The sheet has **Edit** and **Run** modes, like a locked and unlocked actor sheet
 - Modifier entries with on, off and apply controls.
 - Counters.
 - Start, hide, show and end controls for the panel.
-- A log of point changes, reveals and rounds.
 
 **Reveal is one click and can be undone.** The panel updates at once.
 
@@ -185,7 +184,7 @@ The sheet has **Edit** and **Run** modes, like a locked and unlocked actor sheet
 2. The active GM's client sees the chat message and adds an item to the pending-results list on the GM's panel.
 3. **Influence** suggests: critical success +2, success +1, failure 0, critical failure −1. The GM clicks **Apply**, **Adjust** or **Ignore**.
 4. **Discover** shows the degree of success and a reminder of what it earns: one piece of information, two on a critical success, a false one on a critical failure. The GM reveals entries by hand.
-5. Applying updates points, marks reached thresholds, spends one-time entries, and writes to the log.
+5. Applying updates points, marks reached thresholds, and spends one-time entries.
 6. The PC is marked as having acted. Advancing the round clears the markers. The GM can toggle a marker by hand.
 
 A reroll replaces the pending item if it hasn't been applied. If it has, the GM adjusts by hand.

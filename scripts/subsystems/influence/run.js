@@ -3,7 +3,7 @@
  * A function that returns false changed nothing. No Foundry document calls, so tools/test.mjs can check them.
  */
 
-import { clampCounters, isUniversalRow, limitCounter } from "./data.js";
+import { clampCounters, limitCounter } from "./data.js";
 
 export const OUTCOMES = ["criticalSuccess", "success", "failure", "criticalFailure"];
 
@@ -44,14 +44,8 @@ export const canRestoreModifier = (modifier) => modifier.spent || (isOneTime(mod
 export const isClaimed = (system, id) => claimedIds(system).has(id);
 
 const say = (key, data) => globalThis.game?.i18n?.format(key, data) ?? key;
-const signed = (n) => (n > 0 ? `+${n}` : `${n}`.replace("-", "−"));
-
-function addLog(system, type, key, data) {
-  system.run.log.push({ id: foundry.utils.randomID(), at: Date.now(), round: system.rounds.current, type, text: say(key, data) });
-}
 
 const npcById = (system, id) => system.npcs.find((npc) => npc.id === id);
-const npcName = (npc) => npc.name || say("SSM.Influence.NPC");
 
 /** Every entry with a reveal flag, and the NPC lists whose state a reset restores. */
 const NPC_ROW_STATE = { discovery: ["revealed"], influence: ["revealed"], thresholds: ["revealed", "reached"], modifiers: ["active", "spent", "revealed"] };
@@ -96,13 +90,11 @@ export function startRun(system) {
   system.run.baseline = takeBaseline(system);
   system.rounds.current = Math.max(1, system.rounds.current);
   system.run.status = "active";
-  addLog(system, "run", "SSM.Influence.Log.Started");
 }
 
 export function endRun(system) {
   if (system.run.status !== "active") return false;
   system.run.status = "finished";
-  addLog(system, "run", "SSM.Influence.Log.Ended");
 }
 
 /** Back to unspent. Edits made during the run, such as a changed DC, stay. */
@@ -115,7 +107,7 @@ export function resetRun(system) {
     console.warn("pf2e-subsystem-manager | Could not restore a challenge's start values", error);
   }
   system.rounds.max = Math.max(1, system.rounds.max - (system.run.roundsAdded ?? 0));
-  Object.assign(system.run, { status: "inactive", acted: [], log: [], roundHistory: [], pending: [], appliedRolls: [], baseline: null, roundsAdded: 0 });
+  Object.assign(system.run, { status: "inactive", acted: [], roundHistory: [], pending: [], appliedRolls: [], baseline: null, roundsAdded: 0 });
 }
 
 export function advanceRound(system) {
@@ -123,7 +115,6 @@ export function advanceRound(system) {
   system.run.roundHistory.push({ round: system.rounds.current, acted: system.run.acted });
   system.run.acted = [];
   system.rounds.current += 1;
-  addLog(system, "round", "SSM.Influence.Log.Round", { round: system.rounds.current });
 }
 
 /** Undo a round advance, and bring back that round's acted markers. */
@@ -133,7 +124,6 @@ export function undoRound(system) {
   system.run.roundHistory.pop();
   system.rounds.current = last.round;
   system.run.acted = last.acted;
-  addLog(system, "round", "SSM.Influence.Log.RoundUndone", { round: last.round });
 }
 
 export function toggleActed(system, actorId) {
@@ -150,18 +140,12 @@ export function markReachedThresholds(npc) {
   return reached;
 }
 
-/** Add or remove points, marking any thresholds that are reached and writing the log. */
-export function changePoints(system, npcId, delta, actorName = "") {
+/** Add or remove points, marking any thresholds that are reached. */
+export function changePoints(system, npcId, delta) {
   const npc = npcById(system, npcId);
   if (!npc) return false;
   npc.points += delta;
-  const key = actorName ? "SSM.Influence.Log.PointsFromRoll" : "SSM.Influence.Log.Points";
-  addLog(system, "points", key, { npc: npcName(npc), delta: signed(delta), total: npc.points, actor: actorName });
-  if (delta > 0) {
-    for (const threshold of markReachedThresholds(npc)) {
-      addLog(system, "threshold", "SSM.Influence.Log.Threshold", { npc: npcName(npc), points: threshold.points, text: threshold.playerText || threshold.gmText });
-    }
-  }
+  if (delta > 0) markReachedThresholds(npc);
 }
 
 function findEntry(system, id) {
@@ -176,18 +160,16 @@ function findEntry(system, id) {
 }
 
 /** Reveal or hide one entry. Clicking again undoes it. */
-export function toggleReveal(system, id, label) {
+export function toggleReveal(system, id) {
   const entry = findEntry(system, id);
   if (!entry) return false;
   if (system.counters.includes(entry)) rememberCounter(system, entry);
   entry.revealed = !entry.revealed;
-  const key = !entry.revealed ? "Hidden" : entry.decoy && !isUniversalRow(entry) ? "RevealedDecoy" : "Revealed";
-  addLog(system, "reveal", `SSM.Influence.Log.${key}`, { entry: label });
 }
 
 /**
  * Take in a roll result. Returns what happened: "added", "replaced" or "afterApply", or false when the roll doesn't belong to a running challenge.
- * A reroll replaces its pending item. If that roll was already applied, the GM adjusts by hand, so it only writes the log.
+ * A reroll replaces its pending item. If that roll was already applied, the GM adjusts by hand, so nothing changes here.
  * A reroll of an ignored roll comes back as a new item: the GM hasn't used that result.
  * After End, only a reroll of a still-pending item is taken, so that item doesn't keep its old result.
  */
@@ -207,10 +189,7 @@ export function receiveRoll(system, roll) {
   }
   if (system.run.status !== "active") return false;
   if (roll.isReroll) {
-    if (system.run.appliedRolls.includes(roll.rollId)) {
-      addLog(system, "reroll", "SSM.Influence.Log.RerollAfterApply", { actor: roll.actorName, total });
-      return "afterApply";
-    }
+    if (system.run.appliedRolls.includes(roll.rollId)) return "afterApply";
   }
   // The roll takes the one-time entries only if it really used them. A roll at any other DC, such as an old chat link, leaves them for the next check.
   const expectedDc = currentDc(system, npc, row);
@@ -237,7 +216,6 @@ function spendClaims(system, item) {
     const modifier = npc?.modifiers.find((candidate) => candidate.id === id);
     if (!modifier || !isOneTime(modifier) || !modifier.active || modifier.spent) continue;
     modifier.spent = true;
-    addLog(system, "modifier", "SSM.Influence.Log.ModifierSpent", { entry: modifierName(modifier), actor: item.actorName });
   }
 }
 
@@ -247,15 +225,12 @@ export function applyPending(system, id, amount) {
   if (!item) return false;
   system.run.appliedRolls.push(item.rollId);
   spendClaims(system, item);
-  if (item.kind === "influence") changePoints(system, item.npcId, amount ?? suggestedPoints(item.outcome), item.actorName);
-  else addLog(system, "discover", "SSM.Influence.Log.Discover", { actor: item.actorName, npc: npcName(npcById(system, item.npcId) ?? {}) });
+  if (item.kind === "influence") changePoints(system, item.npcId, amount ?? suggestedPoints(item.outcome));
 }
 
 export function ignorePending(system, id) {
   return takePending(system, id) ? undefined : false;
 }
-
-const modifierName = (modifier) => modifier.name || say("SSM.Influence.UnnamedEntry");
 
 function findModifier(system, npcId, id) {
   return npcById(system, npcId)?.modifiers.find((modifier) => modifier.id === id) ?? null;
@@ -269,7 +244,6 @@ export function toggleModifier(system, npcId, id) {
   if (!isRunning(system) || !modifier || modifier.spent) return false;
   modifier.active = !modifier.active;
   if (!modifier.active) for (const item of system.run.pending) item.claims = (item.claims ?? []).filter((claim) => claim !== id);
-  addLog(system, "modifier", `SSM.Influence.Log.${modifier.active ? "ModifierOn" : "ModifierOff"}`, { entry: modifierName(modifier) });
 }
 
 /** Make a spent or applied entry usable again. Effects it already made stay; the GM reverses those by hand. */
@@ -277,7 +251,6 @@ export function restoreModifier(system, npcId, id) {
   const modifier = findModifier(system, npcId, id);
   if (!isRunning(system) || !modifier || !canRestoreModifier(modifier)) return false;
   Object.assign(modifier, { spent: false, applied: false });
-  addLog(system, "modifier", "SSM.Influence.Log.ModifierRestored", { entry: modifierName(modifier) });
 }
 
 /** Add to or remove from the maximum, never below the current round or 1. Undo only moves the current round back, so it can't fall out of step. */
@@ -287,7 +260,6 @@ function changeRounds(system, delta) {
   const change = system.rounds.max - before;
   if (!change) return;
   system.run.roundsAdded = (system.run.roundsAdded ?? 0) + change;
-  addLog(system, "round", "SSM.Influence.Log.RoundsChanged", { delta: signed(change), max: system.rounds.max });
 }
 
 /** Change a counter inside its limits. Adds any trigger the value reached or passed to `triggers`. Returns false if the value didn't move. */
@@ -298,17 +270,15 @@ function adjustCounter(system, counter, delta, triggers) {
   rememberCounter(system, counter);
   counter.value = after;
   const name = counter.name || say("SSM.Influence.UnnamedCounter");
-  addLog(system, "counter", "SSM.Influence.Log.Counter", { counter: name, delta: signed(after - before), total: after });
   for (const trigger of counter.triggers) {
     const reached = trigger.value !== before && ((before < trigger.value && trigger.value <= after) || (after <= trigger.value && trigger.value < before));
     if (!reached) continue;
     const hit = { counter: name, value: trigger.value, note: trigger.gmNote };
     triggers.push(hit);
-    addLog(system, "counter", triggerKey(hit), hit);
   }
 }
 
-/** The language key for a trigger's log line and notice, which depends on whether it has a note. */
+/** The language key for a trigger's notice, which depends on whether it has a note. */
 export const triggerKey = (trigger) => (trigger.note ? "SSM.Influence.TriggerNotice" : "SSM.Influence.TriggerNoticeBare");
 
 /** Add to or remove from a counter from Run mode. Returns the triggers reached. */
@@ -324,17 +294,13 @@ export function changeCounter(system, id, delta) {
 export function applyModifier(system, npcId, id) {
   const modifier = findModifier(system, npcId, id);
   if (!isRunning(system) || !modifier || !canApplyModifier(modifier)) return false;
-  const name = modifierName(modifier);
   const triggers = [];
-  addLog(system, "modifier", "SSM.Influence.Log.ModifierApplied", { entry: name });
   for (const effect of otherEffects(modifier)) {
     if (effect.type === "points" && effect.amount) changePoints(system, npcId, effect.amount);
     if (effect.type === "rounds" && effect.amount) changeRounds(system, effect.amount);
-    if (effect.type === "note") addLog(system, "modifier", "SSM.Influence.Log.ModifierNote", { entry: name, note: effect.note });
     if (effect.type === "counter") {
       const counter = system.counters.find((candidate) => candidate.id === effect.counterId);
       if (counter) adjustCounter(system, counter, effect.amount, triggers);
-      else addLog(system, "modifier", "SSM.Influence.Log.NoCounter", { entry: name });
     }
   }
   if (isOneTime(modifier)) {

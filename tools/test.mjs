@@ -106,7 +106,7 @@ test("search opens only ancestors of the tab's kind", () => {
 });
 
 const system = () => {
-  const s = { premise: "<p>Banquet</p>", gmNotes: "", rounds: { current: 0, max: 6, length: "" }, npcs: [{ ...D.newNpc(), discovery: [], influence: [] }], counters: [], run: { status: "inactive", acted: [], log: [] } };
+  const s = { premise: "<p>Banquet</p>", gmNotes: "", rounds: { current: 0, max: 6, length: "" }, npcs: [{ ...D.newNpc(), discovery: [], influence: [] }], counters: [], run: { status: "inactive", acted: [] } };
   return s;
 };
 
@@ -213,7 +213,7 @@ test("searchText covers the challenge's text", () => {
 
 const runSystem = () => {
   const s = system();
-  s.run = { status: "inactive", acted: [], log: [], baseline: null, roundHistory: [], pending: [], appliedRolls: [] };
+  s.run = { status: "inactive", acted: [], baseline: null, roundHistory: [], pending: [], appliedRolls: [] };
   s.npcs[0].points = 1;
   s.npcs[0].influence.push(D.newInfluence());
   s.npcs[0].discovery.push(D.newDiscovery());
@@ -281,17 +281,15 @@ test("a reroll replaces only its own pending item, in place", () => {
   assert.deepEqual([s.run.pending[0].messageId, s.run.pending[0].outcome, s.run.pending[1].rollId], ["m9", "criticalSuccess", "r2"]);
 });
 
-test("a reroll after Apply changes nothing but the log", () => {
+test("a reroll after Apply changes nothing", () => {
   const s = runSystem();
   Run.startRun(s);
   Run.receiveRoll(s, rollOf(s));
   Run.applyPending(s, s.run.pending[0].id);
   const points = s.npcs[0].points;
-  const logs = s.run.log.length;
   assert.equal(Run.receiveRoll(s, rollOf(s, { isReroll: true, outcome: "criticalSuccess" })), "afterApply");
   assert.equal(s.npcs[0].points, points);
   assert.equal(s.run.pending.length, 0);
-  assert.equal(s.run.log.length, logs + 1);
 });
 
 test("a reroll of an ignored roll comes back as new, without marking acted again", () => {
@@ -358,13 +356,13 @@ test("rounds advance to the maximum, clear markers, and undo brings them back", 
 test("reveal toggles and undoes, for skills and counters", () => {
   const s = runSystem();
   const row = s.npcs[0].influence[0];
-  Run.toggleReveal(s, row.id, "Diplomacy");
+  Run.toggleReveal(s, row.id);
   assert.equal(row.revealed, true);
-  Run.toggleReveal(s, row.id, "Diplomacy");
+  Run.toggleReveal(s, row.id);
   assert.equal(row.revealed, false);
-  Run.toggleReveal(s, s.counters[0].id, "Suspicion");
+  Run.toggleReveal(s, s.counters[0].id);
   assert.equal(s.counters[0].revealed, true);
-  assert.equal(Run.toggleReveal(s, "gone", "x"), false);
+  assert.equal(Run.toggleReveal(s, "gone"), false);
 });
 
 test("the acted marker toggles", () => {
@@ -382,8 +380,8 @@ test("end keeps the final state; reset returns to how the run started", () => {
   Run.startRun(s);
   assert.equal(Run.startRun(s), false);
   Run.changePoints(s, s.npcs[0].id, 4);
-  Run.toggleReveal(s, s.npcs[0].influence[0].id, "x");
-  Run.toggleReveal(s, s.npcs[0].discovery[0].id, "x");
+  Run.toggleReveal(s, s.npcs[0].influence[0].id);
+  Run.toggleReveal(s, s.npcs[0].discovery[0].id);
   s.npcs[0].influence[0].dc = 22;
   s.counters[0].value = 9;
   Run.receiveRoll(s, rollOf(s));
@@ -398,7 +396,7 @@ test("end keeps the final state; reset returns to how the run started", () => {
   assert.equal(s.npcs[0].influence[0].revealed, false);
   assert.equal(s.npcs[0].discovery[0].revealed, true);
   assert.equal(s.npcs[0].influence[0].dc, 22, "a DC edit is not run state");
-  for (const list of ["log", "pending", "acted", "roundHistory", "appliedRolls"]) assert.deepEqual(s.run[list], [], list);
+  for (const list of ["pending", "acted", "roundHistory", "appliedRolls"]) assert.deepEqual(s.run[list], [], list);
   assert.equal(s.run.baseline, null);
   assert.equal(Run.resetRun(s), false);
 });
@@ -436,9 +434,7 @@ test("after End, a reroll updates a pending item but nothing else gets in", () =
   assert.equal(Run.receiveRoll(s, rollOf(s, { isReroll: true, outcome: "failure", total: 7 })), "replaced");
   assert.deepEqual([s.run.pending[0].outcome, s.run.pending[0].total], ["failure", 7]);
   assert.equal(Run.receiveRoll(s, rollOf(s, { rollId: "r3" })), false);
-  const logs = s.run.log.length;
   assert.equal(Run.receiveRoll(s, rollOf(s, { rollId: "r2", isReroll: true })), false);
-  assert.equal(s.run.log.length, logs);
   assert.equal(s.run.pending.length, 1);
 });
 
@@ -546,10 +542,9 @@ test("a reroll keeps the claim, gives no warning, and spends once", () => {
   const [item] = s.run.pending;
   assert.deepEqual([item.claims, item.dc, item.expectedDc], [[m.id], 13, 13]);
   Run.applyPending(s, item.id);
-  const spentLogs = () => s.run.log.filter((entry) => entry.text.endsWith("ModifierSpent")).length;
-  assert.equal(spentLogs(), 1);
+  assert.equal(m.spent, true);
   assert.equal(Run.receiveRoll(s, rollAt(s, "r1", 13, { isReroll: true })), "afterApply");
-  assert.equal(spentLogs(), 1);
+  assert.equal(m.spent, true);
 });
 
 test("Apply after the entry was turned off doesn't spend it", () => {
@@ -592,7 +587,6 @@ test("Apply does each effect, and ongoing entries can repeat", () => {
   const m = addModifier(s, {}, [{ type: "points", amount: 2 }, { type: "counter", amount: -1, counterId: s.counters[0].id }, { type: "rounds", amount: 1 }, { type: "note", note: "She leaves" }]);
   Run.applyModifier(s, npcId(s), m.id);
   assert.deepEqual([s.npcs[0].points, s.counters[0].value, s.rounds.max], [3, 2, 7]);
-  assert.ok(s.run.log.some((entry) => entry.text.endsWith("ModifierNote")));
   assert.equal(m.spent, false);
   Run.applyModifier(s, npcId(s), m.id);
   assert.equal(s.npcs[0].points, 5);
@@ -648,15 +642,13 @@ test("removing rounds never goes below the current round, and undo stays in step
   assert.equal(Run.advanceRound(s), false, "the shorter clock holds");
 });
 
-test("counters stop at their limits, and a counter at its limit logs nothing", () => {
+test("counters stop at their limits, and a counter at its limit does not move", () => {
   const s = running();
   Object.assign(s.counters[0], { value: 4, min: 0, max: 5 });
-  const logs = () => s.run.log.length;
   Run.changeCounter(s, s.counters[0].id, 1);
   assert.equal(s.counters[0].value, 5);
-  const before = logs();
   assert.equal(Run.changeCounter(s, s.counters[0].id, 1), false);
-  assert.equal(logs(), before);
+  assert.equal(s.counters[0].value, 5);
   const m = addModifier(s, {}, [{ type: "counter", amount: -99, counterId: s.counters[0].id }]);
   Run.applyModifier(s, npcId(s), m.id);
   assert.equal(s.counters[0].value, 0);
@@ -671,7 +663,6 @@ test("a trigger fires on reaching or passing it, in either direction, and not wh
   assert.deepEqual(Run.changeCounter(s, c.id, 1).triggers, [], "moving off a trigger is not reaching it");
   assert.equal(Run.changeCounter(s, c.id, 3).triggers.length, 1);
   assert.equal(Run.changeCounter(s, c.id, -4).triggers.length, 2);
-  assert.ok(s.run.log.some((entry) => entry.text.endsWith("TriggerNotice")));
 });
 
 test("a Rounds effect, counter change and modifier state all go back on reset", () => {
@@ -705,19 +696,18 @@ test("reset clears entries and counters added during the run", () => {
   const counter = D.addRow(s, "counters");
   counter.value = 2;
   Run.changeCounter(s, counter.id, 3);
-  Run.toggleReveal(s, counter.id, "x");
+  Run.toggleReveal(s, counter.id);
   Run.resetRun(s);
   assert.deepEqual([late.active, late.spent], [false, false]);
   assert.deepEqual([counter.value, counter.revealed], [2, false]);
 });
 
-test("revealing a decoy says so in the log", () => {
+test("revealing a decoy on an influence row reveals it", () => {
   const s = running();
   const row = s.npcs[0].influence[0];
   row.decoy = true;
-  Run.toggleReveal(s, row.id, "Diplomacy");
+  Run.toggleReveal(s, row.id);
   assert.equal(row.revealed, true);
-  assert.ok(s.run.log.at(-1).text.endsWith("RevealedDecoy"));
 });
 
 test("every kind of row added during a run goes back to hidden on reset", () => {
@@ -825,9 +815,9 @@ test("revealing each kind of entry adds it, and only its player fields", () => {
 test("hiding an entry again takes it back out", () => {
   const s = secretSystem();
   const row = s.npcs[0].influence[0];
-  Run.toggleReveal(s, row.id, "x");
+  Run.toggleReveal(s, row.id);
   assert.equal(viewOf(s).npcs[0].influence.length, 1);
-  Run.toggleReveal(s, row.id, "x");
+  Run.toggleReveal(s, row.id);
   assert.equal(viewOf(s).npcs[0].influence.length, 0);
 });
 
@@ -902,9 +892,9 @@ test("a non-universal Discovery skill is absent, DC included, until revealed", (
   assert.ok(!hidden.includes("876"));
   assert.ok(!hidden.includes(row.id));
   assert.ok(!hidden.includes("arcana"));
-  Run.toggleReveal(s, row.id, "Arcana");
+  Run.toggleReveal(s, row.id);
   assert.deepEqual(viewOf(s).npcs[0].discovery.at(-1), { id: row.id, skill: "arcana", lore: "", dc: 876 });
-  Run.toggleReveal(s, row.id, "Arcana");
+  Run.toggleReveal(s, row.id);
   assert.ok(!JSON.stringify(viewOf(s)).includes(row.id));
 });
 
@@ -922,8 +912,8 @@ test("reset hides a non-universal Discovery skill unless it was revealed before 
   const during = { ...D.newDiscovery(), skill: "occultism" };
   s.npcs[0].discovery.push(before, during);
   Run.startRun(s);
-  Run.toggleReveal(s, during.id, "x");
-  Run.toggleReveal(s, before.id, "x");
+  Run.toggleReveal(s, during.id);
+  Run.toggleReveal(s, before.id);
   Run.resetRun(s);
   assert.deepEqual([before.revealed, during.revealed], [true, false]);
 });
@@ -984,7 +974,6 @@ test("the copy is the same when nothing players see has changed", () => {
   const s = secretSystem();
   const before = JSON.stringify(viewOf(s));
   Run.toggleModifier(s, s.npcs[0].id, s.npcs[0].modifiers[0].id);
-  s.run.log.push({ text: "x" });
   s.npcs[0].modifiers[0].gmText = "changed";
   assert.equal(JSON.stringify(viewOf(s)), before);
 });
@@ -1004,10 +993,10 @@ test("a copy of a running challenge goes back to its start values and keeps its 
   const [npc] = s.npcs;
   npc.name = "Lady Vance";
   Run.changePoints(s, npc.id, 4);
-  Run.toggleReveal(s, npc.influence[0].id, "x");
+  Run.toggleReveal(s, npc.influence[0].id);
   Run.receiveRoll(s, rollOf(s));
   Run.resetRun(s);
-  assert.deepEqual([s.run.status, s.run.pending, s.run.log, s.run.baseline, s.run.acted], ["inactive", [], [], null, []]);
+  assert.deepEqual([s.run.status, s.run.pending, s.run.baseline, s.run.acted], ["inactive", [], null, []]);
   assert.deepEqual([npc.name, npc.points, npc.influence[0].revealed, npc.influence.length], ["Lady Vance", 1, false, 2]);
   assert.equal(npc.thresholds.some((threshold) => threshold.reached), false);
 });
@@ -1022,7 +1011,7 @@ for (const [label, baseline] of [["empty", {}], ["null lists", { round: 2, npcs:
     const [npc] = s.npcs;
     if (baseline.npcs?.any) baseline.npcs[npc.id] = baseline.npcs.any;
     s.run.baseline = baseline;
-    Run.toggleReveal(s, npc.influence[0].id, "x");
+    Run.toggleReveal(s, npc.influence[0].id);
     assert.notEqual(Run.resetRun(s), false);
     assert.deepEqual([s.run.status, s.run.baseline], ["inactive", null]);
     assert.ok(Number.isInteger(s.rounds.current));
@@ -1088,7 +1077,7 @@ test("universal Influence skills are always in the copy, with their DCs; others 
   assert.deepEqual(viewOf(s).npcs[0].influence.map((row) => row.skill), ["deception", "diplomacy", "society"]);
 });
 
-test("a decoy flag on a universal row of either kind is ignored: no marker in the copy, none in the log", () => {
+test("a decoy flag on a universal row of either kind is ignored: no marker in the copy", () => {
   const s = secretSystem();
   const npc = s.npcs[0];
   npc.influence = [{ ...D.newInfluence(), skill: "intimidation", decoy: true }, { ...D.newInfluence(), skill: "society", decoy: true }];
@@ -1097,10 +1086,10 @@ test("a decoy flag on a universal row of either kind is ignored: no marker in th
   assert.deepEqual(view.npcs[0].influence.map((row) => row.skill), ["intimidation"]);
   assert.deepEqual(view.npcs[0].discovery.map((row) => row.skill), ["perception"]);
   assert.ok(!scan(view).keys.has("decoy"));
-  Run.toggleReveal(s, npc.influence[0].id, "Intimidation");
-  assert.ok(s.run.log.at(-1).text.endsWith("Revealed"));
-  Run.toggleReveal(s, npc.discovery[0].id, "Perception");
-  assert.ok(s.run.log.at(-1).text.endsWith("Revealed"));
-  Run.toggleReveal(s, npc.influence[1].id, "Society");
-  assert.ok(s.run.log.at(-1).text.endsWith("RevealedDecoy"), "a decoy on an ordinary row still counts");
+  Run.toggleReveal(s, npc.influence[0].id);
+  assert.equal(npc.influence[0].revealed, true);
+  Run.toggleReveal(s, npc.discovery[0].id);
+  assert.equal(npc.discovery[0].revealed, true);
+  Run.toggleReveal(s, npc.influence[1].id);
+  assert.equal(npc.influence[1].revealed, true);
 });

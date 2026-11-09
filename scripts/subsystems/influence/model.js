@@ -77,7 +77,6 @@ export class InfluenceModel extends foundry.abstract.TypeDataModel {
       run: new SchemaField({
         status: choice(STATUSES, "inactive"),
         acted: ids(),
-        log: list({ id: rowId(), at: int(), round: int(), type: text(), text: text() }),
         // The state to go back to on Reset, taken when the run starts. Null when no run has started.
         baseline: new ObjectField({ required: true, nullable: true, initial: null }),
         // One entry per round advance, so undo can bring back the acted markers.

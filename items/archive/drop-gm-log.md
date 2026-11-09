@@ -1,12 +1,13 @@
 ---
 title: "Remove the log from the GM sheet"
 kind: feature
-status: ready
-waits_on: Claude
+status: done
+waits_on: none
 blocked_by: []
 source: "Justin's request, 2026-11-09"
 added: 2026-11-09
 updated: 2026-11-09
+outcome: "Done 2026-11-09. Log section, header count, run.log and addLog removed; nothing else read the log. Checked live: an old challenge with log entries loads, the log key is pruned, points still change."
 ---
 # Remove the log from the GM sheet
 

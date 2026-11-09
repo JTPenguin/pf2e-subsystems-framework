@@ -37,7 +37,7 @@
 .ssm-chip { width: auto; flex: none; }
 .ssm-chip.acted { opacity: 0.45; text-decoration: line-through; }
 .ssm-tag { font-size: var(--font-size-11, 0.7rem); border: 1px solid var(--color-border, #7a7971); border-radius: 3px; padding: 0 0.25rem; }
-.ssm-pending, .ssm-log { list-style: none; margin: 0; padding: 0; }
+.ssm-pending { list-style: none; margin: 0; padding: 0; }
 .ssm-pending-item { display: flex; flex-wrap: wrap; align-items: center; gap: 0.3rem; margin-bottom: 0.25rem; }
 .ssm-pending-item button { width: auto; flex: none; }
 .ssm-entry > button:not(.icon) { width: auto; flex: none; }
@@ -48,7 +48,6 @@
 .ssm-state-on { border-color: #4f9d5d; color: #4f9d5d; }
 .ssm-state-spent { opacity: 0.6; text-decoration: line-through; }
 .ssm-warning { display: block; color: #d9822b; font-size: var(--font-size-12, 0.75rem); }
-.ssm-log { max-height: 12rem; overflow-y: auto; font-size: var(--font-size-12, 0.75rem); }
 
 /* The panel over the canvas. #ui-top ignores the pointer, so only the panel's own area takes clicks. */
 /* The height limit is 80% of #ui-top, which is the top half of the screen at any UI scale. The whole panel scrolls past that, so a redraw keeps the place. #ui-top is scaled but not narrowed, so the width limit divides the scale out. */

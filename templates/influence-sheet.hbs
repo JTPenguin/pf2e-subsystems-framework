@@ -1,4 +1,4 @@
-{{#*inline "ssmEye"}}<button type="button" class="icon fa-solid {{#if revealed}}fa-eye{{else}}fa-eye-slash{{/if}}" data-action="toggleReveal" data-id="{{id}}" data-label="{{label}}" aria-label="{{localize "SSM.Influence.RevealToggle"}}" aria-pressed="{{revealed}}" data-tooltip="{{localize "SSM.Influence.RevealToggle"}}" {{#unless root.canRun}}disabled{{/unless}}></button>{{/inline}}
+{{#*inline "ssmEye"}}<button type="button" class="icon fa-solid {{#if revealed}}fa-eye{{else}}fa-eye-slash{{/if}}" data-action="toggleReveal" data-id="{{id}}" aria-label="{{localize "SSM.Influence.RevealToggle"}}" aria-pressed="{{revealed}}" data-tooltip="{{localize "SSM.Influence.RevealToggle"}}" {{#unless root.canRun}}disabled{{/unless}}></button>{{/inline}}
 {{#*inline "ssmSkillRow"}}<div class="ssm-row ssm-entry">
   {{#if universal}}<span class="ssm-no-eye"></span>{{else}}{{> ssmEye root=root}}{{/if}}
   <span class="ssm-grow">{{label}}{{#if decoy}}{{#unless universal}} <span class="ssm-tag ssm-decoy">{{localize "SSM.Influence.Decoy"}}</span>{{/unless}}{{/if}}</span>
@@ -16,7 +16,7 @@
         <button type="button" data-action="setMode" data-mode="run" class="{{#if isRun}}active{{/if}}">{{localize "SSM.Influence.Mode.run"}}</button>
       </span>
     </div>
-    <span class="ssm-status">{{statusLabel}} &middot; {{localize "SSM.Influence.Acted"}}: {{system.run.acted.length}} &middot; {{localize "SSM.Influence.LogEntries"}}: {{system.run.log.length}}</span>
+    <span class="ssm-status">{{statusLabel}} &middot; {{localize "SSM.Influence.Acted"}}: {{system.run.acted.length}}</span>
   </header>
 
   {{#if isRun}}
@@ -108,13 +108,6 @@
       {{/each}}
     </fieldset>
     {{/if}}
-
-    <fieldset>
-      <legend>{{localize "SSM.Influence.Log.Title"}}</legend>
-      <ul class="ssm-log">
-        {{#each log}}<li><span class="ssm-muted">{{round}}</span> {{text}}</li>{{else}}<li class="ssm-muted">{{localize "SSM.Influence.Log.Empty"}}</li>{{/each}}
-      </ul>
-    </fieldset>
     {{/with}}
   </section>
   {{/if}}

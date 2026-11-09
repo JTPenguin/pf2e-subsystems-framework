@@ -303,7 +303,6 @@ export class InfluenceSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
         canAdd: canChange && limitCounter(counter, counter.value + 1) !== counter.value,
         canRemove: canChange && limitCounter(counter, counter.value - 1) !== counter.value,
       })),
-      log: system.run.log.slice().reverse(),
     };
   }
 
@@ -493,7 +492,7 @@ export class InfluenceSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
   }
 
   static #onToggleReveal(event, target) {
-    return this.#run((system) => toggleReveal(system, target.dataset.id, target.dataset.label));
+    return this.#run((system) => toggleReveal(system, target.dataset.id));
   }
 
   static #onToggleActed(event, target) {
