@@ -8,4 +8,8 @@ A Foundry VTT module (v14, PF2e) for running PF2e subsystems from sheets, with a
 - Start or stop Foundry for a live check: `foundry-ctl start|stop|restart|status`. Tell Justin before `stop` or `restart`: players may be connected.
 - Check Foundry and PF2e APIs against the installed code in `~/foundryvtt/resources/app` and `~/.local/share/FoundryVTT/Data/systems/pf2e`.
 
+## Work tracking
+
+Bugs and features live in `items/`, tracked as `~/.claude/CLAUDE.md` describes. Check the folder: `python3 "/home/justin/Projects/Character Art Pipeline/infra/items.py" --dir=items check`.
+
 Shared rules are in `~/.claude/CLAUDE.md`.
