@@ -39,4 +39,12 @@
 .ssm-pending, .ssm-log { list-style: none; margin: 0; padding: 0; }
 .ssm-pending-item { display: flex; flex-wrap: wrap; align-items: center; gap: 0.3rem; margin-bottom: 0.25rem; }
 .ssm-pending-item button { width: auto; flex: none; }
+.ssm-entry > button:not(.icon) { width: auto; flex: none; }
+.ssm-modifier { margin-bottom: 0.3rem; }
+.ssm-detail { padding-left: 2.5rem; }
+.ssm-decoy { border-color: #c9743a; color: #c9743a; font-weight: bold; }
+.ssm-dc-changed { font-weight: bold; color: var(--color-text-accent, #c9a13a); }
+.ssm-state-on { border-color: #4f9d5d; color: #4f9d5d; }
+.ssm-state-spent { opacity: 0.6; text-decoration: line-through; }
+.ssm-warning { display: block; color: #d9822b; font-size: var(--font-size-12, 0.75rem); }
 .ssm-log { max-height: 12rem; overflow-y: auto; font-size: var(--font-size-12, 0.75rem); }

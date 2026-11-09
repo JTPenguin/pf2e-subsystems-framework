@@ -27,6 +27,8 @@ export function pendingItems(system) {
       outcomeLabel: item.outcome ? loc(`SSM.Influence.Outcome.${item.outcome}`) : "",
       suggestion: isInfluence ? game.i18n.format("SSM.Influence.Suggested", { points: signed(suggestedPoints(item.outcome)) }) : "",
       reminder: !isInfluence && item.outcome ? loc(`SSM.Influence.Reminder.${item.outcome}`) : "",
+      dcWarning: item.dc !== null && item.expectedDc !== null && item.dc !== item.expectedDc ? game.i18n.format("SSM.Influence.StaleDc", { rolled: item.dc, current: item.expectedDc }) : "",
+      spends: (item.claims ?? []).map((id) => npc?.modifiers.find((modifier) => modifier.id === id)?.name).filter(Boolean).join(", "),
     };
   });
 }

@@ -1,4 +1,4 @@
-import { applyPending, ignorePending, receiveRoll, suggestedPoints } from "./run.js";
+import { applyPending, ignorePending, receiveRoll, suggestedPoints, triggerKey } from "./run.js";
 
 const queues = new Map();
 
@@ -15,6 +15,11 @@ export function writeChallenge(page, change, options = {}) {
   const next = (queues.get(page.id) ?? Promise.resolve()).then(run);
   queues.set(page.id, next.catch(() => {}));
   return next;
+}
+
+/** Tell the GM about any counter triggers a change reached. */
+export function announceTriggers(result) {
+  for (const trigger of result?.triggers ?? []) ui.notifications.info(game.i18n.format(triggerKey(trigger), trigger));
 }
 
 export async function receiveInfluenceRoll(page, roll) {

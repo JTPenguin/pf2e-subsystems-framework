@@ -32,6 +32,8 @@ const modifierFields = () => ({
   spent: flag(),
   revealed: flag(),
   decoy: flag(),
+  // A one-time entry's other effects have been applied, so Apply can't repeat them.
+  applied: flag(),
   effects: list(effectFields()),
 });
 
@@ -80,10 +82,14 @@ export class InfluenceModel extends foundry.abstract.TypeDataModel {
         baseline: new ObjectField({ required: true, nullable: true, initial: null }),
         // One entry per round advance, so undo can bring back the acted markers.
         roundHistory: list({ round: int(), acted: ids() }),
+        // The net change Rounds effects have made to the maximum. Reset takes it back off.
+        roundsAdded: int(),
         // Results waiting for the GM. Stored here so they survive a reload.
         pending: list({
           id: rowId(), rollId: text(), messageId: text(), kind: text(), npcId: text(), entryId: text(),
           actorId: text(), actorName: text(), total: optionalInt(), outcome: text(), round: int(),
+          // The DC the roll used, the current DC when it arrived, and the one-time entries it will spend when confirmed.
+          dc: optionalInt(), expectedDc: optionalInt(), claims: ids(),
         }),
         // The rolls already applied, so a later reroll of one can be recognised.
         appliedRolls: ids(),

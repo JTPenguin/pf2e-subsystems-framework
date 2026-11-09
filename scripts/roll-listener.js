@@ -27,6 +27,7 @@ function onRollMessage(message) {
     actorName: actor?.name ?? message.speaker?.alias ?? "",
     total: message.rolls[0]?.total ?? null,
     outcome: context.outcome ?? "",
+    dc: context.dc?.value ?? null,
     isReroll: !!context.isReroll,
   });
 }

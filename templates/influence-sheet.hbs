@@ -1,8 +1,9 @@
 {{#*inline "ssmEye"}}<button type="button" class="icon fa-solid {{#if revealed}}fa-eye{{else}}fa-eye-slash{{/if}}" data-action="toggleReveal" data-id="{{id}}" data-label="{{label}}" aria-label="{{localize "SSM.Influence.RevealToggle"}}" aria-pressed="{{revealed}}" data-tooltip="{{localize "SSM.Influence.RevealToggle"}}" {{#unless root.canRun}}disabled{{/unless}}></button>{{/inline}}
 {{#*inline "ssmSkillRow"}}<div class="ssm-row ssm-entry">
   {{> ssmEye root=root}}
-  <span class="ssm-grow">{{label}}{{#if decoy}} <span class="ssm-tag">{{localize "SSM.Influence.Decoy"}}</span>{{/if}}</span>
-  <span>{{localize "SSM.Influence.DC"}} {{currentDc}}</span>
+  <span class="ssm-grow">{{label}}{{#if decoy}} <span class="ssm-tag ssm-decoy">{{localize "SSM.Influence.Decoy"}}</span>{{/if}}</span>
+  <span class="ssm-muted">{{localize "SSM.Influence.Base"}} {{dc}}</span>
+  <span class="{{#if dcChanged}}ssm-dc-changed{{/if}}">{{localize "SSM.Influence.DC"}} {{currentDc}}</span>
   <button type="button" class="icon fa-solid fa-dice-d20" data-action="rollSkill" data-npc="{{npcId}}" data-kind="{{kind}}" data-id="{{id}}" aria-label="{{localize "SSM.Influence.RollFor"}}" data-tooltip="{{localize "SSM.Influence.RollFor"}}" {{#unless root.rollable}}disabled{{/unless}}></button>
   <button type="button" class="icon fa-solid fa-comment" data-action="postLink" data-npc="{{npcId}}" data-kind="{{kind}}" data-id="{{id}}" aria-label="{{localize "SSM.Influence.PostLink"}}" data-tooltip="{{localize "SSM.Influence.PostLink"}}" {{#unless root.rollable}}disabled{{/unless}}></button>
 </div>{{/inline}}
@@ -74,9 +75,18 @@
       {{/each}}
       <h4>{{localize "SSM.Influence.Modifiers"}}</h4>
       {{#each npc.modifiers}}
-      <div class="ssm-row ssm-entry">
-        {{> ssmEye root=../..}}
-        <span class="ssm-grow">{{label}}</span>
+      <div class="ssm-modifier">
+        <div class="ssm-row ssm-entry">
+          {{> ssmEye root=../..}}
+          <span class="ssm-grow">{{label}} <span class="ssm-tag">{{kindLabel}}</span> <span class="ssm-tag">{{durationLabel}}</span>{{#if decoy}} <span class="ssm-tag ssm-decoy">{{localize "SSM.Influence.Decoy"}}</span>{{/if}}</span>
+          <span class="ssm-tag ssm-state-{{stateClass}}">{{stateLabel}}</span>
+          {{#if claimed}}<span class="ssm-tag" data-tooltip="{{localize "SSM.Influence.ClaimedHint"}}">{{localize "SSM.Influence.Claimed"}}</span>{{/if}}
+          {{#if restorable}}<button type="button" data-action="restoreModifier" data-npc="{{npc.id}}" data-id="{{id}}" {{#unless canChange}}disabled{{/unless}}>{{localize "SSM.Influence.Restore"}}</button>
+          {{/if}}
+          {{#unless spent}}<button type="button" data-action="toggleModifier" data-npc="{{npc.id}}" data-id="{{id}}" aria-pressed="{{active}}" {{#unless canChange}}disabled{{/unless}}>{{#if active}}{{localize "SSM.Influence.TurnOff"}}{{else}}{{localize "SSM.Influence.TurnOn"}}{{/if}}</button>{{/unless}}
+          {{#if hasApply}}<button type="button" data-action="applyModifier" data-npc="{{npc.id}}" data-id="{{id}}" {{#unless canApply}}disabled{{/unless}}>{{localize "SSM.Influence.Apply"}}</button>{{/if}}
+        </div>
+        <div class="ssm-muted ssm-detail">{{effectsText}}{{#if gmText}} &middot; {{gmText}}{{/if}}</div>
       </div>
       {{/each}}
     </fieldset>
@@ -88,9 +98,12 @@
       {{#each counters}}
       <div class="ssm-row ssm-entry">
         {{> ssmEye root=..}}
-        <span class="ssm-grow">{{label}}</span>
-        <strong>{{value}}</strong>
+        <span class="ssm-grow">{{label}}{{#if rangeLabel}} <span class="ssm-muted">{{rangeLabel}}</span>{{/if}}</span>
+        <button type="button" class="icon fa-solid fa-minus" data-action="changeCounter" data-id="{{id}}" data-delta="-1" aria-label="{{localize "SSM.Influence.RemoveFromCounter"}}" {{#unless canRemove}}disabled{{/unless}}></button>
+        <strong class="ssm-point-total">{{value}}</strong>
+        <button type="button" class="icon fa-solid fa-plus" data-action="changeCounter" data-id="{{id}}" data-delta="1" aria-label="{{localize "SSM.Influence.AddToCounter"}}" {{#unless canAdd}}disabled{{/unless}}></button>
       </div>
+      {{#each triggers}}<div class="ssm-muted ssm-detail">{{localize "SSM.Influence.TriggerValue"}} {{value}}{{#if gmNote}}: {{gmNote}}{{/if}}</div>{{/each}}
       {{/each}}
     </fieldset>
     {{/if}}

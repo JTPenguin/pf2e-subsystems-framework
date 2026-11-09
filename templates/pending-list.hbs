@@ -3,6 +3,8 @@
   <li class="ssm-pending-item">
     <span class="ssm-grow"><strong>{{actorName}}</strong> &middot; {{skill}} &middot; {{npcName}} &middot; {{total}} &middot; {{outcomeLabel}}
       {{#if isInfluence}}<em>{{suggestion}}</em>{{else}}<em>{{reminder}}</em>{{/if}}
+      {{#if spends}}<span class="ssm-muted">{{localize "SSM.Influence.Spends"}}: {{spends}}</span>{{/if}}
+      {{#if dcWarning}}<span class="ssm-warning"><i class="fa-solid fa-triangle-exclamation" inert></i> {{dcWarning}}</span>{{/if}}
     </span>
     {{#if isInfluence}}
     <button type="button" data-action="applyResult" data-id="{{id}}" {{#unless ../canRun}}disabled{{/unless}}>{{localize "SSM.Influence.Apply"}}</button>

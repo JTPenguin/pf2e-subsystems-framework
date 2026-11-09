@@ -144,7 +144,17 @@
         "PointsFromRoll": "{npc}: {delta} from {actor}, now {total}",
         "Threshold": "{npc} reached {points}: {text}",
         "Revealed": "Revealed {entry}",
+        "RevealedDecoy": "Revealed decoy: {entry}",
         "Hidden": "Hid {entry}",
+        "ModifierOn": "{entry} turned on",
+        "ModifierOff": "{entry} turned off",
+        "ModifierApplied": "{entry} applied",
+        "ModifierSpent": "{entry} spent on {actor}'s roll",
+        "ModifierRestored": "{entry} restored. Effects it already made stay.",
+        "ModifierNote": "{entry}: {note}",
+        "NoCounter": "{entry}: no counter chosen, so nothing changed",
+        "Counter": "{counter}: {delta}, now {total}",
+        "RoundsChanged": "Rounds {delta}, maximum now {max}",
         "Discover": "{actor}: Discover result on {npc} handled",
         "RerollAfterApply": "{actor} rerolled an applied result, new total {total}. Make any change by hand."
       },
@@ -164,7 +174,32 @@
         "failure": "Earns nothing.",
         "criticalFailure": "Earns one false piece of information."
       },
-      "UnknownSkill": "Unknown skill"
+      "UnknownSkill": "Unknown skill",
+      "UnnamedEntry": "Unnamed entry",
+      "Base": "Base",
+      "TurnOn": "Turn on",
+      "TurnOff": "Turn off",
+      "Restore": "Restore",
+      "State": {
+        "on": "On",
+        "off": "Off",
+        "spent": "Spent"
+      },
+      "Claimed": "Used by a pending roll",
+      "ClaimedHint": "Confirming that roll spends this entry. Ignoring it, or turning this entry off, frees it.",
+      "Spends": "Confirming spends",
+      "StaleDc": "Rolled against DC {rolled}, but the current DC was {current}.",
+      "AddToCounter": "Add one",
+      "RemoveFromCounter": "Remove one",
+      "TriggerNotice": "{counter} reached {value}: {note}",
+      "TriggerNoticeBare": "{counter} reached {value}",
+      "EffectText": {
+        "dc": "DC {amount} ({skills})",
+        "points": "Influence Points {amount}",
+        "counter": "{counter} {amount}",
+        "rounds": "Rounds {amount}",
+        "note": "{note}"
+      }
     }
   }
 }

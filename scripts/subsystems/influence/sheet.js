@@ -1,11 +1,11 @@
 import { MODULE } from "../../constants.js";
 import { challengePage } from "../../registry.js";
 import { pendingItems, skillLabel } from "./pending-view.js";
-import { adjustResult, confirmResult, ignoreResult, writeChallenge } from "./state.js";
-import { advanceRound, changePoints, currentDc, endRun, loreSlug, resetRun, startRun, toggleActed, toggleReveal, undoRound } from "./run.js";
+import { adjustResult, announceTriggers, confirmResult, ignoreResult, writeChallenge } from "./state.js";
+import { advanceRound, applyModifier, canApplyModifier, canRestoreModifier, changeCounter, changePoints, currentDc, endRun, isClaimed, loreSlug, resetRun, restoreModifier, startRun, toggleActed, toggleModifier, toggleReveal, undoRound } from "./run.js";
 import { loreStatistic } from "../../lore-statistic.js";
 import { buildRollOption, LINK_ROLL_ID } from "../../roll-option.js";
-import { addRow, applyForm, clampCounters, DURATIONS, EFFECT_TYPES, LORE, MODIFIER_KINDS, PERCEPTION, QUICK_DC_AMOUNTS, pickFields, removeRow, setEffectAmount } from "./data.js";
+import { addRow, applyForm, clampCounters, DURATIONS, EFFECT_TYPES, limitCounter, LORE, MODIFIER_KINDS, PERCEPTION, QUICK_DC_AMOUNTS, pickFields, removeRow, setEffectAmount } from "./data.js";
 
 const { DocumentSheetV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
@@ -34,6 +34,10 @@ export class InfluenceSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
       advanceRound: InfluenceSheet.#onAdvanceRound,
       undoRound: InfluenceSheet.#onUndoRound,
       changePoints: InfluenceSheet.#onChangePoints,
+      changeCounter: InfluenceSheet.#onChangeCounter,
+      toggleModifier: InfluenceSheet.#onToggleModifier,
+      applyModifier: InfluenceSheet.#onApplyModifier,
+      restoreModifier: InfluenceSheet.#onRestoreModifier,
       toggleReveal: InfluenceSheet.#onToggleReveal,
       toggleActed: InfluenceSheet.#onToggleActed,
       rollSkill: InfluenceSheet.#onRollSkill,
@@ -230,7 +234,7 @@ export class InfluenceSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
   }
 
   get #currentMode() {
-    return this.#mode ?? (this.page.system.run.status === "active" ? "run" : "edit");
+    return this.#mode ?? (this.page.system.run.status === "inactive" ? "edit" : "run");
   }
 
   /** The PCs on the party's roster, as PF2e counts them, plus the actor of a selected token. */
@@ -255,7 +259,11 @@ export class InfluenceSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
     const active = status === "active";
     const actors = this.#rollableActors;
     const selected = this.#selectedActor();
-    const rollRows = (npc, rows, kind) => rows.map((row) => ({ ...row, kind, npcId: npc.id, label: skillLabel(row), currentDc: currentDc(npc, row) }));
+    const canChange = active && canRun;
+    const rollRows = (npc, rows, kind) => rows.map((row) => {
+      const dc = currentDc(system, npc, row);
+      return { ...row, kind, npcId: npc.id, label: skillLabel(row), currentDc: dc, dcChanged: dc !== row.dc };
+    });
     return {
       canRun,
       rollable: active && canRun,
@@ -279,11 +287,47 @@ export class InfluenceSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
         discovery: rollRows(npc, npc.discovery, "discover"),
         influence: rollRows(npc, npc.influence, "influence"),
         thresholds: npc.thresholds.map((row) => ({ ...row, label: `${row.points}: ${row.playerText || row.gmText}` })),
-        modifiers: npc.modifiers.map((row) => ({ ...row, label: row.name || loc("SSM.Influence.Modifiers") })),
+        modifiers: npc.modifiers.map((row) => this.#modifierView(system, npc, row, canChange)),
       })),
-      counters: system.counters.map((counter) => ({ ...counter, label: counter.name || loc("SSM.Influence.UnnamedCounter") })),
+      counters: system.counters.map((counter) => ({
+        ...counter,
+        label: counter.name || loc("SSM.Influence.UnnamedCounter"),
+        rangeLabel: counter.min === null && counter.max === null ? "" : `(${counter.min ?? "−∞"} to ${counter.max ?? "∞"})`,
+        canAdd: canChange && limitCounter(counter, counter.value + 1) !== counter.value,
+        canRemove: canChange && limitCounter(counter, counter.value - 1) !== counter.value,
+      })),
       log: system.run.log.slice().reverse(),
     };
+  }
+
+  /** One modifier entry as Run mode shows it. */
+  #modifierView(system, npc, row, canChange) {
+    const state = row.spent ? "spent" : row.active ? "on" : "off";
+    const label = row.name || loc("SSM.Influence.UnnamedEntry");
+    return {
+      ...row,
+      label,
+      npc,
+      kindLabel: loc(`SSM.Influence.Kind.${row.kind}`),
+      durationLabel: loc(`SSM.Influence.Duration.${row.duration}`),
+      stateClass: state,
+      stateLabel: loc(`SSM.Influence.State.${state}`),
+      claimed: isClaimed(system, row.id),
+      restorable: canRestoreModifier(row),
+      hasApply: row.effects.some((effect) => effect.type !== "dc"),
+      canApply: canChange && canApplyModifier(row),
+      canChange,
+      effectsText: row.effects.map((effect) => this.#effectText(system, npc, effect)).join("; "),
+    };
+  }
+
+  #effectText(system, npc, effect) {
+    const amount = effect.amount > 0 ? `+${effect.amount}` : `${effect.amount}`.replace("-", "−");
+    const rows = [...npc.discovery, ...npc.influence].filter((row) => effect.skills.includes(row.id));
+    const skills = effect.allSkills ? loc("SSM.Influence.AllSkills") : rows.map(skillLabel).join(", ");
+    const counter = system.counters.find((candidate) => candidate.id === effect.counterId);
+    const counterName = counter ? counter.name || loc("SSM.Influence.UnnamedCounter") : loc("SSM.Influence.ChooseCounter");
+    return game.i18n.format(`SSM.Influence.EffectText.${effect.type}`, { amount, skills, counter: counterName, note: effect.note });
   }
 
   /* -------------------------------------------- */
@@ -369,9 +413,9 @@ export class InfluenceSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
   }
 
   /** Only the active GM's client writes run state (spec section 4). */
-  #run(change) {
+  async #run(change) {
     if (!game.user.isActiveGM) return;
-    return writeChallenge(this.page, change);
+    announceTriggers(await writeChallenge(this.page, change));
   }
 
   static #onStartRun() {
@@ -403,6 +447,22 @@ export class InfluenceSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
     return this.#run((system) => changePoints(system, target.dataset.npc, Number(target.dataset.delta)));
   }
 
+  static #onChangeCounter(event, target) {
+    return this.#run((system) => changeCounter(system, target.dataset.id, Number(target.dataset.delta)));
+  }
+
+  static #onToggleModifier(event, target) {
+    return this.#run((system) => toggleModifier(system, target.dataset.npc, target.dataset.id));
+  }
+
+  static #onApplyModifier(event, target) {
+    return this.#run((system) => applyModifier(system, target.dataset.npc, target.dataset.id));
+  }
+
+  static #onRestoreModifier(event, target) {
+    return this.#run((system) => restoreModifier(system, target.dataset.npc, target.dataset.id));
+  }
+
   static #onToggleReveal(event, target) {
     return this.#run((system) => toggleReveal(system, target.dataset.id, target.dataset.label));
   }
@@ -428,13 +488,14 @@ export class InfluenceSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
   /** The NPC and skill row a roll button belongs to, plus what a roll needs from them. */
   #rollTarget(target) {
     const { npc: npcId, kind, id } = target.dataset;
-    const npc = this.page.system.npcs.find((candidate) => candidate.id === npcId);
+    const { system } = this.page;
+    const npc = system.npcs.find((candidate) => candidate.id === npcId);
     const row = npc?.[kind === "influence" ? "influence" : "discovery"].find((candidate) => candidate.id === id);
     if (!row) return null;
     const slug = row.skill === LORE ? loreSlug(row.lore || loc("SSM.Influence.Lore"), game.pf2e.system.sluggify) : row.skill;
     const option = (rollId) => buildRollOption({ kind, challengeId: this.document.id, npcId, entryId: id, rollId });
     const npcLabel = npc.name || loc("SSM.Influence.NPC");
-    return { npc, row, slug, kind, option, npcLabel, dc: currentDc(npc, row), showDC: !!row.showDC };
+    return { npc, row, slug, kind, option, npcLabel, dc: currentDc(system, npc, row), showDC: !!row.showDC };
   }
 
   static async #onRollSkill(event, target) {

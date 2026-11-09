@@ -450,3 +450,295 @@ test("applyForm changes the editable parts and never run state", () => {
   assert.equal(s.npcs[0].points, 3);
 });
 
+/* Modifiers and counters. */
+
+const running = () => {
+  const s = runSystem();
+  s.npcs[0].influence.push({ ...D.newInfluence(), skill: "society", dc: 20 });
+  Run.startRun(s);
+  return s;
+};
+const addModifier = (s, over = {}, effects = [{}]) => {
+  const m = { ...D.newModifier(), active: true, name: "Entry", ...over };
+  m.effects = effects.map((effect) => ({ ...D.newEffect(), ...effect }));
+  s.npcs[0].modifiers.push(m);
+  return m;
+};
+const dcOf = (s, row = s.npcs[0].influence[0]) => Run.currentDc(s, s.npcs[0], row);
+const dcEffect = (amount, over = {}) => ({ type: "dc", amount, ...over });
+const npcId = (s) => s.npcs[0].id;
+const rollAt = (s, rollId, dc, over = {}) => rollOf(s, { rollId, dc, ...over });
+
+test("current DC adds what's on, and ignores what's off or spent", () => {
+  const s = running();
+  const on = addModifier(s, {}, [dcEffect(-2)]);
+  addModifier(s, { active: false }, [dcEffect(5)]);
+  addModifier(s, { spent: true }, [dcEffect(5)]);
+  assert.equal(dcOf(s), 13);
+  on.active = false;
+  assert.equal(dcOf(s), 15);
+});
+
+test("a DC change on chosen skills matches only those skills, and the DC can't go below 0", () => {
+  const s = running();
+  const [first, second] = s.npcs[0].influence;
+  addModifier(s, {}, [dcEffect(5, { allSkills: false, skills: [second.id] })]);
+  assert.equal(dcOf(s, first), 15);
+  assert.equal(dcOf(s, second), 25);
+  addModifier(s, {}, [dcEffect(-99)]);
+  assert.equal(dcOf(s, first), 0);
+});
+
+test("a one-time DC change is taken by the next roll and spent only when confirmed", () => {
+  const s = running();
+  const m = addModifier(s, { duration: "oneTime" }, [dcEffect(-2)]);
+  assert.equal(Run.receiveRoll(s, rollAt(s, "r1", 13)), "added");
+  assert.deepEqual(s.run.pending[0].claims, [m.id]);
+  assert.equal(m.spent, false);
+  assert.equal(dcOf(s), 15, "the next check no longer gets it");
+  Run.applyPending(s, s.run.pending[0].id);
+  assert.equal(m.spent, true);
+});
+
+test("an ongoing DC change is never taken or spent", () => {
+  const s = running();
+  const m = addModifier(s, {}, [dcEffect(-2)]);
+  Run.receiveRoll(s, rollAt(s, "r1", 13));
+  assert.deepEqual(s.run.pending[0].claims, []);
+  Run.applyPending(s, s.run.pending[0].id);
+  assert.equal(m.spent, false);
+  assert.equal(dcOf(s), 13);
+});
+
+test("two rolls pending with one one-time entry: only the first takes it", () => {
+  const s = running();
+  const m = addModifier(s, { duration: "oneTime" }, [dcEffect(-2)]);
+  Run.receiveRoll(s, rollAt(s, "r1", 13));
+  Run.receiveRoll(s, rollAt(s, "r2", 15));
+  const [first, second] = s.run.pending;
+  assert.deepEqual([first.claims, second.claims], [[m.id], []]);
+  Run.applyPending(s, second.id);
+  assert.equal(m.spent, false, "confirming the other roll spends nothing");
+  Run.applyPending(s, first.id);
+  assert.equal(m.spent, true);
+});
+
+test("Ignore frees a one-time entry, and Adjust spends it like Apply", () => {
+  const s = running();
+  const m = addModifier(s, { duration: "oneTime" }, [dcEffect(-2)]);
+  Run.receiveRoll(s, rollAt(s, "r1", 13));
+  Run.ignorePending(s, s.run.pending[0].id);
+  assert.equal(m.spent, false);
+  assert.equal(dcOf(s), 13);
+  Run.receiveRoll(s, rollAt(s, "r2", 13));
+  Run.applyPending(s, s.run.pending[0].id, 4);
+  assert.equal(m.spent, true);
+  assert.equal(s.npcs[0].points, 5);
+});
+
+test("a reroll keeps the claim, gives no warning, and spends once", () => {
+  const s = running();
+  const m = addModifier(s, { duration: "oneTime" }, [dcEffect(-2)]);
+  Run.receiveRoll(s, rollAt(s, "r1", 13));
+  assert.equal(Run.receiveRoll(s, rollAt(s, "r1", 13, { isReroll: true, outcome: "criticalSuccess" })), "replaced");
+  const [item] = s.run.pending;
+  assert.deepEqual([item.claims, item.dc, item.expectedDc], [[m.id], 13, 13]);
+  Run.applyPending(s, item.id);
+  const spentLogs = () => s.run.log.filter((entry) => entry.text.endsWith("ModifierSpent")).length;
+  assert.equal(spentLogs(), 1);
+  assert.equal(Run.receiveRoll(s, rollAt(s, "r1", 13, { isReroll: true })), "afterApply");
+  assert.equal(spentLogs(), 1);
+});
+
+test("Apply after the entry was turned off doesn't spend it", () => {
+  const s = running();
+  const m = addModifier(s, { duration: "oneTime" }, [dcEffect(-2)]);
+  Run.receiveRoll(s, rollAt(s, "r1", 13));
+  Run.toggleModifier(s, npcId(s), m.id);
+  assert.deepEqual(s.run.pending[0].claims, []);
+  Run.applyPending(s, s.run.pending[0].id);
+  assert.equal(m.spent, false);
+  Run.toggleModifier(s, npcId(s), m.id);
+  assert.equal(dcOf(s), 13, "on again, it applies to the next check");
+});
+
+test("a roll at another DC warns and leaves one-time entries alone", () => {
+  const s = running();
+  const m = addModifier(s, { duration: "oneTime" }, [dcEffect(-2)]);
+  Run.receiveRoll(s, rollAt(s, "r1", 15));
+  const [item] = s.run.pending;
+  assert.deepEqual([item.dc, item.expectedDc, item.claims], [15, 13, []]);
+  Run.applyPending(s, item.id);
+  assert.equal(m.spent, false);
+});
+
+test("a Discover check spends a matching one-time entry when done", () => {
+  const s = running();
+  const row = s.npcs[0].discovery[0];
+  const m = addModifier(s, { duration: "oneTime" }, [dcEffect(2, { allSkills: false, skills: [row.id] })]);
+  Run.receiveRoll(s, rollAt(s, "r1", 15, { kind: "discover", entryId: row.id }));
+  assert.equal(s.run.pending[0].claims.length, 0, "this roll's DC didn't include it");
+  Run.ignorePending(s, s.run.pending[0].id);
+  Run.receiveRoll(s, rollAt(s, "r2", 17, { kind: "discover", entryId: row.id }));
+  Run.applyPending(s, s.run.pending[0].id);
+  assert.equal(m.spent, true);
+});
+
+test("Apply does each effect, and ongoing entries can repeat", () => {
+  const s = running();
+  s.counters[0].name = "Suspicion";
+  const m = addModifier(s, {}, [{ type: "points", amount: 2 }, { type: "counter", amount: -1, counterId: s.counters[0].id }, { type: "rounds", amount: 1 }, { type: "note", note: "She leaves" }]);
+  Run.applyModifier(s, npcId(s), m.id);
+  assert.deepEqual([s.npcs[0].points, s.counters[0].value, s.rounds.max], [3, 2, 7]);
+  assert.ok(s.run.log.some((entry) => entry.text.endsWith("ModifierNote")));
+  assert.equal(m.spent, false);
+  Run.applyModifier(s, npcId(s), m.id);
+  assert.equal(s.npcs[0].points, 5);
+});
+
+test("Apply needs the run active and the entry on", () => {
+  const s = running();
+  const m = addModifier(s, { active: false }, [{ type: "points", amount: 2 }]);
+  assert.equal(Run.applyModifier(s, npcId(s), m.id), false);
+  m.active = true;
+  Run.endRun(s);
+  assert.equal(Run.applyModifier(s, npcId(s), m.id), false);
+  assert.equal(Run.toggleModifier(s, npcId(s), m.id), false);
+  assert.equal(s.npcs[0].points, 1);
+});
+
+test("a one-time entry applies once, is spent, and restores", () => {
+  const s = running();
+  const m = addModifier(s, { duration: "oneTime" }, [{ type: "points", amount: 2 }]);
+  Run.applyModifier(s, npcId(s), m.id);
+  assert.equal(m.spent, true);
+  assert.equal(Run.applyModifier(s, npcId(s), m.id), false);
+  assert.equal(Run.toggleModifier(s, npcId(s), m.id), false, "a spent entry needs Restore");
+  assert.equal(s.npcs[0].points, 3);
+  Run.restoreModifier(s, npcId(s), m.id);
+  assert.deepEqual([m.spent, m.applied, m.active, s.npcs[0].points], [false, false, true, 3]);
+  assert.equal(Run.restoreModifier(s, npcId(s), m.id), false);
+});
+
+test("a one-time entry with both kinds applies once and is spent by its check", () => {
+  const s = running();
+  const m = addModifier(s, { duration: "oneTime" }, [dcEffect(-2), { type: "points", amount: 1 }]);
+  Run.applyModifier(s, npcId(s), m.id);
+  assert.deepEqual([m.applied, m.spent], [true, false]);
+  assert.equal(Run.applyModifier(s, npcId(s), m.id), false);
+  assert.equal(dcOf(s), 13, "the DC change still waits for its check");
+  Run.receiveRoll(s, rollAt(s, "r1", 13));
+  Run.applyPending(s, s.run.pending[0].id);
+  assert.equal(m.spent, true);
+  assert.equal(dcOf(s), 15);
+});
+
+test("removing rounds never goes below the current round, and undo stays in step", () => {
+  const s = running();
+  s.rounds.max = 3;
+  Run.advanceRound(s);
+  const m = addModifier(s, {}, [{ type: "rounds", amount: -9 }]);
+  Run.applyModifier(s, npcId(s), m.id);
+  assert.deepEqual([s.rounds.current, s.rounds.max], [2, 2]);
+  Run.undoRound(s);
+  assert.deepEqual([s.rounds.current, s.rounds.max], [1, 2]);
+  assert.equal(Run.advanceRound(s), undefined);
+  assert.equal(Run.advanceRound(s), false, "the shorter clock holds");
+});
+
+test("counters stop at their limits, and a counter at its limit logs nothing", () => {
+  const s = running();
+  Object.assign(s.counters[0], { value: 4, min: 0, max: 5 });
+  const logs = () => s.run.log.length;
+  Run.changeCounter(s, s.counters[0].id, 1);
+  assert.equal(s.counters[0].value, 5);
+  const before = logs();
+  assert.equal(Run.changeCounter(s, s.counters[0].id, 1), false);
+  assert.equal(logs(), before);
+  const m = addModifier(s, {}, [{ type: "counter", amount: -99, counterId: s.counters[0].id }]);
+  Run.applyModifier(s, npcId(s), m.id);
+  assert.equal(s.counters[0].value, 0);
+});
+
+test("a trigger fires on reaching or passing it, in either direction, and not when leaving it", () => {
+  const s = running();
+  const c = s.counters[0];
+  Object.assign(c, { name: "Suspicion", value: 0, triggers: [{ ...D.newTrigger(), value: 2, gmNote: "Guards" }, { ...D.newTrigger(), value: 4, gmNote: "" }] });
+  assert.deepEqual(Run.changeCounter(s, c.id, 1).triggers, []);
+  assert.deepEqual(Run.changeCounter(s, c.id, 1).triggers, [{ counter: "Suspicion", value: 2, note: "Guards" }]);
+  assert.deepEqual(Run.changeCounter(s, c.id, 1).triggers, [], "moving off a trigger is not reaching it");
+  assert.equal(Run.changeCounter(s, c.id, 3).triggers.length, 1);
+  assert.equal(Run.changeCounter(s, c.id, -4).triggers.length, 2);
+  assert.ok(s.run.log.some((entry) => entry.text.endsWith("TriggerNotice")));
+});
+
+test("a Rounds effect, counter change and modifier state all go back on reset", () => {
+  const s = running();
+  const startMax = s.rounds.max;
+  const c = s.counters[0];
+  const wasOn = addModifier(s, { duration: "oneTime" }, [{ type: "rounds", amount: 2 }]);
+  const wasOff = addModifier(s, { active: false }, [dcEffect(2)]);
+  s.run.baseline = (() => { s.run.status = "inactive"; Run.startRun(s); return s.run.baseline; })();
+  Run.applyModifier(s, npcId(s), wasOn.id);
+  Run.toggleModifier(s, npcId(s), wasOff.id);
+  Run.changeCounter(s, c.id, 2);
+  assert.equal(s.rounds.max, startMax + 2);
+  Run.resetRun(s);
+  assert.deepEqual([wasOn.active, wasOn.spent, wasOn.applied, wasOff.active], [true, false, false, false]);
+  assert.deepEqual([s.rounds.max, c.value, s.run.roundsAdded], [startMax, 3, 0]);
+});
+
+test("a hand edit of the maximum during a run survives reset", () => {
+  const s = running();
+  const m = addModifier(s, {}, [{ type: "rounds", amount: 1 }]);
+  Run.applyModifier(s, npcId(s), m.id);
+  s.rounds.max = 10;
+  Run.resetRun(s);
+  assert.equal(s.rounds.max, 9);
+});
+
+test("reset clears entries and counters added during the run", () => {
+  const s = running();
+  const late = addModifier(s, { spent: true }, [dcEffect(2)]);
+  const counter = D.addRow(s, "counters");
+  counter.value = 2;
+  Run.changeCounter(s, counter.id, 3);
+  Run.toggleReveal(s, counter.id, "x");
+  Run.resetRun(s);
+  assert.deepEqual([late.active, late.spent], [false, false]);
+  assert.deepEqual([counter.value, counter.revealed], [2, false]);
+});
+
+test("revealing a decoy says so in the log", () => {
+  const s = running();
+  const row = s.npcs[0].influence[0];
+  row.decoy = true;
+  Run.toggleReveal(s, row.id, "Diplomacy");
+  assert.equal(row.revealed, true);
+  assert.ok(s.run.log.at(-1).text.endsWith("RevealedDecoy"));
+});
+
+test("every kind of row added during a run goes back to hidden on reset", () => {
+  const s = running();
+  const late = [D.addRow(s, "npcs.0.discovery"), D.addRow(s, "npcs.0.influence"), D.addRow(s, "npcs.0.thresholds"), addModifier(s, {}, [dcEffect(2)])];
+  for (const row of late) row.revealed = true;
+  Run.resetRun(s);
+  assert.deepEqual(late.map((row) => row.revealed), [false, false, false, false]);
+});
+
+test("a row revealed before the run stays revealed on reset", () => {
+  const s = runSystem();
+  s.npcs[0].influence[0].revealed = true;
+  Run.startRun(s);
+  Run.resetRun(s);
+  assert.equal(s.npcs[0].influence[0].revealed, true);
+});
+
+test("a claimed entry changed to ongoing before the roll is confirmed isn't spent", () => {
+  const s = running();
+  const m = addModifier(s, { duration: "oneTime" }, [dcEffect(-2)]);
+  Run.receiveRoll(s, rollAt(s, "r1", 13));
+  m.duration = "ongoing";
+  Run.applyPending(s, s.run.pending[0].id);
+  assert.equal(m.spent, false);
+});

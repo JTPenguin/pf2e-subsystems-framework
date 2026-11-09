@@ -123,6 +123,14 @@ export function pickFields(form, names) {
   return picked;
 }
 
+/** A value kept inside a counter's limits. A counter whose minimum is above its maximum has no working limits. */
+export function limitCounter({ min, max }, value) {
+  if (min !== null && max !== null && min > max) return value;
+  if (min !== null && value < min) return min;
+  if (max !== null && value > max) return max;
+  return value;
+}
+
 /** Bring counter values inside their limits. Returns the counters whose minimum is above their maximum; those are left alone. */
 export function clampCounters(system) {
   const invalid = [];
@@ -132,8 +140,7 @@ export function clampCounters(system) {
       invalid.push(counter);
       continue;
     }
-    if (min !== null && counter.value < min) counter.value = min;
-    if (max !== null && counter.value > max) counter.value = max;
+    counter.value = limitCounter(counter, counter.value);
   }
   return invalid;
 }
