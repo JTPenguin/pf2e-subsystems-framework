@@ -1,12 +1,13 @@
 ---
 title: "Remove Society as a universal Discovery skill"
 kind: feature
-status: ready
-waits_on: Claude
+status: done
+waits_on: none
 blocked_by: []
 source: "Justin's request, 2026-11-09"
 added: 2026-11-09
 updated: 2026-11-09
+outcome: "Done 2026-11-09. Only Perception is universal. Checked live: Society hidden on the player panel until revealed from the sheet's eye toggle."
 ---
 # Remove Society as a universal Discovery skill
 

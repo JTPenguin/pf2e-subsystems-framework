@@ -15,7 +15,7 @@ export const LORE = "lore";
 export const PERCEPTION = "perception";
 
 /** Discovery skills any challenge offers: always on the panel, with no reveal control. Values are as stored in a row's `skill`, a lowercase PF2e slug. */
-export const UNIVERSAL_DISCOVERY = [PERCEPTION, "society"];
+export const UNIVERSAL_DISCOVERY = [PERCEPTION];
 export const isUniversalDiscovery = (row) => UNIVERSAL_DISCOVERY.includes(row.skill);
 
 const id = () => foundry.utils.randomID();

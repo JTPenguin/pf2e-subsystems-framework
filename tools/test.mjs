@@ -877,21 +877,21 @@ test("an unrevealed decoy is left out, including a non-universal Discovery skill
   assert.deepEqual(view.npcs[0].discovery.map((row) => row.id), [npc.discovery[0].id, planted.id]);
 });
 
-test("the universal Discovery skills are Perception and Society, matched as stored", () => {
-  assert.deepEqual(D.UNIVERSAL_DISCOVERY, ["perception", "society"]);
+test("the only universal Discovery skill is Perception, matched as stored", () => {
+  assert.deepEqual(D.UNIVERSAL_DISCOVERY, ["perception"]);
   assert.equal(D.isUniversalDiscovery({ skill: D.PERCEPTION }), true);
-  assert.equal(D.isUniversalDiscovery({ skill: "society" }), true);
+  assert.equal(D.isUniversalDiscovery({ skill: "society" }), false);
   assert.equal(D.isUniversalDiscovery({ skill: "occultism" }), false);
   assert.equal(D.isUniversalDiscovery({ skill: "" }), false);
 });
 
-test("universal Discovery skills are always in the copy, with their DC, revealed or not", () => {
+test("the universal Discovery skill is always in the copy, with its DC, revealed or not", () => {
   const s = secretSystem();
   const npc = s.npcs[0];
   npc.discovery = [{ ...D.newDiscovery(), skill: "perception", dc: 15 }, { ...D.newDiscovery(), skill: "society", dc: 17 }];
+  assert.deepEqual(viewOf(s).npcs[0].discovery.map((row) => [row.skill, row.dc]), [["perception", 15]]);
+  npc.discovery[1].revealed = true;
   assert.deepEqual(viewOf(s).npcs[0].discovery.map((row) => [row.skill, row.dc]), [["perception", 15], ["society", 17]]);
-  npc.discovery[0].revealed = true;
-  assert.equal(viewOf(s).npcs[0].discovery.length, 2);
 });
 
 test("a non-universal Discovery skill is absent, DC included, until revealed", () => {
@@ -910,9 +910,9 @@ test("a non-universal Discovery skill is absent, DC included, until revealed", (
 
 test("a decoy on a universal skill shows from the start, with no decoy marker", () => {
   const s = secretSystem();
-  s.npcs[0].discovery = [{ ...D.newDiscovery(), skill: "society", decoy: true }];
+  s.npcs[0].discovery = [{ ...D.newDiscovery(), skill: "perception", decoy: true }];
   const view = viewOf(s);
-  assert.deepEqual(view.npcs[0].discovery.map((row) => row.skill), ["society"]);
+  assert.deepEqual(view.npcs[0].discovery.map((row) => row.skill), ["perception"]);
   assert.ok(!scan(view).keys.has("decoy"));
 });
 

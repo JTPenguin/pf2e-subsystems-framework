@@ -22,7 +22,7 @@ The first version covers **Influence only**. The data and panel code are built s
 | Missing Lore | A PC without a listed Lore rolls it untrained (Intelligence +0) from the sheet or panel. Chat links can't do this, as PF2e reports the statistic as missing. | Justin |
 | Applying points | The module suggests the change and the GM confirms it | Justin |
 | NPCs | One challenge holds one or more NPCs and one shared round clock | Justin |
-| Hidden by default | Everything except the NPC name, Influence Points, rounds remaining and the universal Discovery skills (Perception and Society) | Justin |
+| Hidden by default | Everything except the NPC name, Influence Points, rounds remaining and the universal Discovery skill (Perception) | Justin |
 | DCs | Always hidden from players: not on the panel, not on the chat card. If a world turns on PF2e's `metagame_showDC` setting, DCs show as on any other roll, with no warning to the GM. | Justin |
 | Several NPCs on the panel | One column per NPC, each with its own skills. No separate NPC picker. | Justin |
 | Portraits | Not on the panel. Tokens or VN Stage handle those. | Justin |
@@ -147,8 +147,8 @@ The sheet has **Edit** and **Run** modes, like a locked and unlocked actor sheet
 | Lady Vance                     | Lord Ostrov                     |
 | [#####-----] 5                 | [##--------] 2                  |
 | Influence: Society, Diplomacy, | Influence: Intimidation         |
-|   Warfare Lore                 | Discover: Perception, Society   |
-| Discover: Perception, Society  | Known: Respects a straight      |
+|   Warfare Lore                 | Discover: Perception            |
+| Discover: Perception           | Known: Respects a straight      |
 | Known: Weak to flattery about  |   answer.                       |
 |   her art. Dislikes threats.   | Goal: 4: he vouches for you     |
 | Goal: 8: she offers an         |                                 |
@@ -162,7 +162,7 @@ The sheet has **Edit** and **Run** modes, like a locked and unlocked actor sheet
 |---|---|---|
 | Challenge name and rounds | Shown | |
 | NPC names and Influence Points | Shown | One column per NPC; compact when there are several |
-| Discovery skills | Universal skills (Perception and Society) shown, no DCs. Others hidden until revealed. | Clickable. The GM's eye toggle appears on every row except the universal skills. |
+| Discovery skills | Perception (the universal skill) shown, no DCs. Others hidden until revealed. | Clickable. The GM's eye toggle appears on every row except the universal skill. |
 | Influence skills | Hidden until revealed | Clickable. No DC shown. |
 | Weaknesses, resistances, penalties | Hidden until revealed | Name and player text |
 | Thresholds | Hidden until revealed | Player text; marked when reached |
