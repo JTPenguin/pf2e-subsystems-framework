@@ -446,8 +446,13 @@ export class InfluenceSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
     return hidePanel();
   }
 
-  static #onEndRun() {
-    return this.#run(endRun);
+  static async #onEndRun() {
+    const yes = await foundry.applications.api.DialogV2.confirm({
+      window: { title: "SSM.Influence.EndTitle" },
+      content: `<p>${loc("SSM.Influence.EndConfirm")}</p>`,
+      rejectClose: false,
+    });
+    if (yes) return this.#run(endRun);
   }
 
   static async #onResetRun() {

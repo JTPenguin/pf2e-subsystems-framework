@@ -142,16 +142,20 @@ The sheet has **Edit** and **Run** modes, like a locked and unlocked actor sheet
 ## 7. Player panel
 
 ```
-+----------------------------------------------------------+
-| The Governor's Banquet                 Round 3 of 6      |
-| Lady Vance  [#####-----] 5        Lord Ostrov  [##---] 2 |
-| Influence: Society, Diplomacy, Warfare Lore              |
-| Discover:  Perception, Society                           |
-| Known: Weak to flattery about her art. Dislikes threats. |
-| Goal: 8 points - she offers an introduction              |
-| Suspicion: 3                                             |
-| Acted: (Ezren) (Amiri) ( Kyra ) ( Valeros )              |
-+----------------------------------------------------------+
++------------------------------------------------------------------+
+| The Governor's Banquet                         Round 3 of 6      |
+| Lady Vance                     | Lord Ostrov                     |
+| [#####-----] 5                 | [##--------] 2                  |
+| Influence: Society, Diplomacy, | Influence: Intimidation         |
+|   Warfare Lore                 | Discover: Perception, Society   |
+| Discover: Perception, Society  | Known: Respects a straight      |
+| Known: Weak to flattery about  |   answer.                       |
+|   her art. Dislikes threats.   | Goal: 4: he vouches for you     |
+| Goal: 8: she offers an         |                                 |
+|   introduction                 |                                 |
+| Suspicion: 3                                                     |
+| Acted: (Ezren) (Amiri) ( Kyra ) ( Valeros )                      |
++------------------------------------------------------------------+
 ```
 
 | Item | Default | Notes |

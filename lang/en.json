@@ -121,6 +121,8 @@
       },
       "Start": "Start",
       "End": "End",
+      "EndTitle": "End challenge",
+      "EndConfirm": "End this challenge? The panel closes for everyone. The final state stays on the sheet.",
       "Reset": "Reset",
       "ResetTitle": "Reset challenge",
       "ResetConfirm": "Return this challenge to unspent? Points, rounds, reveals, the log and pending results go back to how they were at Start.",

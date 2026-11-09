@@ -6,7 +6,7 @@
   {{#each npcs}}
   <div class="ssm-panel-npc">
     <div class="ssm-panel-points">
-      <span class="ssm-panel-npc-name">{{name}}</span>
+      <span class="ssm-panel-npc-name" data-tooltip="{{name}}">{{name}}</span>
       <span class="ssm-panel-bar {{#if bar.negative}}negative{{/if}}"><span style="width: {{bar.percent}}%"></span></span>
       <strong>{{points}}</strong>
     </div>
