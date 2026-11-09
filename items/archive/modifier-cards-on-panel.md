@@ -1,12 +1,13 @@
 ---
 title: "Revealed modifiers as cards, with their effect"
 kind: feature
-status: ready
-waits_on: Claude
+status: done
+waits_on: none
 blocked_by: []
 source: "Justin's request, 2026-11-09"
 added: 2026-11-09
 updated: 2026-11-09
+outcome: "Done 2026-11-09. One card per revealed modifier with kind, name, player text, effect and duration; DC changes shown as the opposite check change; hidden skills read as 'other checks'. Checked live as Test Player 1 with two NPCs."
 ---
 # Revealed modifiers as cards, with their effect
 

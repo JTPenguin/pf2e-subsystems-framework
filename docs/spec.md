@@ -146,11 +146,16 @@ The sheet has **Edit** and **Run** modes, like a locked and unlocked actor sheet
 | The Governor's Banquet                         Round 3 of 6      |
 | Lady Vance                     | Lord Ostrov                     |
 | [#####-----] 5                 | [##--------] 2                  |
-| Influence: Society, Diplomacy, | Influence: Intimidation         |
-|   Warfare Lore                 | Discover: Perception            |
-| Discover: Perception           | Known: Respects a straight      |
-| Known: Weak to flattery about  |   answer.                       |
-|   her art. Dislikes threats.   | Goal: 4: he vouches for you     |
+| Influence: Deception,          | Influence: Deception,           |
+|   Diplomacy, Intimidation,     |   Diplomacy, Intimidation       |
+|   Society, Warfare Lore        |                                 |
+| Discover: Perception           | Discover: Perception            |
+| +----------------------------+ | +-----------------------------+ |
+| |WEAKNESS Flattery   ONGOING | | |PENALTY Straight talk ONGOING| |
+| |Weak to praise of her art.  | | |Respects a straight answer.  | |
+| |+2 to Diplomacy             | | |-2 to Deception              | |
+| +----------------------------+ | +-----------------------------+ |
+|                                | Goal: 4: he vouches for you     |
 | Goal: 8: she offers an         |                                 |
 |   introduction                 |                                 |
 | Suspicion: 3                                                     |
@@ -164,10 +169,22 @@ The sheet has **Edit** and **Run** modes, like a locked and unlocked actor sheet
 | NPC names and Influence Points | Shown | One column per NPC; compact when there are several |
 | Discovery skills | Perception (the universal skill) shown, no DCs. Others hidden until revealed. | Clickable. The GM's eye toggle appears on every row except the universal skill. The sheet shows no Revealed or Decoy checkbox for it. |
 | Influence skills | Deception, Diplomacy and Intimidation (the universal skills) shown. Others hidden until revealed. | Clickable. No DC shown. No eye toggle, Revealed or Decoy checkbox on a universal row. |
-| Weaknesses, resistances, penalties | Hidden until revealed | Name and player text |
+| Weaknesses, resistances, penalties, adjustments | Hidden until revealed | One card each: kind, name, player text, what it does and duration. Dimmed while off. A spent one-time entry shows Spent, dimmed, with its effects struck through. An applied one-time entry whose DC change is still to come has its other effects struck through. |
 | Thresholds | Hidden until revealed | Player text; marked when reached |
 | Counters | Hidden until revealed | |
 | Party markers | Shown | Dim once that PC has acted this round |
+
+**What a modifier card says it does.** The filtered copy builds each effect from what players can see:
+
+| Effect | Card text | Never shows |
+|---|---|---|
+| DC change | The same change to the check, so DC −2 reads "+2 to Diplomacy". "All checks" when it covers every skill. | A DC, or the word DC |
+| Influence Points | "−1 Influence Point", "+2 Influence Points" | |
+| Counter | "+1 Suspicion", once the counter is revealed | A hidden counter: the effect is left out |
+| Rounds | "+1 round", "−2 rounds" | |
+| Note only | Left out: the note is the GM's text. The player text covers it. | The note |
+
+A DC change names only skills the panel shows (universal or revealed). Hidden skills it covers read as "other checks", or "some checks" when it covers no shown skill. A change of zero, or one that points at a removed skill or counter, is left out. A revealed decoy's card looks like any other.
 
 **Rules for the panel:**
 
