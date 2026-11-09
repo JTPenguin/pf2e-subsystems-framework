@@ -9,7 +9,7 @@ export const DURATIONS = ["oneTime", "ongoing"];
 export const EFFECT_TYPES = ["dc", "points", "counter", "rounds", "note"];
 export const QUICK_DC_AMOUNTS = [-5, -2, 2, 5];
 
-/** The value of an Influence skill's `skill` field when it is a Lore; the `lore` field then holds the Lore's name. */
+/** The value of a Discovery or Influence skill's `skill` field when it is a Lore; the `lore` field then holds the Lore's name. */
 export const LORE = "lore";
 /** Discovery checks may use Perception as well as skills. */
 export const PERCEPTION = "perception";
@@ -30,7 +30,7 @@ export const newModifier = () => ({
   id: id(), name: "", playerText: "", gmText: "", kind: "weakness", duration: "ongoing",
   active: false, spent: false, revealed: false, decoy: false, effects: [newEffect()],
 });
-export const newDiscovery = () => ({ id: id(), skill: PERCEPTION, dc: 15, revealed: false, decoy: false });
+export const newDiscovery = () => ({ id: id(), skill: PERCEPTION, lore: "", dc: 15, revealed: false, decoy: false });
 export const newInfluence = () => ({ id: id(), skill: "society", lore: "", dc: 15, revealed: false, decoy: false });
 export const newThreshold = () => ({ id: id(), points: 1, playerText: "", gmText: "", revealed: false, reached: false });
 export const newTrigger = () => ({ id: id(), value: 0, gmNote: "" });

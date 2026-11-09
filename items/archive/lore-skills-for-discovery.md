@@ -1,12 +1,13 @@
 ---
 title: "Lore skills for Discovery"
 kind: feature
-status: ready
-waits_on: Claude
+status: done
+waits_on: none
 blocked_by: []
 source: "Justin's request, 2026-11-09"
 added: 2026-11-09
 updated: 2026-11-09
+outcome: "Done 2026-11-09. Discovery rows can be a named Lore. Checked live: set from the sheet, shown by name on the panel, rolled trained by a PC with the Lore (panel) and untrained on Int by one without (sheet)."
 ---
 # Lore skills for Discovery
 

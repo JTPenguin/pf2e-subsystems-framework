@@ -93,7 +93,7 @@ Sidebar tab -> Challenge (journal entry + typed page, GM only) -> GM sheet
 | Name, traits, linked actor | The linked actor is optional |
 | Perception and Will | Modifiers, not DCs |
 | Influence Points | Current total |
-| Discovery checks | Skill or Perception, DC, revealed flag. A new NPC starts with Perception, which is universal. |
+| Discovery checks | Skill, Perception or Lore, DC, revealed flag. A Lore also has a name. A Lore row is never universal. A new NPC starts with Perception, which is universal. |
 | Influence skills | Skill or Lore, DC, revealed flag. A new NPC starts with Deception, Diplomacy and Intimidation, which are universal. |
 | Thresholds | Points, player text, GM text, revealed flag, reached flag |
 | Weaknesses, resistances, penalties | Modifier entries (below) |

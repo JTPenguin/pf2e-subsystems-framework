@@ -168,7 +168,7 @@ export class InfluenceSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
     if (!system.npcs.some((npc) => npc.id === this.#tab)) this.#tab = CHALLENGE_TAB;
 
     const skills = Object.fromEntries(Object.entries(CONFIG.PF2E.skills).map(([slug, skill]) => [slug, loc(skill.label)]));
-    const perception = { [PERCEPTION]: loc("PF2E.PerceptionLabel"), ...skills };
+    const perception = { [PERCEPTION]: loc("PF2E.PerceptionLabel"), ...skills, [LORE]: loc("SSM.Influence.Lore") };
     const influenceSkills = { ...skills, [LORE]: loc("SSM.Influence.Lore") };
     const counterChoices = { "": loc("SSM.Influence.ChooseCounter"), ...Object.fromEntries(system.counters.map((c) => [c.id, c.name || loc("SSM.Influence.UnnamedCounter")])) };
 
@@ -182,7 +182,7 @@ export class InfluenceSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
         traitsValue: npc.traits.join(","),
         tabLabel: npc.name || `${loc("SSM.Influence.NPC")} ${n + 1}`,
         canRemove: system.npcs.length > 1,
-        discovery: npc.discovery.map((row, i) => ({ ...row, path: `${path}.discovery.${i}`, universal: isUniversalDiscovery(row) })),
+        discovery: npc.discovery.map((row, i) => ({ ...row, path: `${path}.discovery.${i}`, isLore: row.skill === LORE, universal: isUniversalDiscovery(row) })),
         influence: npc.influence.map((row, i) => ({ ...row, path: `${path}.influence.${i}`, isLore: row.skill === LORE, universal: isUniversalInfluence(row) })),
         thresholds: npc.thresholds.map((row, i) => ({ ...row, path: `${path}.thresholds.${i}` })),
         modifiers: npc.modifiers.map((modifier, i) => ({

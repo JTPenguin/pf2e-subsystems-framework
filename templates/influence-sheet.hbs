@@ -196,6 +196,7 @@
       {{#each npc.discovery}}
       <div class="ssm-row">
         <label class="grow">{{localize "SSM.Influence.Skill"}}<select name="{{path}}.skill">{{selectOptions @root.choices.discovery selected=skill}}</select></label>
+        {{#if isLore}}<label class="grow">{{localize "SSM.Influence.LoreName"}}<input type="text" name="{{path}}.lore" value="{{lore}}"></label>{{/if}}
         <label>{{localize "SSM.Influence.DC"}}<input type="number" min="0" step="1" name="{{path}}.dc" value="{{dc}}"></label>
         {{#unless universal}}<label class="check"><input type="checkbox" name="{{path}}.revealed" {{checked revealed}}>{{localize "SSM.Influence.Revealed"}}</label>
         <label class="check"><input type="checkbox" name="{{path}}.decoy" {{checked decoy}}>{{localize "SSM.Influence.Decoy"}}</label>{{/unless}}

@@ -903,7 +903,7 @@ test("a non-universal Discovery skill is absent, DC included, until revealed", (
   assert.ok(!hidden.includes(row.id));
   assert.ok(!hidden.includes("arcana"));
   Run.toggleReveal(s, row.id, "Arcana");
-  assert.deepEqual(viewOf(s).npcs[0].discovery.at(-1), { id: row.id, skill: "arcana", dc: 876 });
+  assert.deepEqual(viewOf(s).npcs[0].discovery.at(-1), { id: row.id, skill: "arcana", lore: "", dc: 876 });
   Run.toggleReveal(s, row.id, "Arcana");
   assert.ok(!JSON.stringify(viewOf(s)).includes(row.id));
 });
@@ -1037,6 +1037,26 @@ test("a form with no Revealed field keeps a Discovery row's old value", () => {
   s.npcs[0].discovery.push(row);
   D.applyForm(s, { npcs: { 0: { discovery: { 0: { skill: "perception", dc: 21, decoy: false } } } } });
   assert.deepEqual([s.npcs[0].discovery[0].dc, s.npcs[0].discovery[0].decoy, s.npcs[0].discovery[0].revealed, s.npcs[0].discovery[0].id], [21, false, true, row.id]);
+});
+
+test("a Discovery row can be a Lore with a name, and is never universal", () => {
+  const s = system();
+  const row = D.addRow(s, "npcs.0.discovery");
+  assert.equal(row.lore, "");
+  D.applyForm(s, { npcs: { 0: { discovery: { [s.npcs[0].discovery.length - 1]: { skill: "lore", lore: "Warfare" } } } } });
+  const saved = s.npcs[0].discovery.at(-1);
+  assert.deepEqual([saved.skill, saved.lore, saved.id], ["lore", "Warfare", row.id]);
+  assert.equal(D.isUniversalDiscovery(saved), false);
+  assert.equal(D.isUniversalRow(saved), false);
+});
+
+test("the panel copy gives a revealed Discovery Lore its name, and a hidden one nothing", () => {
+  const s = secretSystem();
+  const row = { ...D.newDiscovery(), skill: "lore", lore: "Warfare", dc: 321 };
+  s.npcs[0].discovery.push(row);
+  assert.ok(!JSON.stringify(viewOf(s)).includes("Warfare"));
+  row.revealed = true;
+  assert.deepEqual(viewOf(s).npcs[0].discovery.at(-1), { id: row.id, skill: "lore", lore: "Warfare", dc: 321 });
 });
 
 test("the universal Influence skills are Deception, Diplomacy and Intimidation, matched as stored", () => {
