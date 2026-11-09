@@ -83,15 +83,11 @@ export class InfluenceModel extends foundry.abstract.TypeDataModel {
         roundHistory: list({ round: int(), acted: ids() }),
         // The net change Rounds effects have made to the maximum. Reset takes it back off.
         roundsAdded: int(),
-        // Results waiting for the GM. Stored here so they survive a reload.
-        pending: list({
-          id: rowId(), rollId: text(), messageId: text(), kind: text(), npcId: text(), entryId: text(),
-          actorId: text(), actorName: text(), total: optionalInt(), outcome: text(), round: int(),
-          // The DC the roll used, the current DC when it arrived, and the one-time entries it will spend when confirmed.
-          dc: optionalInt(), expectedDc: optionalInt(), claims: ids(),
-        }),
-        // The rolls already applied, so a later reroll of one can be recognised.
+        // The Influence rolls applied from their chat cards. A reroll keeps its roll's id, so this also stops a reroll counting twice.
+        // Old saves may also hold `pending`; the schema drops it on load.
         appliedRolls: ids(),
+        // The rolls whose arrival the active GM handled, which spent their one-time DC entries. Apply doesn't spend them again.
+        receivedRolls: ids(),
       }),
     };
   }

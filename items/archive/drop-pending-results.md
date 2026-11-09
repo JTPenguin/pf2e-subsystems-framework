@@ -1,12 +1,13 @@
 ---
 title: "Apply results from the chat card, not a pending list"
 kind: feature
-status: ready
-waits_on: Claude
+status: done
+waits_on: none
 blocked_by: []
 source: "Justin's request, 2026-11-09"
 added: 2026-11-09
 updated: 2026-11-09
+outcome: "Done 2026-11-09. GM-only Apply on Influence cards (flag on the message), GM-only reminder on Discover cards, pending list removed. Justin decided 2026-11-09: one-time DC entries are spent when the roll arrives, not on Apply; Restore if Apply is skipped. Checked live with Test Player 1."
 ---
 # Apply results from the chat card, not a pending list
 

@@ -1,4 +1,4 @@
-import { applyPending, ignorePending, receiveRoll, suggestedPoints, triggerKey } from "./run.js";
+import { applyRoll, receiveRoll, triggerKey } from "./run.js";
 
 const queues = new Map();
 
@@ -22,27 +22,8 @@ export function announceTriggers(result) {
   for (const trigger of result?.triggers ?? []) ui.notifications.info(game.i18n.format(triggerKey(trigger), trigger));
 }
 
-export async function receiveInfluenceRoll(page, roll) {
-  const result = await writeChallenge(page, (system) => receiveRoll(system, roll));
-  if (result === "afterApply") ui.notifications.info("SSM.Influence.RerollAfterApply", { localize: true });
-}
+/** A roll as it arrives, on the active GM's client. */
+export const receiveInfluenceRoll = (page, roll) => writeChallenge(page, (system) => receiveRoll(system, roll));
 
-/* The confirm controls, used by the sheet and the GM's panel. */
-
-export const confirmResult = (page, id, amount) => writeChallenge(page, (system) => applyPending(system, id, amount));
-export const ignoreResult = (page, id) => writeChallenge(page, (system) => ignorePending(system, id));
-
-export async function adjustResult(page, id) {
-  const item = page.system.run.pending.find((candidate) => candidate.id === id);
-  if (!item) return;
-  const { DialogV2 } = foundry.applications.api;
-  const value = suggestedPoints(item.outcome);
-  const label = game.i18n.localize("SSM.Influence.AdjustPrompt");
-  const amount = await DialogV2.prompt({
-    window: { title: "SSM.Influence.Adjust" },
-    content: `<label>${label} <input type="number" name="amount" step="1" value="${value}" autofocus></label>`,
-    ok: { label: "SSM.Influence.Apply", callback: (event, button) => button.form.elements.amount.valueAsNumber },
-    rejectClose: false,
-  });
-  if (Number.isInteger(amount)) return confirmResult(page, id, amount);
-}
+/** Apply an Influence roll from its chat card. The check runs again on the latest data, inside the write queue, so a second click can't count it twice. */
+export const applyInfluenceRoll = (page, roll) => writeChallenge(page, (system) => applyRoll(system, roll));

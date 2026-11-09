@@ -1,8 +1,7 @@
 import { MODULE } from "../../constants.js";
-import { pendingItems, skillLabel } from "./pending-view.js";
+import { skillLabel } from "./skill-label.js";
 import { buildPanelView, findPanelRow, pointsBar } from "./panel-view.js";
 import { rollCheck, rollTarget } from "./roll.js";
-import { adjustResult, confirmResult, ignoreResult } from "./state.js";
 
 const loc = (key) => game.i18n.localize(key);
 
@@ -32,12 +31,6 @@ function prepareView(view) {
   };
 }
 
-/** The GM's pending results. Null when there's nothing waiting, so the panel stays small. */
-function prepareGm(system) {
-  const items = pendingItems(system);
-  return items.length ? { items, canRun: game.user.isActiveGM } : null;
-}
-
 let rolling = false;
 
 /** A player's click on a skill. Everything comes from the filtered copy, as players can't read the challenge. */
@@ -62,15 +55,8 @@ async function rollFromPanel(state, button, event) {
 
 export const influencePanel = {
   template: `modules/${MODULE}/templates/influence-panel.hbs`,
-  gmTemplate: `modules/${MODULE}/templates/pending-list.hbs`,
   isRunning: (system) => system.run.status === "active",
   buildView: buildPanelView,
   prepareView,
-  prepareGm,
   viewActions: { rollSkill: rollFromPanel },
-  actions: {
-    applyResult: (page, target) => confirmResult(page, target.dataset.id),
-    adjustResult: (page, target) => adjustResult(page, target.dataset.id),
-    ignoreResult: (page, target) => ignoreResult(page, target.dataset.id),
-  },
 };

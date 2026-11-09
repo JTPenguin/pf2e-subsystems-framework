@@ -20,7 +20,7 @@ Hooks.once("init", () => {
   installPanel();
 });
 
-/** A duplicate or import of a running challenge must not arrive running: only one can be active, and its pending results belong to the original. */
+/** A duplicate or import of a running challenge must not arrive running: only one can be active, and its rolls' cards belong to the original. */
 function resetNewChallenge(entry, subsystem) {
   const { pages } = entry.toObject();
   const page = pages.find((candidate) => candidate.type === subsystem.pageType);

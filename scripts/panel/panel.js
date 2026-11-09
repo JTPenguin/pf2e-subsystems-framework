@@ -1,5 +1,5 @@
 import { ACTIVE_SETTING, MODULE, POSITION_SETTING } from "../constants.js";
-import { allSubsystems, challengePage, subsystemByType } from "../registry.js";
+import { allSubsystems, subsystemByType } from "../registry.js";
 import { panelState, schedulePublish } from "./activation.js";
 
 /*
@@ -11,7 +11,7 @@ const POSITIONS = ["center", "left", "right"];
 const { renderTemplate } = foundry.applications.handlebars;
 
 let element = null;
-let drawn = { view: null, gm: null };
+let drawn = null;
 let drawing = false;
 let again = false;
 let pressing = false;
@@ -21,17 +21,11 @@ let sheetKey = "";
 function removePanel() {
   element?.remove();
   element = null;
-  drawn = { view: null, gm: null };
+  drawn = null;
 }
 
 function applyPosition() {
   if (element) element.dataset.position = game.settings.get(MODULE, POSITION_SETTING);
-}
-
-/** The challenge's page and subsystem, for the GM's own controls. Null if the challenge has gone. */
-function activePage(state) {
-  const page = game.journal.get(state.id ?? "");
-  return page ? challengePage(page) ?? null : null;
 }
 
 function onClick(event) {
@@ -39,10 +33,7 @@ function onClick(event) {
   if (!target || target.disabled) return;
   const state = panelState();
   const panel = subsystemByType(state.type)?.panel;
-  const { action } = target.dataset;
-  if (panel?.viewActions?.[action]) return panel.viewActions[action](state, target, event);
-  const page = game.user.isActiveGM ? activePage(state) : null;
-  if (page) panel?.actions?.[action]?.(page, target);
+  panel?.viewActions?.[target.dataset.action]?.(state, target, event);
 }
 
 function mountPanel() {
@@ -53,22 +44,21 @@ function mountPanel() {
   element = document.createElement("section");
   element.id = "ssm-panel";
   element.className = "ssm-panel";
-  element.innerHTML = `<div data-part="view"></div><div data-part="gm"></div>`;
   element.addEventListener("click", onClick);
   element.addEventListener("pointerdown", () => {
     pressing = true;
   });
-  drawn = { view: null, gm: null };
+  drawn = null;
   applyPosition();
   parent.append(element);
   return element;
 }
 
-/** Replace a part only when its HTML changes, so frequent run writes don't touch what's on screen. */
-function setPart(part, html) {
-  if (drawn[part] === html) return;
-  element.querySelector(`[data-part="${part}"]`).innerHTML = html;
-  drawn[part] = html;
+/** Replace the panel's HTML only when it changes, so frequent run writes don't touch what's on screen. */
+function setView(html) {
+  if (drawn === html) return;
+  element.innerHTML = html;
+  drawn = html;
 }
 
 async function draw() {
@@ -76,19 +66,12 @@ async function draw() {
   const panel = subsystemByType(state.type)?.panel;
   if (!state.view || state.hidden || !panel) return removePanel();
   const view = await renderTemplate(panel.template, panel.prepareView(state.view));
-  let gm = "";
-  const page = game.user.isGM ? activePage(state) : null;
-  const gmContext = page ? panel.prepareGm(page.toObject().system) : null;
-  if (gmContext) gm = await renderTemplate(panel.gmTemplate, gmContext);
   // A redraw during a press would replace the button being pressed and lose the click. The release catches up.
   if (pressing) {
     heldBack = true;
     return;
   }
-  if (mountPanel()) {
-    setPart("view", view);
-    setPart("gm", gm);
-  }
+  if (mountPanel()) setView(view);
 }
 
 /** Redraw the panel. Calls during a draw run once more afterwards, so the last state is the one on screen. */
@@ -145,7 +128,6 @@ function onSettingChange() {
 function onChallengeChange(entryId) {
   if (entryId !== panelState().id) return;
   schedulePublish();
-  if (game.user.isGM) refreshPanel();
 }
 
 function installHooks() {

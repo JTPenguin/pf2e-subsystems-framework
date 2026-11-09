@@ -123,7 +123,7 @@
       "EndConfirm": "End this challenge? The panel closes for everyone. The final state stays on the sheet.",
       "Reset": "Reset",
       "ResetTitle": "Reset challenge",
-      "ResetConfirm": "Return this challenge to unspent? Points, rounds, reveals and pending results go back to how they were at Start.",
+      "ResetConfirm": "Return this challenge to unspent? Points, rounds and reveals go back to how they were at Start.",
       "NotActiveGM": "Another GM is running this challenge. Only the active GM can change it.",
       "Round": "Round {current} of {max}",
       "NotStarted": "Not started",
@@ -140,24 +140,10 @@
       "AddPoint": "Add a point",
       "RemovePoint": "Remove a point",
       "ReachedShort": "Reached",
-      "Pending": "Pending results",
-      "NoPending": "No results waiting.",
       "Apply": "Apply",
-      "Adjust": "Adjust",
-      "Ignore": "Ignore",
-      "Done": "Done",
-      "AdjustPrompt": "Points to apply",
-      "Suggested": "Suggested: {points}",
-      "RerollAfterApply": "A result that was already applied was rerolled. Its effect has not changed; make any change by hand.",
       "RollLabel": {
         "influence": "Influence: {npc}",
         "discover": "Discover: {npc}"
-      },
-      "Outcome": {
-        "criticalSuccess": "Critical success",
-        "success": "Success",
-        "failure": "Failure",
-        "criticalFailure": "Critical failure"
       },
       "Reminder": {
         "criticalSuccess": "Earns two pieces of information.",
@@ -165,7 +151,6 @@
         "failure": "Earns nothing.",
         "criticalFailure": "Earns one false piece of information."
       },
-      "UnknownSkill": "Unknown skill",
       "UnnamedEntry": "Unnamed entry",
       "Base": "Base",
       "TurnOn": "Turn on",
@@ -176,10 +161,6 @@
         "off": "Off",
         "spent": "Spent"
       },
-      "Claimed": "Used by a pending roll",
-      "ClaimedHint": "Confirming that roll spends this entry. Ignoring it, or turning this entry off, frees it.",
-      "Spends": "Confirming spends",
-      "StaleDc": "Rolled against DC {rolled}, but the current DC was {current}.",
       "AddToCounter": "Add one",
       "RemoveFromCounter": "Remove one",
       "TriggerNotice": "{counter} reached {value}: {note}",
@@ -190,6 +171,18 @@
         "counter": "{counter} {amount}",
         "rounds": "Rounds {amount}",
         "note": "{note}"
+      }
+    },
+    "Card": {
+      "Apply": "Apply {points}",
+      "Applied": "Applied",
+      "NotActiveGM": "Only the active GM can apply results.",
+      "ChallengeGone": "This roll's challenge no longer exists.",
+      "Blocked": {
+        "gone": "This NPC or skill is no longer in the challenge.",
+        "notRunning": "The challenge isn't running.",
+        "applied": "This result was already applied.",
+        "rerollAfterApply": "The roll this replaced was already applied. Change points by hand on the sheet if needed."
       }
     }
   }

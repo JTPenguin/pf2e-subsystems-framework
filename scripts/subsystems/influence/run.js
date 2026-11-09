@@ -17,18 +17,14 @@ const hasDcEffect = (modifier) => modifier.effects.some((effect) => effect.type 
 const otherEffects = (modifier) => modifier.effects.filter((effect) => effect.type !== "dc");
 const effectMatches = (effect, row) => effect.type === "dc" && effect.amount !== 0 && (effect.allSkills || effect.skills.includes(row.id));
 
-/** The one-time entries a pending roll has already taken. */
-const claimedIds = (system) => new Set(system.run.pending.flatMap((item) => item.claims ?? []));
-
-/** The entries changing this skill's DC for the next check: on, unspent, and for a one-time entry, not taken by a pending roll. */
-function liveDcModifiers(system, npc, row) {
-  const claimed = claimedIds(system);
-  return npc.modifiers.filter((modifier) => modifier.active && !modifier.spent && !(isOneTime(modifier) && claimed.has(modifier.id)) && modifier.effects.some((effect) => effectMatches(effect, row)));
+/** The entries changing this skill's DC for the next check: on and unspent. */
+function liveDcModifiers(npc, row) {
+  return npc.modifiers.filter((modifier) => modifier.active && !modifier.spent && modifier.effects.some((effect) => effectMatches(effect, row)));
 }
 
 /** The DC the next check against this skill rolls against. */
 export function currentDc(system, npc, row) {
-  const change = liveDcModifiers(system, npc, row).flatMap((modifier) => modifier.effects).filter((effect) => effectMatches(effect, row)).reduce((sum, effect) => sum + effect.amount, 0);
+  const change = liveDcModifiers(npc, row).flatMap((modifier) => modifier.effects).filter((effect) => effectMatches(effect, row)).reduce((sum, effect) => sum + effect.amount, 0);
   return Math.max(0, row.dc + change);
 }
 
@@ -39,9 +35,6 @@ export function canApplyModifier(modifier) {
 }
 
 export const canRestoreModifier = (modifier) => modifier.spent || (isOneTime(modifier) && modifier.applied);
-
-/** True while a pending roll will spend this one-time entry when it's confirmed. */
-export const isClaimed = (system, id) => claimedIds(system).has(id);
 
 const say = (key, data) => globalThis.game?.i18n?.format(key, data) ?? key;
 
@@ -107,7 +100,7 @@ export function resetRun(system) {
     console.warn("pf2e-subsystem-manager | Could not restore a challenge's start values", error);
   }
   system.rounds.max = Math.max(1, system.rounds.max - (system.run.roundsAdded ?? 0));
-  Object.assign(system.run, { status: "inactive", acted: [], roundHistory: [], pending: [], appliedRolls: [], baseline: null, roundsAdded: 0 });
+  Object.assign(system.run, { status: "inactive", acted: [], roundHistory: [], appliedRolls: [], receivedRolls: [], baseline: null, roundsAdded: 0 });
 }
 
 export function advanceRound(system) {
@@ -167,69 +160,58 @@ export function toggleReveal(system, id) {
   entry.revealed = !entry.revealed;
 }
 
+const rowOf = (npc, roll) => (roll.kind === "influence" ? npc?.influence : roll.kind === "discover" ? npc?.discovery : null)?.find((row) => row.id === roll.entryId) ?? null;
+
+/** Spend the one-time entries that changed this roll's DC. Only a roll at the current DC used them: a roll at any other DC, such as an old chat link, leaves them for the next check. */
+function spendDcEntries(system, npc, row, dc) {
+  if (dc === null || dc === undefined || dc !== currentDc(system, npc, row)) return;
+  for (const modifier of liveDcModifiers(npc, row)) if (isOneTime(modifier)) modifier.spent = true;
+}
+
 /**
- * Take in a roll result. Returns what happened: "added", "replaced" or "afterApply", or false when the roll doesn't belong to a running challenge.
- * A reroll replaces its pending item. If that roll was already applied, the GM adjusts by hand, so nothing changes here.
- * A reroll of an ignored roll comes back as a new item: the GM hasn't used that result.
- * After End, only a reroll of a still-pending item is taken, so that item doesn't keep its old result.
+ * Take in a roll as it arrives. Returns false when it changes nothing: the roll doesn't belong to a running challenge, or it's a reroll.
+ * The PC is marked as having acted; a reroll doesn't mark them again.
+ * The roll spends the one-time DC entries it used now, for Influence and Discover alike, so the next check gets the normal DC.
+ * If the GM skips Apply on that roll, they Restore the entry by hand. The roll id is recorded so Apply knows its entries were already handled.
  */
 export function receiveRoll(system, roll) {
   const npc = npcById(system, roll.npcId);
-  if (system.run.status === "inactive" || !npc) return false;
-  const row = [...npc.discovery, ...npc.influence].find((candidate) => candidate.id === roll.entryId);
-  if (!row) return false;
-
-  const { messageId, total, outcome } = roll;
-  if (roll.isReroll) {
-    const pending = system.run.pending.find((item) => item.rollId === roll.rollId);
-    if (pending) {
-      Object.assign(pending, { messageId, total, outcome });
-      return "replaced";
-    }
-  }
-  if (system.run.status !== "active") return false;
-  if (roll.isReroll) {
-    if (system.run.appliedRolls.includes(roll.rollId)) return "afterApply";
-  }
-  // The roll takes the one-time entries only if it really used them. A roll at any other DC, such as an old chat link, leaves them for the next check.
-  const expectedDc = currentDc(system, npc, row);
-  const dc = roll.dc ?? null;
-  const claims = dc === expectedDc ? liveDcModifiers(system, npc, row).filter(isOneTime).map((modifier) => modifier.id) : [];
-  system.run.pending.push({
-    dc, expectedDc, claims,
-    id: foundry.utils.randomID(), rollId: roll.rollId, messageId, kind: roll.kind, npcId: roll.npcId, entryId: roll.entryId,
-    actorId: roll.actorId, actorName: roll.actorName, total, outcome, round: system.rounds.current,
-  });
-  if (!roll.isReroll && roll.actorId && !system.run.acted.includes(roll.actorId)) system.run.acted.push(roll.actorId);
-  return "added";
-}
-
-function takePending(system, id) {
-  const at = system.run.pending.findIndex((item) => item.id === id);
-  return at < 0 ? null : system.run.pending.splice(at, 1)[0];
-}
-
-/** Spend the one-time entries a confirmed roll took. Turning an entry off releases it, so an entry that is off isn't spent. */
-function spendClaims(system, item) {
-  const npc = npcById(system, item.npcId);
-  for (const id of item.claims ?? []) {
-    const modifier = npc?.modifiers.find((candidate) => candidate.id === id);
-    if (!modifier || !isOneTime(modifier) || !modifier.active || modifier.spent) continue;
-    modifier.spent = true;
+  const row = rowOf(npc, roll);
+  if (system.run.status !== "active" || !row) return false;
+  if (roll.isReroll) return false;
+  if (roll.actorId && !system.run.acted.includes(roll.actorId)) system.run.acted.push(roll.actorId);
+  system.run.receivedRolls ??= [];
+  if (!system.run.receivedRolls.includes(roll.rollId)) {
+    system.run.receivedRolls.push(roll.rollId);
+    spendDcEntries(system, npc, row, roll.dc ?? null);
   }
 }
 
-/** Confirm a result. Influence changes points by amount, or the suggestion if none is given. Discover has no points, as the GM reveals by hand. */
-export function applyPending(system, id, amount) {
-  const item = takePending(system, id);
-  if (!item) return false;
-  system.run.appliedRolls.push(item.rollId);
-  spendClaims(system, item);
-  if (item.kind === "influence") changePoints(system, item.npcId, amount ?? suggestedPoints(item.outcome));
+/**
+ * Why an Influence roll's Apply can't be used, or "" when it can.
+ * "gone": the NPC or skill was removed. "notRunning": the challenge isn't active. "applied": this roll was applied.
+ * "rerollAfterApply": this is a reroll of a roll that was already applied, so the GM changes points by hand.
+ */
+export function applyBlock(system, roll) {
+  if (roll.kind !== "influence" || !rowOf(npcById(system, roll.npcId), roll)) return "gone";
+  if (system.run.status !== "active") return "notRunning";
+  if (system.run.appliedRolls.includes(roll.rollId)) return roll.isReroll ? "rerollAfterApply" : "applied";
+  return "";
 }
 
-export function ignorePending(system, id) {
-  return takePending(system, id) ? undefined : false;
+/**
+ * Apply an Influence roll from its chat card: the suggested points for its outcome and any thresholds they reach.
+ * Its one-time DC entries were spent when it arrived. Only a roll that arrived with no active GM online, so was never received, spends them here.
+ * A roll and its reroll share a roll id, so a roll id counts once. Returns the points applied, or false if applyBlock says no.
+ */
+export function applyRoll(system, roll) {
+  if (applyBlock(system, roll)) return false;
+  const npc = npcById(system, roll.npcId);
+  if (!(system.run.receivedRolls ?? []).includes(roll.rollId)) spendDcEntries(system, npc, rowOf(npc, roll), roll.dc ?? null);
+  system.run.appliedRolls.push(roll.rollId);
+  const points = suggestedPoints(roll.outcome);
+  changePoints(system, npc.id, points);
+  return { points };
 }
 
 function findModifier(system, npcId, id) {
@@ -238,12 +220,11 @@ function findModifier(system, npcId, id) {
 
 const isRunning = (system) => system.run.status === "active";
 
-/** Turn an entry on or off. A spent entry has to be restored first. Turning one off releases it from any pending roll. */
+/** Turn an entry on or off. A spent entry has to be restored first. */
 export function toggleModifier(system, npcId, id) {
   const modifier = findModifier(system, npcId, id);
   if (!isRunning(system) || !modifier || modifier.spent) return false;
   modifier.active = !modifier.active;
-  if (!modifier.active) for (const item of system.run.pending) item.claims = (item.claims ?? []).filter((claim) => claim !== id);
 }
 
 /** Make a spent or applied entry usable again. Effects it already made stay; the GM reverses those by hand. */
@@ -290,7 +271,7 @@ export function changeCounter(system, id, delta) {
   return { triggers };
 }
 
-/** Make an entry's effects other than DC changes happen. A one-time entry with no DC change is then spent; one with a DC change is spent when its check is confirmed. */
+/** Make an entry's effects other than DC changes happen. A one-time entry with no DC change is then spent; one with a DC change is spent when its check is applied. */
 export function applyModifier(system, npcId, id) {
   const modifier = findModifier(system, npcId, id);
   if (!isRunning(system) || !modifier || !canApplyModifier(modifier)) return false;

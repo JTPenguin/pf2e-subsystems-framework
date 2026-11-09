@@ -48,11 +48,6 @@
       </div>
     </fieldset>
 
-    <fieldset>
-      <legend>{{localize "SSM.Influence.Pending"}}</legend>
-      {{> (lookup @root "pendingTemplate") items=pending canRun=canRun}}
-    </fieldset>
-
     {{#each npcs as |npc|}}
     <fieldset>
       <legend>{{npc.name}}</legend>
@@ -81,7 +76,6 @@
           {{> ssmEye root=../..}}
           <span class="ssm-grow">{{label}} <span class="ssm-tag">{{kindLabel}}</span> <span class="ssm-tag">{{durationLabel}}</span>{{#if decoy}} <span class="ssm-tag ssm-decoy">{{localize "SSM.Influence.Decoy"}}</span>{{/if}}</span>
           <span class="ssm-tag ssm-state-{{stateClass}}">{{stateLabel}}</span>
-          {{#if claimed}}<span class="ssm-tag" data-tooltip="{{localize "SSM.Influence.ClaimedHint"}}">{{localize "SSM.Influence.Claimed"}}</span>{{/if}}
           {{#if restorable}}<button type="button" data-action="restoreModifier" data-npc="{{npc.id}}" data-id="{{id}}" {{#unless canChange}}disabled{{/unless}}>{{localize "SSM.Influence.Restore"}}</button>
           {{/if}}
           {{#unless spent}}<button type="button" data-action="toggleModifier" data-npc="{{npc.id}}" data-id="{{id}}" aria-pressed="{{active}}" {{#unless canChange}}disabled{{/unless}}>{{#if active}}{{localize "SSM.Influence.TurnOff"}}{{else}}{{localize "SSM.Influence.TurnOn"}}{{/if}}</button>{{/unless}}

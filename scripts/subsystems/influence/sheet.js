@@ -2,9 +2,9 @@ import { MODULE } from "../../constants.js";
 import { challengePage } from "../../registry.js";
 import { hidePanel, panelBlockedBy, panelState, showPanel } from "../../panel/activation.js";
 import { partyPCs } from "../../party.js";
-import { pendingItems, skillLabel } from "./pending-view.js";
-import { adjustResult, announceTriggers, confirmResult, ignoreResult, writeChallenge } from "./state.js";
-import { advanceRound, applyModifier, canApplyModifier, canRestoreModifier, changeCounter, changePoints, currentDc, endRun, isClaimed, resetRun, restoreModifier, startRun, toggleActed, toggleModifier, toggleReveal, undoRound } from "./run.js";
+import { skillLabel } from "./skill-label.js";
+import { announceTriggers, writeChallenge } from "./state.js";
+import { advanceRound, applyModifier, canApplyModifier, canRestoreModifier, changeCounter, changePoints, currentDc, endRun, resetRun, restoreModifier, startRun, toggleActed, toggleModifier, toggleReveal, undoRound } from "./run.js";
 import { LINK_ROLL_ID } from "../../roll-option.js";
 import { rollCheck, rollTarget } from "./roll.js";
 import { addRow, applyForm, clampCounters, DURATIONS, EFFECT_TYPES, isUniversalDiscovery, isUniversalInfluence, limitCounter, LORE, MODIFIER_KINDS, PERCEPTION, QUICK_DC_AMOUNTS, pickFields, removeRow, setEffectAmount } from "./data.js";
@@ -12,7 +12,6 @@ import { addRow, applyForm, clampCounters, DURATIONS, EFFECT_TYPES, isUniversalD
 const { DocumentSheetV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
 const CHALLENGE_TAB = "challenge";
-const PENDING_TEMPLATE = `modules/${MODULE}/templates/pending-list.hbs`;
 const loc = (key) => game.i18n.localize(key);
 const labels = (values, prefix) => Object.fromEntries(values.map((value) => [value, loc(`SSM.Influence.${prefix}.${value}`)]));
 
@@ -46,14 +45,11 @@ export class InfluenceSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
       toggleActed: InfluenceSheet.#onToggleActed,
       rollSkill: InfluenceSheet.#onRollSkill,
       postLink: InfluenceSheet.#onPostLink,
-      applyResult: InfluenceSheet.#onApplyResult,
-      adjustResult: InfluenceSheet.#onAdjustResult,
-      ignoreResult: InfluenceSheet.#onIgnoreResult,
     },
   };
 
   static PARTS = {
-    form: { template: `modules/${MODULE}/templates/influence-sheet.hbs`, scrollable: [".ssm-body"], templates: [PENDING_TEMPLATE] },
+    form: { template: `modules/${MODULE}/templates/influence-sheet.hbs`, scrollable: [".ssm-body"] },
   };
 
   #tab = CHALLENGE_TAB;
@@ -209,7 +205,6 @@ export class InfluenceSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
       isRun: mode === "run",
       isEdit: mode === "edit",
       run: mode === "run" ? this.#runContext(system) : null,
-      pendingTemplate: PENDING_TEMPLATE,
       name: this.document.name,
       system,
       premiseHtml: await enrich(system.premise),
@@ -286,7 +281,6 @@ export class InfluenceSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
         return { id, name: actor?.name ?? id, acted: system.run.acted.includes(id) };
       }),
       actors: actors.map((actor) => ({ id: actor.id, name: actor.name, selected: actor === selected })),
-      pending: pendingItems(system),
       npcs: system.npcs.map((npc, n) => ({
         id: npc.id,
         name: npc.name || `${loc("SSM.Influence.NPC")} ${n + 1}`,
@@ -318,7 +312,6 @@ export class InfluenceSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
       durationLabel: loc(`SSM.Influence.Duration.${row.duration}`),
       stateClass: state,
       stateLabel: loc(`SSM.Influence.State.${state}`),
-      claimed: isClaimed(system, row.id),
       restorable: canRestoreModifier(row),
       hasApply: row.effects.some((effect) => effect.type !== "dc"),
       canApply: canChange && canApplyModifier(row),
@@ -497,18 +490,6 @@ export class InfluenceSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
 
   static #onToggleActed(event, target) {
     return this.#run((system) => toggleActed(system, target.dataset.id));
-  }
-
-  static #onApplyResult(event, target) {
-    if (game.user.isActiveGM) return confirmResult(this.page, target.dataset.id);
-  }
-
-  static #onAdjustResult(event, target) {
-    if (game.user.isActiveGM) return adjustResult(this.page, target.dataset.id);
-  }
-
-  static #onIgnoreResult(event, target) {
-    if (game.user.isActiveGM) return ignoreResult(this.page, target.dataset.id);
   }
 
   /* -------------------------------------------- */

@@ -1,4 +1,5 @@
 import { registerSubsystem } from "../../registry.js";
+import { renderInfluenceCard } from "./chat-card.js";
 import { newChallengeSystem, searchText } from "./data.js";
 import { InfluenceModel } from "./model.js";
 import { influencePanel } from "./panel.js";
@@ -16,6 +17,7 @@ export function registerInfluence() {
     createSystem: newChallengeSystem,
     searchText,
     receiveRoll: receiveInfluenceRoll,
+    renderRollCard: renderInfluenceCard,
     resetCopy: resetRun,
     panel: influencePanel,
   });

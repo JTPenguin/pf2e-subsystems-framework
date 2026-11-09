@@ -1,7 +1,7 @@
 import { loreStatistic } from "../../lore-statistic.js";
 import { buildRollOption } from "../../roll-option.js";
 import { LORE, PERCEPTION } from "./data.js";
-import { skillLabel } from "./pending-view.js";
+import { skillLabel } from "./skill-label.js";
 import { loreSlug } from "./run.js";
 
 /*

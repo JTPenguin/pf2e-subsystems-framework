@@ -20,7 +20,7 @@ The first version covers **Influence only**. The data and panel code are built s
 | Rolling | Players click skills on the panel. The GM can also roll or post chat links from the sheet. | Justin |
 | Roll results | Normal PF2e checks. Players see the degree of success on the chat card as with any other roll, subject to PF2e's own metagame settings. | Justin |
 | Missing Lore | A PC without a listed Lore rolls it untrained (Intelligence +0) from the sheet or panel. Chat links can't do this, as PF2e reports the statistic as missing. | Justin |
-| Applying points | The module suggests the change and the GM confirms it | Justin |
+| Applying points | The module suggests the change, and the GM applies it with one button on the roll's chat card | Justin |
 | NPCs | One challenge holds one or more NPCs and one shared round clock | Justin |
 | Hidden by default | Everything except the NPC name, Influence Points, rounds remaining and the universal skills: Perception for Discovery, and Deception, Diplomacy and Intimidation for Influence | Justin |
 | Universal skills | Always on the panel, with no reveal control and no decoy flag. A new NPC starts with a row for each, at the default DC; the GM can edit or delete them. Existing NPCs are unchanged. A universal row flagged as a decoy (from an import, say) is treated as not a decoy. | Justin |
@@ -59,7 +59,7 @@ Sidebar tab -> Challenge (journal entry + typed page, GM only) -> GM sheet
                                   |
                   Panel on every client (players and GM)
                                   |
-              Player roll -> chat message -> GM confirms -> points change
+              Player roll -> chat message -> GM presses Apply on the card -> points change
 ```
 
 **Storage.** Each challenge is a `JournalEntry` holding one page of type `pf2e-subsystem-manager.influence`. Journal entries bring folders, compendiums, JSON export and duplication for free. Players have no ownership of them, so the interface doesn't show them to players.
@@ -70,7 +70,7 @@ Sidebar tab -> Challenge (journal entry + typed page, GM only) -> GM sheet
 
 **Limit on secrecy.** Secrets only need to stay out of the player interface. As elsewhere in Foundry, a player who digs through the browser console may be able to read them, and Justin accepts that. A player-side roll needs the DC, so the copy includes DCs for revealed and universal skills, and the panel doesn't show them. The filtered copy leaves out unrevealed entries, decoy markers and GM text.
 
-**Multiple GMs.** Only the active GM's client writes state and handles roll results.
+**Multiple GMs.** Only the active GM's client writes state and handles roll results. Other GMs see the Apply button on a roll's card, disabled.
 
 **Extension point.** Each subsystem registers one definition: its data model, sheet, the function that builds the filtered copy, and its panel renderer. The sidebar, activation, panel frame and roll listener are shared.
 
@@ -117,7 +117,7 @@ Sidebar tab -> Challenge (journal entry + typed page, GM only) -> GM sheet
 | Rounds | Add or remove rounds |
 | Note only | A consequence with no number, such as "she ends the conversation" |
 
-**How one-time entries work.** The GM turns one on. A DC change applies to the next check it matches, then is marked spent when the GM confirms that result. Any other effect applies when the GM clicks apply. Spent entries can be restored.
+**How one-time entries work.** The GM turns one on. A DC change applies to the next check it matches. It is spent when that roll arrives, for Influence and Discover alike, so the next check gets the normal DC. If the GM skips Apply on that roll, they Restore the entry. Any other effect applies when the GM clicks apply. Spent entries can be restored.
 
 **Counter.** Name, value, optional minimum and maximum, optional trigger values with GM notes, and a revealed flag. When a value reaches a trigger, the GM gets a notice.
 
@@ -175,19 +175,31 @@ The sheet has **Edit** and **Run** modes, like a locked and unlocked actor sheet
 - Clicking a skill rolls for the player's assigned character. Each NPC's column has its own skills, so the click also chooses the NPC.
 - It leaves the canvas clickable outside its own area.
 - The default position is top centre. A world setting offers other positions.
-- The GM sees the same panel plus the pending-results list (section 8).
+- The GM sees the same panel, without skill buttons. The GM applies results from the chat cards (section 8).
 - It must not cover VN Stage's portrait controls at the default position.
 
 ## 8. Roll flow
 
-1. A player clicks a skill, or the GM rolls or posts a link. The check is a normal PF2e roll with the current DC, always hidden from players. The roll carries a module identifier: challenge, NPC, skill, and whether it's Influence or Discover.
-2. The active GM's client sees the chat message and adds an item to the pending-results list on the GM's panel.
-3. **Influence** suggests: critical success +2, success +1, failure 0, critical failure −1. The GM clicks **Apply**, **Adjust** or **Ignore**.
-4. **Discover** shows the degree of success and a reminder of what it earns: one piece of information, two on a critical success, a false one on a critical failure. The GM reveals entries by hand.
-5. Applying updates points, marks reached thresholds, and spends one-time entries.
-6. The PC is marked as having acted. Advancing the round clears the markers. The GM can toggle a marker by hand.
+1. A player clicks a skill, or the GM rolls or posts a link. The check is a normal PF2e roll with the current DC, always hidden from players. The roll carries a module identifier: challenge, NPC, skill, whether it's Influence or Discover, and a roll id.
+2. When the message arrives, the active GM's client marks the PC as having acted. Advancing the round clears the markers. The GM can toggle a marker by hand.
+3. **Influence.** The GM's copy of the chat card gets one **Apply** button, showing the suggested change: critical success +2, success +1, failure 0, critical failure −1. Apply adds those points and marks any thresholds they reach. There is no Adjust or Ignore: to use another amount, the GM skips Apply and changes points by hand on the sheet.
+4. **Discover.** No button. The GM's copy of the card gets a reminder of what the result earns: one piece of information, two on a critical success, a false one on a critical failure. The GM reveals entries by hand.
+5. **One-time DC entries** the roll used are spent when it arrives, for both kinds (Justin, 2026-11-09). A second PC rolling before Apply then gets the normal DC, and changing another DC entry before Apply can't leave the entry unspent. If the GM skips Apply on that roll, they Restore the entry on the sheet. A roll used an entry only if it was made at the current DC; a roll at any other DC, such as an old chat link, leaves it for the next check. A roll that arrived with no active GM online spends its entries when it's applied instead.
 
-A reroll replaces the pending item if it hasn't been applied. If it has, the GM adjusts by hand.
+**Apply works once.** After Apply, the message carries an `applied` flag, so the button shows as Applied and disabled for every GM and after a reload. The challenge also records the roll id, and Apply checks it inside the write queue, so a double click or a stale card can't count a result twice. Only the active GM can press Apply; other GMs see it disabled.
+
+**When Apply is disabled.** The button explains why when the challenge isn't running, or the NPC or skill has been removed. A card whose challenge was deleted shows a note instead. Cards on screen redraw when the challenge starts, ends or resets. A card from before a Reset can still be applied once the challenge is started again, so the GM leaves old cards alone.
+
+**What players see.** The plain PF2e roll, before and after Apply. The button and reminder are added only when a GM's client draws the card. They are never part of the message, which holds only the `applied` flag.
+
+**Rerolls.** A PF2e reroll (Hero Point or the reroll menu) deletes the old message and posts a new one with the same roll id. Each card applies on its own:
+
+| Situation | What happens |
+|---|---|
+| The first roll wasn't applied | Its card is gone. The reroll's card has its own Apply. |
+| The first roll was already applied | The reroll's card shows Apply disabled, with a note to change points by hand if needed. |
+
+A reroll doesn't mark the PC as acted again.
 
 ## 9. Not in the first version
 
@@ -214,9 +226,9 @@ These are notes to prove that the shared design stretches. They aren't requireme
 |---|---|---|
 | 0. Prove the risky parts | Small tests of the items in section 12 | Each has a yes or a changed design |
 | 1. Objects and sheets | Module loads; sidebar tab; create and edit an Influence challenge | A challenge survives reload, folders, duplicate and JSON export |
-| 2. Run from the sheet | Run mode, rolling, chat links, confirm flow, modifiers, counters | A GM can run a whole challenge without the panel |
+| 2. Run from the sheet | Run mode, rolling, chat links, apply flow, modifiers, counters | A GM can run a whole challenge without the panel |
 | 3. Panel | Filtered copy, panel, reveal, every-scene behaviour | A player client shows only what was revealed, across scene changes and reloads |
-| 4. Player actions | Clickable skills per NPC column, acted markers | A player's roll reaches the GM's pending list and applies correctly |
+| 4. Player actions | Clickable skills per NPC column, acted markers | A player's roll gets an Apply button on the GM's chat card and applies correctly |
 | 5. Table polish | Layout with several NPCs, VN Stage check, zip build for friends | One real challenge run end to end with a second player login |
 
 **Checks.** Follow VN Stage's pattern: `tools/test.mjs` for logic and `tools/check-load.mjs` for load errors, run through Foundry's Electron because Node isn't installed. Every phase also gets a live check in Foundry, with a player login for phases 3 to 5.
