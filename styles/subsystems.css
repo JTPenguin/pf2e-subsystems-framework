@@ -1,0 +1,21 @@
+.ssm-sheet .window-content { padding: 0; overflow: hidden; }
+.ssm-layout { display: flex; flex-direction: column; height: 100%; min-height: 0; gap: 0.5rem; padding: 0.5rem 0.75rem; }
+.ssm-head { display: flex; flex-direction: column; gap: 0.25rem; }
+.ssm-name { font-size: var(--font-size-20, 1.25rem); height: auto; }
+.ssm-status { font-size: var(--font-size-12, 0.75rem); opacity: 0.75; }
+.ssm-tabs { display: flex; flex-wrap: wrap; gap: 0.25rem; }
+.ssm-tabs button { flex: 0 0 auto; width: auto; }
+.ssm-tabs button.active { outline: 1px solid var(--color-border-highlight, #b8a06a); font-weight: bold; }
+.ssm-body { flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 0.5rem; padding-right: 0.25rem; }
+.ssm-body fieldset { margin: 0; flex: none; }
+.ssm-body prose-mirror { min-height: 6rem; }
+.ssm-row { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 0.5rem; margin-bottom: 0.35rem; }
+.ssm-row > label { display: flex; flex-direction: column; font-size: var(--font-size-12, 0.75rem); width: 5.5rem; gap: 0.1rem; }
+.ssm-row > label.grow { flex: 1 1 10rem; width: auto; }
+.ssm-row > label.check { flex-direction: row; align-items: center; width: auto; gap: 0.25rem; }
+.ssm-row > button.icon { flex: 0 0 auto; width: 2rem; margin-left: auto; }
+.ssm-card { border: 1px solid var(--color-border, #7a7971); border-radius: 4px; padding: 0.4rem; margin-bottom: 0.4rem; }
+.ssm-effect { border-left: 2px solid var(--color-border-highlight, #b8a06a); padding-left: 0.5rem; margin-bottom: 0.35rem; }
+.ssm-quick { display: inline-flex; gap: 0.15rem; }
+.ssm-quick button { width: 2.25rem; padding: 0; }
+.ssm-add { width: auto; font-size: var(--font-size-12, 0.75rem); }

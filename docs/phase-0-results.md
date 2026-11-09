@@ -11,7 +11,7 @@
 | 5 | Rerolls in chat | **Yes. The fallback isn't needed.** |
 | 6 | Party markers | **Yes, with a filter** |
 
-One result touches spec section 2: "DCs hidden from players by default" can't be enforced when the world's `metagame_showDC` setting is on. That point is open for Justin; see risk 3. No other result changes a section 2 decision.
+One result touches spec section 2: "DCs hidden from players by default" can't be enforced when the world's `metagame_showDC` setting is on. Justin decided to respect the setting; see risk 3. No other result changes a section 2 decision.
 
 ## Spike code
 
@@ -103,10 +103,7 @@ Card text in the first row, exactly: "SSM PC / Influence test / Result: Critical
 
 **Closed: degree of success.** Players see it on the chat card, subject to PF2e's own `metagame_showResults` setting, as with any other roll.
 
-**Open for Justin: `metagame_showDC`.** With this world setting on, a challenge's hidden DCs show on the chat card. The options are:
-
-1. Respect the world setting. This is consistent with "normal PF2e checks".
-2. Respect it, and warn the GM at challenge start that DCs will show.
+**Closed: `metagame_showDC`.** With this world setting on, a challenge's hidden DCs show on the chat card. Justin decided to respect the setting with no warning to the GM, as with any other roll (spec section 2).
 
 **What later phases should do.** `identifier` only works for direct rolls. For chat links, `flags.pf2e.context.identifier` was null in review, and the inline handler reads `pf2RollOptions` (`pf2e.mjs:28692`). The roll option is the only carrier that works for both direct rolls and chat links, so put the full identifier in a roll option and read it from `context.options`. It survives rerolls (risk 5).
 

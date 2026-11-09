@@ -1,0 +1,80 @@
+import { DURATIONS, EFFECT_TYPES, MODIFIER_KINDS, STATUSES } from "./data.js";
+
+const { ArrayField, BooleanField, DocumentUUIDField, HTMLField, NumberField, SchemaField, StringField } = foundry.data.fields;
+
+const rowId = () => new StringField({ required: true, blank: false, initial: () => foundry.utils.randomID() });
+const text = () => new StringField({ required: true, blank: true, initial: "" });
+const flag = () => new BooleanField({ required: true, initial: false });
+const int = (initial = 0, options = {}) => new NumberField({ required: true, nullable: false, integer: true, initial, ...options });
+const optionalInt = () => new NumberField({ required: true, nullable: true, integer: true, initial: null });
+const dc = () => int(15, { min: 0 });
+const list = (fields) => new ArrayField(new SchemaField(fields), { required: true, initial: [] });
+const choice = (choices, initial) => new StringField({ required: true, blank: false, choices, initial });
+
+const effectFields = () => ({
+  id: rowId(),
+  type: choice(EFFECT_TYPES, "note"),
+  amount: int(),
+  allSkills: new BooleanField({ required: true, initial: true }),
+  skills: new ArrayField(new StringField({ blank: false }), { required: true, initial: [] }),
+  counterId: text(),
+  note: text(),
+});
+
+const modifierFields = () => ({
+  id: rowId(),
+  name: text(),
+  playerText: text(),
+  gmText: text(),
+  kind: choice(MODIFIER_KINDS, "weakness"),
+  duration: choice(DURATIONS, "ongoing"),
+  active: flag(),
+  spent: flag(),
+  revealed: flag(),
+  decoy: flag(),
+  effects: list(effectFields()),
+});
+
+const npcFields = () => ({
+  id: rowId(),
+  name: text(),
+  traits: new ArrayField(new StringField({ blank: false }), { required: true, initial: [] }),
+  actorUuid: new DocumentUUIDField({ type: "Actor", required: true, nullable: true, initial: null }),
+  perception: int(),
+  will: int(),
+  points: int(),
+  discovery: list({ id: rowId(), skill: text(), dc: dc(), revealed: flag(), decoy: flag() }),
+  influence: list({ id: rowId(), skill: text(), lore: text(), dc: dc(), revealed: flag(), showDC: flag(), decoy: flag() }),
+  thresholds: list({ id: rowId(), points: int(1), playerText: text(), gmText: text(), revealed: flag(), reached: flag() }),
+  modifiers: list(modifierFields()),
+});
+
+/** The full Influence challenge from spec section 5. The challenge's name is the journal entry's name. */
+export class InfluenceModel extends foundry.abstract.TypeDataModel {
+  static defineSchema() {
+    return {
+      premise: new HTMLField({ required: true, blank: true, initial: "" }),
+      gmNotes: new HTMLField({ required: true, blank: true, initial: "" }),
+      rounds: new SchemaField({
+        current: int(0, { min: 0 }),
+        max: int(6, { min: 1 }),
+        length: text(),
+      }),
+      npcs: list(npcFields()),
+      counters: list({
+        id: rowId(),
+        name: text(),
+        value: int(),
+        min: optionalInt(),
+        max: optionalInt(),
+        triggers: list({ id: rowId(), value: int(), gmNote: text() }),
+        revealed: flag(),
+      }),
+      run: new SchemaField({
+        status: choice(STATUSES, "inactive"),
+        acted: new ArrayField(new StringField({ blank: false }), { required: true, initial: [] }),
+        log: list({ id: rowId(), at: int(), round: int(), type: text(), text: text() }),
+      }),
+    };
+  }
+}

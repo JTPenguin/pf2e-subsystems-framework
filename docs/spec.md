@@ -22,7 +22,7 @@ The first version covers **Influence only**. The data and panel code are built s
 | Applying points | The module suggests the change and the GM confirms it | Justin |
 | NPCs | One challenge holds one or more NPCs and one shared round clock | Justin |
 | Hidden by default | Everything except the NPC name, Influence Points, rounds remaining and Discovery skill names | Justin |
-| DCs | Hidden from players by default, with a per-skill option to show one | Justin |
+| DCs | Hidden from players by default, with a per-skill option to show one. If a world turns on PF2e's `metagame_showDC` setting, DCs show as on any other roll, with no warning to the GM. | Justin |
 | Portraits | Not on the panel. Tokens or VN Stage handle those. | Justin |
 | False information | The GM can reveal a planted decoy. Players can't tell it from a true entry. | Justin |
 | Who has acted | Shown on the panel. Advisory only; nothing blocks a roll. | Justin |

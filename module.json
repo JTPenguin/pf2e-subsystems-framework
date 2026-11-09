@@ -1,16 +1,19 @@
 {
   "id": "pf2e-subsystem-manager",
-  "title": "PF2e Subsystem Manager (Phase 0 spike)",
-  "description": "Phase 0 spike only. See docs/phase-0-results.md.",
-  "version": "0.0.0-spike",
+  "title": "PF2e Subsystem Manager",
+  "description": "Run Pathfinder 2e subsystems from sheets, with a player panel over the canvas. The first version covers Influence.",
+  "version": "0.1.0",
   "compatibility": { "minimum": "14", "verified": "14" },
   "authors": [{ "name": "Justin" }],
   "relationships": {
     "systems": [{ "id": "pf2e", "type": "system", "compatibility": { "minimum": "8.6" } }]
   },
   "documentTypes": {
-    "JournalEntryPage": { "influence": {} }
+    "JournalEntryPage": {
+      "influence": { "htmlFields": ["premise", "gmNotes"] }
+    }
   },
-  "esmodules": ["spike/phase0.js"],
-  "styles": ["spike/phase0.css"]
+  "esmodules": ["scripts/module.js"],
+  "styles": ["styles/subsystems.css"],
+  "languages": [{ "lang": "en", "name": "English", "path": "lang/en.json" }]
 }
