@@ -20,18 +20,19 @@ const skillName = (row) => ({ skill: row.skill, lore: row.lore });
 
 /**
  * What one effect does, in terms players may see, or null if it shows nothing. A DC change becomes the same change to the check
- * (DC −2 is +2 to the check), so no DC appears. A skill row players can't see is left out by name; `more` says some were.
+ * (DC −2 is +2 to the check), so no DC appears. A skill row players can't see is left out without a trace,
+ * and a change that covers only hidden rows shows nothing.
  * A counter players can't see hides the whole effect. Notes are the GM's words, so they never show.
  */
 function changeView(system, npc, effect) {
   if (!effect.amount) return null;
   if (effect.type === "dc") {
-    if (effect.allSkills) return { type: "check", amount: -effect.amount, all: true, skills: [], more: false };
-    const rows = [...npc.discovery.map((row) => [row, isVisibleDiscovery(row)]), ...npc.influence.map((row) => [row, isVisibleInfluence(row)])].filter(([row]) => effect.skills.includes(row.id));
+    if (effect.allSkills) return { type: "check", amount: -effect.amount, all: true, skills: [] };
+    const rows = [...npc.discovery.filter(isVisibleDiscovery), ...npc.influence.filter(isVisibleInfluence)].filter((row) => effect.skills.includes(row.id));
     if (!rows.length) return null;
     // A Discovery and an Influence row can share a skill: name it once.
-    const shown = [...new Map(rows.filter(([, visible]) => visible).map(([row]) => [`${row.skill}:${row.lore}`, skillName(row)])).values()];
-    return { type: "check", amount: -effect.amount, all: false, skills: shown, more: rows.some(([, visible]) => !visible) };
+    const shown = [...new Map(rows.map((row) => [`${row.skill}:${row.lore}`, skillName(row)])).values()];
+    return { type: "check", amount: -effect.amount, all: false, skills: shown };
   }
   if (effect.type === "points" || effect.type === "rounds") return { type: effect.type, amount: effect.amount };
   if (effect.type === "counter") {
@@ -65,10 +66,7 @@ export function changeText(change, { format, list, label }) {
   const key = "SSM.Panel.Change";
   if (change.type === "check") {
     if (change.all) return format(`${key}.checkAll`, { amount });
-    if (!change.skills.length) return format(`${key}.checkSome`, { amount });
-    const names = change.skills.map(label);
-    if (change.more) names.push(format(`${key}.otherChecks`, {}));
-    return format(`${key}.check`, { amount, skills: list(names) });
+    return format(`${key}.check`, { amount, skills: list(change.skills.map(label)) });
   }
   if (change.type === "counter") return format(`${key}.counter`, { amount, counter: change.counter || format("SSM.Influence.UnnamedCounter", {}) });
   return format(`${key}.${change.type}.${plural}`, { amount });

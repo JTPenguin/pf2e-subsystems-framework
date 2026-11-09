@@ -1146,7 +1146,7 @@ test("a card never names a hidden skill row, decoy or not", () => {
   ];
   let view = viewOf(s);
   let texts = view.npcs[0].known[0].changes.map((change) => V.changeText(change, enText));
-  assert.deepEqual(texts, ["+2 to Diplomacy and other checks", "+1 to some checks"]);
+  assert.deepEqual(texts, ["+2 to Diplomacy"], "hidden skills leave no trace, and a change on hidden skills only shows nothing");
   const known = JSON.stringify(view.npcs[0].known);
   for (const secret of ["Secret Cult", hidden.id, hiddenLore.id, dip.id]) assert.ok(!known.includes(secret), `${secret} must not appear`);
   assert.ok(!scan(view.npcs[0].known).values.has("society"));
@@ -1154,7 +1154,7 @@ test("a card never names a hidden skill row, decoy or not", () => {
   hiddenLore.revealed = true;
   view = viewOf(s);
   texts = view.npcs[0].known[0].changes.map((change) => V.changeText(change, enText));
-  assert.equal(texts[1], "+1 to Secret Cult");
+  assert.deepEqual(texts, ["+2 to Diplomacy", "+1 to Secret Cult"]);
 });
 
 test("a card leaves out an unrevealed counter, a note, a zero change and a removed skill", () => {
@@ -1187,9 +1187,8 @@ test("a card carries kind, duration and state, and a revealed decoy looks like a
 
 test("every change type has an English string", () => {
   const changes = [
-    { type: "check", amount: 1, all: false, skills: [{ skill: "diplomacy", lore: "" }], more: false },
-    { type: "check", amount: 1, all: true, skills: [], more: false },
-    { type: "check", amount: 1, all: false, skills: [], more: true },
+    { type: "check", amount: 1, all: false, skills: [{ skill: "diplomacy", lore: "" }] },
+    { type: "check", amount: 1, all: true, skills: [] },
     { type: "points", amount: 1 }, { type: "points", amount: 3 },
     { type: "rounds", amount: 1 }, { type: "rounds", amount: 3 },
     { type: "counter", amount: -1, counter: "" },

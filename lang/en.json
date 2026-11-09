@@ -30,8 +30,6 @@
       "Change": {
         "check": "{amount} to {skills}",
         "checkAll": "{amount} to all checks",
-        "checkSome": "{amount} to some checks",
-        "otherChecks": "other checks",
         "points": { "one": "{amount} Influence Point", "other": "{amount} Influence Points" },
         "counter": "{amount} {counter}",
         "rounds": { "one": "{amount} round", "other": "{amount} rounds" }

@@ -185,7 +185,7 @@ The sheet has **Edit** and **Run** modes, like a locked and unlocked actor sheet
 | Rounds | "+1 round", "−2 rounds" | |
 | Note only | Left out: the note is the GM's text. The player text covers it. | The note |
 
-A DC change names only skills the panel shows (universal or revealed). Hidden skills it covers read as "other checks", or "some checks" when it covers no shown skill. A change of zero, or one that points at a removed skill or counter, is left out. A revealed decoy's card looks like any other.
+A DC change names only skills the panel shows (universal or revealed). It says nothing about hidden skills it covers, and a change that covers only hidden skills is left out (Justin, 2026-11-09). A change of zero, or one that points at a removed skill or counter, is left out. A revealed decoy's card looks like any other.
 
 **Rules for the panel:**
 
