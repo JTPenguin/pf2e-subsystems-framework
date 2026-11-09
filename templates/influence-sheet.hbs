@@ -1,9 +1,111 @@
+{{#*inline "ssmEye"}}<button type="button" class="icon fa-solid {{#if revealed}}fa-eye{{else}}fa-eye-slash{{/if}}" data-action="toggleReveal" data-id="{{id}}" data-label="{{label}}" aria-label="{{localize "SSM.Influence.RevealToggle"}}" aria-pressed="{{revealed}}" data-tooltip="{{localize "SSM.Influence.RevealToggle"}}" {{#unless root.canRun}}disabled{{/unless}}></button>{{/inline}}
+{{#*inline "ssmSkillRow"}}<div class="ssm-row ssm-entry">
+  {{> ssmEye root=root}}
+  <span class="ssm-grow">{{label}}{{#if decoy}} <span class="ssm-tag">{{localize "SSM.Influence.Decoy"}}</span>{{/if}}</span>
+  <span>{{localize "SSM.Influence.DC"}} {{currentDc}}</span>
+  <button type="button" class="icon fa-solid fa-dice-d20" data-action="rollSkill" data-npc="{{npcId}}" data-kind="{{kind}}" data-id="{{id}}" aria-label="{{localize "SSM.Influence.RollFor"}}" data-tooltip="{{localize "SSM.Influence.RollFor"}}" {{#unless root.rollable}}disabled{{/unless}}></button>
+  <button type="button" class="icon fa-solid fa-comment" data-action="postLink" data-npc="{{npcId}}" data-kind="{{kind}}" data-id="{{id}}" aria-label="{{localize "SSM.Influence.PostLink"}}" data-tooltip="{{localize "SSM.Influence.PostLink"}}" {{#unless root.rollable}}disabled{{/unless}}></button>
+</div>{{/inline}}
 <div class="ssm-layout">
   <header class="ssm-head">
-    <input class="ssm-name" type="text" name="name" value="{{name}}" placeholder="{{localize "SSM.Influence.Name"}}" aria-label="{{localize "SSM.Influence.Name"}}">
+    <div class="ssm-row ssm-head-row">
+      {{#if isEdit}}<input class="ssm-name" type="text" name="name" value="{{name}}" placeholder="{{localize "SSM.Influence.Name"}}" aria-label="{{localize "SSM.Influence.Name"}}">{{else}}<h2 class="ssm-name ssm-grow">{{name}}</h2>{{/if}}
+      <span class="ssm-switch">
+        <button type="button" data-action="setMode" data-mode="edit" class="{{#if isEdit}}active{{/if}}">{{localize "SSM.Influence.Mode.edit"}}</button>
+        <button type="button" data-action="setMode" data-mode="run" class="{{#if isRun}}active{{/if}}">{{localize "SSM.Influence.Mode.run"}}</button>
+      </span>
+    </div>
     <span class="ssm-status">{{statusLabel}} &middot; {{localize "SSM.Influence.Acted"}}: {{system.run.acted.length}} &middot; {{localize "SSM.Influence.LogEntries"}}: {{system.run.log.length}}</span>
   </header>
 
+  {{#if isRun}}
+  <section class="ssm-body">
+    {{#with run}}
+    {{#unless canRun}}<p class="ssm-muted">{{localize "SSM.Influence.NotActiveGM"}}</p>{{/unless}}
+    <fieldset>
+      <legend>{{localize "SSM.Influence.Rounds"}}</legend>
+      <div class="ssm-row ssm-controls">
+        {{#if canStart}}<button type="button" data-action="startRun" {{#unless canRun}}disabled{{/unless}}>{{localize "SSM.Influence.Start"}}</button>{{/if}}
+        {{#if canEnd}}<button type="button" data-action="endRun" {{#unless canRun}}disabled{{/unless}}>{{localize "SSM.Influence.End"}}</button>{{/if}}
+        {{#if canReset}}<button type="button" data-action="resetRun" {{#unless canRun}}disabled{{/unless}}>{{localize "SSM.Influence.Reset"}}</button>{{/if}}
+        {{!-- Panel show and hide (Phase 3) go here. --}}
+        <span class="ssm-grow"></span>
+        <strong>{{roundLabel}}</strong>{{#if roundLength}}<span class="ssm-muted">{{roundLength}}</span>{{/if}}
+        <button type="button" class="icon fa-solid fa-rotate-left" data-action="undoRound" aria-label="{{localize "SSM.Influence.UndoRound"}}" data-tooltip="{{localize "SSM.Influence.UndoRound"}}" {{#unless canUndoRound}}disabled{{/unless}}></button>
+        <button type="button" class="icon fa-solid fa-forward-step" data-action="advanceRound" aria-label="{{localize "SSM.Influence.AdvanceRound"}}" data-tooltip="{{localize "SSM.Influence.AdvanceRound"}}" {{#unless canAdvance}}disabled{{/unless}}></button>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>{{localize "SSM.Influence.Party"}}</legend>
+      <div class="ssm-row">
+        <span class="ssm-chips ssm-grow">
+          {{#each party}}<button type="button" class="ssm-chip {{#if acted}}acted{{/if}}" data-action="toggleActed" data-id="{{id}}" aria-pressed="{{acted}}">{{name}}</button>{{else}}<span class="ssm-muted">{{localize "SSM.Influence.NoPCs"}}</span>{{/each}}
+        </span>
+        <label>{{localize "SSM.Influence.RollAs"}}<select data-roll-as>{{#each actors}}<option value="{{id}}" {{#if selected}}selected{{/if}}>{{name}}</option>{{/each}}</select></label>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>{{localize "SSM.Influence.Pending"}}</legend>
+      {{> (lookup @root "pendingTemplate") items=pending canRun=canRun}}
+    </fieldset>
+
+    {{#each npcs as |npc|}}
+    <fieldset>
+      <legend>{{npc.name}}</legend>
+      <div class="ssm-row ssm-points">
+        <span>{{localize "SSM.Influence.Points"}}</span>
+        <button type="button" class="icon fa-solid fa-minus" data-action="changePoints" data-npc="{{npc.id}}" data-delta="-1" aria-label="{{localize "SSM.Influence.RemovePoint"}}" {{#unless ../canRun}}disabled{{/unless}}></button>
+        <strong class="ssm-point-total">{{npc.points}}</strong>
+        <button type="button" class="icon fa-solid fa-plus" data-action="changePoints" data-npc="{{npc.id}}" data-delta="1" aria-label="{{localize "SSM.Influence.AddPoint"}}" {{#unless ../canRun}}disabled{{/unless}}></button>
+      </div>
+      <h4>{{localize "SSM.Influence.Discovery"}}</h4>
+      {{#each npc.discovery}}{{> ssmSkillRow root=../..}}{{/each}}
+      <h4>{{localize "SSM.Influence.InfluenceSkills"}}</h4>
+      {{#each npc.influence}}{{> ssmSkillRow root=../..}}{{/each}}
+      <h4>{{localize "SSM.Influence.Thresholds"}}</h4>
+      {{#each npc.thresholds}}
+      <div class="ssm-row ssm-entry">
+        {{> ssmEye root=../..}}
+        <span class="ssm-grow">{{label}}</span>
+        {{#if reached}}<span class="ssm-tag">{{localize "SSM.Influence.ReachedShort"}}</span>{{/if}}
+      </div>
+      {{/each}}
+      <h4>{{localize "SSM.Influence.Modifiers"}}</h4>
+      {{#each npc.modifiers}}
+      <div class="ssm-row ssm-entry">
+        {{> ssmEye root=../..}}
+        <span class="ssm-grow">{{label}}</span>
+      </div>
+      {{/each}}
+    </fieldset>
+    {{/each}}
+
+    {{#if counters.length}}
+    <fieldset>
+      <legend>{{localize "SSM.Influence.Counters"}}</legend>
+      {{#each counters}}
+      <div class="ssm-row ssm-entry">
+        {{> ssmEye root=..}}
+        <span class="ssm-grow">{{label}}</span>
+        <strong>{{value}}</strong>
+      </div>
+      {{/each}}
+    </fieldset>
+    {{/if}}
+
+    <fieldset>
+      <legend>{{localize "SSM.Influence.Log.Title"}}</legend>
+      <ul class="ssm-log">
+        {{#each log}}<li><span class="ssm-muted">{{round}}</span> {{text}}</li>{{else}}<li class="ssm-muted">{{localize "SSM.Influence.Log.Empty"}}</li>{{/each}}
+      </ul>
+    </fieldset>
+    {{/with}}
+  </section>
+  {{/if}}
+
+  {{#if isEdit}}
   <nav class="ssm-tabs">
     <button type="button" data-action="selectTab" data-tab="challenge" class="{{#if onChallengeTab}}active{{/if}}">{{localize "SSM.Influence.Challenge"}}</button>
     {{#each tabs}}
@@ -17,7 +119,7 @@
     <fieldset>
       <legend>{{localize "SSM.Influence.Rounds"}}</legend>
       <div class="ssm-row">
-        <label>{{localize "SSM.Influence.Current"}}<input type="number" min="0" step="1" name="rounds.current" value="{{system.rounds.current}}"></label>
+        <label>{{localize "SSM.Influence.Current"}}<input type="number" min="0" step="1" name="rounds.current" value="{{system.rounds.current}}" {{#if runActive}}disabled{{/if}}></label>
         <label>{{localize "SSM.Influence.Maximum"}}<input type="number" min="1" step="1" name="rounds.max" value="{{system.rounds.max}}"></label>
         <label class="grow">{{localize "SSM.Influence.RoundLength"}}<input type="text" name="rounds.length" value="{{system.rounds.length}}"></label>
       </div>
@@ -169,4 +271,5 @@
     </fieldset>
     {{/with}}
   </section>
+  {{/if}}
 </div>

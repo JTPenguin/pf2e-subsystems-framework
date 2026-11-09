@@ -1,10 +1,16 @@
 import { MODULE } from "../../constants.js";
 import { challengePage } from "../../registry.js";
-import { addRow, clampCounters, DURATIONS, EFFECT_TYPES, LORE, mergeForm, MODIFIER_KINDS, PERCEPTION, QUICK_DC_AMOUNTS, pickFields, removeRow, setEffectAmount } from "./data.js";
+import { pendingItems, skillLabel } from "./pending-view.js";
+import { adjustResult, confirmResult, ignoreResult, writeChallenge } from "./state.js";
+import { advanceRound, changePoints, currentDc, endRun, loreSlug, resetRun, startRun, toggleActed, toggleReveal, undoRound } from "./run.js";
+import { loreStatistic } from "../../lore-statistic.js";
+import { buildRollOption, LINK_ROLL_ID } from "../../roll-option.js";
+import { addRow, applyForm, clampCounters, DURATIONS, EFFECT_TYPES, LORE, MODIFIER_KINDS, PERCEPTION, QUICK_DC_AMOUNTS, pickFields, removeRow, setEffectAmount } from "./data.js";
 
 const { DocumentSheetV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
 const CHALLENGE_TAB = "challenge";
+const PENDING_TEMPLATE = `modules/${MODULE}/templates/pending-list.hbs`;
 const loc = (key) => game.i18n.localize(key);
 const labels = (values, prefix) => Object.fromEntries(values.map((value) => [value, loc(`SSM.Influence.${prefix}.${value}`)]));
 
@@ -21,20 +27,46 @@ export class InfluenceSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
       addRow: InfluenceSheet.#onAddRow,
       removeRow: InfluenceSheet.#onRemoveRow,
       quickDc: InfluenceSheet.#onQuickDc,
+      setMode: InfluenceSheet.#onSetMode,
+      startRun: InfluenceSheet.#onStartRun,
+      endRun: InfluenceSheet.#onEndRun,
+      resetRun: InfluenceSheet.#onResetRun,
+      advanceRound: InfluenceSheet.#onAdvanceRound,
+      undoRound: InfluenceSheet.#onUndoRound,
+      changePoints: InfluenceSheet.#onChangePoints,
+      toggleReveal: InfluenceSheet.#onToggleReveal,
+      toggleActed: InfluenceSheet.#onToggleActed,
+      rollSkill: InfluenceSheet.#onRollSkill,
+      postLink: InfluenceSheet.#onPostLink,
+      applyResult: InfluenceSheet.#onApplyResult,
+      adjustResult: InfluenceSheet.#onAdjustResult,
+      ignoreResult: InfluenceSheet.#onIgnoreResult,
     },
   };
 
   static PARTS = {
-    form: { template: `modules/${MODULE}/templates/influence-sheet.hbs`, scrollable: [".ssm-body"] },
+    form: { template: `modules/${MODULE}/templates/influence-sheet.hbs`, scrollable: [".ssm-body"], templates: [PENDING_TEMPLATE] },
   };
 
   #tab = CHALLENGE_TAB;
+
+  /** Edit or Run. Null until the user picks: a running challenge opens in Run mode. */
+  #mode = null;
+
+  /** The id of the actor chosen to roll, or null for the default. */
+  #rollAs = null;
 
   /** Above zero while this sheet is saving, so its own updates can redraw it. */
   #saving = 0;
 
   /** True when an outside update was held back to protect an open editor, so the form is out of date. */
   #stale = false;
+
+  /** True while a pointer press that began on this sheet is held down. */
+  #pressing = false;
+
+  /** Ends the listeners for the current press. */
+  #pressEnd = null;
 
   get page() {
     return challengePage(this.document);
@@ -50,9 +82,21 @@ export class InfluenceSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
 
   /* -------------------------------------------- */
 
-  /** An outside update must not redraw the sheet while an editor is open: the redraw would throw the unsaved text away. */
+  /** True while the user is writing in a text field or an open editor. */
+  get #isWriting() {
+    const active = document.activeElement;
+    const typing = !!this.element?.contains(active) && active.matches("input:not([type=checkbox]), textarea");
+    return typing || !!this.element?.querySelector("prose-mirror.active");
+  }
+
+  /** An outside update must not redraw the sheet while the user is writing: the redraw would throw the unsaved text away. */
   _canRender(options) {
-    if (options.renderContext && !this.#saving && this.element?.querySelector("prose-mirror.active")) {
+    // A redraw during a press would replace the button being pressed and lose the click. The end of the press catches up.
+    if (options.renderContext && this.#pressing) {
+      this.#stale = true;
+      return false;
+    }
+    if (options.renderContext && !this.#saving && this.#isWriting) {
       this.#stale = true;
       return false;
     }
@@ -67,6 +111,35 @@ export class InfluenceSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
     this.element.addEventListener("close", (event) => {
       if (this.#stale && event.target.matches("prose-mirror")) this.render();
     });
+    this.element.addEventListener("pointerdown", () => this.#startPress());
+    this.element.addEventListener("focusout", (event) => {
+      // The window losing focus also fires this, with the field still active: the user is still writing.
+      if (document.activeElement !== event.target && !this.#pressing) this.#catchUp();
+    });
+  }
+
+  /** A press ends on release, cancel or the window losing focus. A pointer moving with no button down catches a release that was missed. */
+  #startPress() {
+    this.#pressEnd?.abort();
+    this.#pressing = true;
+    const controller = this.#pressEnd = new AbortController();
+    const end = () => {
+      controller.abort();
+      // Wait a moment: the click comes after the pointer is released, and it must find its button.
+      setTimeout(() => {
+        if (this.#pressEnd !== controller) return;
+        this.#pressing = false;
+        this.#catchUp();
+      }, 100);
+    };
+    const { signal } = controller;
+    for (const type of ["pointerup", "pointercancel", "blur"]) window.addEventListener(type, end, { signal });
+    window.addEventListener("pointermove", (event) => event.buttons === 0 && end(), { signal });
+  }
+
+  /** Redraw if an update was held back and nothing is being written or saved. A save in progress redraws the sheet itself. */
+  #catchUp() {
+    if (this.#stale && !this.#saving && !this.#pressing && !this.#isWriting) this.render();
   }
 
   async #whileSaving(save) {
@@ -75,6 +148,7 @@ export class InfluenceSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
       return await save();
     } finally {
       this.#saving--;
+      this.#catchUp();
     }
   }
 
@@ -91,8 +165,6 @@ export class InfluenceSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
     const counterChoices = { "": loc("SSM.Influence.ChooseCounter"), ...Object.fromEntries(system.counters.map((c) => [c.id, c.name || loc("SSM.Influence.UnnamedCounter")])) };
 
     const enrich = (html) => foundry.applications.ux.TextEditor.implementation.enrichHTML(html, { relativeTo: this.document, secrets: true });
-    const skillLabel = (row) => (row.skill === LORE ? `${row.lore || loc("SSM.Influence.Lore")}` : perception[row.skill] ?? row.skill);
-
     const npcView = (npc, n) => {
       const path = `npcs.${n}`;
       const skillOptions = Object.fromEntries([...npc.discovery, ...npc.influence].map((row) => [row.id, skillLabel(row)]));
@@ -124,7 +196,12 @@ export class InfluenceSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
     };
 
     const npcs = system.npcs.map(npcView);
+    const mode = this.#currentMode;
     return Object.assign(context, {
+      isRun: mode === "run",
+      isEdit: mode === "edit",
+      run: mode === "run" ? this.#runContext(system) : null,
+      pendingTemplate: PENDING_TEMPLATE,
       name: this.document.name,
       system,
       premiseHtml: await enrich(system.premise),
@@ -139,6 +216,7 @@ export class InfluenceSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
       onChallengeTab: this.#tab === CHALLENGE_TAB,
       tabs: npcs.map((npc) => ({ id: npc.id, label: npc.tabLabel, active: npc.id === this.#tab })),
       statusLabel: loc(`SSM.Influence.Status.${system.run.status}`),
+      runActive: system.run.status === "active",
       quickDcAmounts: QUICK_DC_AMOUNTS.map((amount) => ({ amount, label: amount > 0 ? `+${amount}` : `${amount}`.replace("-", "−") })),
       choices: {
         discovery: perception,
@@ -149,6 +227,63 @@ export class InfluenceSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
         counters: counterChoices,
       },
     });
+  }
+
+  get #currentMode() {
+    return this.#mode ?? (this.page.system.run.status === "active" ? "run" : "edit");
+  }
+
+  /** The PCs on the party's roster, as PF2e counts them, plus the actor of a selected token. */
+  get #rollableActors() {
+    const isPC = (actor) => actor.alliance === "party" && actor.isOfType("character") && !["eidolon", "minion"].some((trait) => actor.system.traits?.value?.includes(trait));
+    const actors = (game.actors.party?.members ?? []).filter(isPC);
+    const selected = canvas.ready ? canvas.tokens.controlled[0]?.actor : null;
+    if (selected?.isOfType("character", "npc") && !actors.includes(selected)) actors.push(selected);
+    return actors;
+  }
+
+  #selectedActor() {
+    const actors = this.#rollableActors;
+    const controlled = canvas.ready ? canvas.tokens.controlled[0]?.actor : null;
+    return actors.find((actor) => actor.id === this.#rollAs) ?? actors.find((actor) => actor === controlled) ?? actors[0] ?? null;
+  }
+
+  /** The Run-mode view of the challenge. */
+  #runContext(system) {
+    const status = system.run.status;
+    const canRun = game.user.isActiveGM;
+    const active = status === "active";
+    const actors = this.#rollableActors;
+    const selected = this.#selectedActor();
+    const rollRows = (npc, rows, kind) => rows.map((row) => ({ ...row, kind, npcId: npc.id, label: skillLabel(row), currentDc: currentDc(npc, row) }));
+    return {
+      canRun,
+      rollable: active && canRun,
+      canStart: status === "inactive",
+      canEnd: active,
+      canReset: status !== "inactive",
+      roundLabel: active || status === "finished" ? game.i18n.format("SSM.Influence.Round", system.rounds) : loc("SSM.Influence.NotStarted"),
+      roundLength: system.rounds.length,
+      canAdvance: active && system.rounds.current < system.rounds.max,
+      canUndoRound: active && system.run.roundHistory.length > 0,
+      party: [...new Set([...actors.map((actor) => actor.id), ...system.run.acted])].map((id) => {
+        const actor = game.actors.get(id);
+        return { id, name: actor?.name ?? id, acted: system.run.acted.includes(id) };
+      }),
+      actors: actors.map((actor) => ({ id: actor.id, name: actor.name, selected: actor === selected })),
+      pending: pendingItems(system),
+      npcs: system.npcs.map((npc, n) => ({
+        id: npc.id,
+        name: npc.name || `${loc("SSM.Influence.NPC")} ${n + 1}`,
+        points: npc.points,
+        discovery: rollRows(npc, npc.discovery, "discover"),
+        influence: rollRows(npc, npc.influence, "influence"),
+        thresholds: npc.thresholds.map((row) => ({ ...row, label: `${row.points}: ${row.playerText || row.gmText}` })),
+        modifiers: npc.modifiers.map((row) => ({ ...row, label: row.name || loc("SSM.Influence.Modifiers") })),
+      })),
+      counters: system.counters.map((counter) => ({ ...counter, label: counter.name || loc("SSM.Influence.UnnamedCounter") })),
+      log: system.run.log.slice().reverse(),
+    };
   }
 
   /* -------------------------------------------- */
@@ -163,28 +298,40 @@ export class InfluenceSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
       fields = pickFields(fields, [...open, target].filter(Boolean));
       if (target !== "name") name = this.document.name;
     }
-    const { premise, gmNotes, rounds, npcs, counters } = mergeForm(this.#source, fields);
-    const system = { premise, gmNotes, rounds, npcs, counters };
+    const system = this.#source;
+    applyForm(system, fields);
     const invalid = clampCounters(system);
     if (invalid.length) ui.notifications.warn("SSM.Influence.CounterLimits", { localize: true });
-    this.page.validate({ changes: { system }, clean: true, fallback: false });
-    return { name: name?.trim() || this.document.name, system };
+    const { premise, gmNotes, rounds, npcs, counters } = system;
+    this.page.validate({ changes: { system: { premise, gmNotes, rounds, npcs, counters } }, clean: true, fallback: false });
+    return { name: name?.trim() || this.document.name, fields };
   }
 
-  async _processSubmitData(event, form, { name, system }, options = {}) {
+  async _processSubmitData(event, form, { name, fields }, options = {}) {
     return this.#whileSaving(async () => {
       if (name !== this.document.name) await this.document.update({ name });
-      const updated = await this.page.update({ system }, options);
-      return updated ? { updated: this.document } : {};
+      // Merge at write time, so the form lands on top of any run change queued before it.
+      await writeChallenge(this.page, (system) => {
+        applyForm(system, fields);
+        clampCounters(system);
+      }, options);
+      return { updated: this.document };
     });
+  }
+
+  /** The Roll-as list isn't challenge data, so it must not save the form. */
+  _onChangeForm(formConfig, event) {
+    if (event.target.matches?.("[data-roll-as]")) {
+      this.#rollAs = event.target.value;
+      return;
+    }
+    super._onChangeForm(formConfig, event);
   }
 
   /** Save what's in the form, then change a copy of the source and save that. */
   async #edit(change) {
     await this.submit();
-    const system = this.#source;
-    if (change(system) === false) return;
-    await this.#whileSaving(() => this.page.update({ "system.npcs": system.npcs, "system.counters": system.counters }));
+    await this.#whileSaving(() => writeChallenge(this.page, change));
   }
 
   /* -------------------------------------------- */
@@ -213,5 +360,108 @@ export class InfluenceSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
 
   static #onQuickDc(event, target) {
     return this.#edit((system) => setEffectAmount(system, target.dataset.path, Number(target.dataset.amount)));
+  }
+
+  static async #onSetMode(event, target) {
+    if (this.#currentMode === "edit") await this.submit();
+    this.#mode = target.dataset.mode;
+    return this.render();
+  }
+
+  /** Only the active GM's client writes run state (spec section 4). */
+  #run(change) {
+    if (!game.user.isActiveGM) return;
+    return writeChallenge(this.page, change);
+  }
+
+  static #onStartRun() {
+    return this.#run(startRun);
+  }
+
+  static #onEndRun() {
+    return this.#run(endRun);
+  }
+
+  static async #onResetRun() {
+    const yes = await foundry.applications.api.DialogV2.confirm({
+      window: { title: "SSM.Influence.ResetTitle" },
+      content: `<p>${loc("SSM.Influence.ResetConfirm")}</p>`,
+      rejectClose: false,
+    });
+    if (yes) return this.#run(resetRun);
+  }
+
+  static #onAdvanceRound() {
+    return this.#run(advanceRound);
+  }
+
+  static #onUndoRound() {
+    return this.#run(undoRound);
+  }
+
+  static #onChangePoints(event, target) {
+    return this.#run((system) => changePoints(system, target.dataset.npc, Number(target.dataset.delta)));
+  }
+
+  static #onToggleReveal(event, target) {
+    return this.#run((system) => toggleReveal(system, target.dataset.id, target.dataset.label));
+  }
+
+  static #onToggleActed(event, target) {
+    return this.#run((system) => toggleActed(system, target.dataset.id));
+  }
+
+  static #onApplyResult(event, target) {
+    if (game.user.isActiveGM) return confirmResult(this.page, target.dataset.id);
+  }
+
+  static #onAdjustResult(event, target) {
+    if (game.user.isActiveGM) return adjustResult(this.page, target.dataset.id);
+  }
+
+  static #onIgnoreResult(event, target) {
+    if (game.user.isActiveGM) return ignoreResult(this.page, target.dataset.id);
+  }
+
+  /* -------------------------------------------- */
+
+  /** The NPC and skill row a roll button belongs to, plus what a roll needs from them. */
+  #rollTarget(target) {
+    const { npc: npcId, kind, id } = target.dataset;
+    const npc = this.page.system.npcs.find((candidate) => candidate.id === npcId);
+    const row = npc?.[kind === "influence" ? "influence" : "discovery"].find((candidate) => candidate.id === id);
+    if (!row) return null;
+    const slug = row.skill === LORE ? loreSlug(row.lore || loc("SSM.Influence.Lore"), game.pf2e.system.sluggify) : row.skill;
+    const option = (rollId) => buildRollOption({ kind, challengeId: this.document.id, npcId, entryId: id, rollId });
+    const npcLabel = npc.name || loc("SSM.Influence.NPC");
+    return { npc, row, slug, kind, option, npcLabel, dc: currentDc(npc, row), showDC: !!row.showDC };
+  }
+
+  static async #onRollSkill(event, target) {
+    if (!game.user.isActiveGM || this.page.system.run.status !== "active") return;
+    const roll = this.#rollTarget(target);
+    if (!roll) return;
+    const actor = this.#selectedActor();
+    if (!actor) return ui.notifications.warn("SSM.Influence.NoPCSelected", { localize: true });
+    const statistic = roll.slug === PERCEPTION ? actor.perception : roll.row.skill === LORE ? loreStatistic(actor, roll.slug, skillLabel(roll.row)) : actor.skills?.[roll.slug];
+    if (!statistic) return ui.notifications.warn(game.i18n.format("SSM.Influence.MissingSkill", { actor: actor.name, skill: skillLabel(roll.row) }));
+    return statistic.roll({
+      event,
+      // Pass a plain number with no slug or statistic, so PF2e doesn't look for an opposing actor. That would reveal the DC.
+      dc: { value: roll.dc, visible: roll.showDC },
+      label: game.i18n.format(`SSM.Influence.RollLabel.${roll.kind}`, { npc: roll.npcLabel }),
+      extraRollOptions: [roll.option(foundry.utils.randomID())],
+      messageMode: "public",
+    });
+  }
+
+  static #onPostLink(event, target) {
+    if (!game.user.isActiveGM || this.page.system.run.status !== "active") return;
+    const roll = this.#rollTarget(target);
+    if (!roll) return;
+    const params = [roll.slug, `dc:${roll.dc}`, `showDC:${roll.showDC ? "all" : "gm"}`, `options:${roll.option(LINK_ROLL_ID)}`];
+    const heading = game.i18n.format(`SSM.Influence.RollLabel.${roll.kind}`, { npc: roll.npcLabel });
+    const content = `<p><strong>${foundry.utils.escapeHTML(heading)}</strong></p><p>@Check[${params.join("|")}]</p>`;
+    return ChatMessage.create({ content }, { messageMode: "public" });
   }
 }

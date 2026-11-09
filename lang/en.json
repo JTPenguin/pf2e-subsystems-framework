@@ -1,5 +1,11 @@
 {
-  "TYPES": { "JournalEntryPage": { "pf2e-subsystem-manager": { "influence": "Influence Challenge" } } },
+  "TYPES": {
+    "JournalEntryPage": {
+      "pf2e-subsystem-manager": {
+        "influence": "Influence Challenge"
+      }
+    }
+  },
   "SSM": {
     "Tab": "Subsystems",
     "Search": "Search challenges",
@@ -25,7 +31,11 @@
       "RoundLength": "Round length",
       "Acted": "Acted this round",
       "LogEntries": "Log entries",
-      "Status": { "inactive": "Inactive", "active": "Active", "finished": "Finished" },
+      "Status": {
+        "inactive": "Inactive",
+        "active": "Active",
+        "finished": "Finished"
+      },
       "NPC": "NPC",
       "AddNPC": "Add NPC",
       "RemoveNPC": "Remove NPC",
@@ -53,13 +63,27 @@
       "Modifiers": "Weaknesses, resistances, penalties and adjustments",
       "AddModifier": "Add entry",
       "KindLabel": "Kind",
-      "Kind": { "weakness": "Weakness", "resistance": "Resistance", "penalty": "Penalty", "adjustment": "Adjustment" },
+      "Kind": {
+        "weakness": "Weakness",
+        "resistance": "Resistance",
+        "penalty": "Penalty",
+        "adjustment": "Adjustment"
+      },
       "DurationLabel": "Duration",
-      "Duration": { "oneTime": "One-time", "ongoing": "Ongoing" },
+      "Duration": {
+        "oneTime": "One-time",
+        "ongoing": "Ongoing"
+      },
       "Active": "On",
       "Spent": "Spent",
       "EffectLabel": "Effect",
-      "Effect": { "dc": "DC change", "points": "Influence Points", "counter": "Counter change", "rounds": "Rounds", "note": "Note only" },
+      "Effect": {
+        "dc": "DC change",
+        "points": "Influence Points",
+        "counter": "Counter change",
+        "rounds": "Rounds",
+        "note": "Note only"
+      },
       "AddEffect": "Add effect",
       "Amount": "Amount",
       "AllSkills": "All skills",
@@ -74,7 +98,73 @@
       "TriggerValue": "Trigger at",
       "TriggerNote": "GM note",
       "AddTrigger": "Add trigger",
-      "Remove": "Remove"
+      "Remove": "Remove",
+      "Mode": {
+        "edit": "Edit",
+        "run": "Run"
+      },
+      "Start": "Start",
+      "End": "End",
+      "Reset": "Reset",
+      "ResetTitle": "Reset challenge",
+      "ResetConfirm": "Return this challenge to unspent? Points, rounds, reveals, the log and pending results go back to how they were at Start.",
+      "NotActiveGM": "Another GM is running this challenge. Only the active GM can change it.",
+      "Round": "Round {current} of {max}",
+      "NotStarted": "Not started",
+      "AdvanceRound": "Advance round",
+      "UndoRound": "Undo round advance",
+      "Party": "Party",
+      "RollAs": "Roll as",
+      "NoPCs": "No PCs",
+      "NoPCSelected": "Choose a PC to roll for.",
+      "MissingSkill": "{actor} doesn't have {skill}.",
+      "RollFor": "Roll for the chosen PC",
+      "PostLink": "Post a chat link",
+      "RevealToggle": "Reveal or hide",
+      "AddPoint": "Add a point",
+      "RemovePoint": "Remove a point",
+      "ReachedShort": "Reached",
+      "Pending": "Pending results",
+      "NoPending": "No results waiting.",
+      "Apply": "Apply",
+      "Adjust": "Adjust",
+      "Ignore": "Ignore",
+      "Done": "Done",
+      "AdjustPrompt": "Points to apply",
+      "Suggested": "Suggested: {points}",
+      "RerollAfterApply": "A result that was already applied was rerolled. Its effect has not changed; make any change by hand.",
+      "Log": {
+        "Title": "Log",
+        "Empty": "Nothing yet.",
+        "Started": "Started",
+        "Ended": "Ended",
+        "Round": "Round {round}",
+        "RoundUndone": "Round advance undone: back to round {round}",
+        "Points": "{npc}: {delta}, now {total}",
+        "PointsFromRoll": "{npc}: {delta} from {actor}, now {total}",
+        "Threshold": "{npc} reached {points}: {text}",
+        "Revealed": "Revealed {entry}",
+        "Hidden": "Hid {entry}",
+        "Discover": "{actor}: Discover result on {npc} handled",
+        "RerollAfterApply": "{actor} rerolled an applied result, new total {total}. Make any change by hand."
+      },
+      "RollLabel": {
+        "influence": "Influence: {npc}",
+        "discover": "Discover: {npc}"
+      },
+      "Outcome": {
+        "criticalSuccess": "Critical success",
+        "success": "Success",
+        "failure": "Failure",
+        "criticalFailure": "Critical failure"
+      },
+      "Reminder": {
+        "criticalSuccess": "Earns two pieces of information.",
+        "success": "Earns one piece of information.",
+        "failure": "Earns nothing.",
+        "criticalFailure": "Earns one false piece of information."
+      },
+      "UnknownSkill": "Unknown skill"
     }
   }
 }

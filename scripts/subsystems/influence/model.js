@@ -1,6 +1,6 @@
 import { DURATIONS, EFFECT_TYPES, MODIFIER_KINDS, STATUSES } from "./data.js";
 
-const { ArrayField, BooleanField, DocumentUUIDField, HTMLField, NumberField, SchemaField, StringField } = foundry.data.fields;
+const { ArrayField, BooleanField, DocumentUUIDField, HTMLField, NumberField, ObjectField, SchemaField, StringField } = foundry.data.fields;
 
 const rowId = () => new StringField({ required: true, blank: false, initial: () => foundry.utils.randomID() });
 const text = () => new StringField({ required: true, blank: true, initial: "" });
@@ -34,6 +34,8 @@ const modifierFields = () => ({
   decoy: flag(),
   effects: list(effectFields()),
 });
+
+const ids = () => new ArrayField(new StringField({ blank: false }), { required: true, initial: [] });
 
 const npcFields = () => ({
   id: rowId(),
@@ -72,8 +74,19 @@ export class InfluenceModel extends foundry.abstract.TypeDataModel {
       }),
       run: new SchemaField({
         status: choice(STATUSES, "inactive"),
-        acted: new ArrayField(new StringField({ blank: false }), { required: true, initial: [] }),
+        acted: ids(),
         log: list({ id: rowId(), at: int(), round: int(), type: text(), text: text() }),
+        // The state to go back to on Reset, taken when the run starts. Null when no run has started.
+        baseline: new ObjectField({ required: true, nullable: true, initial: null }),
+        // One entry per round advance, so undo can bring back the acted markers.
+        roundHistory: list({ round: int(), acted: ids() }),
+        // Results waiting for the GM. Stored here so they survive a reload.
+        pending: list({
+          id: rowId(), rollId: text(), messageId: text(), kind: text(), npcId: text(), entryId: text(),
+          actorId: text(), actorName: text(), total: optionalInt(), outcome: text(), round: int(),
+        }),
+        // The rolls already applied, so a later reroll of one can be recognised.
+        appliedRolls: ids(),
       }),
     };
   }

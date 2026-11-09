@@ -2,6 +2,7 @@ import { registerSubsystem } from "../../registry.js";
 import { newChallengeSystem, searchText } from "./data.js";
 import { InfluenceModel } from "./model.js";
 import { InfluenceSheet } from "./sheet.js";
+import { receiveInfluenceRoll } from "./state.js";
 
 export function registerInfluence() {
   return registerSubsystem({
@@ -12,5 +13,6 @@ export function registerInfluence() {
     sheet: InfluenceSheet,
     createSystem: newChallengeSystem,
     searchText,
+    receiveRoll: receiveInfluenceRoll,
   });
 }

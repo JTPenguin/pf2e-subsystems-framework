@@ -27,6 +27,8 @@ const load = async (name) => {
 await load("constants");
 const R = await load("directory-rules");
 const D = await load("subsystems/influence/data");
+const Run = await load("subsystems/influence/run");
+const O = await load("roll-option");
 
 const MODULE = "pf2e-subsystem-manager";
 const challenge = (name, folder) => ({ name, folder, pages: [{ type: `${MODULE}.influence` }] });
@@ -206,3 +208,245 @@ test("searchText covers the challenge's text", () => {
   const text = D.searchText(s);
   for (const word of ["Banquet", "Vance", "secret ending"]) assert.ok(text.includes(word), word);
 });
+
+const runSystem = () => {
+  const s = system();
+  s.run = { status: "inactive", acted: [], log: [], baseline: null, roundHistory: [], pending: [], appliedRolls: [] };
+  s.npcs[0].points = 1;
+  s.npcs[0].influence.push(D.newInfluence());
+  s.npcs[0].discovery.push(D.newDiscovery());
+  s.npcs[0].thresholds.push({ ...D.newThreshold(), points: 2 }, { ...D.newThreshold(), points: 5 });
+  s.counters.push({ ...D.newCounter(), value: 3 });
+  return s;
+};
+const rollOf = (s, over = {}) => ({ rollId: "r1", kind: "influence", npcId: s.npcs[0].id, entryId: s.npcs[0].influence[0].id, messageId: "m1", actorId: "a1", actorName: "Ezren", total: 18, outcome: "success", isReroll: false, ...over });
+
+test("suggested points follow the spec, and an unknown outcome suggests nothing", () => {
+  assert.deepEqual(["criticalSuccess", "success", "failure", "criticalFailure"].map(Run.suggestedPoints), [2, 1, 0, -1]);
+  assert.equal(Run.suggestedPoints(""), 0);
+});
+
+test("roll option round trip, and only our options parse", () => {
+  const data = { kind: "discover", challengeId: "Cc1", npcId: "Nn1", entryId: "Ee1", rollId: "Rr1" };
+  assert.deepEqual(O.parseRollOption(O.buildRollOption(data)), data);
+  assert.equal(O.parseRollOption("ssm:skill:diplomacy"), null);
+  assert.equal(O.parseRollOption("ssm:roll:influence:a:b"), null);
+  assert.equal(O.findRollOption(["check", O.buildRollOption(data)]), O.buildRollOption(data));
+  assert.equal(O.findRollOption(undefined), null);
+});
+
+test("each click of one chat link gets its own roll id; a direct roll is left alone", () => {
+  const link = O.buildRollOption({ kind: "influence", challengeId: "c", npcId: "n", entryId: "e", rollId: O.LINK_ROLL_ID });
+  const first = O.stampLinkRoll(["x", link], "one");
+  const second = O.stampLinkRoll(["x", link], "two");
+  assert.equal(O.parseRollOption(first[1]).rollId, "one");
+  assert.equal(O.parseRollOption(second[1]).rollId, "two");
+  assert.equal(first[0], "x");
+  assert.equal(O.stampLinkRoll(first, "three"), null);
+});
+
+test("a Lore slug has one -lore ending", () => {
+  const sluggify = (t) => t.toLowerCase().replace(/\s+/g, "-");
+  assert.equal(Run.loreSlug("Warfare", sluggify), "warfare-lore");
+  assert.equal(Run.loreSlug("Warfare Lore", sluggify), "warfare-lore");
+});
+
+test("rolls need a running challenge and a known skill", () => {
+  const s = runSystem();
+  assert.equal(Run.receiveRoll(s, rollOf(s)), false);
+  Run.startRun(s);
+  assert.equal(Run.receiveRoll(s, rollOf(s, { entryId: "gone" })), false);
+  assert.equal(Run.receiveRoll(s, rollOf(s, { npcId: "gone" })), false);
+  assert.equal(s.run.pending.length, 0);
+});
+
+test("a new roll is pending and marks the PC acted once", () => {
+  const s = runSystem();
+  Run.startRun(s);
+  assert.equal(Run.receiveRoll(s, rollOf(s)), "added");
+  assert.equal(Run.receiveRoll(s, rollOf(s, { rollId: "r2" })), "added");
+  assert.equal(s.run.pending.length, 2);
+  assert.deepEqual(s.run.acted, ["a1"]);
+});
+
+test("a reroll replaces only its own pending item, in place", () => {
+  const s = runSystem();
+  Run.startRun(s);
+  Run.receiveRoll(s, rollOf(s));
+  Run.receiveRoll(s, rollOf(s, { rollId: "r2", actorId: "a2" }));
+  assert.equal(Run.receiveRoll(s, rollOf(s, { isReroll: true, messageId: "m9", total: 25, outcome: "criticalSuccess" })), "replaced");
+  assert.equal(s.run.pending.length, 2);
+  assert.deepEqual([s.run.pending[0].messageId, s.run.pending[0].outcome, s.run.pending[1].rollId], ["m9", "criticalSuccess", "r2"]);
+});
+
+test("a reroll after Apply changes nothing but the log", () => {
+  const s = runSystem();
+  Run.startRun(s);
+  Run.receiveRoll(s, rollOf(s));
+  Run.applyPending(s, s.run.pending[0].id);
+  const points = s.npcs[0].points;
+  const logs = s.run.log.length;
+  assert.equal(Run.receiveRoll(s, rollOf(s, { isReroll: true, outcome: "criticalSuccess" })), "afterApply");
+  assert.equal(s.npcs[0].points, points);
+  assert.equal(s.run.pending.length, 0);
+  assert.equal(s.run.log.length, logs + 1);
+});
+
+test("a reroll of an ignored roll comes back as new, without marking acted again", () => {
+  const s = runSystem();
+  Run.startRun(s);
+  Run.receiveRoll(s, rollOf(s));
+  Run.ignorePending(s, s.run.pending[0].id);
+  s.run.acted = [];
+  assert.equal(Run.receiveRoll(s, rollOf(s, { isReroll: true })), "added");
+  assert.equal(s.run.pending.length, 1);
+  assert.deepEqual(s.run.acted, []);
+});
+
+test("Apply uses the suggestion, Adjust's amount wins, and thresholds are marked", () => {
+  const s = runSystem();
+  Run.startRun(s);
+  Run.receiveRoll(s, rollOf(s));
+  Run.applyPending(s, s.run.pending[0].id);
+  assert.equal(s.npcs[0].points, 2);
+  assert.deepEqual(s.npcs[0].thresholds.map((t) => t.reached), [true, false]);
+  Run.receiveRoll(s, rollOf(s, { rollId: "r2" }));
+  Run.applyPending(s, s.run.pending[0].id, 5);
+  assert.equal(s.npcs[0].points, 7);
+  assert.deepEqual(s.npcs[0].thresholds.map((t) => t.reached), [true, true]);
+});
+
+test("a reached threshold stays reached when points fall", () => {
+  const s = runSystem();
+  Run.startRun(s);
+  Run.changePoints(s, s.npcs[0].id, 1);
+  Run.changePoints(s, s.npcs[0].id, -1);
+  assert.equal(s.npcs[0].thresholds[0].reached, true);
+});
+
+test("Discover confirms without points; Ignore applies nothing", () => {
+  const s = runSystem();
+  Run.startRun(s);
+  Run.receiveRoll(s, rollOf(s, { kind: "discover", entryId: s.npcs[0].discovery[0].id }));
+  Run.applyPending(s, s.run.pending[0].id);
+  assert.equal(s.npcs[0].points, 1);
+  assert.deepEqual(s.run.appliedRolls, ["r1"]);
+  Run.receiveRoll(s, rollOf(s, { rollId: "r2" }));
+  Run.ignorePending(s, s.run.pending[0].id);
+  assert.equal(s.npcs[0].points, 1);
+  assert.equal(s.run.appliedRolls.length, 1);
+  assert.equal(Run.ignorePending(s, "gone"), false);
+});
+
+test("rounds advance to the maximum, clear markers, and undo brings them back", () => {
+  const s = runSystem();
+  s.rounds.max = 2;
+  assert.equal(Run.advanceRound(s), false);
+  Run.startRun(s);
+  assert.equal(s.rounds.current, 1);
+  s.run.acted = ["a1"];
+  Run.advanceRound(s);
+  assert.deepEqual([s.rounds.current, s.run.acted], [2, []]);
+  assert.equal(Run.advanceRound(s), false);
+  Run.undoRound(s);
+  assert.deepEqual([s.rounds.current, s.run.acted], [1, ["a1"]]);
+  assert.equal(Run.undoRound(s), false);
+});
+
+test("reveal toggles and undoes, for skills and counters", () => {
+  const s = runSystem();
+  const row = s.npcs[0].influence[0];
+  Run.toggleReveal(s, row.id, "Diplomacy");
+  assert.equal(row.revealed, true);
+  Run.toggleReveal(s, row.id, "Diplomacy");
+  assert.equal(row.revealed, false);
+  Run.toggleReveal(s, s.counters[0].id, "Suspicion");
+  assert.equal(s.counters[0].revealed, true);
+  assert.equal(Run.toggleReveal(s, "gone", "x"), false);
+});
+
+test("the acted marker toggles", () => {
+  const s = runSystem();
+  Run.toggleActed(s, "a1");
+  assert.deepEqual(s.run.acted, ["a1"]);
+  Run.toggleActed(s, "a1");
+  assert.deepEqual(s.run.acted, []);
+});
+
+test("end keeps the final state; reset returns to how the run started", () => {
+  const s = runSystem();
+  s.npcs[0].discovery[0].revealed = true;
+  s.rounds.current = 0;
+  Run.startRun(s);
+  assert.equal(Run.startRun(s), false);
+  Run.changePoints(s, s.npcs[0].id, 4);
+  Run.toggleReveal(s, s.npcs[0].influence[0].id, "x");
+  Run.toggleReveal(s, s.npcs[0].discovery[0].id, "x");
+  s.npcs[0].influence[0].dc = 22;
+  s.counters[0].value = 9;
+  Run.receiveRoll(s, rollOf(s));
+  Run.advanceRound(s);
+  Run.endRun(s);
+  assert.equal(s.run.status, "finished");
+  assert.equal(s.npcs[0].points, 5);
+  Run.resetRun(s);
+  assert.equal(s.run.status, "inactive");
+  assert.deepEqual([s.rounds.current, s.npcs[0].points, s.counters[0].value], [0, 1, 3]);
+  assert.deepEqual(s.npcs[0].thresholds.map((t) => t.reached), [false, false]);
+  assert.equal(s.npcs[0].influence[0].revealed, false);
+  assert.equal(s.npcs[0].discovery[0].revealed, true);
+  assert.equal(s.npcs[0].influence[0].dc, 22, "a DC edit is not run state");
+  for (const list of ["log", "pending", "acted", "roundHistory", "appliedRolls"]) assert.deepEqual(s.run[list], [], list);
+  assert.equal(s.run.baseline, null);
+  assert.equal(Run.resetRun(s), false);
+});
+
+test("a row added during a run survives a reset", () => {
+  const s = runSystem();
+  Run.startRun(s);
+  const late = D.addRow(s, "npcs.0.influence");
+  late.revealed = true;
+  Run.resetRun(s);
+  assert.equal(s.npcs[0].influence.at(-1).id, late.id);
+});
+
+test("reset clears reached on thresholds added during the run, for old and new NPCs", () => {
+  const s = runSystem();
+  Run.startRun(s);
+  const late = { ...D.addRow(s, "npcs.0.thresholds"), points: 1, reached: true };
+  s.npcs[0].thresholds[s.npcs[0].thresholds.length - 1] = late;
+  const newNpc = D.addRow(s, "npcs");
+  newNpc.points = 3;
+  newNpc.thresholds.push({ ...D.newThreshold(), points: 1, reached: true });
+  Run.resetRun(s);
+  assert.equal(s.npcs[0].thresholds.at(-1).reached, false);
+  assert.equal(s.npcs[1].thresholds[0].reached, false);
+  assert.equal(s.npcs[1].points, 3, "a new NPC has no start value to go back to");
+});
+
+test("after End, a reroll updates a pending item but nothing else gets in", () => {
+  const s = runSystem();
+  Run.startRun(s);
+  Run.receiveRoll(s, rollOf(s));
+  Run.receiveRoll(s, rollOf(s, { rollId: "r2" }));
+  Run.applyPending(s, s.run.pending[1].id);
+  Run.endRun(s);
+  assert.equal(Run.receiveRoll(s, rollOf(s, { isReroll: true, outcome: "failure", total: 7 })), "replaced");
+  assert.deepEqual([s.run.pending[0].outcome, s.run.pending[0].total], ["failure", 7]);
+  assert.equal(Run.receiveRoll(s, rollOf(s, { rollId: "r3" })), false);
+  const logs = s.run.log.length;
+  assert.equal(Run.receiveRoll(s, rollOf(s, { rollId: "r2", isReroll: true })), false);
+  assert.equal(s.run.log.length, logs);
+  assert.equal(s.run.pending.length, 1);
+});
+
+test("applyForm changes the editable parts and never run state", () => {
+  const s = runSystem();
+  Run.startRun(s);
+  Run.changePoints(s, s.npcs[0].id, 2);
+  D.applyForm(s, { rounds: { length: "1 hour" }, run: { status: "finished" } });
+  assert.equal(s.rounds.length, "1 hour");
+  assert.equal(s.run.status, "active");
+  assert.equal(s.npcs[0].points, 3);
+});
+

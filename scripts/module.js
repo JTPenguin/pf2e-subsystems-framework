@@ -1,6 +1,7 @@
 import { installDirectories } from "./directories.js";
 import { isChallengeType } from "./directory-rules.js";
 import { allSubsystems, subsystemFor } from "./registry.js";
+import { installRollListener } from "./roll-listener.js";
 import { registerInfluence } from "./subsystems/influence/definition.js";
 
 Hooks.once("init", () => {
@@ -14,6 +15,7 @@ Hooks.once("init", () => {
     });
   }
   installDirectories();
+  installRollListener();
 });
 
 /** Point every new challenge at its sheet, however it was created: this flag is what `entry.sheet` reads. */

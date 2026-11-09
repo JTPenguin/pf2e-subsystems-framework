@@ -4,7 +4,8 @@ import { MODULE } from "./constants.js";
  * One definition per subsystem. The shared parts read these and know nothing about any one subsystem.
  *
  * Required: id, label (language key), icon, model (page data model), sheet (JournalEntry sheet class).
- * Optional: createSystem() for a new challenge's data, searchText(system) for full-text search.
+ * Optional: createSystem() for a new challenge's data, searchText(system) for full-text search,
+ * receiveRoll(page, roll) for a roll result from the shared roll listener.
  *
  * Later phases add the filtered-copy builder and panel renderer here (spec section 4).
  */

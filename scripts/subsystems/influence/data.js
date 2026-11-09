@@ -103,6 +103,12 @@ export function mergeForm(source, form, path = "") {
   return form;
 }
 
+/** Merge expanded form data into the source's editable parts. Run state never comes from the form. */
+export function applyForm(system, form) {
+  const { premise, gmNotes, rounds, npcs, counters } = mergeForm(system, form);
+  Object.assign(system, { premise, gmNotes, rounds, npcs, counters });
+}
+
 /** Keep only the named fields of expanded form data, for example "premise" or "npcs.0.name". */
 export function pickFields(form, names) {
   const picked = {};
