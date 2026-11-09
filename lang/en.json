@@ -160,7 +160,9 @@
         "criticalFailure": "Earns one false piece of information."
       },
       "UnnamedEntry": "Unnamed entry",
-      "Base": "Base",
+      "BaseDc": "Base DC {dc}",
+      "RollSkill": "Roll {skill}, DC {dc}, for the chosen PC",
+      "PostSkill": "Post a chat link for {skill}",
       "TurnOn": "Turn on",
       "TurnOff": "Turn off",
       "Restore": "Restore",

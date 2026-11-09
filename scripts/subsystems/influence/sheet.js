@@ -262,7 +262,18 @@ export class InfluenceSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
     const onPanel = panel.id === this.document.id;
     const rollRows = (npc, rows, kind) => rows.map((row) => {
       const dc = currentDc(system, npc, row);
-      return { ...row, kind, npcId: npc.id, label: skillLabel(row), currentDc: dc, dcChanged: dc !== row.dc, universal: kind === "discover" ? isUniversalDiscovery(row) : isUniversalInfluence(row) };
+      const label = skillLabel(row);
+      const universal = kind === "discover" ? isUniversalDiscovery(row) : isUniversalInfluence(row);
+      // The chip shows the name and current DC. The tooltip adds the base DC and whether the row is a decoy.
+      const tooltip = [loc("SSM.Influence.RollFor"), game.i18n.format("SSM.Influence.BaseDc", { dc: row.dc })];
+      if (row.decoy && !universal) tooltip.push(loc("SSM.Influence.Decoy"));
+      return {
+        ...row, kind, npcId: npc.id, label, universal, currentDc: dc, dcChanged: dc !== row.dc, dcUp: dc > row.dc,
+        shown: universal || row.revealed,
+        rollLabel: game.i18n.format("SSM.Influence.RollSkill", { skill: label, dc }),
+        postLabel: game.i18n.format("SSM.Influence.PostSkill", { skill: label }),
+        tooltip: tooltip.join(". "),
+      };
     });
     return {
       canRun,
@@ -287,7 +298,7 @@ export class InfluenceSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
         points: npc.points,
         discovery: rollRows(npc, npc.discovery, "discover"),
         influence: rollRows(npc, npc.influence, "influence"),
-        thresholds: npc.thresholds.map((row) => ({ ...row, label: `${row.points}: ${row.playerText || row.gmText}` })),
+        thresholds: npc.thresholds.map((row) => ({ ...row, text: row.playerText || row.gmText })),
         modifiers: npc.modifiers.map((row) => this.#modifierView(system, npc, row, canChange)),
       })),
       counters: system.counters.map((counter) => ({

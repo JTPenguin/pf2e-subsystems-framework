@@ -27,10 +27,9 @@
 .ssm-grow { flex: 1 1 auto; min-width: 0; }
 .ssm-muted { opacity: 0.7; font-size: var(--font-size-12, 0.75rem); }
 .ssm-controls > button { flex: none; width: auto; }
-.ssm-controls > button.icon, .ssm-entry > button.icon, .ssm-points > button.icon { width: 2rem; margin-left: 0; }
-.ssm-row.ssm-entry, .ssm-row.ssm-points, .ssm-row.ssm-controls { align-items: center; }
+.ssm-controls > button.icon, .ssm-entry > button.icon { width: 2rem; margin-left: 0; }
+.ssm-row.ssm-entry, .ssm-row.ssm-controls { align-items: center; }
 .ssm-entry { margin-bottom: 0.15rem; }
-.ssm-no-eye { flex: none; width: 2rem; }
 .ssm-point-total { font-size: var(--font-size-18, 1.125rem); min-width: 2rem; text-align: center; }
 .ssm-body h4 { margin: 0.4rem 0 0.15rem; font-size: var(--font-size-12, 0.75rem); text-transform: uppercase; border: none; opacity: 0.8; }
 .ssm-chips { display: flex; flex-wrap: wrap; gap: 0.25rem; }
@@ -44,6 +43,51 @@
 .ssm-dc-changed { font-weight: bold; color: var(--color-text-accent, #c9a13a); }
 .ssm-state-on { border-color: #4f9d5d; color: #4f9d5d; }
 .ssm-state-spent { opacity: 0.6; text-decoration: line-through; }
+
+/* Run mode NPC: points on the left, skill chips beside them, then thresholds and modifiers in their own groups. */
+.ssm-npc-top { display: flex; align-items: stretch; gap: 0.75rem; margin-bottom: 0.25rem; }
+.ssm-points-box { flex: none; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.1rem; padding: 0.2rem 0.4rem; border: 1px solid var(--color-border, #7a7971); border-radius: 4px; background: var(--content-link-background, rgba(0, 0, 0, 0.1)); }
+.ssm-points-controls { display: flex; align-items: center; gap: 0.15rem; }
+.ssm-points-controls > button.icon { --button-size: 1.75rem; margin: 0; }
+.ssm-points-box .ssm-point-total { font-size: var(--font-size-24, 1.5rem); line-height: 1; }
+.ssm-npc-skills { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; justify-content: center; gap: 0.3rem; }
+.ssm-skill-line { display: flex; align-items: center; gap: 0.5rem; }
+.ssm-line-label { flex: 0 0 7.5rem; font-size: var(--font-size-11, 0.7rem); text-transform: uppercase; opacity: 0.8; }
+.ssm-skill-chips { flex: 1 1 auto; min-width: 0; display: flex; flex-wrap: wrap; gap: 0.25rem; }
+.ssm-npc-group { margin-top: 0.35rem; padding-top: 0.2rem; border-top: 1px dashed var(--color-border, #7a7971); }
+.ssm-npc-group > h4 { margin-top: 0; }
+
+/* A skill chip looks like PF2e's inline check. It is a wrapper, not a button: the eye, the roll and the chat link are three separate buttons inside it. */
+.ssm-skill { display: inline-flex; align-items: stretch; height: 1.6rem; border: 1px solid var(--content-link-border-color, #7a7971); border-radius: 2px; background: var(--content-link-background, rgba(0, 0, 0, 0.1)); color: var(--content-link-text-color, inherit); font-size: var(--font-size-13, 0.8125rem); white-space: nowrap; }
+.ssm-sheet .ssm-skill > button { --button-size: auto; display: inline-flex; align-items: center; flex: none; width: auto; height: auto; min-height: 0; margin: 0; padding: 0 0.3rem; border: none; border-radius: 0; background: none; box-shadow: none; color: inherit; font-size: inherit; transition: none; }
+.ssm-sheet .ssm-skill > button.icon, .ssm-sheet .ssm-skill > .ssm-skill-post { font-size: 0.8em; color: var(--content-link-icon-color, inherit); }
+.ssm-sheet .ssm-skill > button + button { border-left: 1px solid var(--content-link-border-color, #7a7971); }
+.ssm-sheet .ssm-skill > button:hover:not(:disabled) { text-shadow: 0 0 8px var(--color-shadow-primary, #ff6400); }
+.ssm-sheet .ssm-skill > button:focus-visible { outline: 1px solid var(--button-focus-outline-color, #ff6400); outline-offset: -1px; }
+.ssm-sheet .ssm-skill > button:disabled { opacity: 0.5; text-shadow: none; }
+.ssm-skill-roll { gap: 0.3rem; }
+.ssm-skill-roll > i { font-size: 0.9em; color: var(--content-link-icon-color, inherit); }
+.ssm-skill-dc { opacity: 0.85; }
+.ssm-skill-dc.ssm-dc-changed { opacity: 1; }
+.ssm-skill-dc > i { margin-left: 0.15rem; }
+/* Hidden from players: dashed outline and no fill. Universal skills are always shown. */
+.ssm-skill.ssm-hidden { border-style: dashed; background: none; }
+.ssm-skill.ssm-hidden .ssm-skill-name { opacity: 0.7; font-style: italic; }
+.ssm-skill.ssm-shown:not(.ssm-universal) > button.icon { color: var(--color-text-accent, #c9a13a); }
+
+.ssm-threshold-points { flex: none; min-width: 1.75rem; padding: 0 0.25rem; border: 1px solid var(--color-border, #7a7971); border-radius: 999px; text-align: center; font-size: var(--font-size-12, 0.75rem); font-weight: bold; }
+.ssm-threshold.ssm-reached-row .ssm-threshold-points { border-color: #4f9d5d; background: #4f9d5d; color: #fff; }
+.ssm-reached { border-color: #4f9d5d; color: #4f9d5d; }
+.ssm-entry.ssm-hidden > .ssm-grow, .ssm-modifier.ssm-hidden > .ssm-entry > .ssm-grow { opacity: 0.7; font-style: italic; }
+.ssm-npc .ssm-modifier { padding: 0.1rem 0 0.1rem 0.25rem; border-left: 3px solid var(--color-border-highlight, #b8a06a); border-radius: 2px; background: rgba(255, 255, 255, 0.03); margin-bottom: 0.25rem; }
+.ssm-npc .ssm-modifier .ssm-entry { margin-bottom: 0; }
+.ssm-npc .ssm-detail { padding-left: 2.25rem; }
+.ssm-npc .ssm-modifier.ssm-kind-weakness { border-left-color: #6fae6a; }
+.ssm-npc .ssm-modifier.ssm-kind-resistance { border-left-color: #c0523f; }
+.ssm-npc .ssm-modifier.ssm-kind-penalty { border-left-color: #c9743a; }
+.ssm-npc .ssm-modifier.ssm-kind-adjustment { border-left-color: #7a9cc6; }
+.ssm-npc .ssm-modifier.ssm-mod-off, .ssm-npc .ssm-modifier.ssm-mod-spent { background: none; }
+.ssm-npc .ssm-modifier.ssm-mod-spent { opacity: 0.6; }
 
 /* The panel over the canvas. #ui-top ignores the pointer, so only the panel's own area takes clicks. */
 /* The height limit is 80% of #ui-top, which is the top half of the screen at any UI scale. The whole panel scrolls past that, so a redraw keeps the place. #ui-top is scaled but not narrowed, so the width limit divides the scale out. */

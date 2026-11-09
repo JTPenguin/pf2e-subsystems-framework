@@ -1,12 +1,13 @@
 ---
 title: "Tidier NPC section on the GM sheet, with skill chips"
 kind: feature
-status: ready
-waits_on: Claude
+status: done
+waits_on: none
 blocked_by: []
 source: "Justin's request, 2026-11-09"
 added: 2026-11-09
 updated: 2026-11-09
+outcome: "Done 2026-11-09. Skill rows are chips (roll, chat icon, eye, DC with change caret, base DC and decoy in tooltip); NPC section grouped into points, chips, thresholds and modifier cards. Checked live in Run mode."
 ---
 # Tidier NPC section on the GM sheet, with skill chips
 
