@@ -13,6 +13,7 @@ import { MODULE } from "./constants.js";
  *   template and prepareView(view): the player panel's template and its context, from the filtered copy alone.
  *   gmTemplate and prepareGm(system): the GM's extra part and its context, or null to show none.
  *   actions: { name: (page, button) } for buttons with data-action in the GM's part.
+ *   viewActions: { name: (state, button, event) } for buttons any user can press. They read only the filtered copy, `state.view`.
  */
 const definitions = new Map();
 

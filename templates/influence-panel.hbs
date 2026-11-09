@@ -10,8 +10,8 @@
       <span class="ssm-panel-bar {{#if bar.negative}}negative{{/if}}"><span style="width: {{bar.percent}}%"></span></span>
       <strong>{{points}}</strong>
     </div>
-    {{#if influence.length}}<p><span class="ssm-panel-label">{{localize "SSM.Panel.Influence"}}</span> <span class="ssm-panel-list">{{#each influence}}<span>{{label}}{{#if dcText}} ({{dcText}}){{/if}}</span>{{/each}}</span></p>{{/if}}
-    {{#if discovery.length}}<p><span class="ssm-panel-label">{{localize "SSM.Panel.Discover"}}</span> <span class="ssm-panel-list">{{#each discovery}}<span>{{label}}</span>{{/each}}</span></p>{{/if}}
+    {{#if influence.length}}<p><span class="ssm-panel-label">{{localize "SSM.Panel.Influence"}}</span> <span class="ssm-panel-list">{{#each influence}}<span>{{#if canRoll}}<button type="button" class="ssm-panel-skill" data-action="rollSkill" data-npc="{{npcId}}" data-kind="{{kind}}" data-id="{{id}}" data-tooltip="{{tooltip}}">{{label}}</button>{{else}}{{label}}{{/if}}{{#if dcText}} ({{dcText}}){{/if}}</span>{{/each}}</span></p>{{/if}}
+    {{#if discovery.length}}<p><span class="ssm-panel-label">{{localize "SSM.Panel.Discover"}}</span> <span class="ssm-panel-list">{{#each discovery}}<span>{{#if canRoll}}<button type="button" class="ssm-panel-skill" data-action="rollSkill" data-npc="{{npcId}}" data-kind="{{kind}}" data-id="{{id}}" data-tooltip="{{tooltip}}">{{label}}</button>{{else}}{{label}}{{/if}}</span>{{/each}}</span></p>{{/if}}
     {{#if known.length}}<p><span class="ssm-panel-label">{{localize "SSM.Panel.Known"}}</span> {{#each known}}<span class="ssm-panel-known"><strong>{{name}}</strong>{{#if text}}: {{text}}{{/if}}</span> {{/each}}</p>{{/if}}
     {{#each thresholds}}<p class="ssm-panel-goal {{#if reached}}reached{{/if}}"><span class="ssm-panel-label">{{localize "SSM.Panel.Goal"}}</span> {{points}}{{#if text}}: {{text}}{{/if}}{{#if reached}} <i class="fa-solid fa-check" inert></i> <span class="ssm-panel-reached">{{localize "SSM.Influence.ReachedShort"}}</span>{{/if}}</p>{{/each}}
   </div>

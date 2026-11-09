@@ -940,6 +940,39 @@ test("a visible skill carries its current DC, and show-DC is what lets the panel
   assert.equal(viewOf(s).npcs[0].influence[0].dc, 18);
 });
 
+test("a panel click finds the skill in the right NPC's column, by kind", () => {
+  const s = secretSystem();
+  s.npcs.push({ ...D.newNpc(), name: "Lord Ostrov" });
+  const [first, second] = s.npcs;
+  first.influence[0].revealed = true;
+  second.influence = [{ ...D.newInfluence(), revealed: true }];
+  second.discovery = [{ ...D.newDiscovery() }];
+  const view = viewOf(s);
+  const find = (npc, kind, id) => V.findPanelRow(view, { npc: npc.id, kind, id });
+  assert.equal(find(first, "influence", first.influence[0].id).npc.name, "Lady Vance");
+  assert.equal(find(second, "influence", second.influence[0].id).npc.name, "Lord Ostrov");
+  assert.equal(find(second, "discover", second.discovery[0].id).kind, "discover");
+  assert.equal(find(first, "influence", second.influence[0].id), null);
+});
+
+test("a panel click on a hidden skill or a gone panel finds nothing", () => {
+  const s = secretSystem();
+  const row = s.npcs[0].influence[0];
+  assert.equal(V.findPanelRow(viewOf(s), { npc: s.npcs[0].id, kind: "influence", id: row.id }), null);
+  assert.equal(V.findPanelRow(null, { npc: s.npcs[0].id, kind: "influence", id: row.id }), null);
+  assert.equal(V.findPanelRow(undefined, {}), null);
+});
+
+test("a panel click uses the copy's current DC, one-time entry included", () => {
+  const s = secretSystem();
+  const npc = s.npcs[0];
+  const row = npc.influence[0];
+  row.revealed = true;
+  row.dc = 20;
+  npc.modifiers[0] = { ...npc.modifiers[0], duration: "oneTime", active: true, effects: [{ ...D.newEffect(), type: "dc", amount: -2 }] };
+  assert.equal(V.findPanelRow(viewOf(s), { npc: npc.id, kind: "influence", id: row.id }).row.dc, 18);
+});
+
 test("party markers show who has acted, and an empty party is fine", () => {
   const s = secretSystem();
   s.run.acted = ["a1"];

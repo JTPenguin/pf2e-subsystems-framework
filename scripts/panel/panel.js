@@ -36,10 +36,13 @@ function activePage(state) {
 
 function onClick(event) {
   const target = event.target.closest("[data-action]");
-  if (!target || target.disabled || !game.user.isActiveGM) return;
+  if (!target || target.disabled) return;
   const state = panelState();
-  const page = activePage(state);
-  if (page) subsystemByType(state.type)?.panel?.actions?.[target.dataset.action]?.(page, target);
+  const panel = subsystemByType(state.type)?.panel;
+  const { action } = target.dataset;
+  if (panel?.viewActions?.[action]) return panel.viewActions[action](state, target, event);
+  const page = game.user.isActiveGM ? activePage(state) : null;
+  if (page) panel?.actions?.[action]?.(page, target);
 }
 
 function mountPanel() {

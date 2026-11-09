@@ -29,7 +29,10 @@
       "Discover": "Discover",
       "Known": "Known",
       "Goal": "Goal",
-      "Acted": "Acted"
+      "Acted": "Acted",
+      "RollAgainst": "Roll {skill}: {npc}",
+      "NoCharacter": "You need an assigned character to roll. Ask the GM to assign one.",
+      "SkillGone": "That check is no longer available."
     },
     "Influence": {
       "Label": "Influence",

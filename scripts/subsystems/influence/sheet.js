@@ -4,9 +4,9 @@ import { hidePanel, panelBlockedBy, panelState, showPanel } from "../../panel/ac
 import { partyPCs } from "../../party.js";
 import { pendingItems, skillLabel } from "./pending-view.js";
 import { adjustResult, announceTriggers, confirmResult, ignoreResult, writeChallenge } from "./state.js";
-import { advanceRound, applyModifier, canApplyModifier, canRestoreModifier, changeCounter, changePoints, currentDc, endRun, isClaimed, loreSlug, resetRun, restoreModifier, startRun, toggleActed, toggleModifier, toggleReveal, undoRound } from "./run.js";
-import { loreStatistic } from "../../lore-statistic.js";
-import { buildRollOption, LINK_ROLL_ID } from "../../roll-option.js";
+import { advanceRound, applyModifier, canApplyModifier, canRestoreModifier, changeCounter, changePoints, currentDc, endRun, isClaimed, resetRun, restoreModifier, startRun, toggleActed, toggleModifier, toggleReveal, undoRound } from "./run.js";
+import { LINK_ROLL_ID } from "../../roll-option.js";
+import { rollCheck, rollTarget } from "./roll.js";
 import { addRow, applyForm, clampCounters, DURATIONS, EFFECT_TYPES, isUniversalDiscovery, limitCounter, LORE, MODIFIER_KINDS, PERCEPTION, QUICK_DC_AMOUNTS, pickFields, removeRow, setEffectAmount } from "./data.js";
 
 const { DocumentSheetV2, HandlebarsApplicationMixin } = foundry.applications.api;
@@ -516,10 +516,7 @@ export class InfluenceSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
     const npc = system.npcs.find((candidate) => candidate.id === npcId);
     const row = npc?.[kind === "influence" ? "influence" : "discovery"].find((candidate) => candidate.id === id);
     if (!row) return null;
-    const slug = row.skill === LORE ? loreSlug(row.lore || loc("SSM.Influence.Lore"), game.pf2e.system.sluggify) : row.skill;
-    const option = (rollId) => buildRollOption({ kind, challengeId: this.document.id, npcId, entryId: id, rollId });
-    const npcLabel = npc.name || loc("SSM.Influence.NPC");
-    return { npc, row, slug, kind, option, npcLabel, dc: currentDc(system, npc, row), showDC: !!row.showDC };
+    return rollTarget({ challengeId: this.document.id, npc, row, kind, dc: currentDc(system, npc, row), showDC: !!row.showDC });
   }
 
   static async #onRollSkill(event, target) {
@@ -528,16 +525,7 @@ export class InfluenceSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
     if (!roll) return;
     const actor = this.#selectedActor();
     if (!actor) return ui.notifications.warn("SSM.Influence.NoPCSelected", { localize: true });
-    const statistic = roll.slug === PERCEPTION ? actor.perception : roll.row.skill === LORE ? loreStatistic(actor, roll.slug, skillLabel(roll.row)) : actor.skills?.[roll.slug];
-    if (!statistic) return ui.notifications.warn(game.i18n.format("SSM.Influence.MissingSkill", { actor: actor.name, skill: skillLabel(roll.row) }));
-    return statistic.roll({
-      event,
-      // Pass a plain number with no slug or statistic, so PF2e doesn't look for an opposing actor. That would reveal the DC.
-      dc: { value: roll.dc, visible: roll.showDC },
-      label: game.i18n.format(`SSM.Influence.RollLabel.${roll.kind}`, { npc: roll.npcLabel }),
-      extraRollOptions: [roll.option(foundry.utils.randomID())],
-      messageMode: "public",
-    });
+    return rollCheck(actor, roll, { event, messageMode: "public" });
   }
 
   static #onPostLink(event, target) {

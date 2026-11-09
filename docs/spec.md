@@ -24,6 +24,7 @@ The first version covers **Influence only**. The data and panel code are built s
 | NPCs | One challenge holds one or more NPCs and one shared round clock | Justin |
 | Hidden by default | Everything except the NPC name, Influence Points, rounds remaining and the universal Discovery skills (Perception and Society) | Justin |
 | DCs | Hidden from players by default, with a per-skill option to show one. If a world turns on PF2e's `metagame_showDC` setting, DCs show as on any other roll, with no warning to the GM. | Justin |
+| Several NPCs on the panel | One column per NPC, each with its own skills. No separate NPC picker. | Justin |
 | Portraits | Not on the panel. Tokens or VN Stage handle those. | Justin |
 | False information | The GM can reveal a planted decoy. Players can't tell it from a true entry. | Justin |
 | Who has acted | Shown on the panel. Advisory only; nothing blocks a roll. | Justin |
@@ -167,7 +168,7 @@ The sheet has **Edit** and **Run** modes, like a locked and unlocked actor sheet
 **Rules for the panel:**
 
 - It has no close button, and players have no control that hides it.
-- Clicking a skill rolls for the player's assigned character. With several NPCs, the player picks one first.
+- Clicking a skill rolls for the player's assigned character. Each NPC's column has its own skills, so the click also chooses the NPC.
 - It leaves the canvas clickable outside its own area.
 - The default position is top centre. A world setting offers other positions.
 - The GM sees the same panel plus the pending-results list (section 8).
@@ -211,7 +212,7 @@ These are notes to prove that the shared design stretches. They aren't requireme
 | 1. Objects and sheets | Module loads; sidebar tab; create and edit an Influence challenge | A challenge survives reload, folders, duplicate and JSON export |
 | 2. Run from the sheet | Run mode, rolling, chat links, confirm flow, modifiers, counters | A GM can run a whole challenge without the panel |
 | 3. Panel | Filtered copy, panel, reveal, every-scene behaviour | A player client shows only what was revealed, across scene changes and reloads |
-| 4. Player actions | Clickable skills, NPC picker, acted markers | A player's roll reaches the GM's pending list and applies correctly |
+| 4. Player actions | Clickable skills per NPC column, acted markers | A player's roll reaches the GM's pending list and applies correctly |
 | 5. Table polish | Layout with several NPCs, VN Stage check, zip build for friends | One real challenge run end to end with a second player login |
 
 **Checks.** Follow VN Stage's pattern: `tools/test.mjs` for logic and `tools/check-load.mjs` for load errors, run through Foundry's Electron because Node isn't installed. Every phase also gets a live check in Foundry, with a player login for phases 3 to 5.

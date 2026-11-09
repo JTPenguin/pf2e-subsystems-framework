@@ -37,6 +37,13 @@ export function buildPanelView({ name, system, party }) {
   };
 }
 
+/** The NPC and skill a panel click means, from the copy as it is now. Null if the skill is hidden or the panel has gone. */
+export function findPanelRow(view, { npc: npcId, kind, id }) {
+  const npc = view?.npcs.find((candidate) => candidate.id === npcId);
+  const row = npc?.[kind === "influence" ? "influence" : "discovery"].find((candidate) => candidate.id === id);
+  return row ? { npc, row, kind } : null;
+}
+
 /** How full an NPC's bar is, from 0 to 100, using only what players can see. Negative points fill it in the negative style. */
 export function pointsBar(points, thresholds) {
   const goal = Math.max(0, ...thresholds.map((threshold) => threshold.points));
