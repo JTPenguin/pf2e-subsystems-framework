@@ -1,6 +1,6 @@
 {{#*inline "ssmEye"}}<button type="button" class="icon fa-solid {{#if revealed}}fa-eye{{else}}fa-eye-slash{{/if}}" data-action="toggleReveal" data-id="{{id}}" data-label="{{label}}" aria-label="{{localize "SSM.Influence.RevealToggle"}}" aria-pressed="{{revealed}}" data-tooltip="{{localize "SSM.Influence.RevealToggle"}}" {{#unless root.canRun}}disabled{{/unless}}></button>{{/inline}}
 {{#*inline "ssmSkillRow"}}<div class="ssm-row ssm-entry">
-  {{> ssmEye root=root}}
+  {{#if universal}}<span class="ssm-no-eye"></span>{{else}}{{> ssmEye root=root}}{{/if}}
   <span class="ssm-grow">{{label}}{{#if decoy}} <span class="ssm-tag ssm-decoy">{{localize "SSM.Influence.Decoy"}}</span>{{/if}}</span>
   <span class="ssm-muted">{{localize "SSM.Influence.Base"}} {{dc}}</span>
   <span class="{{#if dcChanged}}ssm-dc-changed{{/if}}">{{localize "SSM.Influence.DC"}} {{currentDc}}</span>
@@ -29,7 +29,8 @@
         {{#if canStart}}<button type="button" data-action="startRun" {{#unless canRun}}disabled{{/unless}}>{{localize "SSM.Influence.Start"}}</button>{{/if}}
         {{#if canEnd}}<button type="button" data-action="endRun" {{#unless canRun}}disabled{{/unless}}>{{localize "SSM.Influence.End"}}</button>{{/if}}
         {{#if canReset}}<button type="button" data-action="resetRun" {{#unless canRun}}disabled{{/unless}}>{{localize "SSM.Influence.Reset"}}</button>{{/if}}
-        {{!-- Panel show and hide (Phase 3) go here. --}}
+        {{#if canHidePanel}}<button type="button" data-action="hidePanel" {{#unless canRun}}disabled{{/unless}}>{{localize "SSM.Panel.Hide"}}</button>{{/if}}
+        {{#if canShowPanel}}<button type="button" data-action="showPanel" {{#unless canRun}}disabled{{/unless}}>{{localize "SSM.Panel.Show"}}</button>{{/if}}
         <span class="ssm-grow"></span>
         <strong>{{roundLabel}}</strong>{{#if roundLength}}<span class="ssm-muted">{{roundLength}}</span>{{/if}}
         <button type="button" class="icon fa-solid fa-rotate-left" data-action="undoRound" aria-label="{{localize "SSM.Influence.UndoRound"}}" data-tooltip="{{localize "SSM.Influence.UndoRound"}}" {{#unless canUndoRound}}disabled{{/unless}}></button>
@@ -196,7 +197,7 @@
       <div class="ssm-row">
         <label class="grow">{{localize "SSM.Influence.Skill"}}<select name="{{path}}.skill">{{selectOptions @root.choices.discovery selected=skill}}</select></label>
         <label>{{localize "SSM.Influence.DC"}}<input type="number" min="0" step="1" name="{{path}}.dc" value="{{dc}}"></label>
-        <label class="check"><input type="checkbox" name="{{path}}.revealed" {{checked revealed}}>{{localize "SSM.Influence.Revealed"}}</label>
+        {{#unless universal}}<label class="check"><input type="checkbox" name="{{path}}.revealed" {{checked revealed}}>{{localize "SSM.Influence.Revealed"}}</label>{{/unless}}
         <label class="check"><input type="checkbox" name="{{path}}.decoy" {{checked decoy}}>{{localize "SSM.Influence.Decoy"}}</label>
         <button type="button" class="icon fa-solid fa-trash" data-action="removeRow" data-path="{{path}}" aria-label="{{localize "SSM.Influence.Remove"}}"></button>
       </div>

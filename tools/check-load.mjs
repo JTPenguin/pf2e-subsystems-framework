@@ -31,7 +31,7 @@ const field = class {};
 globalThis.foundry = {
   abstract: { TypeDataModel: Base },
   data: { fields: new Proxy({}, { get: () => field }) },
-  applications: { api: { DocumentSheetV2: Base, HandlebarsApplicationMixin: (B) => class extends B {} } },
+  applications: { handlebars: {}, api: { DocumentSheetV2: Base, HandlebarsApplicationMixin: (B) => class extends B {} } },
   utils: {},
 };
 globalThis.Hooks = { on() {}, once() {} };

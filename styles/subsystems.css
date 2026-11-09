@@ -30,6 +30,7 @@
 .ssm-controls > button.icon, .ssm-entry > button.icon, .ssm-points > button.icon { width: 2rem; margin-left: 0; }
 .ssm-row.ssm-entry, .ssm-row.ssm-points, .ssm-row.ssm-controls { align-items: center; }
 .ssm-entry { margin-bottom: 0.15rem; }
+.ssm-no-eye { flex: none; width: 2rem; }
 .ssm-point-total { font-size: var(--font-size-18, 1.125rem); min-width: 2rem; text-align: center; }
 .ssm-body h4 { margin: 0.4rem 0 0.15rem; font-size: var(--font-size-12, 0.75rem); text-transform: uppercase; border: none; opacity: 0.8; }
 .ssm-chips { display: flex; flex-wrap: wrap; gap: 0.25rem; }
@@ -48,3 +49,29 @@
 .ssm-state-spent { opacity: 0.6; text-decoration: line-through; }
 .ssm-warning { display: block; color: #d9822b; font-size: var(--font-size-12, 0.75rem); }
 .ssm-log { max-height: 12rem; overflow-y: auto; font-size: var(--font-size-12, 0.75rem); }
+
+/* The panel over the canvas. #ui-top ignores the pointer, so only the panel's own area takes clicks. */
+.ssm-panel { pointer-events: auto; align-self: center; box-sizing: border-box; width: fit-content; min-width: 20rem; max-width: 100%; max-height: 100%; overflow-y: auto; margin-top: 0.5rem; padding: 0.4rem 0.75rem; background: rgba(20, 18, 16, 0.92); border: 1px solid #b8a06a; border-radius: 6px; color: #eee; font-size: var(--font-size-13, 0.8125rem); }
+.ssm-panel[data-position="left"] { align-self: flex-start; }
+.ssm-panel[data-position="right"] { align-self: flex-end; }
+.ssm-panel p { margin: 0.15rem 0 0; }
+.ssm-panel-head { display: flex; justify-content: space-between; gap: 2rem; }
+.ssm-panel-name { font-size: var(--font-size-15, 0.9375rem); }
+.ssm-panel-npcs { display: flex; gap: 1rem; margin-top: 0.2rem; }
+.ssm-panel-npc { flex: 1 1 0; min-width: 0; }
+.ssm-panel-npcs.several { font-size: var(--font-size-12, 0.75rem); }
+.ssm-panel-points { display: flex; align-items: center; gap: 0.5rem; }
+.ssm-panel-npc-name { font-weight: bold; }
+.ssm-panel-bar { flex: 1 1 4rem; min-width: 3rem; height: 0.55rem; background: rgba(255, 255, 255, 0.15); border-radius: 3px; overflow: hidden; }
+.ssm-panel-bar > span { display: block; height: 100%; background: #b8a06a; }
+.ssm-panel-bar.negative > span { background: #c0523f; }
+.ssm-panel-label { opacity: 0.7; }
+.ssm-panel-label::after { content: ":"; }
+.ssm-panel-list > span:not(:last-child)::after { content: ", "; }
+.ssm-panel-goal.reached { color: #9fd08a; }
+.ssm-panel-counters { display: flex; flex-wrap: wrap; gap: 1rem; }
+.ssm-panel-party { display: flex; flex-wrap: wrap; align-items: center; gap: 0.3rem; }
+.ssm-panel-marker { padding: 0 0.4rem; border: 1px solid #b8a06a; border-radius: 999px; }
+.ssm-panel-marker.acted { opacity: 0.4; }
+.ssm-panel [data-part="gm"]:not(:empty) { margin-top: 0.3rem; padding-top: 0.3rem; border-top: 1px solid rgba(184, 160, 106, 0.5); }
+.ssm-panel .ssm-warning, .ssm-panel .ssm-muted { display: block; }

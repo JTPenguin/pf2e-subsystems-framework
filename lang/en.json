@@ -18,6 +18,19 @@
       "NormalFolder": "Only challenge folders can go in the Subsystems tab.",
       "ChallengeFolder": "Challenge folders stay in the Subsystems tab."
     },
+    "Panel": {
+      "Hide": "Hide panel",
+      "Show": "Show panel",
+      "Blocked": "{name} is on the panel. End it before starting another challenge.",
+      "PositionName": "Panel position",
+      "PositionHint": "Where the challenge panel sits at the top of the screen.",
+      "Position": { "center": "Top centre", "left": "Top left", "right": "Top right" },
+      "Influence": "Influence",
+      "Discover": "Discover",
+      "Known": "Known",
+      "Goal": "Goal",
+      "Acted": "Acted"
+    },
     "Influence": {
       "Label": "Influence",
       "Challenge": "Challenge",

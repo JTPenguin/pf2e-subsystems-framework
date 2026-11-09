@@ -13,7 +13,7 @@ export function skillLabel(row) {
 
 const signed = (n) => (n > 0 ? `+${n}` : `${n}`.replace("-", "−"));
 
-/** The pending-results list as templates/pending-list.hbs shows it. Phase 3's GM panel can use the same two. */
+/** The pending-results list as templates/pending-list.hbs shows it, on the sheet and the GM's panel. */
 export function pendingItems(system) {
   return system.run.pending.map((item) => {
     const npc = system.npcs.find((candidate) => candidate.id === item.npcId);

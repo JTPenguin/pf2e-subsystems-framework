@@ -68,20 +68,20 @@ function takeBaseline(system) {
 }
 
 function restoreBaseline(system, baseline) {
-  system.rounds.current = baseline.round;
+  system.rounds.current = baseline.round ?? system.rounds.current;
   for (const npc of system.npcs) {
-    const saved = baseline.npcs[npc.id];
-    if (saved) npc.points = saved.points;
+    const saved = baseline.npcs?.[npc.id];
+    npc.points = saved?.points ?? npc.points;
     // A row added during the run has no saved state. It goes back to hidden, as it can't have been revealed before the run.
-    for (const list of Object.keys(NPC_ROW_STATE)) for (const row of npc[list]) Object.assign(row, saved?.rows[row.id] ?? { revealed: false });
-    for (const row of npc.thresholds) if (!saved?.rows[row.id]) row.reached = false;
+    for (const list of Object.keys(NPC_ROW_STATE)) for (const row of npc[list]) Object.assign(row, saved?.rows?.[row.id] ?? { revealed: false });
+    for (const row of npc.thresholds) if (!saved?.rows?.[row.id]) row.reached = false;
     // Likewise a modifier entry added during the run starts off and unspent. No entry has its effects applied at Start.
     for (const row of npc.modifiers) {
       row.applied = false;
-      if (!saved?.rows[row.id]) Object.assign(row, { active: false, spent: false });
+      if (!saved?.rows?.[row.id]) Object.assign(row, { active: false, spent: false });
     }
   }
-  for (const counter of system.counters) Object.assign(counter, baseline.counters[counter.id]);
+  for (const counter of system.counters) Object.assign(counter, baseline.counters?.[counter.id]);
   clampCounters(system);
 }
 
@@ -108,7 +108,12 @@ export function endRun(system) {
 /** Back to unspent. Edits made during the run, such as a changed DC, stay. */
 export function resetRun(system) {
   if (system.run.status === "inactive") return false;
-  if (system.run.baseline) restoreBaseline(system, system.run.baseline);
+  // A damaged baseline, as an imported file could hold, must not stop the challenge going back to not started.
+  try {
+    if (system.run.baseline) restoreBaseline(system, system.run.baseline);
+  } catch (error) {
+    console.warn("pf2e-subsystem-manager | Could not restore a challenge's start values", error);
+  }
   system.rounds.max = Math.max(1, system.rounds.max - (system.run.roundsAdded ?? 0));
   Object.assign(system.run, { status: "inactive", acted: [], log: [], roundHistory: [], pending: [], appliedRolls: [], baseline: null, roundsAdded: 0 });
 }

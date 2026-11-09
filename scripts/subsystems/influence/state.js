@@ -27,7 +27,7 @@ export async function receiveInfluenceRoll(page, roll) {
   if (result === "afterApply") ui.notifications.info("SSM.Influence.RerollAfterApply", { localize: true });
 }
 
-/* The confirm controls. The sheet uses them now, and the GM's panel will use them in Phase 3. */
+/* The confirm controls, used by the sheet and the GM's panel. */
 
 export const confirmResult = (page, id, amount) => writeChallenge(page, (system) => applyPending(system, id, amount));
 export const ignoreResult = (page, id) => writeChallenge(page, (system) => ignorePending(system, id));

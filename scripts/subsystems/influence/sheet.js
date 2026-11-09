@@ -1,11 +1,13 @@
 import { MODULE } from "../../constants.js";
 import { challengePage } from "../../registry.js";
+import { hidePanel, panelBlockedBy, panelState, showPanel } from "../../panel/activation.js";
+import { partyPCs } from "../../party.js";
 import { pendingItems, skillLabel } from "./pending-view.js";
 import { adjustResult, announceTriggers, confirmResult, ignoreResult, writeChallenge } from "./state.js";
 import { advanceRound, applyModifier, canApplyModifier, canRestoreModifier, changeCounter, changePoints, currentDc, endRun, isClaimed, loreSlug, resetRun, restoreModifier, startRun, toggleActed, toggleModifier, toggleReveal, undoRound } from "./run.js";
 import { loreStatistic } from "../../lore-statistic.js";
 import { buildRollOption, LINK_ROLL_ID } from "../../roll-option.js";
-import { addRow, applyForm, clampCounters, DURATIONS, EFFECT_TYPES, limitCounter, LORE, MODIFIER_KINDS, PERCEPTION, QUICK_DC_AMOUNTS, pickFields, removeRow, setEffectAmount } from "./data.js";
+import { addRow, applyForm, clampCounters, DURATIONS, EFFECT_TYPES, isUniversalDiscovery, limitCounter, LORE, MODIFIER_KINDS, PERCEPTION, QUICK_DC_AMOUNTS, pickFields, removeRow, setEffectAmount } from "./data.js";
 
 const { DocumentSheetV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
@@ -30,6 +32,8 @@ export class InfluenceSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
       setMode: InfluenceSheet.#onSetMode,
       startRun: InfluenceSheet.#onStartRun,
       endRun: InfluenceSheet.#onEndRun,
+      showPanel: InfluenceSheet.#onShowPanel,
+      hidePanel: InfluenceSheet.#onHidePanel,
       resetRun: InfluenceSheet.#onResetRun,
       advanceRound: InfluenceSheet.#onAdvanceRound,
       undoRound: InfluenceSheet.#onUndoRound,
@@ -178,7 +182,7 @@ export class InfluenceSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
         traitsValue: npc.traits.join(","),
         tabLabel: npc.name || `${loc("SSM.Influence.NPC")} ${n + 1}`,
         canRemove: system.npcs.length > 1,
-        discovery: npc.discovery.map((row, i) => ({ ...row, path: `${path}.discovery.${i}` })),
+        discovery: npc.discovery.map((row, i) => ({ ...row, path: `${path}.discovery.${i}`, universal: isUniversalDiscovery(row) })),
         influence: npc.influence.map((row, i) => ({ ...row, path: `${path}.influence.${i}`, isLore: row.skill === LORE })),
         thresholds: npc.thresholds.map((row, i) => ({ ...row, path: `${path}.thresholds.${i}` })),
         modifiers: npc.modifiers.map((modifier, i) => ({
@@ -239,8 +243,7 @@ export class InfluenceSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
 
   /** The PCs on the party's roster, as PF2e counts them, plus the actor of a selected token. */
   get #rollableActors() {
-    const isPC = (actor) => actor.alliance === "party" && actor.isOfType("character") && !["eidolon", "minion"].some((trait) => actor.system.traits?.value?.includes(trait));
-    const actors = (game.actors.party?.members ?? []).filter(isPC);
+    const actors = partyPCs();
     const selected = canvas.ready ? canvas.tokens.controlled[0]?.actor : null;
     if (selected?.isOfType("character", "npc") && !actors.includes(selected)) actors.push(selected);
     return actors;
@@ -260,9 +263,11 @@ export class InfluenceSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
     const actors = this.#rollableActors;
     const selected = this.#selectedActor();
     const canChange = active && canRun;
+    const panel = panelState();
+    const onPanel = panel.id === this.document.id;
     const rollRows = (npc, rows, kind) => rows.map((row) => {
       const dc = currentDc(system, npc, row);
-      return { ...row, kind, npcId: npc.id, label: skillLabel(row), currentDc: dc, dcChanged: dc !== row.dc };
+      return { ...row, kind, npcId: npc.id, label: skillLabel(row), currentDc: dc, dcChanged: dc !== row.dc, universal: kind === "discover" && isUniversalDiscovery(row) };
     });
     return {
       canRun,
@@ -270,6 +275,8 @@ export class InfluenceSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
       canStart: status === "inactive",
       canEnd: active,
       canReset: status !== "inactive",
+      canHidePanel: active && onPanel && !panel.hidden,
+      canShowPanel: active && (!onPanel || !!panel.hidden),
       roundLabel: active || status === "finished" ? game.i18n.format("SSM.Influence.Round", system.rounds) : loc("SSM.Influence.NotStarted"),
       roundLength: system.rounds.length,
       canAdvance: active && system.rounds.current < system.rounds.max,
@@ -418,8 +425,25 @@ export class InfluenceSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
     announceTriggers(await writeChallenge(this.page, change));
   }
 
-  static #onStartRun() {
-    return this.#run(startRun);
+  /** Only one challenge can be active. Warns and returns true if another one holds the panel. */
+  #panelBlocked() {
+    const other = panelBlockedBy(this.document);
+    if (other) ui.notifications.warn(game.i18n.format("SSM.Panel.Blocked", { name: other.name }));
+    return !!other;
+  }
+
+  static async #onStartRun() {
+    if (!game.user.isActiveGM || this.#panelBlocked()) return;
+    await this.#run(startRun);
+    return showPanel(this.document);
+  }
+
+  static #onShowPanel() {
+    if (!this.#panelBlocked()) return showPanel(this.document);
+  }
+
+  static #onHidePanel() {
+    return hidePanel();
   }
 
   static #onEndRun() {

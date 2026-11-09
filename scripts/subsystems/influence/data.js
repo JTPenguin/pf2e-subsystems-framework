@@ -14,6 +14,10 @@ export const LORE = "lore";
 /** Discovery checks may use Perception as well as skills. */
 export const PERCEPTION = "perception";
 
+/** Discovery skills any challenge offers: always on the panel, with no reveal control. Values are as stored in a row's `skill`, a lowercase PF2e slug. */
+export const UNIVERSAL_DISCOVERY = [PERCEPTION, "society"];
+export const isUniversalDiscovery = (row) => UNIVERSAL_DISCOVERY.includes(row.skill);
+
 const id = () => foundry.utils.randomID();
 
 export const newEffect = () => ({ id: id(), type: "note", amount: 0, allSkills: true, skills: [], counterId: "", note: "" });

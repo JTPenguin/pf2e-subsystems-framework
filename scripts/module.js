@@ -1,6 +1,7 @@
 import { installDirectories } from "./directories.js";
 import { isChallengeType } from "./directory-rules.js";
 import { allSubsystems, subsystemFor } from "./registry.js";
+import { installPanel } from "./panel/panel.js";
 import { installRollListener } from "./roll-listener.js";
 import { registerInfluence } from "./subsystems/influence/definition.js";
 
@@ -16,12 +17,22 @@ Hooks.once("init", () => {
   }
   installDirectories();
   installRollListener();
+  installPanel();
 });
+
+/** A duplicate or import of a running challenge must not arrive running: only one can be active, and its pending results belong to the original. */
+function resetNewChallenge(entry, subsystem) {
+  const { pages } = entry.toObject();
+  const page = pages.find((candidate) => candidate.type === subsystem.pageType);
+  if (page && subsystem.resetCopy?.(page.system) !== false) entry.updateSource({ pages });
+}
 
 /** Point every new challenge at its sheet, however it was created: this flag is what `entry.sheet` reads. */
 Hooks.on("preCreateJournalEntry", (entry) => {
   const subsystem = subsystemFor(entry);
-  if (subsystem && !entry.getFlag("core", "sheetClass")) entry.updateSource({ "flags.core.sheetClass": subsystem.sheetId });
+  if (!subsystem) return;
+  if (!entry.getFlag("core", "sheetClass")) entry.updateSource({ "flags.core.sheetClass": subsystem.sheetId });
+  resetNewChallenge(entry, subsystem);
 });
 
 /** A challenge page may only arrive with a new entry. Added to an existing one, it would pull that journal out of the Journal tab. */

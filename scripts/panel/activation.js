@@ -1,0 +1,68 @@
+import { ACTIVE_SETTING, MODULE } from "../constants.js";
+import { challengePage, subsystemFor } from "../registry.js";
+import { partyPCs } from "../party.js";
+
+/*
+ * The filtered copy's world setting, and the only code that writes it. The value is {} when no challenge is active, otherwise
+ * { id, type, hidden, view }: the journal entry's id, the page type that picks the renderer, and what players may see (null while hidden).
+ */
+
+/** Wait this long after a change, so that a burst of updates costs one write. */
+const COALESCE_MS = 50;
+
+let timer = null;
+let queue = Promise.resolve();
+
+/** Writes run one at a time, so a slow write can't land after a newer one. */
+function enqueue(job) {
+  queue = queue.then(job).catch((error) => console.error(`${MODULE} | Panel update failed`, error));
+  return queue;
+}
+
+/** The setting's value. Always an object, even when the setting is empty. */
+export function panelState() {
+  const value = game.settings.get(MODULE, ACTIVE_SETTING);
+  return value && typeof value === "object" ? value : {};
+}
+
+/** Work out what the setting should hold for this state, and write it only if players would see a change. */
+async function publish(state) {
+  if (!state.id) return;
+  const entry = game.journal.get(state.id);
+  const page = entry && challengePage(entry);
+  const subsystem = entry && subsystemFor(entry);
+  let next = {};
+  if (page && subsystem?.panel?.isRunning(page.system)) {
+    const view = state.hidden ? null : subsystem.panel.buildView({
+      name: entry.name,
+      system: page.toObject().system,
+      party: partyPCs().map(({ id, name }) => ({ id, name })),
+    });
+    next = { id: entry.id, type: subsystem.pageType, hidden: !!state.hidden, view };
+  }
+  if (JSON.stringify(next) !== JSON.stringify(panelState())) await game.settings.set(MODULE, ACTIVE_SETTING, next);
+}
+
+/** Bring the setting up to date soon. Each change after the timer fires sets a new one, so the last state always lands. */
+export function schedulePublish() {
+  if (timer !== null || !game.user.isActiveGM || !panelState().id) return;
+  timer = setTimeout(() => {
+    timer = null;
+    enqueue(() => publish(panelState()));
+  }, COALESCE_MS);
+}
+
+/** The other challenge holding the panel, if there is one. Only one can be active. A stale id blocks nothing. */
+export function panelBlockedBy(entry) {
+  const { id } = panelState();
+  return id && id !== entry.id ? game.journal.get(id) ?? null : null;
+}
+
+export function showPanel(entry) {
+  // A change during this first write can't schedule a publish, as the setting has no id yet. Check again once it has.
+  if (game.user.isActiveGM) return enqueue(() => publish({ id: entry.id, hidden: false })).then(schedulePublish);
+}
+
+export function hidePanel() {
+  if (game.user.isActiveGM) return enqueue(() => publish({ ...panelState(), hidden: true }));
+}

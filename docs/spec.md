@@ -22,7 +22,7 @@ The first version covers **Influence only**. The data and panel code are built s
 | Missing Lore | A PC without a listed Lore rolls it untrained (Intelligence +0) from the sheet or panel. Chat links can't do this, as PF2e reports the statistic as missing. | Justin |
 | Applying points | The module suggests the change and the GM confirms it | Justin |
 | NPCs | One challenge holds one or more NPCs and one shared round clock | Justin |
-| Hidden by default | Everything except the NPC name, Influence Points, rounds remaining and Discovery skill names | Justin |
+| Hidden by default | Everything except the NPC name, Influence Points, rounds remaining and the universal Discovery skills (Perception and Society) | Justin |
 | DCs | Hidden from players by default, with a per-skill option to show one. If a world turns on PF2e's `metagame_showDC` setting, DCs show as on any other roll, with no warning to the GM. | Justin |
 | Portraits | Not on the panel. Tokens or VN Stage handle those. | Justin |
 | False information | The GM can reveal a planted decoy. Players can't tell it from a true entry. | Justin |
@@ -157,7 +157,7 @@ The sheet has **Edit** and **Run** modes, like a locked and unlocked actor sheet
 |---|---|---|
 | Challenge name and rounds | Shown | |
 | NPC names and Influence Points | Shown | One column per NPC; compact when there are several |
-| Discovery skills | Shown, no DCs | Clickable |
+| Discovery skills | Universal skills (Perception and Society) shown, no DCs. Others hidden until revealed. | Clickable. The GM's eye toggle appears on every row except the universal skills. |
 | Influence skills | Hidden until revealed | Clickable. DC shown only if the GM opts in. |
 | Weaknesses, resistances, penalties | Hidden until revealed | Name and player text |
 | Thresholds | Hidden until revealed | Player text; marked when reached |

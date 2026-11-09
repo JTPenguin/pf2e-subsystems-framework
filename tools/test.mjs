@@ -29,6 +29,7 @@ const R = await load("directory-rules");
 const D = await load("subsystems/influence/data");
 const Run = await load("subsystems/influence/run");
 const O = await load("roll-option");
+const V = await load("subsystems/influence/panel-view");
 
 const MODULE = "pf2e-subsystem-manager";
 const challenge = (name, folder) => ({ name, folder, pages: [{ type: `${MODULE}.influence` }] });
@@ -741,4 +742,266 @@ test("a claimed entry changed to ongoing before the roll is confirmed isn't spen
   m.duration = "ongoing";
   Run.applyPending(s, s.run.pending[0].id);
   assert.equal(m.spent, false);
+});
+
+/* The filtered copy */
+
+const GM_SECRET = "GMSECRET";
+/** A challenge with one entry of every kind, none revealed, and GM-only text in every GM field. */
+const secretSystem = () => {
+  const s = runSystem();
+  s.premise = `<p>${GM_SECRET} premise</p>`;
+  s.gmNotes = `<p>${GM_SECRET} notes</p>`;
+  const npc = s.npcs[0];
+  npc.name = "Lady Vance";
+  npc.traits = [`${GM_SECRET}trait`];
+  npc.perception = 77;
+  npc.will = 88;
+  npc.actorUuid = `Actor.${GM_SECRET}`;
+  npc.thresholds = [{ ...D.newThreshold(), points: 8, playerText: "she offers an introduction", gmText: `${GM_SECRET} threshold` }];
+  npc.modifiers = [{ ...D.newModifier(), name: "Flattery", playerText: "likes praise", gmText: `${GM_SECRET} modifier`, effects: [{ ...D.newEffect(), note: `${GM_SECRET} effect` }] }];
+  s.counters = [{ ...D.newCounter(), name: "Suspicion", value: 3, min: -111, max: 222, triggers: [{ ...D.newTrigger(), value: 5, gmNote: `${GM_SECRET} trigger` }] }];
+  Run.startRun(s);
+  return s;
+};
+const viewOf = (s, party = []) => V.buildPanelView({ name: "Banquet", system: s, party });
+/** Every key and every value in a copy, at any depth. */
+const scan = (value, found = { keys: new Set(), values: new Set() }) => {
+  if (Array.isArray(value)) value.forEach((item) => scan(item, found));
+  else if (value && typeof value === "object") for (const [key, item] of Object.entries(value)) {
+    found.keys.add(key);
+    scan(item, found);
+  } else found.values.add(value);
+  return found;
+};
+const revealAll = (s) => {
+  const npc = s.npcs[0];
+  for (const row of [...npc.discovery, ...npc.influence, ...npc.thresholds, ...npc.modifiers, ...s.counters]) row.revealed = true;
+};
+const assertNoSecrets = (view) => {
+  const { keys } = scan(view);
+  for (const key of ["decoy", "gmText", "gmNote", "gmNotes", "premise", "traits", "perception", "will", "actorUuid", "revealed", "effects", "triggers", "min", "log", "pending", "baseline"]) assert.ok(!keys.has(key), `key ${key} must not appear`);
+  assert.ok(!JSON.stringify(view).includes(GM_SECRET), "GM text must not appear");
+};
+
+test("the copy shows only the defaults before anything is revealed", () => {
+  const s = secretSystem();
+  s.npcs[0].points = 2;
+  const view = viewOf(s);
+  assert.equal(view.name, "Banquet");
+  assert.deepEqual(view.rounds, { current: 1, max: 6 });
+  assert.equal(view.npcs[0].name, "Lady Vance");
+  assert.equal(view.npcs[0].points, 2);
+  assert.equal(view.npcs[0].discovery.length, 1);
+  assert.deepEqual([view.npcs[0].influence, view.npcs[0].known, view.npcs[0].thresholds, view.counters], [[], [], [], []]);
+  assertNoSecrets(view);
+  assert.ok(!JSON.stringify(view).includes("Flattery"));
+  assert.ok(!JSON.stringify(view).includes("Suspicion"));
+  assert.ok(!JSON.stringify(view).includes("introduction"));
+});
+
+test("hidden skills put no id or DC in the copy", () => {
+  const s = secretSystem();
+  const row = s.npcs[0].influence[0];
+  row.dc = 987;
+  row.showDC = true;
+  const text = JSON.stringify(viewOf(s));
+  assert.ok(!text.includes("987"));
+  assert.ok(!text.includes(row.id));
+});
+
+test("revealing each kind of entry adds it, and only its player fields", () => {
+  const s = secretSystem();
+  revealAll(s);
+  const view = viewOf(s);
+  const npc = s.npcs[0];
+  assert.deepEqual(view.npcs[0].influence, [{ id: npc.influence[0].id, skill: "diplomacy", lore: "", dc: 15, showDC: false }]);
+  assert.deepEqual(view.npcs[0].known, [{ id: npc.modifiers[0].id, name: "Flattery", text: "likes praise" }]);
+  assert.deepEqual(view.npcs[0].thresholds, [{ id: npc.thresholds[0].id, points: 8, text: "she offers an introduction", reached: false }]);
+  assert.deepEqual(view.counters, [{ id: s.counters[0].id, name: "Suspicion", value: 3 }]);
+  assertNoSecrets(view);
+});
+
+test("hiding an entry again takes it back out", () => {
+  const s = secretSystem();
+  const row = s.npcs[0].influence[0];
+  Run.toggleReveal(s, row.id, "x");
+  assert.equal(viewOf(s).npcs[0].influence.length, 1);
+  Run.toggleReveal(s, row.id, "x");
+  assert.equal(viewOf(s).npcs[0].influence.length, 0);
+});
+
+test("a reached threshold is marked, and a threshold with no player text never falls back to GM text", () => {
+  const s = secretSystem();
+  revealAll(s);
+  s.npcs[0].thresholds[0].playerText = "";
+  Run.changePoints(s, s.npcs[0].id, 8);
+  const [threshold] = viewOf(s).npcs[0].thresholds;
+  assert.equal(threshold.reached, true);
+  assert.equal(threshold.text, "");
+  assertNoSecrets(viewOf(s));
+});
+
+test("a revealed decoy can't be told from a true entry, at any depth", () => {
+  const twin = (decoy) => {
+    const s = secretSystem();
+    revealAll(s);
+    const npc = s.npcs[0];
+    for (const row of [...npc.discovery, ...npc.influence, ...npc.modifiers]) row.decoy = decoy;
+    return s;
+  };
+  const withIds = (s) => {
+    const ids = [...s.npcs[0].discovery, ...s.npcs[0].influence, ...s.npcs[0].thresholds, ...s.npcs[0].modifiers, ...s.counters, ...s.npcs].map((row) => row.id);
+    return ids.reduce((text, id, n) => text.replaceAll(id, `ID${n}`), JSON.stringify(viewOf(s)));
+  };
+  assert.equal(withIds(twin(true)), withIds(twin(false)));
+  const decoyView = viewOf(twin(true));
+  assert.ok(!scan(decoyView).keys.has("decoy"));
+  assert.ok(![...scan(decoyView).values].some((value) => /decoy/i.test(String(value))));
+  assertNoSecrets(decoyView);
+});
+
+test("an unrevealed decoy is left out, including a non-universal Discovery skill", () => {
+  const s = secretSystem();
+  const npc = s.npcs[0];
+  const planted = { ...D.newDiscovery(), skill: "occultism", decoy: true, dc: 654 };
+  npc.discovery.push(planted);
+  npc.influence[0].decoy = true;
+  npc.modifiers[0].decoy = true;
+  let view = viewOf(s);
+  assert.deepEqual(view.npcs[0].discovery.map((row) => row.id), [npc.discovery[0].id]);
+  assert.deepEqual([view.npcs[0].influence, view.npcs[0].known], [[], []]);
+  assert.ok(!JSON.stringify(view).includes("654"));
+  planted.revealed = true;
+  view = viewOf(s);
+  assert.deepEqual(view.npcs[0].discovery.map((row) => row.id), [npc.discovery[0].id, planted.id]);
+});
+
+test("the universal Discovery skills are Perception and Society, matched as stored", () => {
+  assert.deepEqual(D.UNIVERSAL_DISCOVERY, ["perception", "society"]);
+  assert.equal(D.isUniversalDiscovery({ skill: D.PERCEPTION }), true);
+  assert.equal(D.isUniversalDiscovery({ skill: "society" }), true);
+  assert.equal(D.isUniversalDiscovery({ skill: "occultism" }), false);
+  assert.equal(D.isUniversalDiscovery({ skill: "" }), false);
+});
+
+test("universal Discovery skills are always in the copy, with their DC, revealed or not", () => {
+  const s = secretSystem();
+  const npc = s.npcs[0];
+  npc.discovery = [{ ...D.newDiscovery(), skill: "perception", dc: 15 }, { ...D.newDiscovery(), skill: "society", dc: 17 }];
+  assert.deepEqual(viewOf(s).npcs[0].discovery.map((row) => [row.skill, row.dc]), [["perception", 15], ["society", 17]]);
+  npc.discovery[0].revealed = true;
+  assert.equal(viewOf(s).npcs[0].discovery.length, 2);
+});
+
+test("a non-universal Discovery skill is absent, DC included, until revealed", () => {
+  const s = secretSystem();
+  const row = { ...D.newDiscovery(), skill: "arcana", dc: 876 };
+  s.npcs[0].discovery.push(row);
+  const hidden = JSON.stringify(viewOf(s));
+  assert.ok(!hidden.includes("876"));
+  assert.ok(!hidden.includes(row.id));
+  assert.ok(!hidden.includes("arcana"));
+  Run.toggleReveal(s, row.id, "Arcana");
+  assert.deepEqual(viewOf(s).npcs[0].discovery.at(-1), { id: row.id, skill: "arcana", dc: 876 });
+  Run.toggleReveal(s, row.id, "Arcana");
+  assert.ok(!JSON.stringify(viewOf(s)).includes(row.id));
+});
+
+test("a decoy on a universal skill shows from the start, with no decoy marker", () => {
+  const s = secretSystem();
+  s.npcs[0].discovery = [{ ...D.newDiscovery(), skill: "society", decoy: true }];
+  const view = viewOf(s);
+  assert.deepEqual(view.npcs[0].discovery.map((row) => row.skill), ["society"]);
+  assert.ok(!scan(view).keys.has("decoy"));
+});
+
+test("reset hides a non-universal Discovery skill unless it was revealed before Start", () => {
+  const s = runSystem();
+  const before = { ...D.newDiscovery(), skill: "arcana", revealed: true };
+  const during = { ...D.newDiscovery(), skill: "occultism" };
+  s.npcs[0].discovery.push(before, during);
+  Run.startRun(s);
+  Run.toggleReveal(s, during.id, "x");
+  Run.toggleReveal(s, before.id, "x");
+  Run.resetRun(s);
+  assert.deepEqual([before.revealed, during.revealed], [true, false]);
+});
+
+test("a visible skill carries its current DC, and show-DC is what lets the panel show it", () => {
+  const s = secretSystem();
+  const row = s.npcs[0].influence[0];
+  row.revealed = true;
+  row.dc = 20;
+  assert.deepEqual([viewOf(s).npcs[0].influence[0].dc, viewOf(s).npcs[0].influence[0].showDC], [20, false]);
+  row.showDC = true;
+  assert.equal(viewOf(s).npcs[0].influence[0].showDC, true);
+  addModifier(s, { active: true }, [dcEffect(-2)]);
+  assert.equal(viewOf(s).npcs[0].influence[0].dc, 18);
+});
+
+test("party markers show who has acted, and an empty party is fine", () => {
+  const s = secretSystem();
+  s.run.acted = ["a1"];
+  assert.deepEqual(viewOf(s, [{ id: "a1", name: "Ezren" }, { id: "a2", name: "Amiri" }]).party, [{ id: "a1", name: "Ezren", acted: true }, { id: "a2", name: "Amiri", acted: false }]);
+  assert.deepEqual(viewOf(s).party, []);
+});
+
+test("the copy is the same when nothing players see has changed", () => {
+  const s = secretSystem();
+  const before = JSON.stringify(viewOf(s));
+  Run.toggleModifier(s, s.npcs[0].id, s.npcs[0].modifiers[0].id);
+  s.run.log.push({ text: "x" });
+  s.npcs[0].modifiers[0].gmText = "changed";
+  assert.equal(JSON.stringify(viewOf(s)), before);
+});
+
+test("the bar copes with negative points and never uses a hidden goal", () => {
+  assert.deepEqual(V.pointsBar(5, []), { percent: 50, negative: false });
+  assert.deepEqual(V.pointsBar(4, [{ points: 8 }]), { percent: 50, negative: false });
+  assert.deepEqual(V.pointsBar(12, [{ points: 8 }]), { percent: 100, negative: false });
+  assert.deepEqual(V.pointsBar(-3, []), { percent: 30, negative: true });
+  assert.deepEqual(V.pointsBar(-20, []), { percent: 100, negative: true });
+  assert.deepEqual(V.pointsBar(0, []), { percent: 0, negative: false });
+  assert.deepEqual(V.pointsBar(1, [{ points: -2 }]), { percent: 10, negative: false });
+});
+
+test("a copy of a running challenge goes back to its start values and keeps its authored content", () => {
+  const s = running();
+  const [npc] = s.npcs;
+  npc.name = "Lady Vance";
+  Run.changePoints(s, npc.id, 4);
+  Run.toggleReveal(s, npc.influence[0].id, "x");
+  Run.receiveRoll(s, rollOf(s));
+  Run.resetRun(s);
+  assert.deepEqual([s.run.status, s.run.pending, s.run.log, s.run.baseline, s.run.acted], ["inactive", [], [], null, []]);
+  assert.deepEqual([npc.name, npc.points, npc.influence[0].revealed, npc.influence.length], ["Lady Vance", 1, false, 2]);
+  assert.equal(npc.thresholds.some((threshold) => threshold.reached), false);
+});
+
+test("resetting a challenge that never started reports no change", () => {
+  assert.equal(Run.resetRun(runSystem()), false);
+});
+
+for (const [label, baseline] of [["empty", {}], ["null lists", { round: 2, npcs: null, counters: null }], ["null rows", { round: 2, npcs: { any: { points: 1, rows: null } }, counters: {} }], ["not an object", "broken"]]) {
+  test(`reset always ends at not started with a damaged baseline: ${label}`, () => {
+    const s = running();
+    const [npc] = s.npcs;
+    if (baseline.npcs?.any) baseline.npcs[npc.id] = baseline.npcs.any;
+    s.run.baseline = baseline;
+    Run.toggleReveal(s, npc.influence[0].id, "x");
+    assert.notEqual(Run.resetRun(s), false);
+    assert.deepEqual([s.run.status, s.run.baseline], ["inactive", null]);
+    assert.ok(Number.isInteger(s.rounds.current));
+    assert.ok(Number.isInteger(npc.points));
+    assert.equal(npc.influence[0].revealed, false);
+  });
+}
+
+test("a form with no Revealed field keeps a Discovery row's old value", () => {
+  const s = system();
+  const row = { ...D.newDiscovery(), revealed: true, decoy: true };
+  s.npcs[0].discovery.push(row);
+  D.applyForm(s, { npcs: { 0: { discovery: { 0: { skill: "perception", dc: 21, decoy: false } } } } });
+  assert.deepEqual([s.npcs[0].discovery[0].dc, s.npcs[0].discovery[0].decoy, s.npcs[0].discovery[0].revealed, s.npcs[0].discovery[0].id], [21, false, true, row.id]);
 });
