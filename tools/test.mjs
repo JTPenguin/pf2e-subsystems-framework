@@ -112,7 +112,8 @@ const system = () => {
 
 test("addRow picks the right row for each list", () => {
   const s = system();
-  assert.ok("showDC" in D.addRow(s, "npcs.0.influence"));
+  assert.ok("revealed" in D.addRow(s, "npcs.0.influence"));
+  assert.ok(!("showDC" in D.addRow(s, "npcs.0.influence")));
   assert.ok("decoy" in D.addRow(s, "npcs.0.discovery"));
   assert.ok("reached" in D.addRow(s, "npcs.0.thresholds"));
   const m = D.addRow(s, "npcs.0.modifiers");
@@ -804,7 +805,6 @@ test("hidden skills put no id or DC in the copy", () => {
   const s = secretSystem();
   const row = s.npcs[0].influence[0];
   row.dc = 987;
-  row.showDC = true;
   const text = JSON.stringify(viewOf(s));
   assert.ok(!text.includes("987"));
   assert.ok(!text.includes(row.id));
@@ -815,7 +815,7 @@ test("revealing each kind of entry adds it, and only its player fields", () => {
   revealAll(s);
   const view = viewOf(s);
   const npc = s.npcs[0];
-  assert.deepEqual(view.npcs[0].influence, [{ id: npc.influence[0].id, skill: "diplomacy", lore: "", dc: 15, showDC: false }]);
+  assert.deepEqual(view.npcs[0].influence, [{ id: npc.influence[0].id, skill: "diplomacy", lore: "", dc: 15 }]);
   assert.deepEqual(view.npcs[0].known, [{ id: npc.modifiers[0].id, name: "Flattery", text: "likes praise" }]);
   assert.deepEqual(view.npcs[0].thresholds, [{ id: npc.thresholds[0].id, points: 8, text: "she offers an introduction", reached: false }]);
   assert.deepEqual(view.counters, [{ id: s.counters[0].id, name: "Suspicion", value: 3 }]);
@@ -928,14 +928,14 @@ test("reset hides a non-universal Discovery skill unless it was revealed before 
   assert.deepEqual([before.revealed, during.revealed], [true, false]);
 });
 
-test("a visible skill carries its current DC, and show-DC is what lets the panel show it", () => {
+test("a visible skill carries its current DC for the roll, and no show-DC flag", () => {
   const s = secretSystem();
   const row = s.npcs[0].influence[0];
   row.revealed = true;
   row.dc = 20;
-  assert.deepEqual([viewOf(s).npcs[0].influence[0].dc, viewOf(s).npcs[0].influence[0].showDC], [20, false]);
+  assert.equal(viewOf(s).npcs[0].influence[0].dc, 20);
   row.showDC = true;
-  assert.equal(viewOf(s).npcs[0].influence[0].showDC, true);
+  assert.ok(!("showDC" in viewOf(s).npcs[0].influence[0]));
   addModifier(s, { active: true }, [dcEffect(-2)]);
   assert.equal(viewOf(s).npcs[0].influence[0].dc, 18);
 });

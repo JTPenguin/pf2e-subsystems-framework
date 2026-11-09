@@ -20,7 +20,7 @@ function npcView(system, npc) {
     name: npc.name,
     points: npc.points,
     discovery: npc.discovery.filter(isVisibleDiscovery).map((row) => ({ id: row.id, skill: row.skill, dc: currentDc(system, npc, row) })),
-    influence: npc.influence.filter(isVisible).map((row) => ({ id: row.id, skill: row.skill, lore: row.lore, dc: currentDc(system, npc, row), showDC: !!row.showDC })),
+    influence: npc.influence.filter(isVisible).map((row) => ({ id: row.id, skill: row.skill, lore: row.lore, dc: currentDc(system, npc, row) })),
     known: npc.modifiers.filter(isVisible).map((row) => ({ id: row.id, name: row.name, text: row.playerText })),
     thresholds: npc.thresholds.filter(isVisible).map((row) => ({ id: row.id, points: row.points, text: row.playerText, reached: !!row.reached })),
   };

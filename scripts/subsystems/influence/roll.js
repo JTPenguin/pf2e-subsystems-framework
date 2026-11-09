@@ -12,10 +12,10 @@ import { loreSlug } from "./run.js";
 const loc = (key) => game.i18n.localize(key);
 
 /** What a roll or chat link needs. `npc` needs id and name; `row` needs skill and, for a Lore, lore. */
-export function rollTarget({ challengeId, npc, row, kind, dc, showDC }) {
+export function rollTarget({ challengeId, npc, row, kind, dc }) {
   const slug = row.skill === LORE ? loreSlug(row.lore || loc("SSM.Influence.Lore"), game.pf2e.system.sluggify) : row.skill;
   const option = (rollId) => buildRollOption({ kind, challengeId, npcId: npc.id, entryId: row.id, rollId });
-  return { row, slug, kind, option, dc, showDC, npcLabel: npc.name || loc("SSM.Influence.NPC") };
+  return { row, slug, kind, option, dc, npcLabel: npc.name || loc("SSM.Influence.NPC") };
 }
 
 /** The statistic this actor rolls. Null if it has none, which a non-character without a Lore, or a loot actor, can be. */
@@ -31,8 +31,8 @@ export function rollCheck(actor, target, { event, messageMode }) {
   if (!statistic) return ui.notifications.warn(game.i18n.format("SSM.Influence.MissingSkill", { actor: actor.name, skill: skillLabel(target.row) }));
   return statistic.roll({
     event,
-    // Pass a plain number with no slug or statistic, so PF2e doesn't look for an opposing actor. That would reveal the DC.
-    dc: { value: target.dc, visible: target.showDC },
+    // Players never see a DC. Pass a plain number with no slug or statistic, so PF2e doesn't look for an opposing actor. That would reveal the DC.
+    dc: { value: target.dc, visible: false },
     label: game.i18n.format(`SSM.Influence.RollLabel.${target.kind}`, { npc: target.npcLabel }),
     extraRollOptions: [target.option(foundry.utils.randomID())],
     messageMode,

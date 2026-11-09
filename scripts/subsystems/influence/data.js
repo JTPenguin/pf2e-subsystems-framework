@@ -26,7 +26,7 @@ export const newModifier = () => ({
   active: false, spent: false, revealed: false, decoy: false, effects: [newEffect()],
 });
 export const newDiscovery = () => ({ id: id(), skill: PERCEPTION, dc: 15, revealed: false, decoy: false });
-export const newInfluence = () => ({ id: id(), skill: "diplomacy", lore: "", dc: 15, revealed: false, showDC: false, decoy: false });
+export const newInfluence = () => ({ id: id(), skill: "diplomacy", lore: "", dc: 15, revealed: false, decoy: false });
 export const newThreshold = () => ({ id: id(), points: 1, playerText: "", gmText: "", revealed: false, reached: false });
 export const newTrigger = () => ({ id: id(), value: 0, gmNote: "" });
 export const newCounter = () => ({ id: id(), name: "", value: 0, min: null, max: null, triggers: [], revealed: false });

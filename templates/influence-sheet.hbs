@@ -213,7 +213,6 @@
         {{#if isLore}}<label class="grow">{{localize "SSM.Influence.LoreName"}}<input type="text" name="{{path}}.lore" value="{{lore}}"></label>{{/if}}
         <label>{{localize "SSM.Influence.DC"}}<input type="number" min="0" step="1" name="{{path}}.dc" value="{{dc}}"></label>
         <label class="check"><input type="checkbox" name="{{path}}.revealed" {{checked revealed}}>{{localize "SSM.Influence.Revealed"}}</label>
-        <label class="check"><input type="checkbox" name="{{path}}.showDC" {{checked showDC}}>{{localize "SSM.Influence.ShowDC"}}</label>
         <label class="check"><input type="checkbox" name="{{path}}.decoy" {{checked decoy}}>{{localize "SSM.Influence.Decoy"}}</label>
         <button type="button" class="icon fa-solid fa-trash" data-action="removeRow" data-path="{{path}}" aria-label="{{localize "SSM.Influence.Remove"}}"></button>
       </div>

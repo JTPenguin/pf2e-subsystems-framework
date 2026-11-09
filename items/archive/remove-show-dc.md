@@ -1,12 +1,13 @@
 ---
 title: "Never show DCs to players"
 kind: feature
-status: ready
-waits_on: Claude
+status: done
+waits_on: none
 blocked_by: []
 source: "Justin, during the items interview, 2026-11-09"
 added: 2026-11-09
 updated: 2026-11-09
+outcome: "Done 2026-11-09. showDC removed; rolls and chat links always hide the DC; old data with showDC loads (Foundry prunes the key). Checked live as Test Player 1."
 ---
 # Never show DCs to players
 

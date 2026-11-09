@@ -521,7 +521,7 @@ export class InfluenceSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
     const npc = system.npcs.find((candidate) => candidate.id === npcId);
     const row = npc?.[kind === "influence" ? "influence" : "discovery"].find((candidate) => candidate.id === id);
     if (!row) return null;
-    return rollTarget({ challengeId: this.document.id, npc, row, kind, dc: currentDc(system, npc, row), showDC: !!row.showDC });
+    return rollTarget({ challengeId: this.document.id, npc, row, kind, dc: currentDc(system, npc, row) });
   }
 
   static async #onRollSkill(event, target) {
@@ -537,7 +537,7 @@ export class InfluenceSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
     if (!game.user.isActiveGM || this.page.system.run.status !== "active") return;
     const roll = this.#rollTarget(target);
     if (!roll) return;
-    const params = [roll.slug, `dc:${roll.dc}`, `showDC:${roll.showDC ? "all" : "gm"}`, `options:${roll.option(LINK_ROLL_ID)}`];
+    const params = [roll.slug, `dc:${roll.dc}`, "showDC:gm", `options:${roll.option(LINK_ROLL_ID)}`];
     const heading = game.i18n.format(`SSM.Influence.RollLabel.${roll.kind}`, { npc: roll.npcLabel });
     const content = `<p><strong>${foundry.utils.escapeHTML(heading)}</strong></p><p>@Check[${params.join("|")}]</p>`;
     return ChatMessage.create({ content }, { messageMode: "public" });

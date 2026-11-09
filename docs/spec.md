@@ -23,7 +23,7 @@ The first version covers **Influence only**. The data and panel code are built s
 | Applying points | The module suggests the change and the GM confirms it | Justin |
 | NPCs | One challenge holds one or more NPCs and one shared round clock | Justin |
 | Hidden by default | Everything except the NPC name, Influence Points, rounds remaining and the universal Discovery skills (Perception and Society) | Justin |
-| DCs | Hidden from players by default, with a per-skill option to show one. If a world turns on PF2e's `metagame_showDC` setting, DCs show as on any other roll, with no warning to the GM. | Justin |
+| DCs | Always hidden from players: not on the panel, not on the chat card. If a world turns on PF2e's `metagame_showDC` setting, DCs show as on any other roll, with no warning to the GM. | Justin |
 | Several NPCs on the panel | One column per NPC, each with its own skills. No separate NPC picker. | Justin |
 | Portraits | Not on the panel. Tokens or VN Stage handle those. | Justin |
 | False information | The GM can reveal a planted decoy. Players can't tell it from a true entry. | Justin |
@@ -93,7 +93,7 @@ Sidebar tab -> Challenge (journal entry + typed page, GM only) -> GM sheet
 | Perception and Will | Modifiers, not DCs |
 | Influence Points | Current total |
 | Discovery checks | Skill or Perception, DC, revealed flag |
-| Influence skills | Skill or Lore, DC, revealed flag, show-DC flag |
+| Influence skills | Skill or Lore, DC, revealed flag |
 | Thresholds | Points, player text, GM text, revealed flag, reached flag |
 | Weaknesses, resistances, penalties | Modifier entries (below) |
 | Decoys | A flag on any weakness, resistance or skill entry |
@@ -163,7 +163,7 @@ The sheet has **Edit** and **Run** modes, like a locked and unlocked actor sheet
 | Challenge name and rounds | Shown | |
 | NPC names and Influence Points | Shown | One column per NPC; compact when there are several |
 | Discovery skills | Universal skills (Perception and Society) shown, no DCs. Others hidden until revealed. | Clickable. The GM's eye toggle appears on every row except the universal skills. |
-| Influence skills | Hidden until revealed | Clickable. DC shown only if the GM opts in. |
+| Influence skills | Hidden until revealed | Clickable. No DC shown. |
 | Weaknesses, resistances, penalties | Hidden until revealed | Name and player text |
 | Thresholds | Hidden until revealed | Player text; marked when reached |
 | Counters | Hidden until revealed | |
@@ -180,7 +180,7 @@ The sheet has **Edit** and **Run** modes, like a locked and unlocked actor sheet
 
 ## 8. Roll flow
 
-1. A player clicks a skill, or the GM rolls or posts a link. The check is a normal PF2e roll with the current DC, hidden unless show-DC is on. The roll carries a module identifier: challenge, NPC, skill, and whether it's Influence or Discover.
+1. A player clicks a skill, or the GM rolls or posts a link. The check is a normal PF2e roll with the current DC, always hidden from players. The roll carries a module identifier: challenge, NPC, skill, and whether it's Influence or Discover.
 2. The active GM's client sees the chat message and adds an item to the pending-results list on the GM's panel.
 3. **Influence** suggests: critical success +2, success +1, failure 0, critical failure −1. The GM clicks **Apply**, **Adjust** or **Ignore**.
 4. **Discover** shows the degree of success and a reminder of what it earns: one piece of information, two on a critical success, a false one on a critical failure. The GM reveals entries by hand.

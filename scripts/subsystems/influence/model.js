@@ -48,7 +48,7 @@ const npcFields = () => ({
   will: int(),
   points: int(),
   discovery: list({ id: rowId(), skill: text(), dc: dc(), revealed: flag(), decoy: flag() }),
-  influence: list({ id: rowId(), skill: text(), lore: text(), dc: dc(), revealed: flag(), showDC: flag(), decoy: flag() }),
+  influence: list({ id: rowId(), skill: text(), lore: text(), dc: dc(), revealed: flag(), decoy: flag() }),
   thresholds: list({ id: rowId(), points: int(1), playerText: text(), gmText: text(), revealed: flag(), reached: flag() }),
   modifiers: list(modifierFields()),
 });

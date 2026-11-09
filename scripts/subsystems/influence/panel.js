@@ -8,7 +8,6 @@ const loc = (key) => game.i18n.localize(key);
 
 /** The Influence panel's context, drawn only from the filtered copy. */
 function prepareView(view) {
-  const dcText = (row) => (row.showDC ? `${loc("SSM.Influence.DC")} ${row.dc}` : "");
   // Only ids go in the HTML. A click looks the DC up in the copy. The GM rolls from the sheet, so the GM's panel has no skill buttons.
   const skillButton = (npc, n, row, kind) => ({
     id: row.id, npcId: npc.id, kind,
@@ -25,7 +24,7 @@ function prepareView(view) {
       name: npc.name || `${loc("SSM.Influence.NPC")} ${n + 1}`,
       bar: pointsBar(npc.points, npc.thresholds),
       discovery: npc.discovery.map((row) => skillButton(npc, n, row, "discover")),
-      influence: npc.influence.map((row) => ({ ...skillButton(npc, n, row, "influence"), dcText: dcText(row) })),
+      influence: npc.influence.map((row) => skillButton(npc, n, row, "influence")),
       known: npc.known.map((row) => ({ ...row, name: row.name || loc("SSM.Influence.UnnamedEntry") })),
     })),
     counters: view.counters.map((row) => ({ ...row, name: row.name || loc("SSM.Influence.UnnamedCounter") })),
@@ -50,7 +49,7 @@ async function rollFromPanel(state, button, event) {
   const actor = game.user.character;
   if (!actor) return ui.notifications.info("SSM.Panel.NoCharacter", { localize: true });
   const { npc, row, kind } = found;
-  const target = rollTarget({ challengeId: state.id, npc, row, kind, dc: row.dc, showDC: !!row.showDC });
+  const target = rollTarget({ challengeId: state.id, npc, row, kind, dc: row.dc });
   // One click, one roll: a double click or a click behind the open roll dialog doesn't start another.
   rolling = true;
   try {
