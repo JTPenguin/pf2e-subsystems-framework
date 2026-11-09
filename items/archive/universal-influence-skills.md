@@ -1,12 +1,13 @@
 ---
 title: "Deception, Diplomacy and Intimidation as universal Influence skills"
 kind: feature
-status: ready
-waits_on: Claude
+status: done
+waits_on: none
 blocked_by: []
 source: "Justin's request, 2026-11-09"
 added: 2026-11-09
 updated: 2026-11-09
+outcome: "Done 2026-11-09. Deception, Diplomacy, Intimidation are universal; new NPCs start with them plus Perception at DC 15; Add Influence skill now defaults to Society. Checked live: rows, edit sheet and player panel."
 ---
 # Deception, Diplomacy and Intimidation as universal Influence skills
 

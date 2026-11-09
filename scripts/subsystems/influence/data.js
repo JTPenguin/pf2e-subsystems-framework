@@ -17,6 +17,11 @@ export const PERCEPTION = "perception";
 /** Discovery skills any challenge offers: always on the panel, with no reveal control. Values are as stored in a row's `skill`, a lowercase PF2e slug. */
 export const UNIVERSAL_DISCOVERY = [PERCEPTION];
 export const isUniversalDiscovery = (row) => UNIVERSAL_DISCOVERY.includes(row.skill);
+/** Influence skills any challenge offers, on the same terms. */
+export const UNIVERSAL_INFLUENCE = ["deception", "diplomacy", "intimidation"];
+export const isUniversalInfluence = (row) => UNIVERSAL_INFLUENCE.includes(row.skill);
+/** A universal row of either kind. The skill slugs of the two lists never overlap. Such a row is never a decoy, whatever its flag says. */
+export const isUniversalRow = (row) => isUniversalDiscovery(row) || isUniversalInfluence(row);
 
 const id = () => foundry.utils.randomID();
 
@@ -26,13 +31,16 @@ export const newModifier = () => ({
   active: false, spent: false, revealed: false, decoy: false, effects: [newEffect()],
 });
 export const newDiscovery = () => ({ id: id(), skill: PERCEPTION, dc: 15, revealed: false, decoy: false });
-export const newInfluence = () => ({ id: id(), skill: "diplomacy", lore: "", dc: 15, revealed: false, decoy: false });
+export const newInfluence = () => ({ id: id(), skill: "society", lore: "", dc: 15, revealed: false, decoy: false });
 export const newThreshold = () => ({ id: id(), points: 1, playerText: "", gmText: "", revealed: false, reached: false });
 export const newTrigger = () => ({ id: id(), value: 0, gmNote: "" });
 export const newCounter = () => ({ id: id(), name: "", value: 0, min: null, max: null, triggers: [], revealed: false });
+/** A new NPC starts with a row for each universal skill, at the default DC. The GM can edit or delete them. */
 export const newNpc = () => ({
   id: id(), name: "", traits: [], actorUuid: null, perception: 0, will: 0, points: 0,
-  discovery: [], influence: [], thresholds: [], modifiers: [],
+  discovery: UNIVERSAL_DISCOVERY.map((skill) => ({ ...newDiscovery(), skill })),
+  influence: UNIVERSAL_INFLUENCE.map((skill) => ({ ...newInfluence(), skill })),
+  thresholds: [], modifiers: [],
 });
 
 const FACTORIES = {

@@ -1,7 +1,7 @@
 {{#*inline "ssmEye"}}<button type="button" class="icon fa-solid {{#if revealed}}fa-eye{{else}}fa-eye-slash{{/if}}" data-action="toggleReveal" data-id="{{id}}" data-label="{{label}}" aria-label="{{localize "SSM.Influence.RevealToggle"}}" aria-pressed="{{revealed}}" data-tooltip="{{localize "SSM.Influence.RevealToggle"}}" {{#unless root.canRun}}disabled{{/unless}}></button>{{/inline}}
 {{#*inline "ssmSkillRow"}}<div class="ssm-row ssm-entry">
   {{#if universal}}<span class="ssm-no-eye"></span>{{else}}{{> ssmEye root=root}}{{/if}}
-  <span class="ssm-grow">{{label}}{{#if decoy}} <span class="ssm-tag ssm-decoy">{{localize "SSM.Influence.Decoy"}}</span>{{/if}}</span>
+  <span class="ssm-grow">{{label}}{{#if decoy}}{{#unless universal}} <span class="ssm-tag ssm-decoy">{{localize "SSM.Influence.Decoy"}}</span>{{/unless}}{{/if}}</span>
   <span class="ssm-muted">{{localize "SSM.Influence.Base"}} {{dc}}</span>
   <span class="{{#if dcChanged}}ssm-dc-changed{{/if}}">{{localize "SSM.Influence.DC"}} {{currentDc}}</span>
   <button type="button" class="icon fa-solid fa-dice-d20" data-action="rollSkill" data-npc="{{npcId}}" data-kind="{{kind}}" data-id="{{id}}" aria-label="{{localize "SSM.Influence.RollFor"}}" data-tooltip="{{localize "SSM.Influence.RollFor"}}" {{#unless root.rollable}}disabled{{/unless}}></button>
@@ -197,8 +197,8 @@
       <div class="ssm-row">
         <label class="grow">{{localize "SSM.Influence.Skill"}}<select name="{{path}}.skill">{{selectOptions @root.choices.discovery selected=skill}}</select></label>
         <label>{{localize "SSM.Influence.DC"}}<input type="number" min="0" step="1" name="{{path}}.dc" value="{{dc}}"></label>
-        {{#unless universal}}<label class="check"><input type="checkbox" name="{{path}}.revealed" {{checked revealed}}>{{localize "SSM.Influence.Revealed"}}</label>{{/unless}}
-        <label class="check"><input type="checkbox" name="{{path}}.decoy" {{checked decoy}}>{{localize "SSM.Influence.Decoy"}}</label>
+        {{#unless universal}}<label class="check"><input type="checkbox" name="{{path}}.revealed" {{checked revealed}}>{{localize "SSM.Influence.Revealed"}}</label>
+        <label class="check"><input type="checkbox" name="{{path}}.decoy" {{checked decoy}}>{{localize "SSM.Influence.Decoy"}}</label>{{/unless}}
         <button type="button" class="icon fa-solid fa-trash" data-action="removeRow" data-path="{{path}}" aria-label="{{localize "SSM.Influence.Remove"}}"></button>
       </div>
       {{/each}}
@@ -212,8 +212,8 @@
         <label class="grow">{{localize "SSM.Influence.Skill"}}<select name="{{path}}.skill">{{selectOptions @root.choices.influence selected=skill}}</select></label>
         {{#if isLore}}<label class="grow">{{localize "SSM.Influence.LoreName"}}<input type="text" name="{{path}}.lore" value="{{lore}}"></label>{{/if}}
         <label>{{localize "SSM.Influence.DC"}}<input type="number" min="0" step="1" name="{{path}}.dc" value="{{dc}}"></label>
-        <label class="check"><input type="checkbox" name="{{path}}.revealed" {{checked revealed}}>{{localize "SSM.Influence.Revealed"}}</label>
-        <label class="check"><input type="checkbox" name="{{path}}.decoy" {{checked decoy}}>{{localize "SSM.Influence.Decoy"}}</label>
+        {{#unless universal}}<label class="check"><input type="checkbox" name="{{path}}.revealed" {{checked revealed}}>{{localize "SSM.Influence.Revealed"}}</label>
+        <label class="check"><input type="checkbox" name="{{path}}.decoy" {{checked decoy}}>{{localize "SSM.Influence.Decoy"}}</label>{{/unless}}
         <button type="button" class="icon fa-solid fa-trash" data-action="removeRow" data-path="{{path}}" aria-label="{{localize "SSM.Influence.Remove"}}"></button>
       </div>
       {{/each}}

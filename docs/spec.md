@@ -22,7 +22,8 @@ The first version covers **Influence only**. The data and panel code are built s
 | Missing Lore | A PC without a listed Lore rolls it untrained (Intelligence +0) from the sheet or panel. Chat links can't do this, as PF2e reports the statistic as missing. | Justin |
 | Applying points | The module suggests the change and the GM confirms it | Justin |
 | NPCs | One challenge holds one or more NPCs and one shared round clock | Justin |
-| Hidden by default | Everything except the NPC name, Influence Points, rounds remaining and the universal Discovery skill (Perception) | Justin |
+| Hidden by default | Everything except the NPC name, Influence Points, rounds remaining and the universal skills: Perception for Discovery, and Deception, Diplomacy and Intimidation for Influence | Justin |
+| Universal skills | Always on the panel, with no reveal control and no decoy flag. A new NPC starts with a row for each, at the default DC; the GM can edit or delete them. Existing NPCs are unchanged. A universal row flagged as a decoy (from an import, say) is treated as not a decoy. | Justin |
 | DCs | Always hidden from players: not on the panel, not on the chat card. If a world turns on PF2e's `metagame_showDC` setting, DCs show as on any other roll, with no warning to the GM. | Justin |
 | Several NPCs on the panel | One column per NPC, each with its own skills. No separate NPC picker. | Justin |
 | Portraits | Not on the panel. Tokens or VN Stage handle those. | Justin |
@@ -67,7 +68,7 @@ Sidebar tab -> Challenge (journal entry + typed page, GM only) -> GM sheet
 
 **Filtered copy.** The GM's client writes a world setting containing only what players may see. Every client redraws its panel when that setting changes. This needs no socket for display, and it survives reloads.
 
-**Limit on secrecy.** Secrets only need to stay out of the player interface. As elsewhere in Foundry, a player who digs through the browser console may be able to read them, and Justin accepts that. A player-side roll needs the DC, so the copy includes DCs for revealed skills, and the panel doesn't show them. The filtered copy leaves out unrevealed entries, decoy markers and GM text.
+**Limit on secrecy.** Secrets only need to stay out of the player interface. As elsewhere in Foundry, a player who digs through the browser console may be able to read them, and Justin accepts that. A player-side roll needs the DC, so the copy includes DCs for revealed and universal skills, and the panel doesn't show them. The filtered copy leaves out unrevealed entries, decoy markers and GM text.
 
 **Multiple GMs.** Only the active GM's client writes state and handles roll results.
 
@@ -92,11 +93,11 @@ Sidebar tab -> Challenge (journal entry + typed page, GM only) -> GM sheet
 | Name, traits, linked actor | The linked actor is optional |
 | Perception and Will | Modifiers, not DCs |
 | Influence Points | Current total |
-| Discovery checks | Skill or Perception, DC, revealed flag |
-| Influence skills | Skill or Lore, DC, revealed flag |
+| Discovery checks | Skill or Perception, DC, revealed flag. A new NPC starts with Perception, which is universal. |
+| Influence skills | Skill or Lore, DC, revealed flag. A new NPC starts with Deception, Diplomacy and Intimidation, which are universal. |
 | Thresholds | Points, player text, GM text, revealed flag, reached flag |
 | Weaknesses, resistances, penalties | Modifier entries (below) |
-| Decoys | A flag on any weakness, resistance or skill entry |
+| Decoys | A flag on any weakness, resistance or skill entry, except universal skills |
 
 **Modifier entry.** Weaknesses, resistances, penalties and ad hoc adjustments share this shape.
 
@@ -129,7 +130,7 @@ The sheet has **Edit** and **Run** modes, like a locked and unlocked actor sheet
 - Round clock with advance and undo.
 - Each NPC's points, with buttons to add and remove.
 - Each skill, with its base and current DC. Clicking offers: roll for a selected PC, or post a chat link.
-- An eye toggle to reveal or hide each entry.
+- An eye toggle to reveal or hide each entry, except universal skills, which are always shown.
 - Modifier entries with on, off and apply controls.
 - Counters.
 - Start, hide, show and end controls for the panel.
@@ -162,8 +163,8 @@ The sheet has **Edit** and **Run** modes, like a locked and unlocked actor sheet
 |---|---|---|
 | Challenge name and rounds | Shown | |
 | NPC names and Influence Points | Shown | One column per NPC; compact when there are several |
-| Discovery skills | Perception (the universal skill) shown, no DCs. Others hidden until revealed. | Clickable. The GM's eye toggle appears on every row except the universal skill. |
-| Influence skills | Hidden until revealed | Clickable. No DC shown. |
+| Discovery skills | Perception (the universal skill) shown, no DCs. Others hidden until revealed. | Clickable. The GM's eye toggle appears on every row except the universal skill. The sheet shows no Revealed or Decoy checkbox for it. |
+| Influence skills | Deception, Diplomacy and Intimidation (the universal skills) shown. Others hidden until revealed. | Clickable. No DC shown. No eye toggle, Revealed or Decoy checkbox on a universal row. |
 | Weaknesses, resistances, penalties | Hidden until revealed | Name and player text |
 | Thresholds | Hidden until revealed | Player text; marked when reached |
 | Counters | Hidden until revealed | |

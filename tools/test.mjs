@@ -106,7 +106,7 @@ test("search opens only ancestors of the tab's kind", () => {
 });
 
 const system = () => {
-  const s = { premise: "<p>Banquet</p>", gmNotes: "", rounds: { current: 0, max: 6, length: "" }, npcs: [D.newNpc()], counters: [], run: { status: "inactive", acted: [], log: [] } };
+  const s = { premise: "<p>Banquet</p>", gmNotes: "", rounds: { current: 0, max: 6, length: "" }, npcs: [{ ...D.newNpc(), discovery: [], influence: [] }], counters: [], run: { status: "inactive", acted: [], log: [] } };
   return s;
 };
 
@@ -815,7 +815,7 @@ test("revealing each kind of entry adds it, and only its player fields", () => {
   revealAll(s);
   const view = viewOf(s);
   const npc = s.npcs[0];
-  assert.deepEqual(view.npcs[0].influence, [{ id: npc.influence[0].id, skill: "diplomacy", lore: "", dc: 15 }]);
+  assert.deepEqual(view.npcs[0].influence, [{ id: npc.influence[0].id, skill: "society", lore: "", dc: 15 }]);
   assert.deepEqual(view.npcs[0].known, [{ id: npc.modifiers[0].id, name: "Flattery", text: "likes praise" }]);
   assert.deepEqual(view.npcs[0].thresholds, [{ id: npc.thresholds[0].id, points: 8, text: "she offers an introduction", reached: false }]);
   assert.deepEqual(view.counters, [{ id: s.counters[0].id, name: "Suspicion", value: 3 }]);
@@ -1037,4 +1037,50 @@ test("a form with no Revealed field keeps a Discovery row's old value", () => {
   s.npcs[0].discovery.push(row);
   D.applyForm(s, { npcs: { 0: { discovery: { 0: { skill: "perception", dc: 21, decoy: false } } } } });
   assert.deepEqual([s.npcs[0].discovery[0].dc, s.npcs[0].discovery[0].decoy, s.npcs[0].discovery[0].revealed, s.npcs[0].discovery[0].id], [21, false, true, row.id]);
+});
+
+test("the universal Influence skills are Deception, Diplomacy and Intimidation, matched as stored", () => {
+  assert.deepEqual(D.UNIVERSAL_INFLUENCE, ["deception", "diplomacy", "intimidation"]);
+  for (const skill of D.UNIVERSAL_INFLUENCE) assert.equal(D.isUniversalInfluence({ skill }), true);
+  for (const skill of ["society", "lore", "performance", "perception", ""]) assert.equal(D.isUniversalInfluence({ skill }), false);
+  assert.equal(D.isUniversalRow({ skill: "perception" }), true);
+  assert.equal(D.isUniversalRow({ skill: "intimidation" }), true);
+  assert.equal(D.isUniversalRow({ skill: "arcana" }), false);
+});
+
+test("a new NPC starts with the universal rows at the default DC, and a new row is not universal", () => {
+  const npc = D.newNpc();
+  assert.deepEqual(npc.discovery.map((row) => [row.skill, row.dc, row.revealed, row.decoy]), [["perception", 15, false, false]]);
+  assert.deepEqual(npc.influence.map((row) => [row.skill, row.dc, row.revealed, row.decoy]), [["deception", 15, false, false], ["diplomacy", 15, false, false], ["intimidation", 15, false, false]]);
+  assert.equal(new Set([...npc.discovery, ...npc.influence].map((row) => row.id)).size, 4);
+  assert.equal(D.isUniversalInfluence(D.newInfluence()), false);
+  assert.equal(D.isUniversalDiscovery(D.newDiscovery()), true);
+  assert.deepEqual(D.newChallengeSystem().npcs[0].influence.length, 3);
+});
+
+test("universal Influence skills are always in the copy, with their DCs; others wait to be revealed", () => {
+  const s = secretSystem();
+  const npc = s.npcs[0];
+  npc.influence = [{ ...D.newInfluence(), skill: "deception", dc: 14 }, { ...D.newInfluence(), skill: "diplomacy", dc: 15 }, { ...D.newInfluence(), skill: "society", dc: 321 }];
+  assert.deepEqual(viewOf(s).npcs[0].influence.map((row) => [row.skill, row.dc]), [["deception", 14], ["diplomacy", 15]]);
+  assert.ok(!JSON.stringify(viewOf(s)).includes("321"));
+  npc.influence[2].revealed = true;
+  assert.deepEqual(viewOf(s).npcs[0].influence.map((row) => row.skill), ["deception", "diplomacy", "society"]);
+});
+
+test("a decoy flag on a universal row of either kind is ignored: no marker in the copy, none in the log", () => {
+  const s = secretSystem();
+  const npc = s.npcs[0];
+  npc.influence = [{ ...D.newInfluence(), skill: "intimidation", decoy: true }, { ...D.newInfluence(), skill: "society", decoy: true }];
+  npc.discovery = [{ ...D.newDiscovery(), skill: "perception", decoy: true }];
+  const view = viewOf(s);
+  assert.deepEqual(view.npcs[0].influence.map((row) => row.skill), ["intimidation"]);
+  assert.deepEqual(view.npcs[0].discovery.map((row) => row.skill), ["perception"]);
+  assert.ok(!scan(view).keys.has("decoy"));
+  Run.toggleReveal(s, npc.influence[0].id, "Intimidation");
+  assert.ok(s.run.log.at(-1).text.endsWith("Revealed"));
+  Run.toggleReveal(s, npc.discovery[0].id, "Perception");
+  assert.ok(s.run.log.at(-1).text.endsWith("Revealed"));
+  Run.toggleReveal(s, npc.influence[1].id, "Society");
+  assert.ok(s.run.log.at(-1).text.endsWith("RevealedDecoy"), "a decoy on an ordinary row still counts");
 });

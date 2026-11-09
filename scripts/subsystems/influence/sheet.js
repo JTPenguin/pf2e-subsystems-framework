@@ -7,7 +7,7 @@ import { adjustResult, announceTriggers, confirmResult, ignoreResult, writeChall
 import { advanceRound, applyModifier, canApplyModifier, canRestoreModifier, changeCounter, changePoints, currentDc, endRun, isClaimed, resetRun, restoreModifier, startRun, toggleActed, toggleModifier, toggleReveal, undoRound } from "./run.js";
 import { LINK_ROLL_ID } from "../../roll-option.js";
 import { rollCheck, rollTarget } from "./roll.js";
-import { addRow, applyForm, clampCounters, DURATIONS, EFFECT_TYPES, isUniversalDiscovery, limitCounter, LORE, MODIFIER_KINDS, PERCEPTION, QUICK_DC_AMOUNTS, pickFields, removeRow, setEffectAmount } from "./data.js";
+import { addRow, applyForm, clampCounters, DURATIONS, EFFECT_TYPES, isUniversalDiscovery, isUniversalInfluence, limitCounter, LORE, MODIFIER_KINDS, PERCEPTION, QUICK_DC_AMOUNTS, pickFields, removeRow, setEffectAmount } from "./data.js";
 
 const { DocumentSheetV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
@@ -183,7 +183,7 @@ export class InfluenceSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
         tabLabel: npc.name || `${loc("SSM.Influence.NPC")} ${n + 1}`,
         canRemove: system.npcs.length > 1,
         discovery: npc.discovery.map((row, i) => ({ ...row, path: `${path}.discovery.${i}`, universal: isUniversalDiscovery(row) })),
-        influence: npc.influence.map((row, i) => ({ ...row, path: `${path}.influence.${i}`, isLore: row.skill === LORE })),
+        influence: npc.influence.map((row, i) => ({ ...row, path: `${path}.influence.${i}`, isLore: row.skill === LORE, universal: isUniversalInfluence(row) })),
         thresholds: npc.thresholds.map((row, i) => ({ ...row, path: `${path}.thresholds.${i}` })),
         modifiers: npc.modifiers.map((modifier, i) => ({
           ...modifier,
@@ -267,7 +267,7 @@ export class InfluenceSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
     const onPanel = panel.id === this.document.id;
     const rollRows = (npc, rows, kind) => rows.map((row) => {
       const dc = currentDc(system, npc, row);
-      return { ...row, kind, npcId: npc.id, label: skillLabel(row), currentDc: dc, dcChanged: dc !== row.dc, universal: kind === "discover" && isUniversalDiscovery(row) };
+      return { ...row, kind, npcId: npc.id, label: skillLabel(row), currentDc: dc, dcChanged: dc !== row.dc, universal: kind === "discover" ? isUniversalDiscovery(row) : isUniversalInfluence(row) };
     });
     return {
       canRun,

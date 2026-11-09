@@ -3,7 +3,7 @@
  * A function that returns false changed nothing. No Foundry document calls, so tools/test.mjs can check them.
  */
 
-import { clampCounters, limitCounter } from "./data.js";
+import { clampCounters, isUniversalRow, limitCounter } from "./data.js";
 
 export const OUTCOMES = ["criticalSuccess", "success", "failure", "criticalFailure"];
 
@@ -181,7 +181,7 @@ export function toggleReveal(system, id, label) {
   if (!entry) return false;
   if (system.counters.includes(entry)) rememberCounter(system, entry);
   entry.revealed = !entry.revealed;
-  const key = !entry.revealed ? "Hidden" : entry.decoy ? "RevealedDecoy" : "Revealed";
+  const key = !entry.revealed ? "Hidden" : entry.decoy && !isUniversalRow(entry) ? "RevealedDecoy" : "Revealed";
   addLog(system, "reveal", `SSM.Influence.Log.${key}`, { entry: label });
 }
 

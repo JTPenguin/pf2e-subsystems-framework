@@ -3,7 +3,7 @@
  * Every entry is built field by field: a new field on the data can't reach players until it is added here.
  */
 
-import { isUniversalDiscovery } from "./data.js";
+import { isUniversalDiscovery, isUniversalInfluence } from "./data.js";
 import { currentDc } from "./run.js";
 
 /** Scale for a bar when no goal has been revealed. Hidden thresholds must not set it: the bar would give the goal away. */
@@ -11,8 +11,9 @@ const DEFAULT_SCALE = 10;
 
 const isVisible = (row) => row.revealed;
 
-/** Universal Discovery skills always show, decoy or not. Any other shows only once revealed. */
+/** Universal skills always show, decoy or not. Any other shows only once revealed. */
 const isVisibleDiscovery = (row) => isUniversalDiscovery(row) || row.revealed;
+const isVisibleInfluence = (row) => isUniversalInfluence(row) || row.revealed;
 
 function npcView(system, npc) {
   return {
@@ -20,7 +21,7 @@ function npcView(system, npc) {
     name: npc.name,
     points: npc.points,
     discovery: npc.discovery.filter(isVisibleDiscovery).map((row) => ({ id: row.id, skill: row.skill, dc: currentDc(system, npc, row) })),
-    influence: npc.influence.filter(isVisible).map((row) => ({ id: row.id, skill: row.skill, lore: row.lore, dc: currentDc(system, npc, row) })),
+    influence: npc.influence.filter(isVisibleInfluence).map((row) => ({ id: row.id, skill: row.skill, lore: row.lore, dc: currentDc(system, npc, row) })),
     known: npc.modifiers.filter(isVisible).map((row) => ({ id: row.id, name: row.name, text: row.playerText })),
     thresholds: npc.thresholds.filter(isVisible).map((row) => ({ id: row.id, points: row.points, text: row.playerText, reached: !!row.reached })),
   };
