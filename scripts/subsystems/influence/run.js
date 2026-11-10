@@ -111,8 +111,14 @@ export function resetRun(system) {
   Object.assign(system.run, { status: "inactive", acted: [], roundHistory: [], appliedRolls: [], receivedRolls: [], baseline: null, roundsAdded: 0 });
 }
 
+/** Whether Next round does anything. The GM window and the panel both disable the button when it doesn't. */
+export const canAdvanceRound = (system) => system.run.status === "active" && system.rounds.current < system.rounds.max;
+
+/** Whether Previous round does anything: there is an advance to undo. */
+export const canUndoRound = (system) => system.run.status === "active" && system.run.roundHistory.length > 0;
+
 export function advanceRound(system) {
-  if (system.run.status !== "active" || system.rounds.current >= system.rounds.max) return false;
+  if (!canAdvanceRound(system)) return false;
   system.run.roundHistory.push({ round: system.rounds.current, acted: system.run.acted });
   system.run.acted = [];
   system.rounds.current += 1;
@@ -120,8 +126,8 @@ export function advanceRound(system) {
 
 /** Undo a round advance, and bring back that round's acted markers. */
 export function undoRound(system) {
+  if (!canUndoRound(system)) return false;
   const last = system.run.roundHistory.at(-1);
-  if (system.run.status !== "active" || !last) return false;
   system.run.roundHistory.pop();
   system.rounds.current = last.round;
   system.run.acted = last.acted;

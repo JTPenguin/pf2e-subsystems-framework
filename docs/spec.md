@@ -177,14 +177,14 @@ The sheet has **Edit** and **Run** modes, like a locked and unlocked actor sheet
 
 | Item | Default | Notes |
 |---|---|---|
-| Challenge name and rounds | Shown | |
+| Challenge name and rounds | Shown | The name at the left of the header and "Round 3 of 6" at its right, on one line. The round text is plain text, so the header still drags from it. |
 | NPC names and Influence Points | Shown | One column per NPC; compact when there are several |
 | Discovery skills | Perception (the universal skill) shown, no DCs. Others hidden until revealed. | Clickable. The GM's eye toggle appears on every row except the universal skill. The sheet shows no Revealed or Decoy checkbox for it. |
 | Influence skills | Deception, Diplomacy and Intimidation (the universal skills) shown. Others hidden until revealed. | Clickable. No DC shown. No eye toggle, Revealed or Decoy checkbox on a universal row. |
 | Resistances, weaknesses, Other | Hidden until revealed | One card each: kind (none for Other), name, player text, what it does and duration. Dimmed while off. A spent one-time entry shows Spent, dimmed, with its effects struck through. An applied one-time entry whose DC change is still to come has its other effects struck through. |
 | Thresholds | Hidden until revealed | One card per NPC under its bar, in points order; hidden if none are revealed. Revealed in two steps: points only shows as "6  ???", then points and player text. A reached one has a check mark. |
 | Counters | Hidden until revealed | |
-| Round bar | Shown | "Round 3 of 6" with one segment per round, the rounds played filled. The segments stretch across the full panel width, like the point bars. Under the header, so it is not part of the drag handle. |
+| Round bar | Shown | One segment per round, the rounds played filled. The segments stretch across the full panel width, like the point bars. Under the header, so it is not part of the drag handle. The GM also gets a Previous round button before the bar and a Next round button after it, doing what the GM window's buttons do and disabled in the same cases (and when this GM is not the active one). Players get no buttons. |
 | Party avatars | Shown | Each PC's portrait (the actor's image, else a default icon), filled into the square and anchored to the top in their own row under the round bar. Lit until that PC has acted this round, then dimmed (greyscale and lower opacity) until the round moves on. The name shows on hover and is the accessible label. |
 
 **The points bar** scales to the NPC's highest threshold, hidden or not, or to 10 if the NPC has none. Players can work out the goal from the bar; Justin accepts that (2026-11-09). The filtered copy carries only that one number, never a hidden threshold's text or id.

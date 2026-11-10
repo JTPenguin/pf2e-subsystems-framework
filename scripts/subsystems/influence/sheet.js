@@ -4,7 +4,7 @@ import { hidePanel, panelBlockedBy, panelState, showPanel } from "../../panel/ac
 import { partyPCs } from "../../party.js";
 import { skillLabel } from "./skill-label.js";
 import { announceTriggers, writeChallenge } from "./state.js";
-import { advanceRound, applyModifier, canApplyModifier, changeCounter, changePoints, currentDc, cycleThresholdReveal, endRun, resetRun, restoreModifier, startRun, toggleActed, toggleModifier, toggleReached, toggleReveal, undoRound } from "./run.js";
+import { advanceRound, applyModifier, canAdvanceRound, canApplyModifier, canUndoRound, changeCounter, changePoints, currentDc, cycleThresholdReveal, endRun, resetRun, restoreModifier, startRun, toggleActed, toggleModifier, toggleReached, toggleReveal, undoRound } from "./run.js";
 import { LINK_ROLL_ID } from "../../roll-option.js";
 import { rollCheck, rollTarget } from "./roll.js";
 import { addRow, applyForm, clampCounters, isOtherModifier, isUniversalDiscovery, isUniversalInfluence, limitCounter, LORE, MODIFIER_KINDS, PERCEPTION, nextThresholdReveal, pickFields, removeRow, THRESHOLD_REVEALS } from "./data.js";
@@ -293,8 +293,8 @@ export class InfluenceSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
       canHidePanel: active && onPanel && !panel.hidden,
       canShowPanel: active && (!onPanel || !!panel.hidden),
       roundLabel: active || status === "finished" ? game.i18n.format("SSM.Influence.Round", system.rounds) : loc("SSM.Influence.NotStarted"),
-      canNextRound: active && system.rounds.current < system.rounds.max,
-      canPreviousRound: active && system.run.roundHistory.length > 0,
+      canNextRound: canAdvanceRound(system),
+      canPreviousRound: canUndoRound(system),
       party: [...new Set([...actors.map((actor) => actor.id), ...system.run.acted])].map((id) => {
         const actor = game.actors.get(id);
         return { id, name: actor?.name ?? id, acted: system.run.acted.includes(id) };

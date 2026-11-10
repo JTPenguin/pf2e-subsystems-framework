@@ -150,12 +150,13 @@ button.ssm-reached { color: #4f9d5d; }
 .ssm-panel.moved { position: fixed; z-index: var(--z-index-app, 30); transform: scale(var(--ui-scale, 1)); transform-origin: top left; width: max-content; max-width: min(60vw, calc(60vw / var(--ui-scale, 1))); max-height: calc(40vh / var(--ui-scale, 1) - 0.5rem); margin: 0; }
 .ssm-panel-head { cursor: var(--cursor-grab, grab); touch-action: none; user-select: none; }
 .ssm-panel.dragging .ssm-panel-head { cursor: var(--cursor-grab-down, grabbing); }
-/* The reset button sits at the header's right edge. */
-.ssm-panel button.ssm-panel-reset { flex: none; width: auto; height: auto; min-height: 0; margin: 0 0 0 auto; padding: 0 0.15rem; border: none; background: none; box-shadow: none; color: #e8cf8f; font-size: var(--font-size-11, 0.7rem); line-height: inherit; cursor: pointer; }
+/* The reset button sits at the header's right edge, after the round text. */
+.ssm-panel button.ssm-panel-reset { flex: none; width: auto; height: auto; min-height: 0; margin: 0; padding: 0 0.15rem; border: none; background: none; box-shadow: none; color: #e8cf8f; font-size: var(--font-size-11, 0.7rem); line-height: inherit; cursor: pointer; }
 .ssm-panel button.ssm-panel-reset:hover, .ssm-panel button.ssm-panel-reset:focus-visible { color: #fff; }
 .ssm-panel:not(.moved) .ssm-panel-reset { display: none; }
 .ssm-panel p { margin: 0.15rem 0 0; }
 .ssm-panel-head { display: flex; justify-content: space-between; gap: 2rem; }
+.ssm-panel-head .ssm-panel-round-text + .ssm-panel-reset { margin-left: -1.75rem; }
 .ssm-panel-name { font-size: var(--font-size-15, 0.9375rem); }
 /* The GM's name is a button that opens the challenge window. It looks like the players' plain name, and the header can still be dragged by it. */
 .ssm-panel button.ssm-panel-name { flex: 0 1 auto; width: auto; height: auto; min-height: 0; margin: 0; padding: 0; border: none; background: none; box-shadow: none; color: inherit; font-family: inherit; line-height: inherit; text-align: left; cursor: pointer; }
@@ -206,7 +207,11 @@ button.ssm-reached { color: #4f9d5d; }
 /* The round bar and the PCs' token images. Only the header drags the panel, so nothing here starts a drag. A PC is lit until they have acted this round, then dimmed. */
 .ssm-panel-run { margin-top: 0.2rem; }
 .ssm-panel-rounds { display: flex; align-items: center; gap: 0.5rem; }
-.ssm-panel-rounds-label { flex: none; }
+/* The round text sits at the header's right, not a button, so the header drags from it. The GM's round buttons flank the bar. */
+.ssm-panel-round-text { flex: none; margin-left: auto; }
+.ssm-panel button.ssm-panel-round-button { flex: none; width: auto; height: auto; min-height: 0; margin: 0; padding: 0.25rem 0.4rem; border: none; background: none; box-shadow: none; color: #e8cf8f; font-size: var(--font-size-13, 0.8125rem); line-height: inherit; cursor: pointer; }
+.ssm-panel button.ssm-panel-round-button:hover:not(:disabled), .ssm-panel button.ssm-panel-round-button:focus-visible { color: #fff; }
+.ssm-panel button.ssm-panel-round-button:disabled { opacity: 0.35; cursor: default; }
 .ssm-panel-segments { display: flex; gap: 2px; flex: 1 1 4rem; min-width: 3rem; }
 .ssm-panel-segments > span { flex: 1 1 0; height: 0.55rem; background: rgba(255, 255, 255, 0.15); border-radius: 2px; }
 .ssm-panel-segments > span.filled { background: #b8a06a; }

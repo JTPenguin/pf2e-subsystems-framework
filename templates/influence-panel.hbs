@@ -1,8 +1,9 @@
 <header class="ssm-panel-head">
   {{#if isGM}}<button type="button" class="ssm-panel-name" data-action="openChallenge" data-drag-click><strong>{{name}}</strong></button>{{else}}<strong class="ssm-panel-name">{{name}}</strong>{{/if}}
+  <span class="ssm-panel-round-text">{{roundLabel}}</span>
 </header>
 <div class="ssm-panel-run">
-  <div class="ssm-panel-rounds"><span class="ssm-panel-rounds-label">{{roundLabel}}</span><span class="ssm-panel-segments" role="img" aria-label="{{roundLabel}}">{{#each roundSegments}}<span class="{{#if filled}}filled{{/if}}"></span>{{/each}}</span></div>
+  <div class="ssm-panel-rounds">{{#if isGM}}<button type="button" class="ssm-panel-round-button" data-action="previousRound" aria-label="{{localize "SSM.Influence.PreviousRound"}}" {{#unless canPreviousRound}}disabled{{/unless}}><i class="fa-solid fa-backward-step" inert></i></button>{{/if}}<span class="ssm-panel-segments" role="img" aria-label="{{roundLabel}}">{{#each roundSegments}}<span class="{{#if filled}}filled{{/if}}"></span>{{/each}}</span>{{#if isGM}}<button type="button" class="ssm-panel-round-button" data-action="nextRound" aria-label="{{localize "SSM.Influence.NextRound"}}" {{#unless canNextRound}}disabled{{/unless}}><i class="fa-solid fa-forward-step" inert></i></button>{{/if}}</div>
   {{#if party.length}}<div class="ssm-panel-party" role="list">{{#each party}}<img class="ssm-panel-pc {{#if acted}}acted{{/if}}" role="listitem" src="{{img}}" alt="{{label}}" aria-label="{{label}}" data-tooltip-text="{{name}}" draggable="false">{{/each}}</div>{{/if}}
 </div>
 <div class="ssm-panel-npcs {{#if several}}several{{/if}}">

@@ -3,7 +3,10 @@ import { isOtherModifier } from "./data.js";
 import { skillLabel } from "./skill-label.js";
 import { buildPanelView, changeText, findPanelRow, pointsBar, roundSegments } from "./panel-view.js";
 import { rollCheck, rollTarget } from "./roll.js";
+import { advanceRound, canAdvanceRound, canUndoRound, undoRound } from "./run.js";
 import { InfluenceSheet } from "./sheet.js";
+import { announceTriggers, writeChallenge } from "./state.js";
+import { challengePage } from "../../registry.js";
 
 const loc = (key) => game.i18n.localize(key);
 
@@ -21,8 +24,16 @@ function modifierCard(row) {
   };
 }
 
-/** The Influence panel's context, drawn only from the filtered copy. */
-function prepareView(view) {
+/** The GM's round buttons are enabled as the GM window's are: only the active GM, and only when the move does something. The real challenge is read, as the copy has no round history. */
+function roundButtons(state) {
+  const entry = game.user.isGM && state ? game.journal.get(state.id) : null;
+  const page = entry && challengePage(entry);
+  const run = !!page && game.user.isActiveGM;
+  return { canPreviousRound: run && canUndoRound(page.system), canNextRound: run && canAdvanceRound(page.system) };
+}
+
+/** The Influence panel's context, drawn only from the filtered copy. The GM's round buttons also read the challenge. */
+function prepareView(view, state) {
   // Only ids go in the HTML. A click looks the DC up in the copy.
   const skillButton = (npc, n, row, kind) => ({
     id: row.id, npcId: npc.id, kind,
@@ -32,6 +43,7 @@ function prepareView(view) {
     name: view.name,
     roundLabel: game.i18n.format("SSM.Influence.Round", view.rounds),
     roundSegments: roundSegments(view.rounds.current, view.rounds.max),
+    ...roundButtons(state),
     several: view.npcs.length > 1,
     npcs: view.npcs.map((npc, n) => ({
       ...npc,
@@ -77,10 +89,18 @@ async function rollFromPanel(state, button, event) {
   }
 }
 
+/** A GM click on Previous or Next round: the same change as the GM window's button. */
+async function moveRound(state, button) {
+  const entry = game.journal.get(state.id);
+  const page = entry && challengePage(entry);
+  if (!game.user.isActiveGM || !page) return;
+  announceTriggers(await writeChallenge(page, button.dataset.action === "nextRound" ? advanceRound : undoRound));
+}
+
 export const influencePanel = {
   template: `modules/${MODULE}/templates/influence-panel.hbs`,
   isRunning: (system) => system.run.status === "active",
   buildView: buildPanelView,
   prepareView,
-  viewActions: { rollSkill: rollFromPanel },
+  viewActions: { rollSkill: rollFromPanel, previousRound: moveRound, nextRound: moveRound },
 };
