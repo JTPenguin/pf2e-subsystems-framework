@@ -99,9 +99,14 @@ export class InfluenceSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
 
   /* -------------------------------------------- */
 
+  /** The window the sheet is in: the main one, or its own when detached. */
+  get #window() {
+    return this.element?.ownerDocument.defaultView ?? window;
+  }
+
   /** True while the user is writing in a text field or an open editor. */
   get #isWriting() {
-    const active = document.activeElement;
+    const active = this.#window.document.activeElement;
     const typing = !!this.element?.contains(active) && active.matches("input:not([type=checkbox]), textarea");
     return typing || !!this.element?.querySelector("prose-mirror.active");
   }
@@ -131,12 +136,16 @@ export class InfluenceSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
     this.element.addEventListener("pointerdown", () => this.#startPress());
     this.element.addEventListener("focusout", (event) => {
       // The window losing focus also fires this, with the field still active: the user is still writing.
-      if (document.activeElement !== event.target && !this.#pressing) this.#catchUp();
+      if (this.#window.document.activeElement !== event.target && !this.#pressing) this.#catchUp();
     });
   }
 
-  /** A press ends on release, cancel or the window losing focus. A pointer moving with no button down catches a release that was missed. */
+  /**
+   * A press ends on release, cancel or the window losing focus. A pointer moving with no button down catches a release that was missed.
+   * The listeners go on the sheet's own window: a detached sheet never gets the main window's pointer events.
+   */
   #startPress() {
+    const win = this.#window;
     this.#pressEnd?.abort();
     this.#pressing = true;
     const controller = this.#pressEnd = new AbortController();
@@ -150,8 +159,8 @@ export class InfluenceSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
       }, 100);
     };
     const { signal } = controller;
-    for (const type of ["pointerup", "pointercancel", "blur"]) window.addEventListener(type, end, { signal });
-    window.addEventListener("pointermove", (event) => event.buttons === 0 && end(), { signal });
+    for (const type of ["pointerup", "pointercancel", "blur"]) win.addEventListener(type, end, { signal });
+    win.addEventListener("pointermove", (event) => event.buttons === 0 && end(), { signal });
   }
 
   /** Redraw if an update was held back and nothing is being written or saved. A save in progress redraws the sheet itself. */

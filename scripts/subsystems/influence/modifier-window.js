@@ -97,7 +97,8 @@ export class ModifierWindow extends HandlebarsApplicationMixin(ApplicationV2) {
   /** A redraw for an update from elsewhere keeps the GM's edits and the field they are typing in. */
   async _preRender(context, options) {
     await super._preRender(context, options);
-    const active = this.element?.contains(document.activeElement) ? document.activeElement : null;
+    const focused = this.element?.ownerDocument.activeElement;
+    const active = this.element?.contains(focused) ? focused : null;
     this.#focus = active?.name ? { name: active.name, start: active.selectionStart, end: active.selectionEnd } : null;
   }
 
