@@ -91,15 +91,21 @@ button.ssm-state:disabled { cursor: default; }
 .ssm-reached { border-color: #4f9d5d; color: #4f9d5d; }
 button.ssm-reached { color: #4f9d5d; }
 .ssm-reached.ssm-unreached { opacity: 0.45; }
-.ssm-entry.ssm-hidden > .ssm-grow, .ssm-modifier.ssm-hidden > .ssm-entry > .ssm-grow { opacity: 0.7; font-style: italic; }
-.ssm-npc .ssm-modifier { padding: 0.1rem 0 0.1rem 0.25rem; border-left: 3px solid var(--color-border-highlight, #b8a06a); border-radius: 2px; background: rgba(255, 255, 255, 0.03); margin-bottom: 0.25rem; }
+/* Hidden text is italic, not dimmed, so the muted GM line stays readable (it is 0.7 on its own). */
+.ssm-entry.ssm-hidden > .ssm-grow, .ssm-modifier.ssm-hidden > .ssm-entry > .ssm-grow, .ssm-counter.ssm-hidden .ssm-grow { font-style: italic; }
+.ssm-entry.ssm-hidden .ssm-gm-line, .ssm-modifier.ssm-hidden .ssm-gm-line { font-style: normal; }
+/* Thresholds, modifiers and counters are cards. A hidden card is plain; a revealed one has a solid fill; a points-only threshold has half that fill. The fill follows the text colour, so it works in the light and dark themes. */
+.ssm-npc .ssm-threshold, .ssm-block > .ssm-counter, .ssm-npc .ssm-modifier { box-sizing: border-box; border: 1px solid var(--color-border, #7a7971); border-radius: 3px; background: none; padding: 0.15rem 0.3rem; margin-bottom: 0.25rem; }
+.ssm-block > .ssm-counter { display: block; }
+.ssm-npc .ssm-modifier { border-left: 3px solid var(--color-border-highlight, #b8a06a); }
+.ssm-npc .ssm-threshold.ssm-reveal-full, .ssm-npc .ssm-modifier:not(.ssm-hidden), .ssm-counter:not(.ssm-hidden) { background: color-mix(in srgb, currentColor 16%, transparent); }
+.ssm-npc .ssm-threshold.ssm-reveal-points { background: color-mix(in srgb, currentColor 8%, transparent); }
 .ssm-npc .ssm-modifier .ssm-entry { margin-bottom: 0; }
 .ssm-npc .ssm-detail { padding-left: 2.25rem; }
 .ssm-npc .ssm-modifier.ssm-kind-weakness { border-left-color: #6fae6a; }
 .ssm-npc .ssm-modifier.ssm-kind-resistance { border-left-color: #c0523f; }
 .ssm-npc .ssm-modifier.ssm-kind-penalty { border-left-color: #c9743a; }
 .ssm-npc .ssm-modifier.ssm-kind-adjustment { border-left-color: #7a9cc6; }
-.ssm-npc .ssm-modifier.ssm-mod-off, .ssm-npc .ssm-modifier.ssm-mod-spent { background: none; }
 .ssm-npc .ssm-modifier.ssm-mod-spent { opacity: 0.6; }
 
 /* The panel over the canvas. #ui-top ignores the pointer, so only the panel's own area takes clicks. */

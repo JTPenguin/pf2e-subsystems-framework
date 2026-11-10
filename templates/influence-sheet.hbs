@@ -70,7 +70,7 @@
       <div class="ssm-npc-group">
         <h4>{{localize "SSM.Influence.Thresholds"}}</h4>
         {{#each npc.thresholds}}
-        <div class="ssm-row ssm-entry ssm-threshold {{#if reached}}ssm-reached-row{{/if}} {{#unless textShown}}ssm-hidden{{/unless}}">
+        <div class="ssm-row ssm-entry ssm-threshold ssm-reveal-{{reveal}} {{#if reached}}ssm-reached-row{{/if}} {{#unless textShown}}ssm-hidden{{/unless}}">
           <button type="button" class="icon fa-solid {{revealIcon}}" data-action="cycleThresholdReveal" data-npc="{{npc.id}}" data-id="{{id}}" aria-label="{{revealTooltip}}" aria-pressed="{{revealPressed}}" data-tooltip="{{revealTooltip}}" {{#unless ../../canRun}}disabled{{/unless}}></button>
           <span class="ssm-threshold-points">{{points}}</span>
           <span class="ssm-grow">{{#if playerText}}<span class="ssm-player-text">{{playerText}}</span>{{/if}}{{#if gmText}}<span class="ssm-muted ssm-gm-line"><strong>{{localize "SSM.Influence.GMLabel"}}</strong> {{gmText}}</span>{{/if}}</span>
@@ -104,6 +104,7 @@
     <section class="ssm-block">
       <header class="ssm-block-head"><h3>{{localize "SSM.Influence.Counters"}}</h3></header>
       {{#each counters}}
+      <div class="ssm-counter {{#unless revealed}}ssm-hidden{{/unless}}">
       <div class="ssm-row ssm-entry">
         {{> ssmEye root=..}}
         <span class="ssm-grow">{{label}}{{#if rangeLabel}} <span class="ssm-muted">{{rangeLabel}}</span>{{/if}}</span>
@@ -112,6 +113,7 @@
         <button type="button" class="icon fa-solid fa-plus" data-action="changeCounter" data-id="{{id}}" data-delta="1" aria-label="{{localize "SSM.Influence.AddToCounter"}}" {{#unless canAdd}}disabled{{/unless}}></button>
       </div>
       {{#each triggers}}<div class="ssm-muted ssm-detail">{{localize "SSM.Influence.TriggerValue"}} {{value}}{{#if gmNote}}: {{gmNote}}{{/if}}</div>{{/each}}
+      </div>
       {{/each}}
     </section>
     {{/if}}
