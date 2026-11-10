@@ -81,7 +81,6 @@ button.ssm-state:disabled { cursor: default; }
 .ssm-skill-roll > i { font-size: 0.9em; color: var(--content-link-icon-color, inherit); }
 .ssm-skill-dc { opacity: 0.85; }
 .ssm-skill-dc.ssm-dc-changed { opacity: 1; }
-.ssm-skill-dc > i { margin-left: 0.15rem; }
 /* Hidden from players: dashed outline and no fill. Universal skills are always shown. */
 .ssm-skill.ssm-hidden { border-style: dashed; background: none; }
 .ssm-skill.ssm-hidden .ssm-skill-name { opacity: 0.7; font-style: italic; }
