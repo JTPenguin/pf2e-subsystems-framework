@@ -19,20 +19,20 @@ const isVisibleInfluence = (row) => isUniversalInfluence(row) || row.revealed;
 const skillName = (row) => ({ skill: row.skill, lore: row.lore });
 
 /**
- * What one effect does, in terms players may see, or null if it shows nothing. A DC change becomes the same change to the check
- * (DC −2 is +2 to the check), so no DC appears. A skill row players can't see is left out without a trace,
+ * What one effect does, in terms players may see, or null if it shows nothing. A DC change shows as a DC change ("−2 to DCs vs Diplomacy"),
+ * with the amount only, so no DC number appears. A skill row players can't see is left out without a trace,
  * and a change that covers only hidden rows shows nothing.
  * A counter players can't see hides the whole effect. Notes are the GM's words, so they never show.
  */
 function changeView(system, npc, effect) {
   if (!effect.amount) return null;
   if (effect.type === "dc") {
-    if (effect.allSkills) return { type: "check", amount: -effect.amount, all: true, skills: [] };
+    if (effect.allSkills) return { type: "dc", amount: effect.amount, all: true, skills: [] };
     const rows = [...npc.discovery.filter(isVisibleDiscovery), ...npc.influence.filter(isVisibleInfluence)].filter((row) => effect.skills.includes(row.id));
     if (!rows.length) return null;
     // A Discovery and an Influence row can share a skill: name it once.
     const shown = [...new Map(rows.map((row) => [`${row.skill}:${row.lore}`, skillName(row)])).values()];
-    return { type: "check", amount: -effect.amount, all: false, skills: shown };
+    return { type: "dc", amount: effect.amount, all: false, skills: shown };
   }
   if (effect.type === "points" || effect.type === "rounds") return { type: effect.type, amount: effect.amount };
   if (effect.type === "counter") {
@@ -57,16 +57,16 @@ const modifierView = (system, npc, row) => ({
 });
 
 /**
- * One change from the copy as text, such as "+2 to Diplomacy" or "−1 Influence Point".
+ * One change from the copy as text, such as "−2 to DCs vs Diplomacy" or "−1 Influence Point".
  * `format(key, data)` and `list(items)` are Foundry's localisation, and `label(skill)` names a skill, so tools/test.mjs can pass stand-ins.
  */
 export function changeText(change, { format, list, label }) {
   const amount = change.amount > 0 ? `+${change.amount}` : `−${-change.amount}`;
   const plural = Math.abs(change.amount) === 1 ? "one" : "other";
   const key = "SSM.Panel.Change";
-  if (change.type === "check") {
-    if (change.all) return format(`${key}.checkAll`, { amount });
-    return format(`${key}.check`, { amount, skills: list(change.skills.map(label)) });
+  if (change.type === "dc") {
+    if (change.all) return format(`${key}.dcAll`, { amount });
+    return format(`${key}.dc`, { amount, skills: list(change.skills.map(label)) });
   }
   if (change.type === "counter") return format(`${key}.counter`, { amount, counter: change.counter || format("SSM.Influence.UnnamedCounter", {}) });
   return format(`${key}.${change.type}.${plural}`, { amount });

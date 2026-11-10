@@ -156,7 +156,7 @@ The sheet has **Edit** and **Run** modes, like a locked and unlocked actor sheet
 | +----------------------------+ | +-----------------------------+ |
 | |WEAKNESS Flattery   ONGOING | | |PENALTY Straight talk ONGOING| |
 | |Weak to praise of her art.  | | |Respects a straight answer.  | |
-| |+2 to Diplomacy             | | |-2 to Deception              | |
+| |-2 to DCs vs Diplomacy      | | |+2 to DCs vs Deception       | |
 | +----------------------------+ | +-----------------------------+ |
 |                                | Goal: 4: he vouches for you     |
 | Goal: 8: she offers an         |                                 |
@@ -181,7 +181,7 @@ The sheet has **Edit** and **Run** modes, like a locked and unlocked actor sheet
 
 | Effect | Card text | Never shows |
 |---|---|---|
-| DC change | The same change to the check, so DC −2 reads "+2 to Diplomacy". "All checks" when it covers every skill. | A DC, or the word DC |
+| DC change | Shown as a DC change, never negated: "−2 to DCs vs Diplomacy" (a list for several skills), or "−2 to all DCs" when it covers every skill. | A DC number |
 | Influence Points | "−1 Influence Point", "+2 Influence Points" | |
 | Counter | "+1 Suspicion", once the counter is revealed | A hidden counter: the effect is left out |
 | Rounds | "+1 round", "−2 rounds" | |

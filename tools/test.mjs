@@ -1124,15 +1124,14 @@ const cardOf = (effects, over = {}) => {
 };
 const diplomacy = (s) => s.npcs[0].influence.find((row) => row.skill === "diplomacy");
 
-test("a card's change reads as a change to the check, never as a DC", () => {
+test("a card's DC change reads as a DC change, with no DC number", () => {
   const s = secretSystem();
   s.npcs[0].influence.push({ ...D.newInfluence(), skill: "diplomacy", dc: 23 });
   const id = diplomacy(s).id;
   s.npcs[0].modifiers = [{ ...D.newModifier(), revealed: true, effects: [{ ...D.newEffect(), type: "dc", amount: -2, allSkills: false, skills: [id] }, { ...D.newEffect(), type: "dc", amount: 5, allSkills: true }] }];
   const view = viewOf(s);
   const texts = view.npcs[0].known[0].changes.map((change) => V.changeText(change, enText));
-  assert.deepEqual(texts, ["+2 to Diplomacy", "−5 to all checks"]);
-  assert.ok(!texts.join(" ").includes("DC"));
+  assert.deepEqual(texts, ["−2 to DCs vs Diplomacy", "+5 to all DCs"]);
   assert.ok(!texts.join(" ").match(/\b(23|21|28)\b/));
   assert.ok(!JSON.stringify(view.npcs[0].known).includes("23"));
   assert.ok(!scan(view.npcs[0].known).keys.has("dc"));
@@ -1162,7 +1161,7 @@ test("a card never names a hidden skill row, decoy or not", () => {
   ];
   let view = viewOf(s);
   let texts = view.npcs[0].known[0].changes.map((change) => V.changeText(change, enText));
-  assert.deepEqual(texts, ["+2 to Diplomacy"], "hidden skills leave no trace, and a change on hidden skills only shows nothing");
+  assert.deepEqual(texts, ["−2 to DCs vs Diplomacy"], "hidden skills leave no trace, and a change on hidden skills only shows nothing");
   const known = JSON.stringify(view.npcs[0].known);
   for (const secret of ["Secret Cult", hidden.id, hiddenLore.id, dip.id]) assert.ok(!known.includes(secret), `${secret} must not appear`);
   assert.ok(!scan(view.npcs[0].known).values.has("society"));
@@ -1170,7 +1169,7 @@ test("a card never names a hidden skill row, decoy or not", () => {
   hiddenLore.revealed = true;
   view = viewOf(s);
   texts = view.npcs[0].known[0].changes.map((change) => V.changeText(change, enText));
-  assert.deepEqual(texts, ["+2 to Diplomacy", "+1 to Secret Cult"]);
+  assert.deepEqual(texts, ["−2 to DCs vs Diplomacy", "−1 to DCs vs Secret Cult"]);
 });
 
 test("a card leaves out an unrevealed counter, a note, a zero change and a removed skill", () => {
@@ -1203,8 +1202,8 @@ test("a card carries kind, duration and state, and a revealed decoy looks like a
 
 test("every change type has an English string", () => {
   const changes = [
-    { type: "check", amount: 1, all: false, skills: [{ skill: "diplomacy", lore: "" }] },
-    { type: "check", amount: 1, all: true, skills: [] },
+    { type: "dc", amount: -2, all: false, skills: [{ skill: "diplomacy", lore: "" }] },
+    { type: "dc", amount: -2, all: true, skills: [] },
     { type: "points", amount: 1 }, { type: "points", amount: 3 },
     { type: "rounds", amount: 1 }, { type: "rounds", amount: 3 },
     { type: "counter", amount: -1, counter: "" },
@@ -1221,7 +1220,16 @@ test("a DC change on a Discovery and an Influence row with the same skill names 
   npc.discovery.push(discover);
   npc.influence.push(influence);
   npc.modifiers[0].effects = [{ ...D.newEffect(), type: "dc", amount: -2, allSkills: false, skills: [discover.id, influence.id] }];
-  assert.deepEqual(viewOf(s).npcs[0].known[0].changes.map((change) => V.changeText(change, enText)), ["+2 to Diplomacy"]);
+  assert.deepEqual(viewOf(s).npcs[0].known[0].changes.map((change) => V.changeText(change, enText)), ["−2 to DCs vs Diplomacy"]);
+});
+
+test("a DC change on several visible skills lists them", () => {
+  const { s, npc } = cardOf([]);
+  const dip = { ...D.newInfluence(), skill: "diplomacy" };
+  const dec = { ...D.newInfluence(), skill: "deception" };
+  npc.influence.push(dip, dec);
+  npc.modifiers[0].effects = [{ ...D.newEffect(), type: "dc", amount: -2, allSkills: false, skills: [dip.id, dec.id] }];
+  assert.deepEqual(viewOf(s).npcs[0].known[0].changes.map((change) => V.changeText(change, enText)), ["−2 to DCs vs Diplomacy and Deception"]);
 });
 
 test("applying a one-time points entry spends its card", () => {
@@ -1237,5 +1245,5 @@ test("applying a one-time entry with a DC change marks it applied but not spent,
   Run.applyModifier(s, npc.id, npc.modifiers[0].id);
   const card = viewOf(s).npcs[0].known[0];
   assert.deepEqual([card.spent, card.applied, card.active], [false, true, true]);
-  assert.deepEqual(card.changes.map((change) => change.type), ["points", "check"]);
+  assert.deepEqual(card.changes.map((change) => change.type), ["points", "dc"]);
 });

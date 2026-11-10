@@ -13,8 +13,8 @@ function modifierCard(row) {
     name: row.name || loc("SSM.Influence.UnnamedEntry"),
     kindLabel: loc(`SSM.Influence.Kind.${row.kind}`),
     durationLabel: loc(`SSM.Influence.Duration.${row.duration}`),
-    // Struck once it has happened: all of a spent entry, or an applied entry's changes other than to the check.
-    changes: row.changes.map((change) => ({ text: changeText(change, text), done: row.spent || (row.applied && change.type !== "check") })),
+    // Struck once it has happened: all of a spent entry, or an applied entry's changes other than a DC change.
+    changes: row.changes.map((change) => ({ text: changeText(change, text), done: row.spent || (row.applied && change.type !== "dc") })),
     inactive: !row.active && !row.spent,
   };
 }

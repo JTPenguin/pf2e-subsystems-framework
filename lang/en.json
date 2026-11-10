@@ -28,8 +28,8 @@
       "Influence": "Influence",
       "Discover": "Discover",
       "Change": {
-        "check": "{amount} to {skills}",
-        "checkAll": "{amount} to all checks",
+        "dc": "{amount} to DCs vs {skills}",
+        "dcAll": "{amount} to all DCs",
         "points": { "one": "{amount} Influence Point", "other": "{amount} Influence Points" },
         "counter": "{amount} {counter}",
         "rounds": { "one": "{amount} round", "other": "{amount} rounds" }
