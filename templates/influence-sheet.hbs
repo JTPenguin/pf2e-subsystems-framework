@@ -94,8 +94,8 @@
         <div class="ssm-modifier ssm-kind-{{kind}} ssm-mod-{{stateClass}} {{#unless revealed}}ssm-hidden{{/unless}}">
           <div class="ssm-row ssm-entry">
             {{> ssmEye root=../../..}}
+            <button type="button" class="icon fa-solid {{#if spent}}fa-rotate-left{{else}}fa-check{{/if}} ssm-toggle ssm-toggle-{{stateClass}}" data-action="{{#if spent}}restoreModifier{{else}}toggleModifier{{/if}}" data-npc="{{npc.id}}" data-id="{{id}}" aria-label="{{stateLabel}}" aria-pressed="{{pressed}}" data-tooltip="{{stateTooltip}}" {{#unless canChange}}disabled{{/unless}}></button>
             {{> ssmModifierName}}
-            <button type="button" class="ssm-tag ssm-state ssm-state-{{stateClass}}" data-action="{{#if spent}}restoreModifier{{else}}toggleModifier{{/if}}" data-npc="{{npc.id}}" data-id="{{id}}" aria-pressed="{{pressed}}" data-tooltip="{{stateTooltip}}" {{#unless canChange}}disabled{{/unless}}>{{stateLabel}}</button>
             {{#if hasApply}}<button type="button" data-action="applyModifier" data-npc="{{npc.id}}" data-id="{{id}}" {{#unless canApply}}disabled{{/unless}}>{{localize "SSM.Influence.Apply"}}</button>{{/if}}
             {{#if canEdit}}{{> ssmModifierEdit}}{{/if}}
           </div>
