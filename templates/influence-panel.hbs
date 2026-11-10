@@ -21,7 +21,7 @@
       </div>
       {{/each}}
     </div>{{/if}}
-    {{#each thresholds}}<p class="ssm-panel-goal {{#if reached}}reached{{/if}}"><span class="ssm-panel-label">{{localize "SSM.Panel.Goal"}}</span> {{points}}{{#if text}}: {{text}}{{/if}}{{#if reached}} <i class="fa-solid fa-check" inert></i> <span class="ssm-panel-reached">{{localize "SSM.Influence.ReachedShort"}}</span>{{/if}}</p>{{/each}}
+    {{#each thresholds}}<p class="ssm-panel-goal {{#if reached}}reached{{/if}}"><span class="ssm-panel-label">{{localize "SSM.Panel.Goal"}}</span> {{points}}{{#if textHidden}}: {{localize "SSM.Panel.HiddenText"}}{{else if text}}: {{text}}{{/if}}{{#if reached}} <i class="fa-solid fa-check" inert></i> <span class="ssm-panel-reached">{{localize "SSM.Influence.ReachedShort"}}</span>{{/if}}</p>{{/each}}
   </div>
   {{/each}}
 </div>

@@ -722,10 +722,14 @@ test("revealing a decoy on an influence row reveals it", () => {
 
 test("every kind of row added during a run goes back to hidden on reset", () => {
   const s = running();
-  const late = [D.addRow(s, "npcs.0.discovery"), D.addRow(s, "npcs.0.influence"), D.addRow(s, "npcs.0.thresholds"), addModifier(s, {}, [dcEffect(2)])];
+  const late = [D.addRow(s, "npcs.0.discovery"), D.addRow(s, "npcs.0.influence"), addModifier(s, {}, [dcEffect(2)])];
   for (const row of late) row.revealed = true;
+  const threshold = D.addRow(s, "npcs.0.thresholds");
+  threshold.reveal = "full";
   Run.resetRun(s);
-  assert.deepEqual(late.map((row) => row.revealed), [false, false, false, false]);
+  assert.deepEqual(late.map((row) => row.revealed), [false, false, false]);
+  assert.equal(threshold.reveal, "hidden");
+  assert.ok(!("revealed" in threshold), "a threshold gets no old-style flag");
 });
 
 test("a row revealed before the run stays revealed on reset", () => {
@@ -776,7 +780,8 @@ const scan = (value, found = { keys: new Set(), values: new Set() }) => {
 };
 const revealAll = (s) => {
   const npc = s.npcs[0];
-  for (const row of [...npc.discovery, ...npc.influence, ...npc.thresholds, ...npc.modifiers, ...s.counters]) row.revealed = true;
+  for (const row of [...npc.discovery, ...npc.influence, ...npc.modifiers, ...s.counters]) row.revealed = true;
+  for (const row of npc.thresholds) row.reveal = "full";
 };
 const assertNoSecrets = (view) => {
   const { keys } = scan(view);
@@ -816,7 +821,7 @@ test("revealing each kind of entry adds it, and only its player fields", () => {
   const npc = s.npcs[0];
   assert.deepEqual(view.npcs[0].influence, [{ id: npc.influence[0].id, skill: "society", lore: "", dc: 15 }]);
   assert.deepEqual(view.npcs[0].known, [{ id: npc.modifiers[0].id, name: "Flattery", text: "likes praise", kind: "weakness", duration: "ongoing", active: false, spent: false, applied: false, changes: [] }]);
-  assert.deepEqual(view.npcs[0].thresholds, [{ id: npc.thresholds[0].id, points: 8, text: "she offers an introduction", reached: false }]);
+  assert.deepEqual(view.npcs[0].thresholds, [{ id: npc.thresholds[0].id, points: 8, text: "she offers an introduction", textHidden: false, reached: false }]);
   assert.deepEqual(view.counters, [{ id: s.counters[0].id, name: "Suspicion", value: 3 }]);
   assertNoSecrets(view);
 });
@@ -987,14 +992,83 @@ test("the copy is the same when nothing players see has changed", () => {
   assert.equal(JSON.stringify(viewOf(s)), before);
 });
 
-test("the bar copes with negative points and never uses a hidden goal", () => {
-  assert.deepEqual(V.pointsBar(5, []), { percent: 50, negative: false });
-  assert.deepEqual(V.pointsBar(4, [{ points: 8 }]), { percent: 50, negative: false });
-  assert.deepEqual(V.pointsBar(12, [{ points: 8 }]), { percent: 100, negative: false });
-  assert.deepEqual(V.pointsBar(-3, []), { percent: 30, negative: true });
-  assert.deepEqual(V.pointsBar(-20, []), { percent: 100, negative: true });
-  assert.deepEqual(V.pointsBar(0, []), { percent: 0, negative: false });
-  assert.deepEqual(V.pointsBar(1, [{ points: -2 }]), { percent: 10, negative: false });
+test("the bar copes with negative points and falls back to 10 with no goal", () => {
+  assert.deepEqual(V.pointsBar(5, 0), { percent: 50, negative: false });
+  assert.deepEqual(V.pointsBar(4, 8), { percent: 50, negative: false });
+  assert.deepEqual(V.pointsBar(12, 8), { percent: 100, negative: false });
+  assert.deepEqual(V.pointsBar(-3, 0), { percent: 30, negative: true });
+  assert.deepEqual(V.pointsBar(-20, 0), { percent: 100, negative: true });
+  assert.deepEqual(V.pointsBar(0, 0), { percent: 0, negative: false });
+});
+
+test("the bar scales to the highest threshold, hidden or not, and the copy carries only that number", () => {
+  const s = secretSystem();
+  const npc = s.npcs[0];
+  const hidden = { ...D.newThreshold(), points: 12, playerText: "HIDDENGOAL" };
+  npc.thresholds.push(hidden);
+  npc.points = 3;
+  const view = viewOf(s);
+  assert.equal(view.npcs[0].goal, 12);
+  assert.deepEqual(view.npcs[0].thresholds, []);
+  const text = JSON.stringify(view);
+  assert.ok(!text.includes("HIDDENGOAL") && !text.includes(hidden.id), "a hidden threshold's text and id stay out");
+  assert.deepEqual(V.pointsBar(view.npcs[0].points, view.npcs[0].goal), { percent: 25, negative: false });
+  npc.thresholds = [];
+  assert.equal(viewOf(s).npcs[0].goal, 0);
+});
+
+test("a points-only threshold shows its points and no text; full shows both", () => {
+  const s = secretSystem();
+  const npc = s.npcs[0];
+  const t = npc.thresholds[0];
+  Run.cycleThresholdReveal(s, npc.id, t.id);
+  assert.equal(t.reveal, "points");
+  let view = viewOf(s);
+  assert.deepEqual(view.npcs[0].thresholds, [{ id: t.id, points: 8, text: "", textHidden: true, reached: false }]);
+  assert.ok(!JSON.stringify(view).includes("introduction"));
+  assertNoSecrets(view);
+  Run.cycleThresholdReveal(s, npc.id, t.id);
+  assert.equal(t.reveal, "full");
+  view = viewOf(s);
+  assert.deepEqual(view.npcs[0].thresholds, [{ id: t.id, points: 8, text: "she offers an introduction", textHidden: false, reached: false }]);
+  Run.cycleThresholdReveal(s, npc.id, t.id);
+  assert.equal(t.reveal, "hidden");
+  assert.deepEqual(viewOf(s).npcs[0].thresholds, []);
+});
+
+test("the threshold reveal cycle finds the threshold by NPC, so two NPCs can share threshold ids", () => {
+  const s = runSystem();
+  const other = D.addRow(s, "npcs");
+  const [first] = s.npcs[0].thresholds;
+  other.thresholds.push({ ...D.newThreshold(), id: first.id, points: 4 });
+  Run.cycleThresholdReveal(s, other.id, first.id);
+  assert.deepEqual([first.reveal, other.thresholds[0].reveal], ["hidden", "points"]);
+  assert.equal(Run.cycleThresholdReveal(s, other.id, "gone"), false);
+  assert.equal(Run.cycleThresholdReveal(s, "gone", first.id), false);
+  assert.equal(Run.toggleReveal(s, first.id), false, "the old one-flag toggle leaves thresholds alone");
+});
+
+test("an old threshold's revealed flag loads as the three-step reveal", () => {
+  assert.deepEqual(D.migrateThreshold({ points: 6, revealed: true }), { points: 6, reveal: "full" });
+  assert.deepEqual(D.migrateThreshold({ points: 6, revealed: false }), { points: 6, reveal: "hidden" });
+  assert.deepEqual(D.migrateThreshold({ points: 6, reveal: "points", revealed: true }), { points: 6, reveal: "points" });
+  assert.deepEqual(D.migrateThreshold({ points: 6, reveal: "points" }), { points: 6, reveal: "points" });
+  assert.deepEqual(D.nextThresholdReveal("hidden"), "points");
+  assert.deepEqual(D.nextThresholdReveal("full"), "hidden");
+});
+
+test("reset keeps a threshold's reveal from the start of the run, old-style baselines included", () => {
+  const s = runSystem();
+  const [a, b] = s.npcs[0].thresholds;
+  a.reveal = "points";
+  Run.startRun(s);
+  Run.cycleThresholdReveal(s, s.npcs[0].id, a.id);
+  Run.cycleThresholdReveal(s, s.npcs[0].id, b.id);
+  // A run started before this change saved `revealed` for thresholds.
+  s.run.baseline.npcs[s.npcs[0].id].rows[b.id] = { revealed: true, reached: false };
+  Run.resetRun(s);
+  assert.deepEqual([a.reveal, b.reveal], ["points", "full"]);
+  assert.ok(!("revealed" in b));
 });
 
 test("a copy of a running challenge goes back to its start values and keeps its authored content", () => {

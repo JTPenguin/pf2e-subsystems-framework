@@ -8,6 +8,18 @@ export const MODIFIER_KINDS = ["weakness", "resistance", "penalty", "adjustment"
 export const DURATIONS = ["oneTime", "ongoing"];
 export const EFFECT_TYPES = ["dc", "points", "counter", "rounds", "note"];
 export const QUICK_DC_AMOUNTS = [-5, -2, 2, 5];
+/** How much of a threshold players see: nothing, its points ("6: ???"), or its points and player text. The GM's eye button steps through them in this order. */
+export const THRESHOLD_REVEALS = ["hidden", "points", "full"];
+export const nextThresholdReveal = (reveal) => THRESHOLD_REVEALS[(THRESHOLD_REVEALS.indexOf(reveal) + 1) % THRESHOLD_REVEALS.length];
+
+/** A threshold saved before the three-step reveal has a `revealed` flag: true becomes "full", false "hidden". Changes the row in place and returns it. */
+export function migrateThreshold(row) {
+  if (row && typeof row === "object" && "revealed" in row) {
+    if (!THRESHOLD_REVEALS.includes(row.reveal)) row.reveal = row.revealed ? "full" : "hidden";
+    delete row.revealed;
+  }
+  return row;
+}
 
 /** The value of a Discovery or Influence skill's `skill` field when it is a Lore; the `lore` field then holds the Lore's name. */
 export const LORE = "lore";
@@ -32,7 +44,7 @@ export const newModifier = () => ({
 });
 export const newDiscovery = () => ({ id: id(), skill: PERCEPTION, lore: "", dc: 15, revealed: false, decoy: false });
 export const newInfluence = () => ({ id: id(), skill: "society", lore: "", dc: 15, revealed: false, decoy: false });
-export const newThreshold = () => ({ id: id(), points: 1, playerText: "", gmText: "", revealed: false, reached: false });
+export const newThreshold = () => ({ id: id(), points: 1, playerText: "", gmText: "", reveal: "hidden", reached: false });
 export const newTrigger = () => ({ id: id(), value: 0, gmNote: "" });
 export const newCounter = () => ({ id: id(), name: "", value: 0, min: null, max: null, triggers: [], revealed: false });
 /** A new NPC starts with a row for each universal skill, at the default DC. The GM can edit or delete them. */

@@ -6,7 +6,7 @@
 import { isUniversalDiscovery, isUniversalInfluence } from "./data.js";
 import { currentDc } from "./run.js";
 
-/** Scale for a bar when no goal has been revealed. Hidden thresholds must not set it: the bar would give the goal away. */
+/** Scale for a bar when the NPC has no thresholds. Every threshold sets the scale, hidden or not: Justin accepts that players can work out the goal from the bar. */
 const DEFAULT_SCALE = 10;
 
 const isVisible = (row) => row.revealed;
@@ -80,7 +80,12 @@ function npcView(system, npc) {
     discovery: npc.discovery.filter(isVisibleDiscovery).map((row) => ({ id: row.id, skill: row.skill, lore: row.lore, dc: currentDc(system, npc, row) })),
     influence: npc.influence.filter(isVisibleInfluence).map((row) => ({ id: row.id, skill: row.skill, lore: row.lore, dc: currentDc(system, npc, row) })),
     known: npc.modifiers.filter(isVisible).map((row) => modifierView(system, npc, row)),
-    thresholds: npc.thresholds.filter(isVisible).map((row) => ({ id: row.id, points: row.points, text: row.playerText, reached: !!row.reached })),
+    // A points-only threshold shows as "6: ???": its text stays out of the copy.
+    thresholds: npc.thresholds.filter((row) => row.reveal === "points" || row.reveal === "full").map((row) => ({
+      id: row.id, points: row.points, text: row.reveal === "full" ? row.playerText : "", textHidden: row.reveal === "points", reached: !!row.reached,
+    })),
+    // The bar's scale: the highest threshold's points, hidden or not. Only this number goes in, never a hidden threshold's text or id.
+    goal: Math.max(0, ...npc.thresholds.map((row) => row.points)),
   };
 }
 
@@ -102,9 +107,8 @@ export function findPanelRow(view, { npc: npcId, kind, id }) {
   return row ? { npc, row, kind } : null;
 }
 
-/** How full an NPC's bar is, from 0 to 100, using only what players can see. Negative points fill it in the negative style. */
-export function pointsBar(points, thresholds) {
-  const goal = Math.max(0, ...thresholds.map((threshold) => threshold.points));
+/** How full an NPC's bar is, from 0 to 100, scaled to `goal`, the highest threshold. Negative points fill it in the negative style. */
+export function pointsBar(points, goal) {
   const scale = Math.max(goal || DEFAULT_SCALE, Math.abs(points));
   return { percent: Math.round((Math.abs(points) / scale) * 100), negative: points < 0 };
 }

@@ -95,7 +95,7 @@ Sidebar tab -> Challenge (journal entry + typed page, GM only) -> GM sheet
 | Influence Points | Current total |
 | Discovery checks | Skill, Perception or Lore, DC, revealed flag. A Lore also has a name. A Lore row is never universal. A new NPC starts with Perception, which is universal. |
 | Influence skills | Skill or Lore, DC, revealed flag. A new NPC starts with Deception, Diplomacy and Intimidation, which are universal. |
-| Thresholds | Points, player text, GM text, revealed flag, reached flag |
+| Thresholds | Points, player text, GM text, reveal (hidden, points only, or points and text), reached flag. A threshold saved with the old revealed flag loads as points and text if it was revealed, hidden if not. |
 | Weaknesses, resistances, penalties | Modifier entries (below) |
 | Decoys | A flag on any weakness, resistance or skill entry, except universal skills |
 
@@ -132,7 +132,7 @@ The sheet has **Edit** and **Run** modes, like a locked and unlocked actor sheet
 - Round clock with advance and undo.
 - Each NPC's points in a box on the left, with buttons to add and remove.
 - Each skill as a chip beside the points, styled like a PF2e inline check, one line for Discovery and one for Influence. The chip shows the skill name (the Lore name for a Lore) and the current DC, marked with an arrow when it differs from the base DC. Its tooltip gives the base DC and says if the skill is a decoy. Clicking the chip rolls for the chosen PC; a chat icon on it posts a chat link. A hidden chip has a dashed outline. While the challenge isn't running, the roll and chat link are disabled.
-- An eye toggle to reveal or hide each entry, on the chip for skills. Universal skills have no eye: they are always shown.
+- An eye toggle to reveal or hide each entry, on the chip for skills. Universal skills have no eye: they are always shown. A threshold's eye steps through hidden, points only, and points and text, then back to hidden.
 - Thresholds under the skills, each with its point value. The Reached tag is a button (aria-pressed, GM only): click to mark a threshold reached by hand, click again to clear it. Dropping points never clears it; only this tag or the Edit tab does.
 - Modifier entries as cards edged in their kind's colour, with on, off and apply controls.
 - Counters.
@@ -173,9 +173,11 @@ The sheet has **Edit** and **Run** modes, like a locked and unlocked actor sheet
 | Discovery skills | Perception (the universal skill) shown, no DCs. Others hidden until revealed. | Clickable. The GM's eye toggle appears on every row except the universal skill. The sheet shows no Revealed or Decoy checkbox for it. |
 | Influence skills | Deception, Diplomacy and Intimidation (the universal skills) shown. Others hidden until revealed. | Clickable. No DC shown. No eye toggle, Revealed or Decoy checkbox on a universal row. |
 | Weaknesses, resistances, penalties, adjustments | Hidden until revealed | One card each: kind, name, player text, what it does and duration. Dimmed while off. A spent one-time entry shows Spent, dimmed, with its effects struck through. An applied one-time entry whose DC change is still to come has its other effects struck through. |
-| Thresholds | Hidden until revealed | Player text; marked when reached |
+| Thresholds | Hidden until revealed | Revealed in two steps: points only shows as "6: ???", then points and player text. Marked when reached. |
 | Counters | Hidden until revealed | |
 | Party markers | Shown | Dim once that PC has acted this round |
+
+**The points bar** scales to the NPC's highest threshold, hidden or not, or to 10 if the NPC has none. Players can work out the goal from the bar; Justin accepts that (2026-11-09). The filtered copy carries only that one number, never a hidden threshold's text or id.
 
 **What a modifier card says it does.** The filtered copy builds each effect from what players can see:
 

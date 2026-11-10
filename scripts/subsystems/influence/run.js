@@ -3,7 +3,7 @@
  * A function that returns false changed nothing. No Foundry document calls, so tools/test.mjs can check them.
  */
 
-import { clampCounters, limitCounter } from "./data.js";
+import { clampCounters, limitCounter, migrateThreshold, nextThresholdReveal } from "./data.js";
 
 export const OUTCOMES = ["criticalSuccess", "success", "failure", "criticalFailure"];
 
@@ -40,8 +40,10 @@ const say = (key, data) => globalThis.game?.i18n?.format(key, data) ?? key;
 
 const npcById = (system, id) => system.npcs.find((npc) => npc.id === id);
 
-/** Every entry with a reveal flag, and the NPC lists whose state a reset restores. */
-const NPC_ROW_STATE = { discovery: ["revealed"], influence: ["revealed"], thresholds: ["revealed", "reached"], modifiers: ["active", "spent", "revealed"] };
+/** The NPC lists whose state a reset restores. Thresholds have a three-step `reveal`; the other entries a `revealed` flag. */
+const NPC_ROW_STATE = { discovery: ["revealed"], influence: ["revealed"], thresholds: ["reveal", "reached"], modifiers: ["active", "spent", "revealed"] };
+/** What a row added during the run goes back to on reset: hidden, as it can't have been revealed before the run. */
+const HIDDEN = { discovery: { revealed: false }, influence: { revealed: false }, thresholds: { reveal: "hidden" }, modifiers: { revealed: false } };
 const COUNTER_STATE = ["value", "revealed"];
 const pick = (row, fields) => Object.fromEntries(fields.map((field) => [field, row[field]]));
 
@@ -60,7 +62,13 @@ function restoreBaseline(system, baseline) {
     const saved = baseline.npcs?.[npc.id];
     npc.points = saved?.points ?? npc.points;
     // A row added during the run has no saved state. It goes back to hidden, as it can't have been revealed before the run.
-    for (const list of Object.keys(NPC_ROW_STATE)) for (const row of npc[list]) Object.assign(row, saved?.rows?.[row.id] ?? { revealed: false });
+    // A threshold saved before the three-step reveal holds `revealed`, so it is read as the new field.
+    for (const list of Object.keys(NPC_ROW_STATE)) {
+      for (const row of npc[list]) {
+        const state = saved?.rows?.[row.id];
+        Object.assign(row, state ? (list === "thresholds" ? migrateThreshold({ ...state }) : state) : HIDDEN[list]);
+      }
+    }
     for (const row of npc.thresholds) if (!saved?.rows?.[row.id]) row.reached = false;
     // Likewise a modifier entry added during the run starts off and unspent. No entry has its effects applied at Start.
     for (const row of npc.modifiers) {
@@ -148,10 +156,11 @@ export function toggleReached(system, npcId, id) {
   threshold.reached = !threshold.reached;
 }
 
+/** A counter, skill or modifier entry by id. Thresholds have their own reveal, below. */
 function findEntry(system, id) {
   for (const counter of system.counters) if (counter.id === id) return counter;
   for (const npc of system.npcs) {
-    for (const list of Object.keys(NPC_ROW_STATE)) {
+    for (const list of ["discovery", "influence", "modifiers"]) {
       const row = npc[list].find((candidate) => candidate.id === id);
       if (row) return row;
     }
@@ -165,6 +174,13 @@ export function toggleReveal(system, id) {
   if (!entry) return false;
   if (system.counters.includes(entry)) rememberCounter(system, entry);
   entry.revealed = !entry.revealed;
+}
+
+/** Step a threshold's reveal on: hidden, then its points, then its points and text, then hidden again. */
+export function cycleThresholdReveal(system, npcId, id) {
+  const threshold = npcById(system, npcId)?.thresholds.find((row) => row.id === id);
+  if (!threshold) return false;
+  threshold.reveal = nextThresholdReveal(threshold.reveal);
 }
 
 const rowOf = (npc, roll) => (roll.kind === "influence" ? npc?.influence : roll.kind === "discover" ? npc?.discovery : null)?.find((row) => row.id === roll.entryId) ?? null;

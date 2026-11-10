@@ -4,15 +4,18 @@ import { hidePanel, panelBlockedBy, panelState, showPanel } from "../../panel/ac
 import { partyPCs } from "../../party.js";
 import { skillLabel } from "./skill-label.js";
 import { announceTriggers, writeChallenge } from "./state.js";
-import { advanceRound, applyModifier, canApplyModifier, changeCounter, changePoints, currentDc, endRun, resetRun, restoreModifier, startRun, toggleActed, toggleModifier, toggleReached, toggleReveal, undoRound } from "./run.js";
+import { advanceRound, applyModifier, canApplyModifier, changeCounter, changePoints, currentDc, cycleThresholdReveal, endRun, resetRun, restoreModifier, startRun, toggleActed, toggleModifier, toggleReached, toggleReveal, undoRound } from "./run.js";
 import { LINK_ROLL_ID } from "../../roll-option.js";
 import { rollCheck, rollTarget } from "./roll.js";
-import { addRow, applyForm, clampCounters, DURATIONS, EFFECT_TYPES, isUniversalDiscovery, isUniversalInfluence, limitCounter, LORE, MODIFIER_KINDS, PERCEPTION, QUICK_DC_AMOUNTS, pickFields, removeRow, setEffectAmount } from "./data.js";
+import { addRow, applyForm, clampCounters, DURATIONS, EFFECT_TYPES, isUniversalDiscovery, isUniversalInfluence, limitCounter, LORE, MODIFIER_KINDS, PERCEPTION, nextThresholdReveal, QUICK_DC_AMOUNTS, pickFields, removeRow, setEffectAmount, THRESHOLD_REVEALS } from "./data.js";
 
 const { DocumentSheetV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
 const CHALLENGE_TAB = "challenge";
 const loc = (key) => game.i18n.localize(key);
+/** The eye button's look for each step of a threshold's reveal. */
+const THRESHOLD_EYE = { hidden: { icon: "fa-eye-slash", pressed: "false" }, points: { icon: "fa-eye-low-vision", pressed: "mixed" }, full: { icon: "fa-eye", pressed: "true" } };
+
 const labels = (values, prefix) => Object.fromEntries(values.map((value) => [value, loc(`SSM.Influence.${prefix}.${value}`)]));
 
 /** The GM sheet. It belongs to the journal entry, whose name is the challenge name; the data lives on the typed page. */
@@ -43,6 +46,7 @@ export class InfluenceSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
       restoreModifier: InfluenceSheet.#onRestoreModifier,
       toggleReached: InfluenceSheet.#onToggleReached,
       toggleReveal: InfluenceSheet.#onToggleReveal,
+      cycleThresholdReveal: InfluenceSheet.#onCycleThresholdReveal,
       toggleActed: InfluenceSheet.#onToggleActed,
       rollSkill: InfluenceSheet.#onRollSkill,
       postLink: InfluenceSheet.#onPostLink,
@@ -229,6 +233,7 @@ export class InfluenceSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
         durations: labels(DURATIONS, "Duration"),
         effects: labels(EFFECT_TYPES, "Effect"),
         counters: counterChoices,
+        thresholdReveals: labels(THRESHOLD_REVEALS, "ThresholdReveal"),
       },
     });
   }
@@ -299,7 +304,14 @@ export class InfluenceSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
         points: npc.points,
         discovery: rollRows(npc, npc.discovery, "discover"),
         influence: rollRows(npc, npc.influence, "influence"),
-        thresholds: npc.thresholds.map((row) => ({ ...row, text: row.playerText || row.gmText, canChange, reachedTooltip: loc(row.reached ? "SSM.Influence.ReachedClear" : "SSM.Influence.ReachedSet") })),
+        thresholds: npc.thresholds.map((row) => ({
+          ...row, text: row.playerText || row.gmText, canChange,
+          textShown: row.reveal === "full",
+          revealIcon: THRESHOLD_EYE[row.reveal]?.icon ?? THRESHOLD_EYE.hidden.icon,
+          revealPressed: THRESHOLD_EYE[row.reveal]?.pressed ?? "false",
+          revealTooltip: game.i18n.format("SSM.Influence.ThresholdReveal.Tooltip", { now: loc(`SSM.Influence.ThresholdReveal.${row.reveal}`), next: loc(`SSM.Influence.ThresholdReveal.${nextThresholdReveal(row.reveal)}`) }),
+          reachedTooltip: loc(row.reached ? "SSM.Influence.ReachedClear" : "SSM.Influence.ReachedSet"),
+        })),
         modifiers: npc.modifiers.map((row) => this.#modifierView(system, npc, row, canChange)),
       })),
       counters: system.counters.map((counter) => ({
@@ -503,6 +515,10 @@ export class InfluenceSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
 
   static #onToggleReveal(event, target) {
     return this.#run((system) => toggleReveal(system, target.dataset.id));
+  }
+
+  static #onCycleThresholdReveal(event, target) {
+    return this.#run((system) => cycleThresholdReveal(system, target.dataset.npc, target.dataset.id));
   }
 
   static #onToggleActed(event, target) {

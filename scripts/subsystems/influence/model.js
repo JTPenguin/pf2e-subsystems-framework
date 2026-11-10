@@ -1,4 +1,4 @@
-import { DURATIONS, EFFECT_TYPES, MODIFIER_KINDS, STATUSES } from "./data.js";
+import { DURATIONS, EFFECT_TYPES, MODIFIER_KINDS, STATUSES, THRESHOLD_REVEALS, migrateThreshold } from "./data.js";
 
 const { ArrayField, BooleanField, DocumentUUIDField, HTMLField, NumberField, ObjectField, SchemaField, StringField } = foundry.data.fields;
 
@@ -49,12 +49,17 @@ const npcFields = () => ({
   points: int(),
   discovery: list({ id: rowId(), skill: text(), lore: text(), dc: dc(), revealed: flag(), decoy: flag() }),
   influence: list({ id: rowId(), skill: text(), lore: text(), dc: dc(), revealed: flag(), decoy: flag() }),
-  thresholds: list({ id: rowId(), points: int(1), playerText: text(), gmText: text(), revealed: flag(), reached: flag() }),
+  thresholds: list({ id: rowId(), points: int(1), playerText: text(), gmText: text(), reveal: choice(THRESHOLD_REVEALS, "hidden"), reached: flag() }),
   modifiers: list(modifierFields()),
 });
 
 /** The full Influence challenge from spec section 5. The challenge's name is the journal entry's name. */
 export class InfluenceModel extends foundry.abstract.TypeDataModel {
+  static migrateData(source) {
+    for (const npc of Array.isArray(source.npcs) ? source.npcs : []) for (const row of Array.isArray(npc?.thresholds) ? npc.thresholds : []) migrateThreshold(row);
+    return super.migrateData(source);
+  }
+
   static defineSchema() {
     return {
       premise: new HTMLField({ required: true, blank: true, initial: "" }),

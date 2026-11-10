@@ -35,7 +35,7 @@ function prepareView(view) {
     npcs: view.npcs.map((npc, n) => ({
       ...npc,
       name: npc.name || `${loc("SSM.Influence.NPC")} ${n + 1}`,
-      bar: pointsBar(npc.points, npc.thresholds),
+      bar: pointsBar(npc.points, npc.goal),
       discovery: npc.discovery.map((row) => skillButton(npc, n, row, "discover")),
       influence: npc.influence.map((row) => skillButton(npc, n, row, "influence")),
       known: npc.known.map(modifierCard),

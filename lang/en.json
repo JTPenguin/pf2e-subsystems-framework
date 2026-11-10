@@ -35,6 +35,7 @@
         "rounds": { "one": "{amount} round", "other": "{amount} rounds" }
       },
       "Goal": "Goal",
+      "HiddenText": "???",
       "Acted": "Acted",
       "RollAgainst": "Roll {skill}: {npc}",
       "NoCharacter": "You need an assigned character to roll. Ask the GM to assign one.",
@@ -143,6 +144,13 @@
       "RollFor": "Roll for the chosen PC",
       "PostLink": "Post a chat link",
       "RevealToggle": "Reveal or hide",
+      "ThresholdReveal": {
+        "Label": "Players see",
+        "hidden": "Nothing",
+        "points": "Points only",
+        "full": "Points and text",
+        "Tooltip": "Players see: {now}. Click for: {next}."
+      },
       "AddPoint": "Add a point",
       "RemovePoint": "Remove a point",
       "ReachedShort": "Reached",
