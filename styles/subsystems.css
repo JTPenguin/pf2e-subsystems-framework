@@ -215,3 +215,17 @@ button.ssm-reached { color: #4f9d5d; }
 .ssm-card button { width: 100%; }
 .ssm-card-note { margin: 0.2rem 0 0; opacity: 0.8; }
 .ssm-npc .ssm-grow > .ssm-player-text, .ssm-npc .ssm-grow > .ssm-gm-line { display: block; }
+
+/* Edit tab skill checks: one table per list, field names in the header. */
+.ssm-checks-wrap { overflow-x: auto; }
+fieldset:has(> .ssm-checks-wrap) { min-width: 0; }
+.ssm-checks { width: 100%; min-width: 26rem; table-layout: fixed; border-collapse: collapse; margin-bottom: 0.35rem; }
+.ssm-checks th:nth-child(1) { width: 28%; }
+.ssm-checks th:nth-child(3), .ssm-checks th:nth-child(4), .ssm-checks th:nth-child(5) { width: 3.75rem; }
+.ssm-checks th:nth-child(4), .ssm-checks th:nth-child(5) { text-align: center; }
+.ssm-checks th:nth-child(6) { width: 2.5rem; }
+.ssm-checks th { font-size: var(--font-size-12, 0.75rem); font-weight: normal; text-align: left; padding: 0 0.25rem 0.1rem; }
+.ssm-checks td { padding: 0.1rem 0.25rem; vertical-align: middle; }
+.ssm-checks td input[type="text"], .ssm-checks td input[type="number"], .ssm-checks td select { width: 100%; }
+.ssm-checks td.check { text-align: center; }
+.ssm-checks td button.icon { width: 2rem; }

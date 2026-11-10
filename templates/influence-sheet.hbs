@@ -197,31 +197,55 @@
 
     <fieldset>
       <legend>{{localize "SSM.Influence.Discovery"}}</legend>
-      {{#each npc.discovery}}
-      <div class="ssm-row">
-        <label class="grow">{{localize "SSM.Influence.Skill"}}<select name="{{path}}.skill">{{selectOptions @root.choices.discovery selected=skill}}</select></label>
-        {{#if isLore}}<label class="grow">{{localize "SSM.Influence.LoreName"}}<input type="text" name="{{path}}.lore" value="{{lore}}"></label>{{/if}}
-        <label>{{localize "SSM.Influence.DC"}}<input type="number" min="0" step="1" name="{{path}}.dc" value="{{dc}}"></label>
-        {{#unless universal}}<label class="check"><input type="checkbox" name="{{path}}.revealed" {{checked revealed}}>{{localize "SSM.Influence.Revealed"}}</label>
-        <label class="check"><input type="checkbox" name="{{path}}.decoy" {{checked decoy}}>{{localize "SSM.Influence.Decoy"}}</label>{{/unless}}
-        <button type="button" class="icon fa-solid fa-trash" data-action="removeRow" data-path="{{path}}" aria-label="{{localize "SSM.Influence.Remove"}}"></button>
-      </div>
-      {{/each}}
+      <div class="ssm-checks-wrap"><table class="ssm-checks">
+        <thead><tr>
+          <th>{{localize "SSM.Influence.Skill"}}</th>
+          <th>{{localize "SSM.Influence.LoreName"}}</th>
+          <th>{{localize "SSM.Influence.DC"}}</th>
+          <th>{{localize "SSM.Influence.Revealed"}}</th>
+          <th>{{localize "SSM.Influence.Decoy"}}</th>
+          <th></th>
+        </tr></thead>
+        <tbody>
+        {{#each npc.discovery}}
+        <tr>
+          <td><select name="{{path}}.skill">{{selectOptions @root.choices.discovery selected=skill}}</select></td>
+          <td>{{#if isLore}}<input type="text" name="{{path}}.lore" value="{{lore}}">{{/if}}</td>
+          <td><input type="number" min="0" step="1" name="{{path}}.dc" value="{{dc}}"></td>
+          <td class="check">{{#unless universal}}<input type="checkbox" name="{{path}}.revealed" {{checked revealed}}>{{/unless}}</td>
+          <td class="check">{{#unless universal}}<input type="checkbox" name="{{path}}.decoy" {{checked decoy}}>{{/unless}}</td>
+          <td><button type="button" class="icon fa-solid fa-trash" data-action="removeRow" data-path="{{path}}" aria-label="{{localize "SSM.Influence.Remove"}}"></button></td>
+        </tr>
+        {{/each}}
+        </tbody>
+      </table></div>
       <button type="button" class="ssm-add" data-action="addRow" data-list="{{npc.path}}.discovery"><i class="fa-solid fa-plus" inert></i> {{localize "SSM.Influence.AddDiscovery"}}</button>
     </fieldset>
 
     <fieldset>
       <legend>{{localize "SSM.Influence.InfluenceSkills"}}</legend>
-      {{#each npc.influence}}
-      <div class="ssm-row">
-        <label class="grow">{{localize "SSM.Influence.Skill"}}<select name="{{path}}.skill">{{selectOptions @root.choices.influence selected=skill}}</select></label>
-        {{#if isLore}}<label class="grow">{{localize "SSM.Influence.LoreName"}}<input type="text" name="{{path}}.lore" value="{{lore}}"></label>{{/if}}
-        <label>{{localize "SSM.Influence.DC"}}<input type="number" min="0" step="1" name="{{path}}.dc" value="{{dc}}"></label>
-        {{#unless universal}}<label class="check"><input type="checkbox" name="{{path}}.revealed" {{checked revealed}}>{{localize "SSM.Influence.Revealed"}}</label>
-        <label class="check"><input type="checkbox" name="{{path}}.decoy" {{checked decoy}}>{{localize "SSM.Influence.Decoy"}}</label>{{/unless}}
-        <button type="button" class="icon fa-solid fa-trash" data-action="removeRow" data-path="{{path}}" aria-label="{{localize "SSM.Influence.Remove"}}"></button>
-      </div>
-      {{/each}}
+      <div class="ssm-checks-wrap"><table class="ssm-checks">
+        <thead><tr>
+          <th>{{localize "SSM.Influence.Skill"}}</th>
+          <th>{{localize "SSM.Influence.LoreName"}}</th>
+          <th>{{localize "SSM.Influence.DC"}}</th>
+          <th>{{localize "SSM.Influence.Revealed"}}</th>
+          <th>{{localize "SSM.Influence.Decoy"}}</th>
+          <th></th>
+        </tr></thead>
+        <tbody>
+        {{#each npc.influence}}
+        <tr>
+          <td><select name="{{path}}.skill">{{selectOptions @root.choices.influence selected=skill}}</select></td>
+          <td>{{#if isLore}}<input type="text" name="{{path}}.lore" value="{{lore}}">{{/if}}</td>
+          <td><input type="number" min="0" step="1" name="{{path}}.dc" value="{{dc}}"></td>
+          <td class="check">{{#unless universal}}<input type="checkbox" name="{{path}}.revealed" {{checked revealed}}>{{/unless}}</td>
+          <td class="check">{{#unless universal}}<input type="checkbox" name="{{path}}.decoy" {{checked decoy}}>{{/unless}}</td>
+          <td><button type="button" class="icon fa-solid fa-trash" data-action="removeRow" data-path="{{path}}" aria-label="{{localize "SSM.Influence.Remove"}}"></button></td>
+        </tr>
+        {{/each}}
+        </tbody>
+      </table></div>
       <button type="button" class="ssm-add" data-action="addRow" data-list="{{npc.path}}.influence"><i class="fa-solid fa-plus" inert></i> {{localize "SSM.Influence.AddInfluence"}}</button>
     </fieldset>
 

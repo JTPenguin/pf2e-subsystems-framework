@@ -144,6 +144,8 @@ The sheet has **Edit** and **Run** modes, like a locked and unlocked actor sheet
 
 **Threshold text grows as the GM types.** In the Edit tab a threshold card has the points, reveal and Reached controls and the delete button on one row, and the player text and GM text side by side below, as text areas that grow with their text.
 
+**Skill checks are tables in the Edit tab.** Discovery and Influence each get one table with the field names in a header row: Skill, Lore name, DC, Revealed, Decoy and a delete button. The Lore name cell is empty unless the skill is Lore. Universal rows leave Revealed and Decoy empty.
+
 **Reveal is one click and can be undone.** The panel updates at once.
 
 **Ending a challenge** removes the panel and keeps the final state on the sheet. Reset returns it to unspent.
