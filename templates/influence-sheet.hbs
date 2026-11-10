@@ -4,6 +4,11 @@
   <button type="button" class="ssm-skill-roll" data-action="rollSkill" data-npc="{{npcId}}" data-kind="{{kind}}" data-id="{{id}}" aria-label="{{rollLabel}}" data-tooltip-text="{{tooltip}}" {{#unless root.rollable}}disabled{{/unless}}><i class="fa-solid fa-dice-d20" aria-hidden="true"></i><span class="ssm-skill-name">{{label}}</span><span class="ssm-skill-dc{{#if dcChanged}} ssm-dc-changed{{/if}}">{{localize "SSM.Influence.DC"}} {{currentDc}}{{#if dcChanged}}<i class="fa-solid {{#if dcUp}}fa-caret-up{{else}}fa-caret-down{{/if}}" aria-hidden="true"></i>{{/if}}</span></button>
   <button type="button" class="ssm-skill-post" data-action="postLink" data-npc="{{npcId}}" data-kind="{{kind}}" data-id="{{id}}" aria-label="{{postLabel}}" data-tooltip="SSM.Influence.PostLink" {{#unless root.rollable}}disabled{{/unless}}><i class="fa-solid fa-comment" aria-hidden="true"></i></button>
 </span>{{/inline}}
+{{#*inline "ssmModifierName"}}<span class="ssm-grow">{{label}} <span class="ssm-tag">{{kindLabel}}</span> <span class="ssm-tag">{{durationLabel}}</span>{{#if decoy}} <span class="ssm-tag ssm-decoy">{{localize "SSM.Influence.Decoy"}}</span>{{/if}}{{#if readOnly}} <span class="ssm-tag ssm-state-{{stateClass}}">{{stateLabel}}</span>{{/if}}</span>{{/inline}}
+{{#*inline "ssmModifierEdit"}}<button type="button" class="icon fa-solid fa-pen-to-square" data-action="editModifier" data-npc="{{npc.id}}" data-id="{{id}}" aria-label="{{localize "SSM.Influence.EditModifier"}}" data-tooltip="SSM.Influence.EditModifier"></button>{{/inline}}
+{{#*inline "ssmModifierDetails"}}{{#if effectsText}}<div class="ssm-muted ssm-detail">{{effectsText}}</div>{{/if}}
+{{#if playerText}}<div class="ssm-detail ssm-player-text">{{playerText}}</div>{{/if}}
+{{#if gmText}}<div class="ssm-muted ssm-detail ssm-gm-line"><strong>{{localize "SSM.Influence.GMLabel"}}</strong> {{gmText}}</div>{{/if}}{{/inline}}
 <div class="ssm-layout">
   <header class="ssm-head">
     <div class="ssm-row ssm-head-row">
@@ -86,13 +91,12 @@
         <div class="ssm-modifier ssm-kind-{{kind}} ssm-mod-{{stateClass}} {{#unless revealed}}ssm-hidden{{/unless}}">
           <div class="ssm-row ssm-entry">
             {{> ssmEye root=../..}}
-            <span class="ssm-grow">{{label}} <span class="ssm-tag">{{kindLabel}}</span> <span class="ssm-tag">{{durationLabel}}</span>{{#if decoy}} <span class="ssm-tag ssm-decoy">{{localize "SSM.Influence.Decoy"}}</span>{{/if}}</span>
+            {{> ssmModifierName}}
             <button type="button" class="ssm-tag ssm-state ssm-state-{{stateClass}}" data-action="{{#if spent}}restoreModifier{{else}}toggleModifier{{/if}}" data-npc="{{npc.id}}" data-id="{{id}}" aria-pressed="{{pressed}}" data-tooltip="{{stateTooltip}}" {{#unless canChange}}disabled{{/unless}}>{{stateLabel}}</button>
             {{#if hasApply}}<button type="button" data-action="applyModifier" data-npc="{{npc.id}}" data-id="{{id}}" {{#unless canApply}}disabled{{/unless}}>{{localize "SSM.Influence.Apply"}}</button>{{/if}}
+            {{#if canEdit}}{{> ssmModifierEdit}}{{/if}}
           </div>
-          {{#if effectsText}}<div class="ssm-muted ssm-detail">{{effectsText}}</div>{{/if}}
-          {{#if playerText}}<div class="ssm-detail ssm-player-text">{{playerText}}</div>{{/if}}
-          {{#if gmText}}<div class="ssm-muted ssm-detail ssm-gm-line"><strong>{{localize "SSM.Influence.GMLabel"}}</strong> {{gmText}}</div>{{/if}}
+          {{> ssmModifierDetails}}
         </div>
         {{/each}}
       </div>
@@ -244,45 +248,18 @@
 
     <fieldset>
       <legend>{{localize "SSM.Influence.Modifiers"}}</legend>
+      <div class="ssm-mod-list">
       {{#each npc.modifiers}}
-      <div class="ssm-card">
-        <div class="ssm-row">
-          <label class="grow">{{localize "SSM.Influence.Name"}}<input type="text" name="{{path}}.name" value="{{name}}"></label>
-          <label>{{localize "SSM.Influence.KindLabel"}}<select name="{{path}}.kind">{{selectOptions @root.choices.kinds selected=kind}}</select></label>
-          <label>{{localize "SSM.Influence.DurationLabel"}}<select name="{{path}}.duration">{{selectOptions @root.choices.durations selected=duration}}</select></label>
+      <div class="ssm-modifier ssm-kind-{{kind}} ssm-mod-{{stateClass}} {{#unless revealed}}ssm-hidden{{/unless}}">
+        <div class="ssm-row ssm-entry">
+          {{> ssmModifierName readOnly=true}}
+          {{> ssmModifierEdit}}
           <button type="button" class="icon fa-solid fa-trash" data-action="removeRow" data-path="{{path}}" aria-label="{{localize "SSM.Influence.Remove"}}"></button>
         </div>
-        <div class="ssm-row">
-          <label class="grow">{{localize "SSM.Influence.PlayerText"}}<input type="text" name="{{path}}.playerText" value="{{playerText}}"></label>
-          <label class="grow">{{localize "SSM.Influence.GMText"}}<input type="text" name="{{path}}.gmText" value="{{gmText}}"></label>
-        </div>
-        <div class="ssm-row">
-          <label class="check"><input type="checkbox" name="{{path}}.active" {{checked active}}>{{localize "SSM.Influence.Active"}}</label>
-          <label class="check"><input type="checkbox" name="{{path}}.spent" {{checked spent}}>{{localize "SSM.Influence.Spent"}}</label>
-          <label class="check"><input type="checkbox" name="{{path}}.revealed" {{checked revealed}}>{{localize "SSM.Influence.Revealed"}}</label>
-          <label class="check"><input type="checkbox" name="{{path}}.decoy" {{checked decoy}}>{{localize "SSM.Influence.Decoy"}}</label>
-        </div>
-        {{#each effects}}
-        <div class="ssm-effect">
-          <div class="ssm-row">
-            <label>{{localize "SSM.Influence.EffectLabel"}}<select name="{{path}}.type">{{selectOptions @root.choices.effects selected=type}}</select></label>
-            {{#if hasAmount}}<label>{{localize "SSM.Influence.Amount"}}<input type="number" step="1" name="{{path}}.amount" value="{{amount}}"></label>{{/if}}
-            {{#if isDc}}
-            <span class="ssm-quick">{{#each @root.quickDcAmounts}}<button type="button" data-action="quickDc" data-path="{{../path}}" data-amount="{{amount}}">{{label}}</button>{{/each}}</span>
-            <label class="check"><input type="checkbox" name="{{path}}.allSkills" {{checked allSkills}}>{{localize "SSM.Influence.AllSkills"}}</label>
-            {{/if}}
-            {{#if isCounter}}<label class="grow">{{localize "SSM.Influence.Counter"}}<select name="{{path}}.counterId">{{selectOptions @root.choices.counters selected=counterId}}</select></label>{{/if}}
-            {{#if isNote}}<label class="grow">{{localize "SSM.Influence.Note"}}<input type="text" name="{{path}}.note" value="{{note}}"></label>{{/if}}
-            {{#if canRemove}}<button type="button" class="icon fa-solid fa-trash" data-action="removeRow" data-path="{{path}}" aria-label="{{localize "SSM.Influence.Remove"}}"></button>{{/if}}
-          </div>
-          {{#if isDc}}{{#unless allSkills}}
-          <multi-checkbox name="{{path}}.skills">{{selectOptions skillOptions selected=skills}}</multi-checkbox>
-          {{/unless}}{{/if}}
-        </div>
-        {{/each}}
-        <button type="button" class="ssm-add" data-action="addRow" data-list="{{listPath}}"><i class="fa-solid fa-plus" inert></i> {{localize "SSM.Influence.AddEffect"}}</button>
+        {{> ssmModifierDetails}}
       </div>
       {{/each}}
+      </div>
       <button type="button" class="ssm-add" data-action="addRow" data-list="{{npc.path}}.modifiers"><i class="fa-solid fa-plus" inert></i> {{localize "SSM.Influence.AddModifier"}}</button>
     </fieldset>
     {{/with}}

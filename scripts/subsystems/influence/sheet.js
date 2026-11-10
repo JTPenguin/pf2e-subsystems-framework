@@ -7,7 +7,8 @@ import { announceTriggers, writeChallenge } from "./state.js";
 import { advanceRound, applyModifier, canApplyModifier, changeCounter, changePoints, currentDc, cycleThresholdReveal, endRun, resetRun, restoreModifier, startRun, toggleActed, toggleModifier, toggleReached, toggleReveal, undoRound } from "./run.js";
 import { LINK_ROLL_ID } from "../../roll-option.js";
 import { rollCheck, rollTarget } from "./roll.js";
-import { addRow, applyForm, clampCounters, DURATIONS, EFFECT_TYPES, isUniversalDiscovery, isUniversalInfluence, limitCounter, LORE, MODIFIER_KINDS, PERCEPTION, nextThresholdReveal, QUICK_DC_AMOUNTS, pickFields, removeRow, setEffectAmount, THRESHOLD_REVEALS } from "./data.js";
+import { addRow, applyForm, clampCounters, isUniversalDiscovery, isUniversalInfluence, limitCounter, LORE, PERCEPTION, nextThresholdReveal, pickFields, removeRow, THRESHOLD_REVEALS } from "./data.js";
+import { ModifierWindow } from "./modifier-window.js";
 
 const { DocumentSheetV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
@@ -30,7 +31,7 @@ export class InfluenceSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
       selectTab: InfluenceSheet.#onSelectTab,
       addRow: InfluenceSheet.#onAddRow,
       removeRow: InfluenceSheet.#onRemoveRow,
-      quickDc: InfluenceSheet.#onQuickDc,
+      editModifier: InfluenceSheet.#onEditModifier,
       setMode: InfluenceSheet.#onSetMode,
       startRun: InfluenceSheet.#onStartRun,
       endRun: InfluenceSheet.#onEndRun,
@@ -171,12 +172,10 @@ export class InfluenceSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
     const skills = Object.fromEntries(Object.entries(CONFIG.PF2E.skills).map(([slug, skill]) => [slug, loc(skill.label)]));
     const perception = { [PERCEPTION]: loc("PF2E.PerceptionLabel"), ...skills, [LORE]: loc("SSM.Influence.Lore") };
     const influenceSkills = { ...skills, [LORE]: loc("SSM.Influence.Lore") };
-    const counterChoices = { "": loc("SSM.Influence.ChooseCounter"), ...Object.fromEntries(system.counters.map((c) => [c.id, c.name || loc("SSM.Influence.UnnamedCounter")])) };
 
     const enrich = (html) => foundry.applications.ux.TextEditor.implementation.enrichHTML(html, { relativeTo: this.document, secrets: true });
     const npcView = (npc, n) => {
       const path = `npcs.${n}`;
-      const skillOptions = Object.fromEntries([...npc.discovery, ...npc.influence].map((row) => [row.id, skillLabel(row)]));
       return {
         ...npc,
         path,
@@ -186,21 +185,8 @@ export class InfluenceSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
         discovery: npc.discovery.map((row, i) => ({ ...row, path: `${path}.discovery.${i}`, isLore: row.skill === LORE, universal: isUniversalDiscovery(row) })),
         influence: npc.influence.map((row, i) => ({ ...row, path: `${path}.influence.${i}`, isLore: row.skill === LORE, universal: isUniversalInfluence(row) })),
         thresholds: npc.thresholds.map((row, i) => ({ ...row, path: `${path}.thresholds.${i}` })),
-        modifiers: npc.modifiers.map((modifier, i) => ({
-          ...modifier,
-          path: `${path}.modifiers.${i}`,
-          listPath: `${path}.modifiers.${i}.effects`,
-          effects: modifier.effects.map((effect, e) => ({
-            ...effect,
-            path: `${path}.modifiers.${i}.effects.${e}`,
-            canRemove: modifier.effects.length > 1,
-            isDc: effect.type === "dc",
-            isCounter: effect.type === "counter",
-            isNote: effect.type === "note",
-            hasAmount: effect.type !== "note",
-            skillOptions,
-          })),
-        })),
+        // Read-only here: each one is edited in its own window.
+        modifiers: npc.modifiers.map((modifier, i) => ({ ...this.#modifierView(system, npc, modifier, false), canEdit: true, path: `${path}.modifiers.${i}` })),
       };
     };
 
@@ -225,14 +211,9 @@ export class InfluenceSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
       tabs: npcs.map((npc) => ({ id: npc.id, label: npc.tabLabel, active: npc.id === this.#tab })),
       statusLabel: loc(`SSM.Influence.Status.${system.run.status}`),
       runActive: system.run.status === "active",
-      quickDcAmounts: QUICK_DC_AMOUNTS.map((amount) => ({ amount, label: amount > 0 ? `+${amount}` : `${amount}`.replace("-", "−") })),
       choices: {
         discovery: perception,
         influence: influenceSkills,
-        kinds: labels(MODIFIER_KINDS, "Kind"),
-        durations: labels(DURATIONS, "Duration"),
-        effects: labels(EFFECT_TYPES, "Effect"),
-        counters: counterChoices,
         thresholdReveals: labels(THRESHOLD_REVEALS, "ThresholdReveal"),
       },
     });
@@ -341,6 +322,7 @@ export class InfluenceSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
       hasApply: row.effects.some((effect) => effect.type !== "dc"),
       canApply: canChange && canApplyModifier(row),
       canChange,
+      canEdit: game.user.isGM,
       effectsText: row.effects.map((effect) => this.#effectText(system, npc, effect)).join("; "),
     };
   }
@@ -420,14 +402,22 @@ export class InfluenceSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
       this.#tab = added.id;
       return this.render();
     }
+    // A new modifier opens in its own window, where it is edited.
+    if (list.endsWith(".modifiers")) {
+      const npcId = this.page.system.npcs[Number(list.split(".")[1])]?.id;
+      if (npcId) ModifierWindow.open(this.page, npcId, added.id);
+    }
   }
 
   static #onRemoveRow(event, target) {
     return this.#edit((system) => removeRow(system, target.dataset.path));
   }
 
-  static #onQuickDc(event, target) {
-    return this.#edit((system) => setEffectAmount(system, target.dataset.path, Number(target.dataset.amount)));
+  /** Open a modifier's own window. From the Edit tab, save the form first. In Run mode only a GM edits. */
+  static async #onEditModifier(event, target) {
+    if (this.#currentMode === "edit") await this.submit();
+    else if (!game.user.isGM) return;
+    return ModifierWindow.open(this.page, target.dataset.npc, target.dataset.id);
   }
 
   static async #onSetMode(event, target) {

@@ -95,18 +95,25 @@ button.ssm-reached { color: #4f9d5d; }
 .ssm-entry.ssm-hidden > .ssm-grow, .ssm-modifier.ssm-hidden > .ssm-entry > .ssm-grow, .ssm-counter.ssm-hidden .ssm-grow { font-style: italic; }
 .ssm-entry.ssm-hidden .ssm-gm-line, .ssm-modifier.ssm-hidden .ssm-gm-line { font-style: normal; }
 /* Thresholds, modifiers and counters are cards. A hidden card is plain; a revealed one has a solid fill; a points-only threshold has half that fill. The fill follows the text colour, so it works in the light and dark themes. */
-.ssm-npc .ssm-threshold, .ssm-block > .ssm-counter, .ssm-npc .ssm-modifier { box-sizing: border-box; border: 1px solid var(--color-border, #7a7971); border-radius: 3px; background: none; padding: 0.15rem 0.3rem; margin-bottom: 0.25rem; }
+.ssm-npc .ssm-threshold, .ssm-block > .ssm-counter, :is(.ssm-npc, .ssm-mod-list) .ssm-modifier { box-sizing: border-box; border: 1px solid var(--color-border, #7a7971); border-radius: 3px; background: none; padding: 0.15rem 0.3rem; margin-bottom: 0.25rem; }
 .ssm-block > .ssm-counter { display: block; }
-.ssm-npc .ssm-modifier { border-left: 3px solid var(--color-border-highlight, #b8a06a); }
-.ssm-npc .ssm-threshold.ssm-reveal-full, .ssm-npc .ssm-modifier:not(.ssm-hidden), .ssm-counter:not(.ssm-hidden) { background: color-mix(in srgb, currentColor 16%, transparent); }
+:is(.ssm-npc, .ssm-mod-list) .ssm-modifier { border-left: 3px solid var(--color-border-highlight, #b8a06a); }
+.ssm-npc .ssm-threshold.ssm-reveal-full, :is(.ssm-npc, .ssm-mod-list) .ssm-modifier:not(.ssm-hidden), .ssm-counter:not(.ssm-hidden) { background: color-mix(in srgb, currentColor 16%, transparent); }
 .ssm-npc .ssm-threshold.ssm-reveal-points { background: color-mix(in srgb, currentColor 8%, transparent); }
-.ssm-npc .ssm-modifier .ssm-entry { margin-bottom: 0; }
+:is(.ssm-npc, .ssm-mod-list) .ssm-modifier .ssm-entry { margin-bottom: 0; }
 .ssm-npc .ssm-detail { padding-left: 2.25rem; }
-.ssm-npc .ssm-modifier.ssm-kind-weakness { border-left-color: #6fae6a; }
-.ssm-npc .ssm-modifier.ssm-kind-resistance { border-left-color: #c0523f; }
-.ssm-npc .ssm-modifier.ssm-kind-penalty { border-left-color: #c9743a; }
-.ssm-npc .ssm-modifier.ssm-kind-adjustment { border-left-color: #7a9cc6; }
-.ssm-npc .ssm-modifier.ssm-mod-spent { opacity: 0.6; }
+/* The Edit tab's modifier rows have no eye button, so their detail lines need no indent. */
+.ssm-mod-list .ssm-detail { padding-left: 0.2rem; }
+.ssm-sheet .ssm-mod-list .ssm-entry > button.icon { --button-size: 1.5rem; width: 1.5rem; height: 1.5rem; }
+/* The window for one modifier. */
+.ssm-modifier-window .ssm-modifier-buttons { justify-content: space-between; align-items: center; margin: 0.25rem 0 0; }
+.ssm-modifier-window .ssm-modifier-buttons > button { flex: none; width: auto; }
+.ssm-modifier-window .ssm-row > label:not(.grow, .check) { width: 7rem; }
+:is(.ssm-npc, .ssm-mod-list) .ssm-modifier.ssm-kind-weakness { border-left-color: #6fae6a; }
+:is(.ssm-npc, .ssm-mod-list) .ssm-modifier.ssm-kind-resistance { border-left-color: #c0523f; }
+:is(.ssm-npc, .ssm-mod-list) .ssm-modifier.ssm-kind-penalty { border-left-color: #c9743a; }
+:is(.ssm-npc, .ssm-mod-list) .ssm-modifier.ssm-kind-adjustment { border-left-color: #7a9cc6; }
+:is(.ssm-npc, .ssm-mod-list) .ssm-modifier.ssm-mod-spent { opacity: 0.6; }
 
 /* The panel over the canvas. #ui-top ignores the pointer, so only the panel's own area takes clicks. */
 /* The height limit is 80% of #ui-top, which is the top half of the screen at any UI scale. The whole panel scrolls past that, so a redraw keeps the place. #ui-top is scaled but not narrowed, so the width limit divides the scale out. */

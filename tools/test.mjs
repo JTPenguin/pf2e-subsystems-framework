@@ -206,6 +206,71 @@ test("pickFields keeps named fields at their nested paths", () => {
   assert.deepEqual(D.pickFields(form, ["premise", "gmNotes", "counters.0.value", "missing.field"]), { premise: "p", gmNotes: "", counters: { 0: { value: 2 } } });
 });
 
+/* The modifier window */
+
+const modifierSystem = () => {
+  const s = system();
+  const npc = s.npcs[0];
+  const modifier = D.addRow(s, "npcs.0.modifiers");
+  Object.assign(modifier, { name: "Flattery", playerText: "He likes praise" });
+  return { s, npc, modifier };
+};
+
+test("the modifier window saves only the fields the GM changed", () => {
+  const { modifier } = modifierSystem();
+  const draft = structuredClone(modifier);
+  draft.name = "Praise";
+  draft.effects[0].note = "He softens";
+  assert.deepEqual(Object.keys(D.modifierChanges(modifier, draft)).sort(), ["effects", "name"]);
+  assert.deepEqual(D.modifierChanges(modifier, structuredClone(modifier)), {});
+});
+
+test("an update from elsewhere keeps the window's unsaved edits on top of the latest modifier", () => {
+  const { modifier } = modifierSystem();
+  const draft = { ...structuredClone(modifier), name: "Praise" };
+  const latest = { ...structuredClone(modifier), active: true, playerText: "Changed elsewhere" };
+  const rebased = D.rebaseModifier(latest, D.modifierChanges(modifier, draft));
+  assert.deepEqual([rebased.name, rebased.active, rebased.playerText, rebased.id], ["Praise", true, "Changed elsewhere", modifier.id]);
+});
+
+test("saving a modifier writes its changes and leaves run changes made since alone", () => {
+  const { s, npc, modifier } = modifierSystem();
+  modifier.active = true;
+  assert.equal(D.saveModifier(s, npc.id, modifier.id, { name: "Praise", effects: [{ ...D.newEffect(), type: "points", amount: 1 }] }), true);
+  const saved = D.findModifier(s, npc.id, modifier.id);
+  assert.deepEqual([saved.name, saved.active, saved.playerText, saved.effects[0].type], ["Praise", true, "He likes praise", "points"]);
+});
+
+test("saving a modifier drops links to skills and counters deleted while the window was open", () => {
+  const { s, npc, modifier } = modifierSystem();
+  const kept = D.addRow(s, "npcs.0.influence").id;
+  const effects = [{ ...D.newEffect(), type: "dc", allSkills: false, skills: [kept, "gone"] }, { ...D.newEffect(), type: "counter", counterId: "gone" }];
+  D.saveModifier(s, npc.id, modifier.id, { effects });
+  const saved = D.findModifier(s, npc.id, modifier.id);
+  assert.deepEqual(saved.effects[0].skills, [kept]);
+  assert.equal(saved.effects[1].counterId, "");
+});
+
+test("saving a deleted modifier changes nothing", () => {
+  const { s, npc, modifier } = modifierSystem();
+  D.removeRow(s, "npcs.0.modifiers.0");
+  assert.equal(D.saveModifier(s, npc.id, modifier.id, { name: "Praise" }), false);
+  assert.equal(D.findModifier(s, npc.id, modifier.id), undefined);
+});
+
+test("the window's effect rows use the shared row edits on the modifier alone", () => {
+  const { modifier } = modifierSystem();
+  const draft = structuredClone(modifier);
+  D.addRow(draft, "effects");
+  assert.equal(draft.effects.length, 2);
+  D.setEffectAmount(draft, "effects.1", 5);
+  assert.equal(draft.effects[1].amount, 5);
+  assert.equal(D.removeRow(draft, "effects.0"), true);
+  assert.equal(D.removeRow(draft, "effects.0"), false, "a modifier keeps one effect");
+  const merged = D.mergeForm(draft, { name: "Praise", effects: { 0: { amount: null, note: "x" } } });
+  assert.deepEqual([merged.name, merged.effects[0].amount, merged.effects[0].note], ["Praise", 5, "x"]);
+});
+
 test("searchText covers the challenge's text", () => {
   const s = system();
   s.npcs[0].name = "Vance";

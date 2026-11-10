@@ -1,0 +1,41 @@
+<div class="ssm-layout">
+  {{#with modifier}}
+  <div class="ssm-row">
+    <label class="grow">{{localize "SSM.Influence.Name"}}<input type="text" name="name" value="{{name}}"></label>
+    <label>{{localize "SSM.Influence.KindLabel"}}<select name="kind">{{selectOptions @root.choices.kinds selected=kind}}</select></label>
+    <label>{{localize "SSM.Influence.DurationLabel"}}<select name="duration">{{selectOptions @root.choices.durations selected=duration}}</select></label>
+  </div>
+  <div class="ssm-row">
+    <label class="grow">{{localize "SSM.Influence.PlayerText"}}<input type="text" name="playerText" value="{{playerText}}"></label>
+    <label class="grow">{{localize "SSM.Influence.GMText"}}<input type="text" name="gmText" value="{{gmText}}"></label>
+  </div>
+  <div class="ssm-row">
+    <label class="check"><input type="checkbox" name="active" {{checked active}}>{{localize "SSM.Influence.Active"}}</label>
+    <label class="check"><input type="checkbox" name="spent" {{checked spent}}>{{localize "SSM.Influence.Spent"}}</label>
+    <label class="check"><input type="checkbox" name="revealed" {{checked revealed}}>{{localize "SSM.Influence.Revealed"}}</label>
+    <label class="check"><input type="checkbox" name="decoy" {{checked decoy}}>{{localize "SSM.Influence.Decoy"}}</label>
+  </div>
+  {{/with}}
+  {{#each effects}}
+  <div class="ssm-effect">
+    <div class="ssm-row">
+      <label>{{localize "SSM.Influence.EffectLabel"}}<select name="{{path}}.type" data-redraw>{{selectOptions @root.choices.effects selected=type}}</select></label>
+      {{#if hasAmount}}<label>{{localize "SSM.Influence.Amount"}}<input type="number" step="1" name="{{path}}.amount" value="{{amount}}"></label>{{/if}}
+      {{#if isDc}}
+      <span class="ssm-quick">{{#each @root.quickDcAmounts}}<button type="button" data-action="quickDc" data-path="{{../path}}" data-amount="{{amount}}">{{label}}</button>{{/each}}</span>
+      <label class="check"><input type="checkbox" name="{{path}}.allSkills" data-redraw {{checked allSkills}}>{{localize "SSM.Influence.AllSkills"}}</label>
+      {{/if}}
+      {{#if isCounter}}<label class="grow">{{localize "SSM.Influence.Counter"}}<select name="{{path}}.counterId">{{selectOptions @root.choices.counters selected=counterId}}</select></label>{{/if}}
+      {{#if isNote}}<label class="grow">{{localize "SSM.Influence.Note"}}<input type="text" name="{{path}}.note" value="{{note}}"></label>{{/if}}
+      {{#if canRemove}}<button type="button" class="icon fa-solid fa-trash" data-action="removeEffect" data-path="{{path}}" aria-label="{{localize "SSM.Influence.Remove"}}"></button>{{/if}}
+    </div>
+    {{#if isDc}}{{#unless allSkills}}
+    <multi-checkbox name="{{path}}.skills">{{selectOptions skillOptions selected=skills}}</multi-checkbox>
+    {{/unless}}{{/if}}
+  </div>
+  {{/each}}
+  <div class="ssm-row ssm-modifier-buttons">
+    <button type="button" class="ssm-add" data-action="addEffect"><i class="fa-solid fa-plus" inert></i> {{localize "SSM.Influence.AddEffect"}}</button>
+    <button type="submit" class="ssm-save"><i class="fa-solid fa-floppy-disk" inert></i> {{localize "SSM.Influence.SaveModifier"}}</button>
+  </div>
+</div>

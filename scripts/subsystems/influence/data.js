@@ -180,3 +180,38 @@ export function searchText(system) {
   }
   return parts.filter(Boolean).join(" ");
 }
+
+/* The modifier window edits a copy of one modifier, then saves only what the GM changed onto the latest data. */
+
+/** The fields the modifier window edits. The id never changes. */
+export const MODIFIER_FIELDS = ["name", "kind", "duration", "playerText", "gmText", "active", "spent", "revealed", "decoy", "effects"];
+
+/** The modifier with this id on this NPC, or undefined. */
+export const findModifier = (system, npcId, modifierId) => system.npcs.find((npc) => npc.id === npcId)?.modifiers.find((modifier) => modifier.id === modifierId);
+
+const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+
+/** The edited fields whose values differ between the modifier as loaded and the copy being edited. Effects count as one field. */
+export function modifierChanges(base, draft) {
+  const changes = {};
+  for (const key of MODIFIER_FIELDS) if (!same(base[key], draft[key])) changes[key] = structuredClone(draft[key]);
+  return changes;
+}
+
+/** A copy of the latest modifier with the window's changes on top, so an update from elsewhere keeps the GM's unsaved edits. */
+export const rebaseModifier = (latest, changes) => ({ ...structuredClone(latest), ...structuredClone(changes), id: latest.id });
+
+/** Save the window's changes onto a modifier. Effects drop links to skills or counters that no longer exist. Returns false if the modifier is gone. */
+export function saveModifier(system, npcId, modifierId, changes) {
+  const npc = system.npcs.find((candidate) => candidate.id === npcId);
+  const modifier = npc?.modifiers.find((candidate) => candidate.id === modifierId);
+  if (!modifier) return false;
+  for (const key of MODIFIER_FIELDS) if (key in changes) modifier[key] = structuredClone(changes[key]);
+  const skills = new Set([...npc.discovery, ...npc.influence].map((row) => row.id));
+  const counters = new Set(system.counters.map((counter) => counter.id));
+  for (const effect of modifier.effects) {
+    effect.skills = effect.skills.filter((skill) => skills.has(skill));
+    if (effect.counterId && !counters.has(effect.counterId)) effect.counterId = "";
+  }
+  return true;
+}

@@ -85,6 +85,10 @@
       "Reached": "Reached",
       "Modifiers": "Weaknesses, resistances, penalties and adjustments",
       "AddModifier": "Add entry",
+      "EditModifier": "Edit entry",
+      "EditModifierTitle": "Edit entry: {name}",
+      "SaveModifier": "Save",
+      "ModifierGone": "That entry was deleted, so the changes were not saved.",
       "KindLabel": "Kind",
       "Kind": {
         "weakness": "Weakness",
