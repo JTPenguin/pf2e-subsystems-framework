@@ -12,6 +12,9 @@
 .ssm-row > label { display: flex; flex-direction: column; font-size: var(--font-size-12, 0.75rem); width: 5.5rem; gap: 0.1rem; }
 .ssm-row > label.grow { flex: 1 1 10rem; width: auto; }
 .ssm-row > label.check { flex-direction: row; align-items: center; width: auto; gap: 0.25rem; }
+.ssm-text-row { align-items: flex-start; flex-wrap: nowrap; }
+.ssm-text-row > label.grow { flex: 1 1 0; min-width: 0; }
+textarea.ssm-autogrow { field-sizing: content; min-height: 2rem; resize: none; width: 100%; box-sizing: border-box; font: inherit; white-space: pre-wrap; }
 .ssm-row > button.icon { flex: 0 0 auto; width: 2rem; margin-left: auto; }
 .ssm-card { border: 1px solid var(--color-border, #7a7971); border-radius: 4px; padding: 0.4rem; margin-bottom: 0.4rem; }
 .ssm-effect { border-left: 2px solid var(--color-border-highlight, #b8a06a); padding-left: 0.5rem; margin-bottom: 0.35rem; }

@@ -142,6 +142,8 @@ The sheet has **Edit** and **Run** modes, like a locked and unlocked actor sheet
 
 **Modifiers are edited in their own window, like a monster's attacks.** In the Edit tab each modifier entry is a read-only card, styled as in Run mode, with edit and delete buttons. The GM window has three sections, in order: Resistances, Weaknesses, Other. The panel lists cards in the same order. The Edit tab shows all three, each with its own Add entry, which adds an entry of that kind and opens its window. The window holds the name, kind, duration, player and GM text, the On, Spent, Revealed and Decoy boxes, and the effects, which can be added, removed and changed there. Thresholds, counters and skills stay inline in the Edit tab. There is one window per entry: opening it again brings it to the front. Save writes only the fields the GM changed onto the latest data, through the same write queue as every other change, so the sheet and the panel update and a run change made meanwhile is kept. An update from elsewhere redraws the window and keeps unsaved edits; deleting the entry closes it.
 
+**Threshold text grows as the GM types.** In the Edit tab a threshold card has the points, reveal and Reached controls and the delete button on one row, and the player text and GM text side by side below, as text areas that grow with their text.
+
 **Reveal is one click and can be undone.** The panel updates at once.
 
 **Ending a challenge** removes the panel and keeps the final state on the sheet. Reset returns it to unspent.

@@ -231,13 +231,13 @@
       <div class="ssm-card">
         <div class="ssm-row">
           <label>{{localize "SSM.Influence.Points"}}<input type="number" step="1" name="{{path}}.points" value="{{points}}"></label>
-          <label class="grow">{{localize "SSM.Influence.PlayerText"}}<input type="text" name="{{path}}.playerText" value="{{playerText}}"></label>
-          <button type="button" class="icon fa-solid fa-trash" data-action="removeRow" data-path="{{path}}" aria-label="{{localize "SSM.Influence.Remove"}}"></button>
-        </div>
-        <div class="ssm-row">
-          <label class="grow">{{localize "SSM.Influence.GMText"}}<input type="text" name="{{path}}.gmText" value="{{gmText}}"></label>
           <label>{{localize "SSM.Influence.ThresholdReveal.Label"}}<select name="{{path}}.reveal">{{selectOptions @root.choices.thresholdReveals selected=reveal}}</select></label>
           <label class="check"><input type="checkbox" name="{{path}}.reached" {{checked reached}}>{{localize "SSM.Influence.Reached"}}</label>
+          <button type="button" class="icon fa-solid fa-trash" data-action="removeRow" data-path="{{path}}" aria-label="{{localize "SSM.Influence.Remove"}}"></button>
+        </div>
+        <div class="ssm-row ssm-text-row">
+          <label class="grow">{{localize "SSM.Influence.PlayerText"}}<textarea class="ssm-autogrow" rows="1" name="{{path}}.playerText">{{playerText}}</textarea></label>
+          <label class="grow">{{localize "SSM.Influence.GMText"}}<textarea class="ssm-autogrow" rows="1" name="{{path}}.gmText">{{gmText}}</textarea></label>
         </div>
       </div>
       {{/each}}
