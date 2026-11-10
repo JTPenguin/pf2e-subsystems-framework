@@ -17,61 +17,55 @@
   </header>
 
   {{#if isRun}}
+  {{#with run}}
+  {{!-- One strip for the whole challenge: run controls, the round, the party and who rolls. --}}
+  <div class="ssm-strip">
+    <span class="ssm-strip-group">
+      {{#if canStart}}<button type="button" data-action="startRun" {{#unless canRun}}disabled{{/unless}}>{{localize "SSM.Influence.Start"}}</button>{{/if}}
+      {{#if canEnd}}<button type="button" data-action="endRun" {{#unless canRun}}disabled{{/unless}}>{{localize "SSM.Influence.End"}}</button>{{/if}}
+      {{#if canReset}}<button type="button" data-action="resetRun" {{#unless canRun}}disabled{{/unless}}>{{localize "SSM.Influence.Reset"}}</button>{{/if}}
+      {{#if canHidePanel}}<button type="button" data-action="hidePanel" {{#unless canRun}}disabled{{/unless}}>{{localize "SSM.Panel.Hide"}}</button>{{/if}}
+      {{#if canShowPanel}}<button type="button" data-action="showPanel" {{#unless canRun}}disabled{{/unless}}>{{localize "SSM.Panel.Show"}}</button>{{/if}}
+    </span>
+    <span class="ssm-strip-group">
+      <strong>{{roundLabel}}</strong>{{#if roundLength}}<span class="ssm-muted">{{roundLength}}</span>{{/if}}
+      <button type="button" class="icon fa-solid fa-rotate-left" data-action="undoRound" aria-label="{{localize "SSM.Influence.UndoRound"}}" data-tooltip="{{localize "SSM.Influence.UndoRound"}}" {{#unless canUndoRound}}disabled{{/unless}}></button>
+      <button type="button" class="icon fa-solid fa-forward-step" data-action="advanceRound" aria-label="{{localize "SSM.Influence.AdvanceRound"}}" data-tooltip="{{localize "SSM.Influence.AdvanceRound"}}" {{#unless canAdvance}}disabled{{/unless}}></button>
+    </span>
+    <span class="ssm-strip-group ssm-grow">
+      <span class="ssm-stat-label">{{localize "SSM.Influence.Party"}}</span>
+      {{#each party}}<button type="button" class="ssm-chip {{#if acted}}acted{{/if}}" data-action="toggleActed" data-id="{{id}}" aria-pressed="{{acted}}">{{name}}</button>{{else}}<span class="ssm-muted">{{localize "SSM.Influence.NoPCs"}}</span>{{/each}}
+    </span>
+    <label class="ssm-strip-group"><span class="ssm-stat-label">{{localize "SSM.Influence.RollAs"}}</span><select data-roll-as>{{#each actors}}<option value="{{id}}" {{#if selected}}selected{{/if}}>{{name}}</option>{{/each}}</select></label>
+  </div>
+  {{/with}}
   <section class="ssm-body">
     {{#with run}}
     {{#unless canRun}}<p class="ssm-muted">{{localize "SSM.Influence.NotActiveGM"}}</p>{{/unless}}
-    <fieldset>
-      <legend>{{localize "SSM.Influence.Rounds"}}</legend>
-      <div class="ssm-row ssm-controls">
-        {{#if canStart}}<button type="button" data-action="startRun" {{#unless canRun}}disabled{{/unless}}>{{localize "SSM.Influence.Start"}}</button>{{/if}}
-        {{#if canEnd}}<button type="button" data-action="endRun" {{#unless canRun}}disabled{{/unless}}>{{localize "SSM.Influence.End"}}</button>{{/if}}
-        {{#if canReset}}<button type="button" data-action="resetRun" {{#unless canRun}}disabled{{/unless}}>{{localize "SSM.Influence.Reset"}}</button>{{/if}}
-        {{#if canHidePanel}}<button type="button" data-action="hidePanel" {{#unless canRun}}disabled{{/unless}}>{{localize "SSM.Panel.Hide"}}</button>{{/if}}
-        {{#if canShowPanel}}<button type="button" data-action="showPanel" {{#unless canRun}}disabled{{/unless}}>{{localize "SSM.Panel.Show"}}</button>{{/if}}
-        <span class="ssm-grow"></span>
-        <strong>{{roundLabel}}</strong>{{#if roundLength}}<span class="ssm-muted">{{roundLength}}</span>{{/if}}
-        <button type="button" class="icon fa-solid fa-rotate-left" data-action="undoRound" aria-label="{{localize "SSM.Influence.UndoRound"}}" data-tooltip="{{localize "SSM.Influence.UndoRound"}}" {{#unless canUndoRound}}disabled{{/unless}}></button>
-        <button type="button" class="icon fa-solid fa-forward-step" data-action="advanceRound" aria-label="{{localize "SSM.Influence.AdvanceRound"}}" data-tooltip="{{localize "SSM.Influence.AdvanceRound"}}" {{#unless canAdvance}}disabled{{/unless}}></button>
-      </div>
-    </fieldset>
-
-    <fieldset>
-      <legend>{{localize "SSM.Influence.Party"}}</legend>
-      <div class="ssm-row">
-        <span class="ssm-chips ssm-grow">
-          {{#each party}}<button type="button" class="ssm-chip {{#if acted}}acted{{/if}}" data-action="toggleActed" data-id="{{id}}" aria-pressed="{{acted}}">{{name}}</button>{{else}}<span class="ssm-muted">{{localize "SSM.Influence.NoPCs"}}</span>{{/each}}
-        </span>
-        <label>{{localize "SSM.Influence.RollAs"}}<select data-roll-as>{{#each actors}}<option value="{{id}}" {{#if selected}}selected{{/if}}>{{name}}</option>{{/each}}</select></label>
-      </div>
-    </fieldset>
 
     {{#each npcs as |npc|}}
-    <fieldset class="ssm-npc">
-      <legend>{{npc.name}}</legend>
-      <div class="ssm-npc-top">
-        <div class="ssm-points-box">
-          <span class="ssm-muted">{{localize "SSM.Influence.Points"}}</span>
-          <div class="ssm-points-controls">
-            <button type="button" class="icon fa-solid fa-minus" data-action="changePoints" data-npc="{{npc.id}}" data-delta="-1" aria-label="{{localize "SSM.Influence.RemovePoint"}}" data-tooltip="SSM.Influence.RemovePoint" {{#unless ../canRun}}disabled{{/unless}}></button>
-            <strong class="ssm-point-total">{{npc.points}}</strong>
-            <button type="button" class="icon fa-solid fa-plus" data-action="changePoints" data-npc="{{npc.id}}" data-delta="1" aria-label="{{localize "SSM.Influence.AddPoint"}}" data-tooltip="SSM.Influence.AddPoint" {{#unless ../canRun}}disabled{{/unless}}></button>
-          </div>
-        </div>
-        <div class="ssm-npc-skills">
-          {{#if npc.discovery.length}}
-          <div class="ssm-skill-line">
-            <span class="ssm-line-label">{{localize "SSM.Influence.Discovery"}}</span>
-            <span class="ssm-skill-chips">{{#each npc.discovery}}{{> ssmSkillChip root=../..}}{{/each}}</span>
-          </div>
-          {{/if}}
-          {{#if npc.influence.length}}
-          <div class="ssm-skill-line">
-            <span class="ssm-line-label">{{localize "SSM.Influence.InfluenceSkills"}}</span>
-            <span class="ssm-skill-chips">{{#each npc.influence}}{{> ssmSkillChip root=../..}}{{/each}}</span>
-          </div>
-          {{/if}}
-        </div>
+    <section class="ssm-npc ssm-block">
+      <header class="ssm-block-head">
+        <h3>{{npc.name}}</h3>
+        <span class="ssm-stat">
+          <span class="ssm-stat-label">{{localize "SSM.Influence.Points"}}</span>
+          <button type="button" class="icon fa-solid fa-minus" data-action="changePoints" data-npc="{{npc.id}}" data-delta="-1" aria-label="{{localize "SSM.Influence.RemovePoint"}}" data-tooltip="SSM.Influence.RemovePoint" {{#unless ../canRun}}disabled{{/unless}}></button>
+          <strong class="ssm-point-total">{{npc.points}}</strong>
+          <button type="button" class="icon fa-solid fa-plus" data-action="changePoints" data-npc="{{npc.id}}" data-delta="1" aria-label="{{localize "SSM.Influence.AddPoint"}}" data-tooltip="SSM.Influence.AddPoint" {{#unless ../canRun}}disabled{{/unless}}></button>
+        </span>
+      </header>
+      {{#if npc.discovery.length}}
+      <div class="ssm-skill-line">
+        <span class="ssm-stat-label">{{localize "SSM.Influence.Discovery"}}</span>
+        <span class="ssm-skill-grid">{{#each npc.discovery}}{{> ssmSkillChip root=../..}}{{/each}}</span>
       </div>
+      {{/if}}
+      {{#if npc.influence.length}}
+      <div class="ssm-skill-line">
+        <span class="ssm-stat-label">{{localize "SSM.Influence.InfluenceSkills"}}</span>
+        <span class="ssm-skill-grid">{{#each npc.influence}}{{> ssmSkillChip root=../..}}{{/each}}</span>
+      </div>
+      {{/if}}
       {{#if npc.thresholds.length}}
       <div class="ssm-npc-group">
         <h4>{{localize "SSM.Influence.Thresholds"}}</h4>
@@ -103,12 +97,12 @@
         {{/each}}
       </div>
       {{/if}}
-    </fieldset>
+    </section>
     {{/each}}
 
     {{#if counters.length}}
-    <fieldset>
-      <legend>{{localize "SSM.Influence.Counters"}}</legend>
+    <section class="ssm-block">
+      <header class="ssm-block-head"><h3>{{localize "SSM.Influence.Counters"}}</h3></header>
       {{#each counters}}
       <div class="ssm-row ssm-entry">
         {{> ssmEye root=..}}
@@ -119,7 +113,7 @@
       </div>
       {{#each triggers}}<div class="ssm-muted ssm-detail">{{localize "SSM.Influence.TriggerValue"}} {{value}}{{#if gmNote}}: {{gmNote}}{{/if}}</div>{{/each}}
       {{/each}}
-    </fieldset>
+    </section>
     {{/if}}
     {{/with}}
   </section>

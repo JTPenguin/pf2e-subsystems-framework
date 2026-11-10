@@ -127,16 +127,15 @@ Sidebar tab -> Challenge (journal entry + typed page, GM only) -> GM sheet
 
 The sheet has **Edit** and **Run** modes, like a locked and unlocked actor sheet.
 
-**Run mode shows:**
+**Run mode is laid out like a statblock:** small labels beside their values, with no boxed fieldsets and no folding sections. It shows:
 
-- Round clock with advance and undo.
-- Each NPC's points in a box on the left, with buttons to add and remove.
-- Each skill as a chip beside the points, styled like a PF2e inline check, one line for Discovery and one for Influence. The chip shows the skill name (the Lore name for a Lore) and the current DC, marked with an arrow when it differs from the base DC. Its tooltip gives the base DC and says if the skill is a decoy. Clicking the chip rolls for the chosen PC; a chat icon on it posts a chat link. A hidden chip has a dashed outline. While the challenge isn't running, the roll and chat link are disabled.
+- One strip at the top with Start, End and Reset, Hide or Show panel, the round clock with advance and undo, the party chips and the Roll as choice.
+- Each NPC's name with "Points" and the total beside it on the same line, with buttons to add and remove.
+- Each skill as a chip styled like a PF2e inline check, in a grid of two or three columns by window width, with the Discovery and Influence labels beside their grids. The chip shows the skill name (the Lore name for a Lore) and the current DC, marked with an arrow when it differs from the base DC. Its tooltip gives the base DC and says if the skill is a decoy. Clicking the chip rolls for the chosen PC; a chat icon on it posts a chat link. A hidden chip has a dashed outline. While the challenge isn't running, the roll and chat link are disabled.
 - An eye toggle to reveal or hide each entry, on the chip for skills. Universal skills have no eye: they are always shown. A threshold's eye steps through hidden, points only, and points and text, then back to hidden.
 - Thresholds under the skills, each with its point value, its player text, and its GM text on a muted "GM:" line under it. The Reached tag is a button (aria-pressed, GM only): click to mark a threshold reached by hand, click again to clear it. Dropping points never clears it; only this tag or the Edit tab does.
 - Modifier entries as cards edged in their kind's colour, showing the effects, the player text and a muted "GM:" line, with on, off and apply controls.
 - Counters.
-- Start, hide, show and end controls for the panel.
 
 **Reveal is one click and can be undone.** The panel updates at once.
 
