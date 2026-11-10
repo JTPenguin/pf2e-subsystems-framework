@@ -27,7 +27,6 @@ function prepareView(view) {
   const skillButton = (npc, n, row, kind) => ({
     id: row.id, npcId: npc.id, kind,
     label: skillLabel(row),
-    tooltip: game.i18n.format("SSM.Panel.RollAgainst", { skill: skillLabel(row), npc: npc.name || `${loc("SSM.Influence.NPC")} ${n + 1}` }),
   });
   return {
     name: view.name,

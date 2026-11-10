@@ -39,7 +39,6 @@
       "HiddenText": "???",
       "ActedLabel": "{name}: has acted this round",
       "NotActedLabel": "{name}: has not acted this round",
-      "RollAgainst": "Roll {skill}: {npc}",
       "NoCharacter": "You need an assigned character to roll. Ask the GM to assign one.",
       "NoGMActor": "Select a token, or pick a PC under Roll as in the challenge window.",
       "SkillGone": "That check is no longer available."
