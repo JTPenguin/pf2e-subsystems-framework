@@ -32,6 +32,7 @@ const O = await load("roll-option");
 const V = await load("subsystems/influence/panel-view");
 await load("registry");
 const L = await load("roll-listener");
+const Spot = await load("panel/spot");
 
 const MODULE = "pf2e-subsystem-manager";
 const challenge = (name, folder) => ({ name, folder, pages: [{ type: `${MODULE}.influence` }] });
@@ -1327,4 +1328,23 @@ test("applying a one-time entry with a DC change marks it applied but not spent,
   const card = viewOf(s).npcs[0].known[0];
   assert.deepEqual([card.spent, card.applied, card.active], [false, true, true]);
   assert.deepEqual(card.changes.map((change) => change.type), ["points", "dc"]);
+});
+
+/* Dragging the panel */
+
+test("a dragged panel stays wholly on screen", () => {
+  const screen = { width: 1000, height: 800 };
+  const size = { width: 300, height: 200 };
+  assert.deepEqual(Spot.clampSpot({ left: 900, top: 700 }, size, screen), { left: 700, top: 600 });
+  assert.deepEqual(Spot.clampSpot({ left: -50, top: -10 }, size, screen), { left: 0, top: 0 });
+  assert.deepEqual(Spot.clampSpot({ left: 120, top: 40 }, size, screen), { left: 120, top: 40 });
+});
+
+test("a panel bigger than the screen keeps its top-left corner visible", () => {
+  assert.deepEqual(Spot.clampSpot({ left: 50, top: 50 }, { width: 1200, height: 900 }, { width: 1000, height: 800 }), { left: 0, top: 0 });
+});
+
+test("only a spot with two numbers counts as saved", () => {
+  assert.deepEqual(Spot.readSpot({ left: 10, top: 20 }), { left: 10, top: 20 });
+  for (const value of [undefined, null, {}, { left: 10 }, { left: "10", top: 20 }, { left: NaN, top: 0 }]) assert.equal(Spot.readSpot(value), null);
 });

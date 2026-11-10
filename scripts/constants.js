@@ -11,3 +11,6 @@ export const ACTIVE_SETTING = "activeChallenge";
 
 /** The world setting for where the panel sits. */
 export const POSITION_SETTING = "panelPosition";
+
+/** The client setting for where each user on this browser dragged the panel, keyed by user id. */
+export const SPOT_SETTING = "panelSpot";

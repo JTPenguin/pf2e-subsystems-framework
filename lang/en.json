@@ -23,8 +23,9 @@
       "Show": "Show panel",
       "Blocked": "{name} is on the panel. End it before starting another challenge.",
       "PositionName": "Panel position",
-      "PositionHint": "Where the challenge panel sits at the top of the screen.",
+      "PositionHint": "Where the challenge panel starts at the top of the screen. Anyone can drag it by its header to a spot of their own.",
       "Position": { "center": "Top centre", "left": "Top left", "right": "Top right" },
+      "ResetPosition": "Reset position",
       "Influence": "Influence",
       "Discover": "Discover",
       "Change": {

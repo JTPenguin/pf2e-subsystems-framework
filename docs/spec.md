@@ -196,7 +196,8 @@ A DC change names only skills the panel shows (universal or revealed). It says n
 - It has no close button, and players have no control that hides it.
 - Clicking a skill rolls for the player's assigned character. Each NPC's column has its own skills, so the click also chooses the NPC.
 - It leaves the canvas clickable outside its own area.
-- The default position is top centre. A world setting offers other positions.
+- The default position is top centre. A world setting offers other positions; it is the starting spot for anyone who hasn't dragged the panel.
+- Anyone, GM included, can drag the panel by its header. The spot is saved in the browser, per user, so it survives reloads. A reset button in the header, shown once the panel is dragged, puts it back at the starting spot. A dragged panel is kept wholly on screen when it loads, redraws or the window shrinks.
 - The GM sees the same panel, without skill buttons. The GM applies results from the chat cards (section 8).
 - It must not cover VN Stage's portrait controls at the default position.
 

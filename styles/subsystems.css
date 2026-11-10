@@ -100,6 +100,15 @@ button.ssm-reached { color: #4f9d5d; }
 .ssm-panel-head, .ssm-panel-counters, .ssm-panel-party { contain: inline-size; }
 .ssm-panel[data-position="left"] { align-self: flex-start; }
 .ssm-panel[data-position="right"] { align-self: flex-end; }
+/* A dragged panel sits in the body, placed in code. It scales and sits in the stack as it would in #ui-middle, and keeps the same size limits: 60% of the screen wide (#ui-middle's width) and 40% high. max-content stops it shrinking near the screen edge. */
+.ssm-panel.moved { position: fixed; z-index: var(--z-index-app, 30); transform: scale(var(--ui-scale, 1)); transform-origin: top left; width: max-content; max-width: min(60vw, calc(60vw / var(--ui-scale, 1))); max-height: calc(40vh / var(--ui-scale, 1) - 0.5rem); margin: 0; }
+.ssm-panel-head { cursor: var(--cursor-grab, grab); touch-action: none; user-select: none; }
+.ssm-panel.dragging .ssm-panel-head { cursor: var(--cursor-grab-down, grabbing); }
+/* The reset button sits just after the round count; the negative margin undoes most of the header's gap. */
+.ssm-panel-head > .ssm-panel-rounds { margin-left: auto; }
+.ssm-panel button.ssm-panel-reset { flex: none; width: auto; height: auto; min-height: 0; margin: 0 0 0 -1.5rem; padding: 0 0.15rem; border: none; background: none; box-shadow: none; color: #e8cf8f; font-size: var(--font-size-11, 0.7rem); line-height: inherit; cursor: pointer; }
+.ssm-panel button.ssm-panel-reset:hover, .ssm-panel button.ssm-panel-reset:focus-visible { color: #fff; }
+.ssm-panel:not(.moved) .ssm-panel-reset { display: none; }
 .ssm-panel p { margin: 0.15rem 0 0; }
 .ssm-panel-head { display: flex; justify-content: space-between; gap: 2rem; }
 .ssm-panel-name { font-size: var(--font-size-15, 0.9375rem); }
