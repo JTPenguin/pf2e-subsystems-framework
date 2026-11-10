@@ -47,8 +47,6 @@ button.ssm-state:disabled { cursor: default; }
 button.ssm-toggle:disabled { cursor: default; }
 button.ssm-toggle.ssm-toggle-on { border-color: #2f7a3b; background: #2f7a3b; color: #fff; }
 button.ssm-toggle.ssm-toggle-on:disabled { opacity: 1; }
-.ssm-state-on { border-color: #2f7a3b; background: #2f7a3b; color: #fff; }
-.ssm-state-spent { opacity: 0.6; text-decoration: line-through; }
 
 /* Run mode is laid out like a statblock: small labels beside their values, no boxed fieldsets. */
 .ssm-strip { display: flex; flex-direction: column; gap: 0.25rem; padding: 0.25rem 0; border-top: 1px solid var(--color-border, #7a7971); border-bottom: 1px solid var(--color-border, #7a7971); }

@@ -7,7 +7,7 @@ import { announceTriggers, writeChallenge } from "./state.js";
 import { advanceRound, applyModifier, canAdvanceRound, canApplyModifier, canUndoRound, changeCounter, changePoints, currentDc, cycleThresholdReveal, endRun, resetRun, restoreModifier, startRun, toggleActed, toggleModifier, toggleReached, toggleReveal, undoRound } from "./run.js";
 import { LINK_ROLL_ID } from "../../roll-option.js";
 import { rollCheck, rollTarget } from "./roll.js";
-import { addRow, applyForm, clampCounters, isOtherModifier, isUniversalDiscovery, isUniversalInfluence, limitCounter, LORE, MODIFIER_KINDS, PERCEPTION, nextThresholdReveal, pickFields, removeRow, THRESHOLD_REVEALS } from "./data.js";
+import { addRow, applyForm, clampCounters, isUniversalDiscovery, isUniversalInfluence, limitCounter, LORE, MODIFIER_KINDS, PERCEPTION, nextThresholdReveal, pickFields, removeRow, THRESHOLD_REVEALS } from "./data.js";
 import { ModifierWindow } from "./modifier-window.js";
 
 const { DocumentSheetV2, HandlebarsApplicationMixin } = foundry.applications.api;
@@ -334,7 +334,6 @@ export class InfluenceSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
       ...row,
       label,
       npc,
-      kindLabel: isOtherModifier(row) ? "" : loc(`SSM.Influence.Kind.${row.kind}`),
       durationLabel: loc(`SSM.Influence.Duration.${row.duration}`),
       stateClass: state,
       pressed: state === "on",

@@ -4,7 +4,7 @@
   <button type="button" class="ssm-skill-roll" data-action="rollSkill" data-npc="{{npcId}}" data-kind="{{kind}}" data-id="{{id}}" aria-label="{{rollLabel}}" data-tooltip-text="{{tooltip}}" {{#unless root.rollable}}disabled{{/unless}}><i class="fa-solid fa-dice-d20" aria-hidden="true"></i><span class="ssm-skill-name">{{label}}</span><span class="ssm-skill-dc{{#if dcChanged}} ssm-dc-changed {{#if dcUp}}ssm-dc-up{{else}}ssm-dc-down{{/if}}{{/if}}">{{localize "SSM.Influence.DC"}} {{currentDc}}</span></button>
   <button type="button" class="ssm-skill-post" data-action="postLink" data-npc="{{npcId}}" data-kind="{{kind}}" data-id="{{id}}" aria-label="{{postLabel}}" data-tooltip="SSM.Influence.PostLink" {{#unless root.rollable}}disabled{{/unless}}><i class="fa-solid fa-comment" aria-hidden="true"></i></button>
 </span>{{/inline}}
-{{#*inline "ssmModifierName"}}<span class="ssm-grow">{{label}} {{#if kindLabel}}<span class="ssm-tag">{{kindLabel}}</span> {{/if}}<span class="ssm-tag">{{durationLabel}}</span>{{#if decoy}} <span class="ssm-tag ssm-decoy">{{localize "SSM.Influence.Decoy"}}</span>{{/if}}{{#if readOnly}} <span class="ssm-tag ssm-state-{{stateClass}}">{{stateLabel}}</span>{{/if}}</span>{{/inline}}
+{{#*inline "ssmModifierName"}}<span class="ssm-grow">{{label}} <span class="ssm-tag">{{durationLabel}}</span>{{#if decoy}} <span class="ssm-tag ssm-decoy">{{localize "SSM.Influence.Decoy"}}</span>{{/if}}</span>{{/inline}}
 {{#*inline "ssmModifierEdit"}}<button type="button" class="icon fa-solid fa-pen-to-square" data-action="editModifier" data-npc="{{npc.id}}" data-id="{{id}}" aria-label="{{localize "SSM.Influence.EditModifier"}}" data-tooltip="SSM.Influence.EditModifier"></button>{{/inline}}
 {{#*inline "ssmModifierDetails"}}{{#if effectsText}}<div class="ssm-muted ssm-detail">{{effectsText}}</div>{{/if}}
 {{#if playerText}}<div class="ssm-detail ssm-player-text">{{playerText}}</div>{{/if}}
@@ -273,9 +273,9 @@
       <legend>{{heading}}</legend>
       <div class="ssm-mod-list">
       {{#each rows}}
-      <div class="ssm-modifier ssm-kind-{{kind}} ssm-mod-{{stateClass}} {{#unless revealed}}ssm-hidden{{/unless}}">
+      <div class="ssm-modifier ssm-kind-{{kind}}">
         <div class="ssm-row ssm-entry">
-          {{> ssmModifierName readOnly=true}}
+          {{> ssmModifierName}}
           {{> ssmModifierEdit}}
           <button type="button" class="icon fa-solid fa-trash" data-action="removeRow" data-path="{{path}}" aria-label="{{localize "SSM.Influence.Remove"}}"></button>
         </div>
