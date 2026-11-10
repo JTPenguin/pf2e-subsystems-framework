@@ -216,7 +216,7 @@ A DC change names only skills the panel shows (universal or revealed). It says n
 
 ## 8. Roll flow
 
-1. A player clicks a skill, or the GM rolls or posts a link. The check is a normal PF2e roll with the current DC, always hidden from players. The roll carries a module identifier: challenge, NPC, skill, whether it's Influence or Discover, and a roll id.
+1. A player clicks a skill, or the GM rolls or posts a link. The check is a normal PF2e roll with the current DC, always hidden from players. The roll carries a module identifier: challenge, NPC, skill, whether it's Influence or Discover, and a roll id. A Discover check has PF2e's `secret` trait, like Recall Knowledge, from the panel, the roll button and a chat link alike: a player's roll is blind, so players see that a roll was made but not its result, and the GM's own roll goes to GMs only. Influence rolls stay public. PF2e's Show Secret Checks setting, if turned on, makes secret rolls visible again.
 2. When the message arrives, the active GM's client marks the PC as having acted. Advancing the round clears the markers. The GM can toggle a marker by hand.
 3. **Influence.** The GM's copy of the chat card gets one **Apply** button, showing the suggested change: critical success +2, success +1, failure 0, critical failure −1. Apply adds those points and marks any thresholds they reach. There is no Adjust or Ignore: to use another amount, the GM skips Apply and changes points by hand on the sheet.
 4. **Discover.** No button. The GM's copy of the card gets a reminder of what the result earns: one piece of information, two on a critical success, a false one on a critical failure. The GM reveals entries by hand.

@@ -35,6 +35,8 @@ export function rollCheck(actor, target, { event, messageMode }) {
     dc: { value: target.dc, visible: false },
     label: game.i18n.format(`SSM.Influence.RollLabel.${target.kind}`, { npc: target.npcLabel }),
     extraRollOptions: [target.option(foundry.utils.randomID())],
+    // Discover is secret, like Recall Knowledge: PF2e then makes it a blind roll for a player and a GM-only roll for the GM, whatever messageMode says.
+    traits: target.kind === "discover" ? ["secret"] : [],
     messageMode,
   });
 }

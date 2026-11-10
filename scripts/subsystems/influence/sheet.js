@@ -563,6 +563,8 @@ export class InfluenceSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
     const roll = this.#rollTarget(target);
     if (!roll) return;
     const params = [roll.slug, `dc:${roll.dc}`, "showDC:gm", `options:${roll.option(LINK_ROLL_ID)}`];
+    // A Discover link rolls secret, as the panel and the roll button do.
+    if (roll.kind === "discover") params.push("traits:secret");
     const heading = game.i18n.format(`SSM.Influence.RollLabel.${roll.kind}`, { npc: roll.npcLabel });
     const content = `<p><strong>${foundry.utils.escapeHTML(heading)}</strong></p><p>@Check[${params.join("|")}]</p>`;
     return ChatMessage.create({ content }, { messageMode: "public" });
