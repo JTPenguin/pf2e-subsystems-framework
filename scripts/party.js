@@ -1,7 +1,6 @@
-/** A PC's token picture for the panel: the prototype token's texture, else the actor's portrait. Null if neither is a single image (a wildcard token has no one picture). */
+/** A PC's portrait for the panel (the actor's image). Null if there is none. */
 export function pcImage(actor) {
-  const usable = (src) => (src && !src.includes("*") ? src : null);
-  return usable(actor.prototypeToken?.texture?.src) ?? usable(actor.img);
+  return actor.img || null;
 }
 
 /** The party's real PCs, as PF2e counts them: no NPCs, familiars, eidolons or minions. Empty when there's no party. */
