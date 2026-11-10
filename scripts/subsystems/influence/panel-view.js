@@ -81,7 +81,7 @@ function npcView(system, npc) {
     influence: npc.influence.filter(isVisibleInfluence).map((row) => ({ id: row.id, skill: row.skill, lore: row.lore, dc: currentDc(system, npc, row) })),
     known: npc.modifiers.filter(isVisible).map((row) => modifierView(system, npc, row)),
     // A points-only threshold shows as "6: ???": its text stays out of the copy.
-    thresholds: npc.thresholds.filter((row) => row.reveal === "points" || row.reveal === "full").map((row) => ({
+    thresholds: npc.thresholds.filter((row) => row.reveal === "points" || row.reveal === "full").sort((a, b) => a.points - b.points).map((row) => ({
       id: row.id, points: row.points, text: row.reveal === "full" ? row.playerText : "", textHidden: row.reveal === "points", reached: !!row.reached,
     })),
     // The bar's scale: the highest threshold's points, hidden or not. Only this number goes in, never a hidden threshold's text or id.

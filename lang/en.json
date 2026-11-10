@@ -34,7 +34,7 @@
         "counter": "{amount} {counter}",
         "rounds": { "one": "{amount} round", "other": "{amount} rounds" }
       },
-      "Goal": "Goal",
+      "Thresholds": "Thresholds",
       "HiddenText": "???",
       "Acted": "Acted",
       "RollAgainst": "Roll {skill}: {npc}",

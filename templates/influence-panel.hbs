@@ -10,6 +10,10 @@
       <span class="ssm-panel-bar {{#if bar.negative}}negative{{/if}}"><span style="width: {{bar.percent}}%"></span></span>
       <strong>{{points}}</strong>
     </div>
+    {{#if thresholds.length}}<div class="ssm-panel-thresholds">
+      <div class="ssm-panel-thresholds-head">{{localize "SSM.Panel.Thresholds"}}</div>
+      {{#each thresholds}}<div class="ssm-panel-threshold {{#if reached}}reached{{/if}}"><span class="ssm-panel-threshold-mark">{{#if reached}}<i class="fa-solid fa-check" role="img" aria-label="{{localize "SSM.Influence.ReachedShort"}}" data-tooltip="{{localize "SSM.Influence.ReachedShort"}}"></i>{{/if}}</span> <strong class="ssm-panel-threshold-points">{{points}}</strong> <span class="ssm-panel-threshold-text">{{#if textHidden}}{{localize "SSM.Panel.HiddenText"}}{{else}}{{text}}{{/if}}</span></div>{{/each}}
+    </div>{{/if}}
     {{#if influence.length}}<p><span class="ssm-panel-label">{{localize "SSM.Panel.Influence"}}</span> <span class="ssm-panel-list">{{#each influence}}<span>{{#if canRoll}}<button type="button" class="ssm-panel-skill" data-action="rollSkill" data-npc="{{npcId}}" data-kind="{{kind}}" data-id="{{id}}" data-tooltip="{{tooltip}}">{{label}}</button>{{else}}{{label}}{{/if}}</span>{{/each}}</span></p>{{/if}}
     {{#if discovery.length}}<p><span class="ssm-panel-label">{{localize "SSM.Panel.Discover"}}</span> <span class="ssm-panel-list">{{#each discovery}}<span>{{#if canRoll}}<button type="button" class="ssm-panel-skill" data-action="rollSkill" data-npc="{{npcId}}" data-kind="{{kind}}" data-id="{{id}}" data-tooltip="{{tooltip}}">{{label}}</button>{{else}}{{label}}{{/if}}</span>{{/each}}</span></p>{{/if}}
     {{#if known.length}}<div class="ssm-panel-mods">
@@ -21,7 +25,6 @@
       </div>
       {{/each}}
     </div>{{/if}}
-    {{#each thresholds}}<p class="ssm-panel-goal {{#if reached}}reached{{/if}}"><span class="ssm-panel-label">{{localize "SSM.Panel.Goal"}}</span> {{points}}{{#if textHidden}}: {{localize "SSM.Panel.HiddenText"}}{{else if text}}: {{text}}{{/if}}{{#if reached}} <i class="fa-solid fa-check" inert></i> <span class="ssm-panel-reached">{{localize "SSM.Influence.ReachedShort"}}</span>{{/if}}</p>{{/each}}
   </div>
   {{/each}}
 </div>

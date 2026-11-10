@@ -1017,6 +1017,13 @@ test("the bar scales to the highest threshold, hidden or not, and the copy carri
   assert.equal(viewOf(s).npcs[0].goal, 0);
 });
 
+test("revealed thresholds are listed in points order", () => {
+  const s = secretSystem();
+  const npc = s.npcs[0];
+  npc.thresholds = [{ ...D.newThreshold(), points: 9, reveal: "full" }, { ...D.newThreshold(), points: 3, reveal: "points" }, { ...D.newThreshold(), points: 6 }];
+  assert.deepEqual(viewOf(s).npcs[0].thresholds.map((t) => t.points), [3, 9]);
+});
+
 test("a points-only threshold shows its points and no text; full shows both", () => {
   const s = secretSystem();
   const npc = s.npcs[0];

@@ -136,7 +136,12 @@ button.ssm-reached { color: #4f9d5d; }
 .ssm-panel-mod-duration { margin-left: auto; }
 .ssm-panel-mod-changes { color: #e8cf8f; }
 .ssm-panel-mod-changes > span:not(:last-child)::after { content: "; "; }
-.ssm-panel-goal.reached { color: #9fd08a; }
+.ssm-panel-thresholds { margin-top: 0.25rem; padding: 0.1rem 0.35rem; border: 1px solid rgba(184, 160, 106, 0.35); border-left: 3px solid #b8a06a; border-radius: 3px; background: rgba(255, 255, 255, 0.04); line-height: 1.25; }
+.ssm-panel-thresholds-head { font-size: var(--font-size-11, 0.7rem); text-transform: uppercase; opacity: 0.75; }
+.ssm-panel-threshold { display: flex; align-items: baseline; column-gap: 0.35rem; }
+.ssm-panel-threshold-mark { flex: 0 0 1em; text-align: center; }
+.ssm-panel-threshold-text { flex: 1 1 auto; min-width: 0; }
+.ssm-panel-threshold.reached { color: #9fd08a; }
 .ssm-panel-counters { display: flex; flex-wrap: wrap; gap: 1rem; }
 .ssm-panel-party { display: flex; flex-wrap: wrap; align-items: center; gap: 0.3rem; }
 .ssm-panel-marker { padding: 0 0.4rem; border: 1px solid #b8a06a; border-radius: 999px; }

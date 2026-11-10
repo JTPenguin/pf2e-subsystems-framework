@@ -149,6 +149,9 @@ The sheet has **Edit** and **Run** modes, like a locked and unlocked actor sheet
 | The Governor's Banquet                         Round 3 of 6      |
 | Lady Vance                     | Lord Ostrov                     |
 | [#####-----] 5                 | [##--------] 2                  |
+| THRESHOLDS                     | THRESHOLDS                      |
+| v 4  she offers an introduction|   4  he vouches for you         |
+|   8  ???                       |                                 |
 | Influence: Deception,          | Influence: Deception,           |
 |   Diplomacy, Intimidation,     |   Diplomacy, Intimidation       |
 |   Society, Warfare Lore        |                                 |
@@ -158,9 +161,6 @@ The sheet has **Edit** and **Run** modes, like a locked and unlocked actor sheet
 | |Weak to praise of her art.  | | |Respects a straight answer.  | |
 | |-2 to DCs vs Diplomacy      | | |+2 to DCs vs Deception       | |
 | +----------------------------+ | +-----------------------------+ |
-|                                | Goal: 4: he vouches for you     |
-| Goal: 8: she offers an         |                                 |
-|   introduction                 |                                 |
 | Suspicion: 3                                                     |
 | Acted: (Ezren) (Amiri) ( Kyra ) ( Valeros )                      |
 +------------------------------------------------------------------+
@@ -173,7 +173,7 @@ The sheet has **Edit** and **Run** modes, like a locked and unlocked actor sheet
 | Discovery skills | Perception (the universal skill) shown, no DCs. Others hidden until revealed. | Clickable. The GM's eye toggle appears on every row except the universal skill. The sheet shows no Revealed or Decoy checkbox for it. |
 | Influence skills | Deception, Diplomacy and Intimidation (the universal skills) shown. Others hidden until revealed. | Clickable. No DC shown. No eye toggle, Revealed or Decoy checkbox on a universal row. |
 | Weaknesses, resistances, penalties, adjustments | Hidden until revealed | One card each: kind, name, player text, what it does and duration. Dimmed while off. A spent one-time entry shows Spent, dimmed, with its effects struck through. An applied one-time entry whose DC change is still to come has its other effects struck through. |
-| Thresholds | Hidden until revealed | Revealed in two steps: points only shows as "6: ???", then points and player text. Marked when reached. |
+| Thresholds | Hidden until revealed | One card per NPC under its bar, in points order; hidden if none are revealed. Revealed in two steps: points only shows as "6  ???", then points and player text. A reached one has a check mark. |
 | Counters | Hidden until revealed | |
 | Party markers | Shown | Dim once that PC has acted this round |
 
