@@ -1,5 +1,5 @@
 <header class="ssm-panel-head">
-  <strong class="ssm-panel-name">{{name}}</strong>
+  {{#if isGM}}<button type="button" class="ssm-panel-name" data-action="openChallenge" data-drag-click><strong>{{name}}</strong></button>{{else}}<strong class="ssm-panel-name">{{name}}</strong>{{/if}}
 </header>
 <div class="ssm-panel-run">
   <div class="ssm-panel-rounds"><span class="ssm-panel-rounds-label">{{roundLabel}}</span><span class="ssm-panel-segments" role="img" aria-label="{{roundLabel}}">{{#each roundSegments}}<span class="{{#if filled}}filled{{/if}}"></span>{{/each}}</span></div>

@@ -208,6 +208,7 @@ A DC change names only skills the panel shows (universal or revealed). It says n
 - It leaves the canvas clickable outside its own area.
 - The default position is top centre. A world setting offers other positions; it is the starting spot for anyone who hasn't dragged the panel.
 - Anyone, GM included, can drag the panel by its header. The spot is saved in the browser, per user, so it survives reloads. A reset button in the header, shown once the panel is dragged, puts it back at the starting spot. A dragged panel is kept wholly on screen when it loads, redraws or the window shrinks.
+- For the GM, the challenge name in the header is a button that opens the challenge window, or brings it to the front. A press that moves drags the panel instead and opens nothing. Players see the name as plain text.
 - The GM sees the same panel and can click its skills too. The roll is for the selected token's actor, or, with no token selected, for the sheet's Roll as choice. The GM applies results from the chat cards (section 8).
 - It must not cover VN Stage's portrait controls at the default position.
 

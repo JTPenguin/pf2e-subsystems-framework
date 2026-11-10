@@ -19,6 +19,7 @@ let pressing = false;
 let heldBack = false;
 let sheetKey = "";
 let drag = null;
+let swallowClick = false;
 let resizeObserver = null;
 
 function removePanel() {
@@ -71,8 +72,14 @@ function applySpot() {
   if (parent && element.parentElement !== parent) parent.append(element);
 }
 
+/*
+ * A header control marked data-drag-click is a click and a drag handle in one: a press that moves past the wobble drags the panel,
+ * and the click that follows the release is swallowed. Other controls in the header only click.
+ */
 function onDragStart(event) {
-  if (event.button !== 0 || !event.target.closest(".ssm-panel-head") || event.target.closest("button, a, input")) return;
+  if (event.button !== 0 || !event.target.closest(".ssm-panel-head")) return;
+  const control = event.target.closest("button, a, input");
+  if (control && !control.matches("[data-drag-click]")) return;
   event.preventDefault();
   const rect = element.getBoundingClientRect();
   drag = { x: event.clientX, y: event.clientY, left: rect.left, top: rect.top, moved: false };
@@ -98,6 +105,9 @@ function onDragEnd() {
   if (!element) return;
   element.classList.remove("dragging");
   if (!moved) return;
+  // A release over a drag-click control still clicks it, so the next click does nothing. It comes straight after the release; the timer clears the flag if no click comes.
+  swallowClick = true;
+  setTimeout(() => (swallowClick = false));
   const rect = element.getBoundingClientRect();
   saveSpot({ left: Math.round(rect.left), top: Math.round(rect.top) });
 }
@@ -117,10 +127,20 @@ function addResetButton() {
   head.append(button);
 }
 
+/** The GM's way back to the challenge window: opens it, or brings it to the front. */
+function openChallenge(state) {
+  if (game.user.isGM) game.journal.get(state.id)?.sheet.render({ force: true });
+}
+
 function onClick(event) {
+  if (swallowClick) {
+    swallowClick = false;
+    return;
+  }
   const target = event.target.closest("[data-action]");
   if (!target || target.disabled) return;
   if (target.dataset.action === "resetPanelSpot") return saveSpot(null);
+  if (target.dataset.action === "openChallenge") return openChallenge(panelState());
   const state = panelState();
   const panel = subsystemByType(state.type)?.panel;
   panel?.viewActions?.[target.dataset.action]?.(state, target, event);
@@ -163,7 +183,8 @@ async function draw() {
   const state = panelState();
   const panel = subsystemByType(state.type)?.panel;
   if (!state.view || state.hidden || !panel) return removePanel();
-  const view = await renderTemplate(panel.template, panel.prepareView(state.view));
+  // isGM lets a template give the GM controls that players see as plain text.
+  const view = await renderTemplate(panel.template, { ...panel.prepareView(state.view), isGM: game.user.isGM });
   // A redraw during a press would replace the button being pressed and lose the click. The release catches up.
   if (pressing) {
     heldBack = true;

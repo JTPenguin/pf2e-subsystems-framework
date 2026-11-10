@@ -157,6 +157,10 @@ button.ssm-reached { color: #4f9d5d; }
 .ssm-panel p { margin: 0.15rem 0 0; }
 .ssm-panel-head { display: flex; justify-content: space-between; gap: 2rem; }
 .ssm-panel-name { font-size: var(--font-size-15, 0.9375rem); }
+/* The GM's name is a button that opens the challenge window. It looks like the players' plain name, and the header can still be dragged by it. */
+.ssm-panel button.ssm-panel-name { flex: 0 1 auto; width: auto; height: auto; min-height: 0; margin: 0; padding: 0; border: none; background: none; box-shadow: none; color: inherit; font-family: inherit; line-height: inherit; text-align: left; cursor: pointer; }
+.ssm-panel button.ssm-panel-name:hover, .ssm-panel button.ssm-panel-name:focus-visible { color: #e8cf8f; text-decoration: underline; }
+.ssm-panel.dragging button.ssm-panel-name { cursor: var(--cursor-grab-down, grabbing); }
 .ssm-panel-npcs { display: flex; gap: 1rem; margin-top: 0.2rem; }
 .ssm-panel-npc { flex: 1 1 0; min-width: 0; max-width: 32rem; }
 .ssm-panel-npcs.several .ssm-panel-npc { max-width: 17rem; }
