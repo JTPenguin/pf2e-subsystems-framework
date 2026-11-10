@@ -3,7 +3,7 @@ import { isOtherModifier } from "./data.js";
 import { skillLabel } from "./skill-label.js";
 import { buildPanelView, changeText, findPanelRow, pointsBar, roundSegments } from "./panel-view.js";
 import { rollCheck, rollTarget } from "./roll.js";
-import { advanceRound, canAdvanceRound, canUndoRound, undoRound } from "./run.js";
+import { advanceRound, canAdvanceRound, canUndoRound, toggleModifier, undoRound } from "./run.js";
 import { InfluenceSheet } from "./sheet.js";
 import { announceTriggers, writeChallenge } from "./state.js";
 import { challengePage } from "../../registry.js";
@@ -11,10 +11,11 @@ import { challengePage } from "../../registry.js";
 const loc = (key) => game.i18n.localize(key);
 
 /** A modifier card's context: its kind (none for Other), duration and state as labels, and each change as text, marked done once it has happened. */
-function modifierCard(row) {
+function modifierCard(row, npcId) {
   const text = { format: (key, data) => game.i18n.format(key, data), list: (items) => game.i18n.getListFormatter().format(items), label: skillLabel };
   return {
     ...row,
+    npcId,
     name: row.name || loc("SSM.Influence.UnnamedEntry"),
     kindLabel: isOtherModifier(row) ? "" : loc(`SSM.Influence.Kind.${row.kind}`),
     durationLabel: loc(`SSM.Influence.Duration.${row.duration}`),
@@ -51,7 +52,7 @@ function prepareView(view, state) {
       bar: pointsBar(npc.points, npc.goal),
       discovery: npc.discovery.map((row) => skillButton(npc, n, row, "discover")),
       influence: npc.influence.map((row) => skillButton(npc, n, row, "influence")),
-      known: npc.known.map(modifierCard),
+      known: npc.known.map((row) => modifierCard(row, npc.id)),
     })),
     counters: view.counters.map((row) => ({ ...row, name: row.name || loc("SSM.Influence.UnnamedCounter") })),
     party: view.party.map((pc) => ({ ...pc, label: game.i18n.format(pc.acted ? "SSM.Panel.ActedLabel" : "SSM.Panel.NotActedLabel", { name: pc.name }) })),
@@ -97,10 +98,18 @@ async function moveRound(state, button) {
   announceTriggers(await writeChallenge(page, button.dataset.action === "nextRound" ? advanceRound : undoRound));
 }
 
+/** A GM click on a modifier card: On or Off, as the GM window's chip does. A spent entry stays spent; restoring it is a GM window action. The card is found by id in the real challenge, as the copy's order differs. */
+async function flipModifier(state, card) {
+  const entry = game.journal.get(state.id);
+  const page = entry && challengePage(entry);
+  if (!game.user.isActiveGM || !page) return;
+  announceTriggers(await writeChallenge(page, (system) => toggleModifier(system, card.dataset.npc, card.dataset.id)));
+}
+
 export const influencePanel = {
   template: `modules/${MODULE}/templates/influence-panel.hbs`,
   isRunning: (system) => system.run.status === "active",
   buildView: buildPanelView,
   prepareView,
-  viewActions: { rollSkill: rollFromPanel, previousRound: moveRound, nextRound: moveRound },
+  viewActions: { rollSkill: rollFromPanel, previousRound: moveRound, nextRound: moveRound, toggleModifier: flipModifier },
 };

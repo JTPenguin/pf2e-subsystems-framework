@@ -156,6 +156,15 @@ function mountPanel() {
   element.id = "ssm-panel";
   element.className = "ssm-panel";
   element.addEventListener("click", onClick);
+  // A card made a button with role="button" needs Enter and Space to click it.
+  element.addEventListener("keydown", (event) => {
+    if ((event.key === "Enter" || event.key === " ") && event.target.matches('[role="button"][data-action]')) {
+      event.preventDefault();
+      // Foundry's keybindings (Space pauses the game) listen on the window and don't count a focused div as text entry, so they stop here.
+      event.stopPropagation();
+      event.target.click();
+    }
+  });
   element.addEventListener("pointerdown", (event) => {
     pressing = true;
     onDragStart(event);
@@ -172,8 +181,11 @@ function mountPanel() {
 /** Replace the panel's HTML only when it changes, so frequent run writes don't touch what's on screen. */
 function setView(html) {
   if (drawn === html) return;
+  // A redraw replaces the cards, so a focused card is focused again by its id.
+  const focused = element.contains(document.activeElement) ? document.activeElement.dataset.id : null;
   element.innerHTML = html;
   drawn = html;
+  if (focused) element.querySelector(`[role="button"][data-id="${CSS.escape(focused)}"]`)?.focus();
   addResetButton();
   // New content can change the panel's size, so a dragged panel is kept on screen again.
   applySpot();

@@ -186,6 +186,10 @@ button.ssm-reached { color: #4f9d5d; }
 .ssm-panel-mods { display: flex; flex-wrap: wrap; gap: 0.25rem; margin-top: 0.25rem; }
 .ssm-panel-mod { flex: 1 1 12rem; min-width: 0; padding: 0.1rem 0.35rem; border: 1px solid rgba(184, 160, 106, 0.35); border-left: 3px solid #b8a06a; border-radius: 3px; background: rgba(255, 255, 255, 0.04); line-height: 1.25; }
 .ssm-panel-npcs.several .ssm-panel-mod { flex-basis: 100%; }
+/* The GM's cards are buttons: a click turns the entry on or off. A spent card is not a button. */
+.ssm-panel-mod[role="button"] { cursor: pointer; }
+.ssm-panel-mod[role="button"]:hover { background: rgba(255, 255, 255, 0.09); }
+.ssm-panel-mod[role="button"]:focus-visible { outline: 1px solid #c9593f; outline-offset: -1px; }
 .ssm-panel-mod.weakness { border-left-color: #6fae6a; }
 .ssm-panel-mod.resistance { border-left-color: #c0523f; }
 .ssm-panel-mod.other { border-left-color: #7a9cc6; }
