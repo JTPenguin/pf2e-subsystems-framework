@@ -198,15 +198,15 @@ button.ssm-reached { color: #4f9d5d; }
 .ssm-panel-threshold-text { flex: 1 1 auto; min-width: 0; }
 .ssm-panel-threshold.reached { color: #9fd08a; }
 .ssm-panel-counters { display: flex; flex-wrap: wrap; gap: 1rem; }
-/* The round bar and the PCs' token images. Only the header drags the panel, so nothing here starts a drag. A PC who has acted is lit; the others are dimmed. */
+/* The round bar and the PCs' token images. Only the header drags the panel, so nothing here starts a drag. A PC is lit until they have acted this round, then dimmed. */
 .ssm-panel-run { margin-top: 0.2rem; }
 .ssm-panel-rounds { display: flex; align-items: center; gap: 0.5rem; }
 .ssm-panel-segments { display: flex; gap: 2px; flex: 0 1 12rem; min-width: 3rem; }
 .ssm-panel-segments > span { flex: 1 1 0; height: 0.55rem; background: rgba(255, 255, 255, 0.15); border-radius: 2px; }
 .ssm-panel-segments > span.filled { background: #b8a06a; }
 .ssm-panel-party { display: flex; flex-wrap: wrap; align-items: center; gap: 0.3rem; margin-top: 0.25rem; }
-.ssm-panel-pc { flex: none; width: 2rem; height: 2rem; object-fit: cover; object-position: top; border: 2px solid rgba(184, 160, 106, 0.5); border-radius: 50%; background: rgba(0, 0, 0, 0.4); opacity: 0.35; filter: grayscale(0.7); }
-.ssm-panel-pc.acted { border-color: #e8cf8f; opacity: 1; filter: none; }
+.ssm-panel-pc { flex: none; width: 2rem; height: 2rem; object-fit: cover; object-position: top; border: 2px solid #e8cf8f; border-radius: 50%; background: rgba(0, 0, 0, 0.4); }
+.ssm-panel-pc.acted { opacity: 0.35; filter: grayscale(1); }
 
 /* The GM's line on a module roll's chat card. Players never get it: it is added only when a GM's client draws the card. */
 .ssm-card { margin-top: 0.3rem; padding-top: 0.3rem; border-top: 1px solid var(--color-border, #7a7971); font-size: var(--font-size-12, 0.75rem); }

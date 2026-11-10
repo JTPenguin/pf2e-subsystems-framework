@@ -181,7 +181,7 @@ The sheet has **Edit** and **Run** modes, like a locked and unlocked actor sheet
 | Thresholds | Hidden until revealed | One card per NPC under its bar, in points order; hidden if none are revealed. Revealed in two steps: points only shows as "6  ???", then points and player text. A reached one has a check mark. |
 | Counters | Hidden until revealed | |
 | Round bar | Shown | "Round 3 of 6" with one segment per round, the rounds played filled. Under the header, so it is not part of the drag handle. |
-| Party avatars | Shown | Each PC's portrait (the actor's image, else a default icon), filled into the square and anchored to the top in a row under the round bar. Lit once that PC has acted this round, dimmed until then. The name shows on hover and is the accessible label. |
+| Party avatars | Shown | Each PC's portrait (the actor's image, else a default icon), filled into the square and anchored to the top in a row under the round bar. Lit until that PC has acted this round, then dimmed (greyscale and lower opacity) until the round moves on. The name shows on hover and is the accessible label. |
 
 **The points bar** scales to the NPC's highest threshold, hidden or not, or to 10 if the NPC has none. Players can work out the goal from the bar; Justin accepts that (2026-11-09). The filtered copy carries only that one number, never a hidden threshold's text or id.
 
