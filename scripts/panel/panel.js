@@ -1,7 +1,7 @@
 import { ACTIVE_SETTING, MODULE, POSITION_SETTING, SPOT_SETTING } from "../constants.js";
 import { allSubsystems, subsystemByType } from "../registry.js";
 import { panelState, schedulePublish } from "./activation.js";
-import { clampSpot, readSpot } from "./spot.js";
+import { clampSize, clampSpot, readSize, readSpot } from "./spot.js";
 
 /*
  * The panel frame every client shares. It draws only from the setting, so players never need the challenge itself.
@@ -19,6 +19,7 @@ let pressing = false;
 let heldBack = false;
 let sheetKey = "";
 let drag = null;
+let resize = null;
 let swallowClick = false;
 let resizeObserver = null;
 
@@ -36,10 +37,20 @@ function applyPosition() {
 
 /* A dragged panel. The spot is saved per browser, keyed by user, so a GM and a player sharing a browser keep their own. */
 
-function savedSpot() {
-  return readSpot(game.settings.get(MODULE, SPOT_SETTING)?.[game.userId]);
+function savedEntry() {
+  return game.settings.get(MODULE, SPOT_SETTING)?.[game.userId];
 }
 
+function savedSpot() {
+  return readSpot(savedEntry());
+}
+
+/** A resized panel's size. Only a placed panel has one: resizing places the panel where it is. */
+function savedSize() {
+  return readSize(savedEntry());
+}
+
+/** Save a spot, with a size if the panel has one, or clear both. */
 async function saveSpot(spot) {
   const spots = { ...game.settings.get(MODULE, SPOT_SETTING) };
   if (spot) spots[game.userId] = spot;
@@ -51,21 +62,41 @@ async function saveSpot(spot) {
  * Put the panel's top-left corner at a screen spot, kept on screen.
  * A dragged panel moves to the body: inside #ui-middle it would shift whenever the sidebar opens or closes. The CSS scales it as #ui-middle would.
  */
-function placeAt(spot) {
+function placeAt(spot, size = savedSize()) {
   if (element.parentElement !== document.body) document.body.append(element);
   element.classList.add("moved");
+  applySize(size);
   const rect = element.getBoundingClientRect();
   const { left, top } = clampSpot(spot, rect, { width: window.innerWidth, height: window.innerHeight });
   element.style.left = `${left}px`;
   element.style.top = `${top}px`;
 }
 
+/** The UI scale the CSS applies to the panel, so screen pixels can become the panel's own. */
+function uiScale() {
+  return Number.parseFloat(getComputedStyle(document.body).getPropertyValue("--ui-scale")) || 1;
+}
+
+/** Give the panel a fixed size, kept within the screen, or let its content size it again. The content wraps to the width and scrolls past the height. */
+function applySize(size) {
+  element.classList.toggle("sized", !!size);
+  if (!size) {
+    element.style.width = element.style.height = "";
+    return;
+  }
+  const scale = uiScale();
+  const { width, height } = clampSize(size, { width: window.innerWidth / scale, height: window.innerHeight / scale });
+  element.style.width = `${width}px`;
+  element.style.height = `${height}px`;
+}
+
 /** Show the panel at its saved spot, or at the world setting's place if this user hasn't dragged it. */
 function applySpot() {
   // Mid-drag, the pointer decides where it is.
-  if (!element || drag?.moved) return;
+  if (!element || drag?.moved || resize) return;
   const spot = savedSpot();
   if (spot) return placeAt(spot);
+  applySize(null);
   element.classList.remove("moved");
   element.style.left = element.style.top = "";
   const parent = document.getElementById("ui-top");
@@ -109,10 +140,57 @@ function onDragEnd() {
   swallowClick = true;
   setTimeout(() => (swallowClick = false));
   const rect = element.getBoundingClientRect();
-  saveSpot({ left: Math.round(rect.left), top: Math.round(rect.top) });
+  // A resized panel keeps its size where it is dropped.
+  saveSpot({ left: Math.round(rect.left), top: Math.round(rect.top), ...savedSize() });
 }
 
-/** The header holds the frame's reset button, so it comes back with every redraw. It shows only once the panel is dragged. */
+/*
+ * The corner handle resizes the panel from its bottom-right corner, and the top-left corner stays put.
+ * A panel still at its starting place is placed where it is first, so it doesn't grow out from the centre.
+ */
+function onResizeStart(event) {
+  if (event.button !== 0 || !event.target.closest(".ssm-panel-resize")) return;
+  event.preventDefault();
+  event.stopPropagation();
+  const rect = element.getBoundingClientRect();
+  const size = { width: element.offsetWidth, height: element.offsetHeight };
+  placeAt({ left: rect.left, top: rect.top }, size);
+  const placed = element.getBoundingClientRect();
+  resize = { x: event.clientX, y: event.clientY, left: placed.left, top: placed.top, ...size };
+  element.classList.add("resizing");
+}
+
+function onResizeMove(event) {
+  if (!resize) return;
+  if (event.buttons === 0) return onResizeEnd();
+  if (!element) return;
+  // The bottom-right corner follows the pointer, but doesn't leave the screen.
+  const scale = uiScale();
+  const room = { width: (window.innerWidth - resize.left) / scale, height: (window.innerHeight - resize.top) / scale };
+  const size = clampSize({ width: resize.width + (event.clientX - resize.x) / scale, height: resize.height + (event.clientY - resize.y) / scale }, room);
+  element.style.width = `${size.width}px`;
+  element.style.height = `${size.height}px`;
+}
+
+function onResizeEnd() {
+  if (!resize) return;
+  resize = null;
+  if (!element) return;
+  element.classList.remove("resizing");
+  const rect = element.getBoundingClientRect();
+  saveSpot({ left: Math.round(rect.left), top: Math.round(rect.top), width: Math.round(element.offsetWidth), height: Math.round(element.offsetHeight) });
+}
+
+/** The corner handle, like the reset button, comes back with every redraw. It is the panel's last child, so it can stick to the bottom while the content scrolls. */
+function addResizeHandle() {
+  const handle = document.createElement("div");
+  handle.className = "ssm-panel-resize";
+  handle.dataset.tooltip = game.i18n.localize("SSM.Panel.Resize");
+  handle.setAttribute("aria-hidden", "true");
+  element.append(handle);
+}
+
+/** The header holds the frame's reset button, so it comes back with every redraw. It shows only once the panel is dragged or resized. */
 function addResetButton() {
   const head = element.querySelector(".ssm-panel-head");
   if (!head) return;
@@ -167,7 +245,8 @@ function mountPanel() {
   });
   element.addEventListener("pointerdown", (event) => {
     pressing = true;
-    onDragStart(event);
+    onResizeStart(event);
+    if (!resize) onDragStart(event);
   });
   // The panel's width follows the screen's, and changes after the resize event, so a size change keeps it on screen too.
   resizeObserver = new ResizeObserver(() => applySpot());
@@ -187,6 +266,7 @@ function setView(html) {
   drawn = html;
   if (focused) element.querySelector(`[role="button"][data-id="${CSS.escape(focused)}"]`)?.focus();
   addResetButton();
+  addResizeHandle();
   // New content can change the panel's size, so a dragged panel is kept on screen again.
   applySpot();
 }
@@ -278,8 +358,10 @@ function installHooks() {
     schedulePublish();
   });
   window.addEventListener("pointermove", onDragMove);
+  window.addEventListener("pointermove", onResizeMove);
   for (const type of ["pointerup", "pointercancel", "blur"]) {
     window.addEventListener(type, onDragEnd);
+    window.addEventListener(type, onResizeEnd);
     window.addEventListener(type, onPressEnd);
   }
   window.addEventListener("resize", applySpot);

@@ -25,7 +25,8 @@
       "PositionName": "Panel position",
       "PositionHint": "Where the challenge panel starts at the top of the screen. Anyone can drag it by its header to a spot of their own.",
       "Position": { "center": "Top centre", "left": "Top left", "right": "Top right" },
-      "ResetPosition": "Reset position",
+      "ResetPosition": "Reset position and size",
+      "Resize": "Drag to resize",
       "Influence": "Influence",
       "Discover": "Discover",
       "Change": {

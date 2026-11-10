@@ -1447,6 +1447,24 @@ test("only a spot with two numbers counts as saved", () => {
   for (const value of [undefined, null, {}, { left: 10 }, { left: "10", top: 20 }, { left: NaN, top: 0 }]) assert.equal(Spot.readSpot(value), null);
 });
 
+/* Resizing the panel */
+
+test("a resized panel stays between the smallest size and the room it has", () => {
+  const room = { width: 800, height: 600 };
+  assert.deepEqual(Spot.clampSize({ width: 400, height: 300 }, room), { width: 400, height: 300 });
+  assert.deepEqual(Spot.clampSize({ width: 50, height: 20 }, room), Spot.MIN_SIZE);
+  assert.deepEqual(Spot.clampSize({ width: 2000, height: 900 }, room), room);
+});
+
+test("a resized panel keeps the smallest size when the room is smaller", () => {
+  assert.deepEqual(Spot.clampSize({ width: 300, height: 200 }, { width: 100, height: 50 }), Spot.MIN_SIZE);
+});
+
+test("only a size with two numbers counts as saved", () => {
+  assert.deepEqual(Spot.readSize({ left: 1, top: 2, width: 300, height: 200 }), { width: 300, height: 200 });
+  for (const value of [undefined, null, { left: 1, top: 2 }, { width: 300 }, { width: "300", height: 200 }, { width: 300, height: Infinity }]) assert.equal(Spot.readSize(value), null);
+});
+
 /* A panel card's hover */
 
 const escapeHTML = (value) => String(value).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#x27;" })[c]);

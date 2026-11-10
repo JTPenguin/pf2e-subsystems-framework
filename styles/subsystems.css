@@ -156,6 +156,14 @@ button.ssm-reached { color: #4f9d5d; }
 .ssm-panel[data-position="right"] { align-self: flex-end; }
 /* A dragged panel sits in the body, placed in code. It scales and sits in the stack as it would in #ui-middle, and keeps the same size limits: 60% of the screen wide (#ui-middle's width) and 40% high. max-content stops it shrinking near the screen edge. */
 .ssm-panel.moved { position: fixed; z-index: var(--z-index-app, 30); transform: scale(var(--ui-scale, 1)); transform-origin: top left; width: max-content; max-width: min(60vw, calc(60vw / var(--ui-scale, 1))); max-height: calc(40vh / var(--ui-scale, 1) - 0.5rem); margin: 0; }
+/* A resized panel has its size set in code, within the screen: the 60% and 40% limits give way to it, and the content wraps to its width and scrolls past its height. */
+.ssm-panel.moved.sized { display: flex; flex-direction: column; min-width: 0; max-width: none; max-height: none; }
+/* In a panel taller than its content, the handle is pushed down to the bottom. */
+.ssm-panel.sized > .ssm-panel-resize { flex: none; align-self: flex-end; margin-top: auto; }
+/* The corner handle is Foundry's window handle. As the panel's last child it sticks to the bottom-right corner while the content scrolls, and its negative margins keep it from taking up room. */
+.ssm-panel-resize { position: sticky; bottom: -0.4rem; width: 11px; height: 11px; margin: -11px -0.75rem -0.4rem auto; translate: -1px -1px; cursor: nwse-resize; touch-action: none; background: transparent url("../../../ui/resize-handle.webp") no-repeat center / contain; filter: invert(1); opacity: 0.7; }
+.ssm-panel-resize:hover, .ssm-panel.resizing .ssm-panel-resize { opacity: 1; }
+.ssm-panel.resizing { user-select: none; }
 .ssm-panel-head { cursor: var(--cursor-grab, grab); touch-action: none; user-select: none; }
 .ssm-panel.dragging .ssm-panel-head { cursor: var(--cursor-grab-down, grabbing); }
 /* The reset button sits at the header's right edge, after the round text. */
