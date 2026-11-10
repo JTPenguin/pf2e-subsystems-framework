@@ -49,7 +49,7 @@ export const newTrigger = () => ({ id: id(), value: 0, gmNote: "" });
 export const newCounter = () => ({ id: id(), name: "", value: 0, min: null, max: null, triggers: [], revealed: false });
 /** A new NPC starts with a row for each universal skill, at the default DC. The GM can edit or delete them. */
 export const newNpc = () => ({
-  id: id(), name: "", traits: [], actorUuid: null, perception: 0, will: 0, points: 0,
+  id: id(), name: "", perception: 0, will: 0, points: 0,
   discovery: UNIVERSAL_DISCOVERY.map((skill) => ({ ...newDiscovery(), skill })),
   influence: UNIVERSAL_INFLUENCE.map((skill) => ({ ...newInfluence(), skill })),
   thresholds: [], modifiers: [],
@@ -174,7 +174,7 @@ export function searchText(system) {
   const parts = [system.premise, system.gmNotes];
   for (const counter of system.counters) parts.push(counter.name, ...counter.triggers.map((trigger) => trigger.gmNote));
   for (const npc of system.npcs) {
-    parts.push(npc.name, ...npc.traits);
+    parts.push(npc.name);
     for (const threshold of npc.thresholds) parts.push(threshold.playerText, threshold.gmText);
     for (const modifier of npc.modifiers) parts.push(modifier.name, modifier.playerText, modifier.gmText, ...modifier.effects.map((effect) => effect.note));
   }

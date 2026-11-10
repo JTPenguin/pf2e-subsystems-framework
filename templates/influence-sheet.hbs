@@ -194,10 +194,6 @@
         <label>{{localize "SSM.Influence.Points"}}<input type="number" step="1" name="{{npc.path}}.points" value="{{npc.points}}"></label>
         {{#if npc.canRemove}}<button type="button" class="icon fa-solid fa-trash" data-action="removeRow" data-path="{{npc.path}}" aria-label="{{localize "SSM.Influence.RemoveNPC"}}"></button>{{/if}}
       </div>
-      <div class="ssm-row">
-        <label class="grow">{{localize "SSM.Influence.Traits"}}<string-tags name="{{npc.path}}.traits" value="{{npc.traitsValue}}"></string-tags></label>
-        <label class="grow">{{localize "SSM.Influence.LinkedActor"}}<document-tags name="{{npc.path}}.actorUuid" type="Actor" single value="{{npc.actorUuid}}"></document-tags></label>
-      </div>
     </fieldset>
 
     <fieldset>

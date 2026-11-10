@@ -1,6 +1,6 @@
 import { DURATIONS, EFFECT_TYPES, MODIFIER_KINDS, STATUSES, THRESHOLD_REVEALS, migrateThreshold } from "./data.js";
 
-const { ArrayField, BooleanField, DocumentUUIDField, HTMLField, NumberField, ObjectField, SchemaField, StringField } = foundry.data.fields;
+const { ArrayField, BooleanField, HTMLField, NumberField, ObjectField, SchemaField, StringField } = foundry.data.fields;
 
 const rowId = () => new StringField({ required: true, blank: false, initial: () => foundry.utils.randomID() });
 const text = () => new StringField({ required: true, blank: true, initial: "" });
@@ -42,8 +42,6 @@ const ids = () => new ArrayField(new StringField({ blank: false }), { required: 
 const npcFields = () => ({
   id: rowId(),
   name: text(),
-  traits: new ArrayField(new StringField({ blank: false }), { required: true, initial: [] }),
-  actorUuid: new DocumentUUIDField({ type: "Actor", required: true, nullable: true, initial: null }),
   perception: int(),
   will: int(),
   points: int(),

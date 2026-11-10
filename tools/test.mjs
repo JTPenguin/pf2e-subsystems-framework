@@ -162,9 +162,8 @@ test("mergeForm: numbered form rows merge into lists, and absent fields survive"
   m.effects[0].type = "dc";
   m.effects[0].note = "kept";
   m.effects[0].skills = ["a"];
-  const merged = D.mergeForm(s, { npcs: { 0: { name: "Vance", traits: ["human"], modifiers: { 0: { name: "Art", effects: { 0: { amount: -2, skills: ["b", "c"] } } } } } } });
+  const merged = D.mergeForm(s, { npcs: { 0: { name: "Vance", modifiers: { 0: { name: "Art", effects: { 0: { amount: -2, skills: ["b", "c"] } } } } } } });
   assert.equal(merged.npcs[0].name, "Vance");
-  assert.deepEqual(merged.npcs[0].traits, ["human"]);
   assert.equal(merged.npcs[0].modifiers[0].effects[0].amount, -2);
   assert.equal(merged.npcs[0].modifiers[0].effects[0].note, "kept");
   assert.deepEqual(merged.npcs[0].modifiers[0].effects[0].skills, ["b", "c"]);
@@ -824,10 +823,8 @@ const secretSystem = () => {
   s.gmNotes = `<p>${GM_SECRET} notes</p>`;
   const npc = s.npcs[0];
   npc.name = "Lady Vance";
-  npc.traits = [`${GM_SECRET}trait`];
   npc.perception = 77;
   npc.will = 88;
-  npc.actorUuid = `Actor.${GM_SECRET}`;
   npc.thresholds = [{ ...D.newThreshold(), points: 8, playerText: "she offers an introduction", gmText: `${GM_SECRET} threshold` }];
   npc.modifiers = [{ ...D.newModifier(), name: "Flattery", playerText: "likes praise", gmText: `${GM_SECRET} modifier`, effects: [{ ...D.newEffect(), note: `${GM_SECRET} effect` }] }];
   s.counters = [{ ...D.newCounter(), name: "Suspicion", value: 3, min: -111, max: 222, triggers: [{ ...D.newTrigger(), value: 5, gmNote: `${GM_SECRET} trigger` }] }];
@@ -851,7 +848,7 @@ const revealAll = (s) => {
 };
 const assertNoSecrets = (view) => {
   const { keys } = scan(view);
-  for (const key of ["decoy", "gmText", "gmNote", "gmNotes", "premise", "traits", "perception", "will", "actorUuid", "revealed", "effects", "triggers", "min", "log", "pending", "baseline"]) assert.ok(!keys.has(key), `key ${key} must not appear`);
+  for (const key of ["decoy", "gmText", "gmNote", "gmNotes", "premise", "perception", "will", "revealed", "effects", "triggers", "min", "log", "pending", "baseline"]) assert.ok(!keys.has(key), `key ${key} must not appear`);
   assert.ok(!JSON.stringify(view).includes(GM_SECRET), "GM text must not appear");
 };
 

@@ -58,8 +58,6 @@
       "NPC": "NPC",
       "AddNPC": "Add NPC",
       "RemoveNPC": "Remove NPC",
-      "Traits": "Traits",
-      "LinkedActor": "Linked actor (optional)",
       "Perception": "Perception",
       "Will": "Will",
       "Points": "Points",

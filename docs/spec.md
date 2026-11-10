@@ -90,7 +90,7 @@ Sidebar tab -> Challenge (journal entry + typed page, GM only) -> GM sheet
 
 | Field | Notes |
 |---|---|
-| Name, traits, linked actor | The linked actor is optional |
+| Name | The NPC's name |
 | Perception and Will | Modifiers, not DCs |
 | Influence Points | Current total |
 | Discovery checks | Skill, Perception or Lore, DC, revealed flag. A Lore also has a name. A Lore row is never universal. A new NPC starts with Perception, which is universal. |

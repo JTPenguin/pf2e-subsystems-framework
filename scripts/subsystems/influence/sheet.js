@@ -195,7 +195,6 @@ export class InfluenceSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
       return {
         ...npc,
         path,
-        traitsValue: npc.traits.join(","),
         tabLabel: npc.name || `${loc("SSM.Influence.NPC")} ${n + 1}`,
         canRemove: system.npcs.length > 1,
         discovery: npc.discovery.map((row, i) => ({ ...row, path: `${path}.discovery.${i}`, isLore: row.skill === LORE, universal: isUniversalDiscovery(row) })),
