@@ -133,7 +133,7 @@ The sheet has **Edit** and **Run** modes, like a locked and unlocked actor sheet
 - Each NPC's points in a box on the left, with buttons to add and remove.
 - Each skill as a chip beside the points, styled like a PF2e inline check, one line for Discovery and one for Influence. The chip shows the skill name (the Lore name for a Lore) and the current DC, marked with an arrow when it differs from the base DC. Its tooltip gives the base DC and says if the skill is a decoy. Clicking the chip rolls for the chosen PC; a chat icon on it posts a chat link. A hidden chip has a dashed outline. While the challenge isn't running, the roll and chat link are disabled.
 - An eye toggle to reveal or hide each entry, on the chip for skills. Universal skills have no eye: they are always shown.
-- Thresholds under the skills, each with its point value; reached ones are marked.
+- Thresholds under the skills, each with its point value. The Reached tag is a button (aria-pressed, GM only): click to mark a threshold reached by hand, click again to clear it. Dropping points never clears it; only this tag or the Edit tab does.
 - Modifier entries as cards edged in their kind's colour, with on, off and apply controls.
 - Counters.
 - Start, hide, show and end controls for the panel.

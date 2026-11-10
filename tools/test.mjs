@@ -373,6 +373,22 @@ test("reveal toggles and undoes, for skills and counters", () => {
   assert.equal(Run.toggleReveal(s, "gone"), false);
 });
 
+test("the Reached tag toggles a threshold both ways, and dropping points never clears it", () => {
+  const s = runSystem();
+  const npc = s.npcs[0];
+  const t = npc.thresholds[0];
+  Run.changePoints(s, npc.id, t.points);
+  assert.equal(t.reached, true);
+  Run.toggleReached(s, npc.id, t.id);
+  assert.equal(t.reached, false);
+  Run.toggleReached(s, npc.id, t.id);
+  assert.equal(t.reached, true);
+  Run.changePoints(s, npc.id, -t.points);
+  assert.equal(t.reached, true);
+  assert.equal(Run.toggleReached(s, npc.id, "gone"), false);
+  assert.equal(Run.toggleReached(s, "gone", t.id), false);
+});
+
 test("the acted marker toggles", () => {
   const s = runSystem();
   Run.toggleActed(s, "a1");

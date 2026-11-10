@@ -4,7 +4,7 @@ import { hidePanel, panelBlockedBy, panelState, showPanel } from "../../panel/ac
 import { partyPCs } from "../../party.js";
 import { skillLabel } from "./skill-label.js";
 import { announceTriggers, writeChallenge } from "./state.js";
-import { advanceRound, applyModifier, canApplyModifier, changeCounter, changePoints, currentDc, endRun, resetRun, restoreModifier, startRun, toggleActed, toggleModifier, toggleReveal, undoRound } from "./run.js";
+import { advanceRound, applyModifier, canApplyModifier, changeCounter, changePoints, currentDc, endRun, resetRun, restoreModifier, startRun, toggleActed, toggleModifier, toggleReached, toggleReveal, undoRound } from "./run.js";
 import { LINK_ROLL_ID } from "../../roll-option.js";
 import { rollCheck, rollTarget } from "./roll.js";
 import { addRow, applyForm, clampCounters, DURATIONS, EFFECT_TYPES, isUniversalDiscovery, isUniversalInfluence, limitCounter, LORE, MODIFIER_KINDS, PERCEPTION, QUICK_DC_AMOUNTS, pickFields, removeRow, setEffectAmount } from "./data.js";
@@ -41,6 +41,7 @@ export class InfluenceSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
       toggleModifier: InfluenceSheet.#onToggleModifier,
       applyModifier: InfluenceSheet.#onApplyModifier,
       restoreModifier: InfluenceSheet.#onRestoreModifier,
+      toggleReached: InfluenceSheet.#onToggleReached,
       toggleReveal: InfluenceSheet.#onToggleReveal,
       toggleActed: InfluenceSheet.#onToggleActed,
       rollSkill: InfluenceSheet.#onRollSkill,
@@ -298,7 +299,7 @@ export class InfluenceSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
         points: npc.points,
         discovery: rollRows(npc, npc.discovery, "discover"),
         influence: rollRows(npc, npc.influence, "influence"),
-        thresholds: npc.thresholds.map((row) => ({ ...row, text: row.playerText || row.gmText })),
+        thresholds: npc.thresholds.map((row) => ({ ...row, text: row.playerText || row.gmText, canChange, reachedTooltip: loc(row.reached ? "SSM.Influence.ReachedClear" : "SSM.Influence.ReachedSet") })),
         modifiers: npc.modifiers.map((row) => this.#modifierView(system, npc, row, canChange)),
       })),
       counters: system.counters.map((counter) => ({
@@ -494,6 +495,10 @@ export class InfluenceSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
 
   static #onRestoreModifier(event, target) {
     return this.#run((system) => restoreModifier(system, target.dataset.npc, target.dataset.id));
+  }
+
+  static #onToggleReached(event, target) {
+    return this.#run((system) => toggleReached(system, target.dataset.npc, target.dataset.id));
   }
 
   static #onToggleReveal(event, target) {

@@ -141,6 +141,13 @@ export function changePoints(system, npcId, delta) {
   if (delta > 0) markReachedThresholds(npc);
 }
 
+/** Mark a threshold reached, or clear it, by hand. Dropping points never clears it. */
+export function toggleReached(system, npcId, id) {
+  const threshold = npcById(system, npcId)?.thresholds.find((row) => row.id === id);
+  if (!threshold) return false;
+  threshold.reached = !threshold.reached;
+}
+
 function findEntry(system, id) {
   for (const counter of system.counters) if (counter.id === id) return counter;
   for (const npc of system.npcs) {

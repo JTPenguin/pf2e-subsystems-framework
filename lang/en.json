@@ -146,6 +146,8 @@
       "AddPoint": "Add a point",
       "RemovePoint": "Remove a point",
       "ReachedShort": "Reached",
+      "ReachedSet": "Mark as reached",
+      "ReachedClear": "Clear reached",
       "Apply": "Apply",
       "RollLabel": {
         "influence": "Influence: {npc}",
