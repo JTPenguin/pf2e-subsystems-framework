@@ -221,6 +221,10 @@ button.ssm-reached { color: #4f9d5d; }
 .ssm-panel-segments > span.filled { background: #b8a06a; }
 .ssm-panel-party { display: flex; flex-wrap: wrap; align-items: center; gap: 0.3rem; margin-top: 0.25rem; }
 .ssm-panel-pc { flex: none; width: 2rem; height: 2rem; object-fit: cover; object-position: top; border: 2px solid #e8cf8f; border-radius: 50%; background: rgba(0, 0, 0, 0.4); }
+/* The GM's portraits are buttons: a click marks the character acted or not. */
+.ssm-panel-pc[role="button"] { cursor: pointer; }
+.ssm-panel-pc[role="button"]:hover { border-color: #fff; }
+.ssm-panel-pc[role="button"]:focus-visible { outline: 2px solid #c9593f; outline-offset: 1px; }
 .ssm-panel-pc.acted { opacity: 0.35; filter: grayscale(1); }
 
 /* The GM's line on a module roll's chat card. Players never get it: it is added only when a GM's client draws the card. */

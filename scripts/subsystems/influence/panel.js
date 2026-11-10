@@ -3,7 +3,7 @@ import { isOtherModifier } from "./data.js";
 import { skillLabel } from "./skill-label.js";
 import { buildPanelView, changeText, findPanelRow, pointsBar, roundSegments } from "./panel-view.js";
 import { rollCheck, rollTarget } from "./roll.js";
-import { advanceRound, canAdvanceRound, canUndoRound, toggleModifier, undoRound } from "./run.js";
+import { advanceRound, canAdvanceRound, canUndoRound, toggleActed, toggleModifier, undoRound } from "./run.js";
 import { InfluenceSheet } from "./sheet.js";
 import { announceTriggers, writeChallenge } from "./state.js";
 import { challengePage } from "../../registry.js";
@@ -106,10 +106,18 @@ async function flipModifier(state, card) {
   announceTriggers(await writeChallenge(page, (system) => toggleModifier(system, card.dataset.npc, card.dataset.id)));
 }
 
+/** A GM click on a party portrait: acted or not, as the GM window's party chip does. */
+async function flipActed(state, portrait) {
+  const entry = game.journal.get(state.id);
+  const page = entry && challengePage(entry);
+  if (!game.user.isActiveGM || !page) return;
+  announceTriggers(await writeChallenge(page, (system) => toggleActed(system, portrait.dataset.id)));
+}
+
 export const influencePanel = {
   template: `modules/${MODULE}/templates/influence-panel.hbs`,
   isRunning: (system) => system.run.status === "active",
   buildView: buildPanelView,
   prepareView,
-  viewActions: { rollSkill: rollFromPanel, previousRound: moveRound, nextRound: moveRound, toggleModifier: flipModifier },
+  viewActions: { rollSkill: rollFromPanel, previousRound: moveRound, nextRound: moveRound, toggleModifier: flipModifier, toggleActed: flipActed },
 };
