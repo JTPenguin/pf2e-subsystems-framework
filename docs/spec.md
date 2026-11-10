@@ -131,7 +131,7 @@ The sheet has **Edit** and **Run** modes, like a locked and unlocked actor sheet
 
 **Run mode is laid out like a statblock:** small labels beside their values, with no boxed fieldsets and no folding sections. It shows:
 
-- One strip at the top with Start, End and Reset, Hide or Show panel, the round clock with advance and undo, the party chips and the Roll as choice.
+- One strip at the top with Start, End and Reset, Hide or Show panel, the round clock with previous and next round buttons, the party chips and the Roll as choice.
 - Each NPC's name with "Points" and the total beside it on the same line, with buttons to add and remove.
 - Each skill as a chip styled like a PF2e inline check, in a grid of two or three columns by window width, with the Discovery and Influence labels beside their grids. The chip shows the skill name (the Lore name for a Lore) and the current DC, marked with an arrow when it differs from the base DC. Its tooltip gives the base DC and says if the skill is a decoy. Clicking the chip rolls for the chosen PC; a chat icon on it posts a chat link. A revealed chip has a solid fill like an inline roll, and a universal chip looks the same; a hidden chip has a dashed outline and no fill. While the challenge isn't running, the roll and chat link are disabled.
 - An eye toggle to reveal or hide each entry, on the chip for skills. Universal skills have no eye: they are always shown. A threshold's eye steps through hidden, points only, and points and text, then back to hidden.

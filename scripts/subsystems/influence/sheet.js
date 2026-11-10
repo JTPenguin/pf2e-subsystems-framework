@@ -38,8 +38,8 @@ export class InfluenceSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
       showPanel: InfluenceSheet.#onShowPanel,
       hidePanel: InfluenceSheet.#onHidePanel,
       resetRun: InfluenceSheet.#onResetRun,
-      advanceRound: InfluenceSheet.#onAdvanceRound,
-      undoRound: InfluenceSheet.#onUndoRound,
+      nextRound: InfluenceSheet.#onNextRound,
+      previousRound: InfluenceSheet.#onPreviousRound,
       changePoints: InfluenceSheet.#onChangePoints,
       changeCounter: InfluenceSheet.#onChangeCounter,
       toggleModifier: InfluenceSheet.#onToggleModifier,
@@ -287,8 +287,8 @@ export class InfluenceSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
       canShowPanel: active && (!onPanel || !!panel.hidden),
       roundLabel: active || status === "finished" ? game.i18n.format("SSM.Influence.Round", system.rounds) : loc("SSM.Influence.NotStarted"),
       roundLength: system.rounds.length,
-      canAdvance: active && system.rounds.current < system.rounds.max,
-      canUndoRound: active && system.run.roundHistory.length > 0,
+      canNextRound: active && system.rounds.current < system.rounds.max,
+      canPreviousRound: active && system.run.roundHistory.length > 0,
       party: [...new Set([...actors.map((actor) => actor.id), ...system.run.acted])].map((id) => {
         const actor = game.actors.get(id);
         return { id, name: actor?.name ?? id, acted: system.run.acted.includes(id) };
@@ -486,11 +486,11 @@ export class InfluenceSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
     if (yes) return this.#run(resetRun);
   }
 
-  static #onAdvanceRound() {
+  static #onNextRound() {
     return this.#run(advanceRound);
   }
 
-  static #onUndoRound() {
+  static #onPreviousRound() {
     return this.#run(undoRound);
   }
 

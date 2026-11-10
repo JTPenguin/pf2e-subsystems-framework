@@ -33,8 +33,8 @@
     </span>
     <span class="ssm-strip-group">
       <strong>{{roundLabel}}</strong>{{#if roundLength}}<span class="ssm-muted">{{roundLength}}</span>{{/if}}
-      <button type="button" class="icon fa-solid fa-rotate-left" data-action="undoRound" aria-label="{{localize "SSM.Influence.UndoRound"}}" data-tooltip="{{localize "SSM.Influence.UndoRound"}}" {{#unless canUndoRound}}disabled{{/unless}}></button>
-      <button type="button" class="icon fa-solid fa-forward-step" data-action="advanceRound" aria-label="{{localize "SSM.Influence.AdvanceRound"}}" data-tooltip="{{localize "SSM.Influence.AdvanceRound"}}" {{#unless canAdvance}}disabled{{/unless}}></button>
+      <button type="button" class="icon fa-solid fa-backward-step" data-action="previousRound" aria-label="{{localize "SSM.Influence.PreviousRound"}}" data-tooltip="{{localize "SSM.Influence.PreviousRound"}}" {{#unless canPreviousRound}}disabled{{/unless}}></button>
+      <button type="button" class="icon fa-solid fa-forward-step" data-action="nextRound" aria-label="{{localize "SSM.Influence.NextRound"}}" data-tooltip="{{localize "SSM.Influence.NextRound"}}" {{#unless canNextRound}}disabled{{/unless}}></button>
     </span>
     <span class="ssm-strip-group ssm-grow">
       <span class="ssm-stat-label">{{localize "SSM.Influence.Party"}}</span>
