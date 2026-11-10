@@ -246,6 +246,11 @@ export class InfluenceSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
     return actors;
   }
 
+  /** The actor the Roll as choice names. The player panel's GM rolls use it when no token is selected. */
+  get rollAsActor() {
+    return this.#selectedActor();
+  }
+
   #selectedActor() {
     const actors = this.#rollableActors;
     const controlled = canvas.ready ? canvas.tokens.controlled[0]?.actor : null;

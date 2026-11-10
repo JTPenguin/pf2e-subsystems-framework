@@ -17,7 +17,7 @@ The first version covers **Influence only**. The data and panel code are built s
 | First subsystem | Influence | Justin |
 | Player panel | Fixed on screen over the canvas. Stays put during pan and zoom. Only the GM can end or hide it. | Justin |
 | Where the panel shows | Every scene, for all players, until the GM ends or hides it. Survives scene changes and reloads. | Justin |
-| Rolling | Players click skills on the panel. The GM can also roll or post chat links from the sheet. | Justin |
+| Rolling | Players click skills on the panel. The GM can also click them, or roll or post chat links from the sheet. | Justin |
 | Roll results | Normal PF2e checks. Players see the degree of success on the chat card as with any other roll, subject to PF2e's own metagame settings. | Justin |
 | Missing Lore | A PC without a listed Lore rolls it untrained (Intelligence +0) from the sheet or panel. Chat links can't do this, as PF2e reports the statistic as missing. | Justin |
 | Applying points | The module suggests the change, and the GM applies it with one button on the roll's chat card | Justin |
@@ -200,11 +200,11 @@ A DC change names only skills the panel shows (universal or revealed). It says n
 **Rules for the panel:**
 
 - It has no close button, and players have no control that hides it.
-- Clicking a skill rolls for the player's assigned character. Each NPC's column has its own skills, so the click also chooses the NPC.
+- Skills look like PF2e inline checks. Clicking one rolls for the player's assigned character. Each NPC's column has its own skills, so the click also chooses the NPC.
 - It leaves the canvas clickable outside its own area.
 - The default position is top centre. A world setting offers other positions; it is the starting spot for anyone who hasn't dragged the panel.
 - Anyone, GM included, can drag the panel by its header. The spot is saved in the browser, per user, so it survives reloads. A reset button in the header, shown once the panel is dragged, puts it back at the starting spot. A dragged panel is kept wholly on screen when it loads, redraws or the window shrinks.
-- The GM sees the same panel, without skill buttons. The GM applies results from the chat cards (section 8).
+- The GM sees the same panel and can click its skills too. The roll is for the selected token's actor, or, with no token selected, for the sheet's Roll as choice. The GM applies results from the chat cards (section 8).
 - It must not cover VN Stage's portrait controls at the default position.
 
 ## 8. Roll flow
