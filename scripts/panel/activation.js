@@ -1,6 +1,6 @@
 import { ACTIVE_SETTING, MODULE } from "../constants.js";
 import { challengePage, subsystemFor } from "../registry.js";
-import { partyPCs } from "../party.js";
+import { partyPCs, pcImage } from "../party.js";
 
 /*
  * The filtered copy's world setting, and the only code that writes it. The value is {} when no challenge is active, otherwise
@@ -36,7 +36,7 @@ async function publish(state) {
     const view = state.hidden ? null : subsystem.panel.buildView({
       name: entry.name,
       system: page.toObject().system,
-      party: partyPCs().map(({ id, name }) => ({ id, name })),
+      party: partyPCs().map((actor) => ({ id: actor.id, name: actor.name, img: pcImage(actor) })),
     });
     next = { id: entry.id, type: subsystem.pageType, hidden: !!state.hidden, view };
   }

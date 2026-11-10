@@ -37,7 +37,8 @@
       },
       "Thresholds": "Thresholds",
       "HiddenText": "???",
-      "Acted": "Acted",
+      "ActedLabel": "{name}: has acted this round",
+      "NotActedLabel": "{name}: has not acted this round",
       "RollAgainst": "Roll {skill}: {npc}",
       "NoCharacter": "You need an assigned character to roll. Ask the GM to assign one.",
       "SkillGone": "That check is no longer available."

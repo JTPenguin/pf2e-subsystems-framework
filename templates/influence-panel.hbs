@@ -1,7 +1,10 @@
 <header class="ssm-panel-head">
   <strong class="ssm-panel-name">{{name}}</strong>
-  <span class="ssm-panel-rounds">{{roundLabel}}</span>
 </header>
+<div class="ssm-panel-run">
+  <div class="ssm-panel-rounds"><span class="ssm-panel-rounds-label">{{roundLabel}}</span><span class="ssm-panel-segments" role="img" aria-label="{{roundLabel}}">{{#each roundSegments}}<span class="{{#if filled}}filled{{/if}}"></span>{{/each}}</span></div>
+  {{#if party.length}}<div class="ssm-panel-party" role="list">{{#each party}}<img class="ssm-panel-pc {{#if acted}}acted{{/if}}" role="listitem" src="{{img}}" alt="{{label}}" aria-label="{{label}}" data-tooltip-text="{{name}}" draggable="false">{{/each}}</div>{{/if}}
+</div>
 <div class="ssm-panel-npcs {{#if several}}several{{/if}}">
   {{#each npcs}}
   <div class="ssm-panel-npc">
@@ -29,4 +32,3 @@
   {{/each}}
 </div>
 {{#if counters.length}}<p class="ssm-panel-counters">{{#each counters}}<span>{{name}}: <strong>{{value}}</strong></span>{{/each}}</p>{{/if}}
-{{#if party.length}}<p class="ssm-panel-party"><span class="ssm-panel-label">{{localize "SSM.Panel.Acted"}}</span> {{#each party}}<span class="ssm-panel-marker {{#if acted}}acted{{/if}}">{{name}}</span>{{/each}}</p>{{/if}}

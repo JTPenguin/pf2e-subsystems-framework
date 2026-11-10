@@ -89,14 +89,24 @@ function npcView(system, npc) {
   };
 }
 
-/** The filtered copy. `party` is a list of { id, name }. */
+/** Shown for a PC with no usable image. */
+export const DEFAULT_PC_IMAGE = "icons/svg/mystery-man.svg";
+
+/** The round bar's segments: one per round, the first `current` filled. `current` is held within 0 to `max`. */
+export function roundSegments(current, max) {
+  const total = Math.max(0, Math.floor(max) || 0);
+  const filled = Math.min(total, Math.max(0, Math.floor(current) || 0));
+  return Array.from({ length: total }, (_, index) => ({ filled: index < filled }));
+}
+
+/** The filtered copy. `party` is a list of { id, name, img }. */
 export function buildPanelView({ name, system, party }) {
   return {
     name,
     rounds: { current: system.rounds.current, max: system.rounds.max },
     npcs: system.npcs.map((npc) => npcView(system, npc)),
     counters: system.counters.filter(isVisible).map((row) => ({ id: row.id, name: row.name, value: row.value })),
-    party: party.map(({ id, name: pcName }) => ({ id, name: pcName, acted: system.run.acted.includes(id) })),
+    party: party.map(({ id, name: pcName, img }) => ({ id, name: pcName, img: img || DEFAULT_PC_IMAGE, acted: system.run.acted.includes(id) })),
   };
 }
 

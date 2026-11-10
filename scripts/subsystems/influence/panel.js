@@ -1,6 +1,6 @@
 import { MODULE } from "../../constants.js";
 import { skillLabel } from "./skill-label.js";
-import { buildPanelView, changeText, findPanelRow, pointsBar } from "./panel-view.js";
+import { buildPanelView, changeText, findPanelRow, pointsBar, roundSegments } from "./panel-view.js";
 import { rollCheck, rollTarget } from "./roll.js";
 
 const loc = (key) => game.i18n.localize(key);
@@ -31,6 +31,7 @@ function prepareView(view) {
   return {
     name: view.name,
     roundLabel: game.i18n.format("SSM.Influence.Round", view.rounds),
+    roundSegments: roundSegments(view.rounds.current, view.rounds.max),
     several: view.npcs.length > 1,
     npcs: view.npcs.map((npc, n) => ({
       ...npc,
@@ -41,7 +42,7 @@ function prepareView(view) {
       known: npc.known.map(modifierCard),
     })),
     counters: view.counters.map((row) => ({ ...row, name: row.name || loc("SSM.Influence.UnnamedCounter") })),
-    party: view.party,
+    party: view.party.map((pc) => ({ ...pc, label: game.i18n.format(pc.acted ? "SSM.Panel.ActedLabel" : "SSM.Panel.NotActedLabel", { name: pc.name }) })),
   };
 }
 

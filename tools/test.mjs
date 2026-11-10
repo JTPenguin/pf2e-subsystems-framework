@@ -1046,8 +1046,25 @@ test("a panel click uses the copy's current DC, one-time entry included", () => 
 test("party markers show who has acted, and an empty party is fine", () => {
   const s = secretSystem();
   s.run.acted = ["a1"];
-  assert.deepEqual(viewOf(s, [{ id: "a1", name: "Ezren" }, { id: "a2", name: "Amiri" }]).party, [{ id: "a1", name: "Ezren", acted: true }, { id: "a2", name: "Amiri", acted: false }]);
+  assert.deepEqual(viewOf(s, [{ id: "a1", name: "Ezren", img: "tokens/ezren.webp" }, { id: "a2", name: "Amiri", img: "tokens/amiri.webp" }]).party, [
+    { id: "a1", name: "Ezren", img: "tokens/ezren.webp", acted: true },
+    { id: "a2", name: "Amiri", img: "tokens/amiri.webp", acted: false },
+  ]);
   assert.deepEqual(viewOf(s).party, []);
+});
+
+test("a PC with no image gets the default icon", () => {
+  const s = secretSystem();
+  for (const img of [undefined, null, ""]) assert.equal(viewOf(s, [{ id: "a1", name: "Ezren", img }]).party[0].img, V.DEFAULT_PC_IMAGE);
+});
+
+test("the round bar fills one segment per round played, and stays within the maximum", () => {
+  const filled = (current, max) => V.roundSegments(current, max).map((segment) => (segment.filled ? 1 : 0)).join("");
+  assert.equal(filled(3, 5), "11100");
+  assert.equal(filled(1, 1), "1");
+  assert.equal(filled(7, 5), "11111");
+  assert.equal(filled(0, 3), "000");
+  assert.equal(filled(2, 0), "");
 });
 
 test("the copy is the same when nothing players see has changed", () => {
