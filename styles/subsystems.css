@@ -47,6 +47,7 @@ button.ssm-state:disabled { cursor: default; }
 .ssm-strip { display: flex; flex-direction: column; gap: 0.25rem; padding: 0.25rem 0; border-top: 1px solid var(--color-border, #7a7971); border-bottom: 1px solid var(--color-border, #7a7971); }
 .ssm-strip-row { display: flex; flex-wrap: wrap; align-items: center; gap: 0.25rem 1rem; }
 .ssm-strip-group { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 0.25rem; }
+.ssm-strip-end { margin-left: auto; justify-content: flex-end; }
 .ssm-strip button { flex: none; width: auto; height: 1.6rem; min-height: 0; line-height: 1; }
 .ssm-strip button.icon { --button-size: 1.6rem; width: 1.6rem; padding: 0; }
 .ssm-strip select { width: auto; height: 1.6rem; }
