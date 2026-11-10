@@ -225,7 +225,6 @@ export class InfluenceSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
       activeNpc: npcs.find((npc) => npc.id === this.#tab) ?? null,
       onChallengeTab: this.#tab === CHALLENGE_TAB,
       tabs: npcs.map((npc) => ({ id: npc.id, label: npc.tabLabel, active: npc.id === this.#tab })),
-      statusLabel: loc(`SSM.Influence.Status.${system.run.status}`),
       runActive: system.run.status === "active",
       choices: {
         discovery: perception,

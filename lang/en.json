@@ -54,12 +54,6 @@
       "Minimum": "Minimum",
       "Maximum": "Maximum",
       "RoundLength": "Round length",
-      "Acted": "Acted this round",
-      "Status": {
-        "inactive": "Inactive",
-        "active": "Active",
-        "finished": "Finished"
-      },
       "NPC": "NPC",
       "AddNPC": "Add NPC",
       "RemoveNPC": "Remove NPC",
