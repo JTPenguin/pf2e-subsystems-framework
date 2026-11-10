@@ -7,7 +7,7 @@ import { announceTriggers, writeChallenge } from "./state.js";
 import { advanceRound, applyModifier, canApplyModifier, changeCounter, changePoints, currentDc, cycleThresholdReveal, endRun, resetRun, restoreModifier, startRun, toggleActed, toggleModifier, toggleReached, toggleReveal, undoRound } from "./run.js";
 import { LINK_ROLL_ID } from "../../roll-option.js";
 import { rollCheck, rollTarget } from "./roll.js";
-import { addRow, applyForm, clampCounters, isUniversalDiscovery, isUniversalInfluence, limitCounter, LORE, PERCEPTION, nextThresholdReveal, pickFields, removeRow, THRESHOLD_REVEALS } from "./data.js";
+import { addRow, applyForm, clampCounters, isOtherModifier, isUniversalDiscovery, isUniversalInfluence, limitCounter, LORE, PERCEPTION, nextThresholdReveal, pickFields, removeRow, THRESHOLD_REVEALS } from "./data.js";
 import { ModifierWindow } from "./modifier-window.js";
 
 const { DocumentSheetV2, HandlebarsApplicationMixin } = foundry.applications.api;
@@ -17,6 +17,11 @@ const loc = (key) => game.i18n.localize(key);
 /** The eye button's look for each step of a threshold's reveal. */
 const THRESHOLD_EYE = { hidden: { icon: "fa-eye-slash", pressed: "false" }, points: { icon: "fa-eye-low-vision", pressed: "mixed" }, full: { icon: "fa-eye", pressed: "true" } };
 
+/** Modifier views as the GM window's sections, in order: resistances and weaknesses, then Other. Each has a key, a heading and its rows. */
+const modifierGroups = (views) => [
+  { key: "main", heading: loc("SSM.Influence.Modifiers"), rows: views.filter((view) => !isOtherModifier(view)) },
+  { key: "other", heading: loc("SSM.Influence.OtherModifiers"), rows: views.filter(isOtherModifier) },
+];
 const labels = (values, prefix) => Object.fromEntries(values.map((value) => [value, loc(`SSM.Influence.${prefix}.${value}`)]));
 
 /** The GM sheet. It belongs to the journal entry, whose name is the challenge name; the data lives on the typed page. */
@@ -200,8 +205,10 @@ export class InfluenceSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
         discovery: npc.discovery.map((row, i) => ({ ...row, path: `${path}.discovery.${i}`, isLore: row.skill === LORE, universal: isUniversalDiscovery(row) })),
         influence: npc.influence.map((row, i) => ({ ...row, path: `${path}.influence.${i}`, isLore: row.skill === LORE, universal: isUniversalInfluence(row) })),
         thresholds: npc.thresholds.map((row, i) => ({ ...row, path: `${path}.thresholds.${i}` })),
-        // Read-only here: each one is edited in its own window.
-        modifiers: npc.modifiers.map((modifier, i) => ({ ...this.#modifierView(system, npc, modifier, false), canEdit: true, path: `${path}.modifiers.${i}` })),
+        // Read-only here: each one is edited in its own window. Other entries get their own section, after the rest.
+        // The first section always shows, as it holds the Add button.
+        modifierGroups: modifierGroups(npc.modifiers.map((modifier, i) => ({ ...this.#modifierView(system, npc, modifier, false), canEdit: true, path: `${path}.modifiers.${i}` })))
+          .filter((group, i) => i === 0 || group.rows.length).map((group, i) => ({ ...group, canAdd: i === 0 })),
       };
     };
 
@@ -311,7 +318,7 @@ export class InfluenceSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
           revealTooltip: game.i18n.format("SSM.Influence.ThresholdReveal.Tooltip", { now: loc(`SSM.Influence.ThresholdReveal.${row.reveal}`), next: loc(`SSM.Influence.ThresholdReveal.${nextThresholdReveal(row.reveal)}`) }),
           reachedTooltip: loc(row.reached ? "SSM.Influence.ReachedClear" : "SSM.Influence.ReachedSet"),
         })),
-        modifiers: npc.modifiers.map((row) => this.#modifierView(system, npc, row, canChange)),
+        modifierGroups: modifierGroups(npc.modifiers.map((row) => this.#modifierView(system, npc, row, canChange))).filter((group) => group.rows.length),
       })),
       counters: system.counters.map((counter) => ({
         ...counter,
@@ -331,7 +338,7 @@ export class InfluenceSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
       ...row,
       label,
       npc,
-      kindLabel: loc(`SSM.Influence.Kind.${row.kind}`),
+      kindLabel: isOtherModifier(row) ? "" : loc(`SSM.Influence.Kind.${row.kind}`),
       durationLabel: loc(`SSM.Influence.Duration.${row.duration}`),
       stateClass: state,
       pressed: state === "on",

@@ -76,7 +76,8 @@
       "GMText": "GM text",
       "GMLabel": "GM:",
       "Reached": "Reached",
-      "Modifiers": "Weaknesses, resistances, penalties and adjustments",
+      "Modifiers": "Weaknesses and resistances",
+      "OtherModifiers": "Other",
       "AddModifier": "Add entry",
       "EditModifier": "Edit entry",
       "EditModifierTitle": "Edit entry: {name}",
@@ -84,10 +85,9 @@
       "ModifierGone": "That entry was deleted, so the changes were not saved.",
       "KindLabel": "Kind",
       "Kind": {
-        "weakness": "Weakness",
         "resistance": "Resistance",
-        "penalty": "Penalty",
-        "adjustment": "Adjustment"
+        "weakness": "Weakness",
+        "other": "Other"
       },
       "DurationLabel": "Duration",
       "Duration": {

@@ -111,8 +111,7 @@ button.ssm-reached { color: #4f9d5d; }
 .ssm-modifier-window .ssm-row > label:not(.grow, .check) { width: 7rem; }
 :is(.ssm-npc, .ssm-mod-list) .ssm-modifier.ssm-kind-weakness { border-left-color: #6fae6a; }
 :is(.ssm-npc, .ssm-mod-list) .ssm-modifier.ssm-kind-resistance { border-left-color: #c0523f; }
-:is(.ssm-npc, .ssm-mod-list) .ssm-modifier.ssm-kind-penalty { border-left-color: #c9743a; }
-:is(.ssm-npc, .ssm-mod-list) .ssm-modifier.ssm-kind-adjustment { border-left-color: #7a9cc6; }
+:is(.ssm-npc, .ssm-mod-list) .ssm-modifier.ssm-kind-other { border-left-color: #7a9cc6; }
 :is(.ssm-npc, .ssm-mod-list) .ssm-modifier.ssm-mod-spent { opacity: 0.6; }
 
 /* The PF2e NPC and hazard sheet look. The values come from the system's own rules (.actor.npc.sheet and .sheet.hazard in pf2e.css): its fonts, its dark red section bars over a red-edged body, and its spacing. The variables are set on body and .app by the system, so they work here; the fallbacks are the system's values. */
@@ -181,8 +180,7 @@ button.ssm-reached { color: #4f9d5d; }
 .ssm-panel-npcs.several .ssm-panel-mod { flex-basis: 100%; }
 .ssm-panel-mod.weakness { border-left-color: #6fae6a; }
 .ssm-panel-mod.resistance { border-left-color: #c0523f; }
-.ssm-panel-mod.penalty { border-left-color: #c9743a; }
-.ssm-panel-mod.adjustment { border-left-color: #7a9cc6; }
+.ssm-panel-mod.other { border-left-color: #7a9cc6; }
 .ssm-panel-mod.inactive, .ssm-panel-mod.spent { opacity: 0.5; }
 .ssm-panel-mod-changes > span.done { text-decoration: line-through; opacity: 0.7; }
 .ssm-panel-mod-head { display: flex; flex-wrap: wrap; align-items: baseline; column-gap: 0.35rem; }

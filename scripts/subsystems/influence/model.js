@@ -1,4 +1,4 @@
-import { DURATIONS, EFFECT_TYPES, MODIFIER_KINDS, STATUSES, THRESHOLD_REVEALS, migrateThreshold } from "./data.js";
+import { DURATIONS, EFFECT_TYPES, MODIFIER_KINDS, STATUSES, THRESHOLD_REVEALS, migrateModifier, migrateThreshold } from "./data.js";
 
 const { ArrayField, BooleanField, HTMLField, NumberField, ObjectField, SchemaField, StringField } = foundry.data.fields;
 
@@ -54,7 +54,10 @@ const npcFields = () => ({
 /** The full Influence challenge from spec section 5. The challenge's name is the journal entry's name. */
 export class InfluenceModel extends foundry.abstract.TypeDataModel {
   static migrateData(source) {
-    for (const npc of Array.isArray(source.npcs) ? source.npcs : []) for (const row of Array.isArray(npc?.thresholds) ? npc.thresholds : []) migrateThreshold(row);
+    for (const npc of Array.isArray(source.npcs) ? source.npcs : []) {
+      for (const row of Array.isArray(npc?.thresholds) ? npc.thresholds : []) migrateThreshold(row);
+      for (const row of Array.isArray(npc?.modifiers) ? npc.modifiers : []) migrateModifier(row);
+    }
     return super.migrateData(source);
   }
 

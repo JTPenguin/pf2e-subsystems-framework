@@ -96,15 +96,15 @@ Sidebar tab -> Challenge (journal entry + typed page, GM only) -> GM sheet
 | Discovery checks | Skill, Perception or Lore, DC, revealed flag. A Lore also has a name. A Lore row is never universal. A new NPC starts with Perception, which is universal. |
 | Influence skills | Skill or Lore, DC, revealed flag. A new NPC starts with Deception, Diplomacy and Intimidation, which are universal. |
 | Thresholds | Points, player text, GM text, reveal (hidden, points only, or points and text), reached flag. A threshold saved with the old revealed flag loads as points and text if it was revealed, hidden if not. |
-| Weaknesses, resistances, penalties | Modifier entries (below) |
+| Resistances, weaknesses, Other | Modifier entries (below) |
 | Decoys | A flag on any weakness, resistance or skill entry, except universal skills |
 
-**Modifier entry.** Weaknesses, resistances, penalties and ad hoc adjustments share this shape.
+**Modifier entry.** Resistances, weaknesses and Other entries share this shape.
 
 | Field | Notes |
 |---|---|
 | Name, player text, GM text | Players only see the player text |
-| Kind | Weakness, resistance, penalty, or adjustment |
+| Kind | Resistance, weakness or Other. Other holds anything that is not a resistance or weakness, and its cards carry no kind label. An entry saved as a penalty or an adjustment loads as Other. |
 | Duration | **One-time** (spent once used) or **ongoing** (active until the GM turns it off) |
 | State | Active or off; spent; revealed; decoy |
 | Effects | One or more, listed below |
@@ -137,10 +137,10 @@ The sheet has **Edit** and **Run** modes, like a locked and unlocked actor sheet
 - An eye toggle to reveal or hide each entry, on the chip for skills. Universal skills have no eye: they are always shown. A threshold's eye steps through hidden, points only, and points and text, then back to hidden.
 - Thresholds, modifiers and counters are each a card. A revealed card has a solid fill and a hidden card is plain. A points-only threshold has half the fill. The fill follows the text colour, so it suits the light and dark themes. Hidden text is italic but not dimmed, so the GM line stays readable.
 - Thresholds under the skills, each with its point value, its player text, and its GM text on a muted "GM:" line under it. The Reached tag is a button (aria-pressed, GM only): click to mark a threshold reached by hand, click again to clear it. Dropping points never clears it; only this tag or the Edit tab does.
-- Modifier entries as cards edged in their kind's colour, showing the effects, the player text and a muted "GM:" line, with on, off and apply controls, and an edit button for a GM that opens the entry's window.
+- Modifier entries as cards edged in their kind's colour, in two sections: resistances and weaknesses, then Other. An empty section is hidden. Other cards carry no kind label. Each card shows the effects, the player text and a muted "GM:" line, with on, off and apply controls, and an edit button for a GM that opens the entry's window.
 - Counters.
 
-**Modifiers are edited in their own window, like a monster's attacks.** In the Edit tab each weakness, resistance, penalty or adjustment is a read-only card, styled as in Run mode, with edit and delete buttons; Add entry adds one and opens its window. The window holds the name, kind, duration, player and GM text, the On, Spent, Revealed and Decoy boxes, and the effects, which can be added, removed and changed there. Thresholds, counters and skills stay inline in the Edit tab. There is one window per entry: opening it again brings it to the front. Save writes only the fields the GM changed onto the latest data, through the same write queue as every other change, so the sheet and the panel update and a run change made meanwhile is kept. An update from elsewhere redraws the window and keeps unsaved edits; deleting the entry closes it.
+**Modifiers are edited in their own window, like a monster's attacks.** In the Edit tab each modifier entry is a read-only card, styled as in Run mode, with edit and delete buttons. The Edit tab uses the same two sections, with Add entry in the first. Other shows only once it has an entry. Add entry adds one and opens its window. The window holds the name, kind, duration, player and GM text, the On, Spent, Revealed and Decoy boxes, and the effects, which can be added, removed and changed there. Thresholds, counters and skills stay inline in the Edit tab. There is one window per entry: opening it again brings it to the front. Save writes only the fields the GM changed onto the latest data, through the same write queue as every other change, so the sheet and the panel update and a run change made meanwhile is kept. An update from elsewhere redraws the window and keeps unsaved edits; deleting the entry closes it.
 
 **Reveal is one click and can be undone.** The panel updates at once.
 
@@ -163,7 +163,7 @@ The sheet has **Edit** and **Run** modes, like a locked and unlocked actor sheet
 |   Society, Warfare Lore        |                                 |
 | Discover: Perception           | Discover: Perception            |
 | +----------------------------+ | +-----------------------------+ |
-| |WEAKNESS Flattery   ONGOING | | |PENALTY Straight talk ONGOING| |
+| |WEAKNESS Flattery   ONGOING | | |Straight talk         ONGOING| |
 | |Weak to praise of her art.  | | |Respects a straight answer.  | |
 | |-2 to DCs vs Diplomacy      | | |+2 to DCs vs Deception       | |
 | +----------------------------+ | +-----------------------------+ |
@@ -177,7 +177,7 @@ The sheet has **Edit** and **Run** modes, like a locked and unlocked actor sheet
 | NPC names and Influence Points | Shown | One column per NPC; compact when there are several |
 | Discovery skills | Perception (the universal skill) shown, no DCs. Others hidden until revealed. | Clickable. The GM's eye toggle appears on every row except the universal skill. The sheet shows no Revealed or Decoy checkbox for it. |
 | Influence skills | Deception, Diplomacy and Intimidation (the universal skills) shown. Others hidden until revealed. | Clickable. No DC shown. No eye toggle, Revealed or Decoy checkbox on a universal row. |
-| Weaknesses, resistances, penalties, adjustments | Hidden until revealed | One card each: kind, name, player text, what it does and duration. Dimmed while off. A spent one-time entry shows Spent, dimmed, with its effects struck through. An applied one-time entry whose DC change is still to come has its other effects struck through. |
+| Resistances, weaknesses, Other | Hidden until revealed | One card each: kind (none for Other), name, player text, what it does and duration. Dimmed while off. A spent one-time entry shows Spent, dimmed, with its effects struck through. An applied one-time entry whose DC change is still to come has its other effects struck through. |
 | Thresholds | Hidden until revealed | One card per NPC under its bar, in points order; hidden if none are revealed. Revealed in two steps: points only shows as "6  ???", then points and player text. A reached one has a check mark. |
 | Counters | Hidden until revealed | |
 | Round bar | Shown | "Round 3 of 6" with one segment per round, the rounds played filled. The segments stretch across the full panel width, like the point bars. Under the header, so it is not part of the drag handle. |

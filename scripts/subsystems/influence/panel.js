@@ -1,4 +1,5 @@
 import { MODULE } from "../../constants.js";
+import { isOtherModifier } from "./data.js";
 import { skillLabel } from "./skill-label.js";
 import { buildPanelView, changeText, findPanelRow, pointsBar, roundSegments } from "./panel-view.js";
 import { rollCheck, rollTarget } from "./roll.js";
@@ -6,13 +7,13 @@ import { InfluenceSheet } from "./sheet.js";
 
 const loc = (key) => game.i18n.localize(key);
 
-/** A modifier card's context: its kind, duration and state as labels, and each change as text, marked done once it has happened. */
+/** A modifier card's context: its kind (none for Other), duration and state as labels, and each change as text, marked done once it has happened. */
 function modifierCard(row) {
   const text = { format: (key, data) => game.i18n.format(key, data), list: (items) => game.i18n.getListFormatter().format(items), label: skillLabel };
   return {
     ...row,
     name: row.name || loc("SSM.Influence.UnnamedEntry"),
-    kindLabel: loc(`SSM.Influence.Kind.${row.kind}`),
+    kindLabel: isOtherModifier(row) ? "" : loc(`SSM.Influence.Kind.${row.kind}`),
     durationLabel: loc(`SSM.Influence.Duration.${row.duration}`),
     // Struck once it has happened: all of a spent entry, or an applied entry's changes other than a DC change.
     changes: row.changes.map((change) => ({ text: changeText(change, text), done: row.spent || (row.applied && change.type !== "dc") })),

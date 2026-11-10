@@ -4,7 +4,11 @@
  */
 
 export const STATUSES = ["inactive", "active", "finished"];
-export const MODIFIER_KINDS = ["weakness", "resistance", "penalty", "adjustment"];
+/** Resistances and weaknesses are the subsystem's own; Other holds everything else, and its cards carry no kind label. */
+export const MODIFIER_KINDS = ["resistance", "weakness", "other"];
+export const isOtherModifier = (row) => row.kind === "other";
+/** Kinds that older data may hold. Both were renamed to Other. */
+const OLD_OTHER_KINDS = ["penalty", "adjustment"];
 export const DURATIONS = ["oneTime", "ongoing"];
 export const EFFECT_TYPES = ["dc", "points", "counter", "rounds", "note"];
 export const QUICK_DC_AMOUNTS = [-5, -2, 2, 5];
@@ -18,6 +22,12 @@ export function migrateThreshold(row) {
     if (!THRESHOLD_REVEALS.includes(row.reveal)) row.reveal = row.revealed ? "full" : "hidden";
     delete row.revealed;
   }
+  return row;
+}
+
+/** A modifier saved as a penalty or an adjustment becomes Other. Changes the row in place and returns it. */
+export function migrateModifier(row) {
+  if (row && typeof row === "object" && OLD_OTHER_KINDS.includes(row.kind)) row.kind = "other";
   return row;
 }
 

@@ -1135,6 +1135,16 @@ test("the threshold reveal cycle finds the threshold by NPC, so two NPCs can sha
   assert.equal(Run.toggleReveal(s, first.id), false, "the old one-flag toggle leaves thresholds alone");
 });
 
+test("an old penalty or adjustment loads as Other; other kinds are kept", () => {
+  assert.deepEqual(D.MODIFIER_KINDS, ["resistance", "weakness", "other"]);
+  assert.deepEqual(D.migrateModifier({ name: "Straight talk", kind: "penalty" }), { name: "Straight talk", kind: "other" });
+  assert.deepEqual(D.migrateModifier({ name: "Bribe", kind: "adjustment" }), { name: "Bribe", kind: "other" });
+  for (const kind of D.MODIFIER_KINDS) assert.equal(D.migrateModifier({ kind }).kind, kind);
+  assert.equal(D.migrateModifier(null), null);
+  assert.equal(D.isOtherModifier({ kind: "other" }), true);
+  assert.equal(D.isOtherModifier({ kind: "weakness" }), false);
+});
+
 test("an old threshold's revealed flag loads as the three-step reveal", () => {
   assert.deepEqual(D.migrateThreshold({ points: 6, revealed: true }), { points: 6, reveal: "full" });
   assert.deepEqual(D.migrateThreshold({ points: 6, revealed: false }), { points: 6, reveal: "hidden" });
@@ -1352,8 +1362,8 @@ test("a card leaves out an unrevealed counter, a note, a zero change and a remov
 });
 
 test("a card carries kind, duration and state, and a revealed decoy looks like any other", () => {
-  const { s, npc, card } = cardOf([], { kind: "penalty", duration: "oneTime", active: true, decoy: true });
-  assert.deepEqual([card.kind, card.duration, card.active, card.spent], ["penalty", "oneTime", true, false]);
+  const { s, npc, card } = cardOf([], { kind: "other", duration: "oneTime", active: true, decoy: true });
+  assert.deepEqual([card.kind, card.duration, card.active, card.spent], ["other", "oneTime", true, false]);
   assert.ok(!scan(viewOf(s)).keys.has("decoy"));
   npc.modifiers[0].spent = true;
   assert.equal(viewOf(s).npcs[0].known[0].spent, true);

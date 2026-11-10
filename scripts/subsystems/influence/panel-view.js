@@ -42,7 +42,7 @@ function changeView(system, npc, effect) {
   return null;
 }
 
-/** A revealed weakness, resistance, penalty or adjustment, as a card on the panel. */
+/** A revealed resistance, weakness or Other entry, as a card on the panel. */
 const modifierView = (system, npc, row) => ({
   id: row.id,
   name: row.name,
