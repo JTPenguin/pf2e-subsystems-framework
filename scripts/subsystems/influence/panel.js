@@ -1,4 +1,5 @@
 import { MODULE } from "../../constants.js";
+import { isUniversalRow } from "./data.js";
 import { skillLabel } from "./skill-label.js";
 import { buildPanelView, cardTooltip, changeText, findPanelRow, pointsBar, roundSegments } from "./panel-view.js";
 import { rollCheck, rollTarget } from "./roll.js";
@@ -11,14 +12,15 @@ const loc = (key) => game.i18n.localize(key);
 
 /**
  * A modifier card's context: its kind, duration and state as labels, each change as text, marked done once it has happened,
- * and the hover text. `gmText` is read from the challenge on a GM's client only; players pass nothing.
+ * and the hover text. `gmText` and `decoy` are read from the challenge on a GM's client only; players pass nothing.
  */
-function modifierCard(row, npcId, gmText) {
+function modifierCard(row, npcId, gmText, decoy) {
   const text = { format: (key, data) => game.i18n.format(key, data), list: (items) => game.i18n.getListFormatter().format(items), label: skillLabel };
   const labels = { player: loc("SSM.Panel.TipPlayer"), gm: loc("SSM.Panel.TipGM") };
   return {
     ...row,
     npcId,
+    decoy,
     name: row.name || loc("SSM.Influence.UnnamedEntry"),
     kindLabel: loc(`SSM.Influence.Kind.${row.kind}`),
     durationLabel: loc(`SSM.Influence.Duration.${row.duration}`),
@@ -38,6 +40,18 @@ function gmTexts(state) {
   return texts;
 }
 
+/** The skills and modifiers the GM flagged as decoys, as "npcId:rowId" keys, read from the challenge itself. Empty for players, so a decoy flag never reaches their client. A universal skill is never a decoy. */
+function gmDecoys(state) {
+  const keys = new Set();
+  const entry = game.user.isGM && state ? game.journal.get(state.id) : null;
+  const page = entry && challengePage(entry);
+  for (const npc of page?.system.npcs ?? []) {
+    for (const row of [...npc.discovery, ...npc.influence]) if (row.decoy && !isUniversalRow(row)) keys.add(`${npc.id}:${row.id}`);
+    for (const row of npc.modifiers) if (row.decoy) keys.add(`${npc.id}:${row.id}`);
+  }
+  return keys;
+}
+
 /** The GM's round buttons are enabled as the GM window's are: only the active GM, and only when the move does something. The real challenge is read, as the copy has no round history. */
 function roundButtons(state) {
   const entry = game.user.isGM && state ? game.journal.get(state.id) : null;
@@ -49,10 +63,12 @@ function roundButtons(state) {
 /** The Influence panel's context, drawn only from the filtered copy. On a GM's client, the round buttons and the cards' GM text also read the challenge. */
 function prepareView(view, state) {
   const gm = gmTexts(state);
+  const decoys = gmDecoys(state);
   // Only ids go in the HTML. A click looks the DC up in the copy.
   const skillButton = (npc, n, row, kind) => ({
     id: row.id, npcId: npc.id, kind,
     label: skillLabel(row),
+    decoy: decoys.has(`${npc.id}:${row.id}`),
   });
   return {
     name: view.name,
@@ -66,7 +82,7 @@ function prepareView(view, state) {
       bar: pointsBar(npc.points, npc.goal),
       discovery: npc.discovery.map((row) => skillButton(npc, n, row, "discover")),
       influence: npc.influence.map((row) => skillButton(npc, n, row, "influence")),
-      known: npc.known.map((row) => modifierCard(row, npc.id, gm.get(`${npc.id}:${row.id}`))),
+      known: npc.known.map((row) => modifierCard(row, npc.id, gm.get(`${npc.id}:${row.id}`), decoys.has(`${npc.id}:${row.id}`))),
     })),
     counters: view.counters.map((row) => ({ ...row, name: row.name || loc("SSM.Influence.UnnamedCounter") })),
     party: view.party.map((pc) => ({ ...pc, label: game.i18n.format(pc.acted ? "SSM.Panel.ActedLabel" : "SSM.Panel.NotActedLabel", { name: pc.name }) })),

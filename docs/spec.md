@@ -198,7 +198,7 @@ The sheet has **Edit** and **Run** modes, like a locked and unlocked actor sheet
 | Rounds | "+1 round", "−2 rounds" | |
 | Note only | Left out: the note is the GM's text. The player text covers it. | The note |
 
-A DC change names only skills the panel shows (universal or revealed). It says nothing about hidden skills it covers, and a change that covers only hidden skills is left out (Justin, 2026-11-09). A change of zero, or one that points at a removed skill or counter, is left out. A revealed decoy's card looks like any other.
+A DC change names only skills the panel shows (universal or revealed). It says nothing about hidden skills it covers, and a change that covers only hidden skills is left out (Justin, 2026-11-09). A change of zero, or one that points at a removed skill or counter, is left out. A revealed decoy's card looks like any other to players. On the GM's panel, a decoy skill button and a decoy card carry the orange Decoy tag, as in the GM window; it is read from the challenge on the GM's client, never from the shared copy.
 
 **Rules for the panel:**
 

@@ -208,6 +208,7 @@ button.ssm-reached { color: #4f9d5d; }
 .ssm-panel-mod { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: baseline; column-gap: 0.5rem; }
 .ssm-panel-mod-name, .ssm-panel-mod-changes { grid-column: 1; min-width: 0; }
 .ssm-panel-mod-kind, .ssm-panel-mod-duration { grid-column: 2; justify-self: end; white-space: nowrap; font-size: var(--font-size-11, 0.7rem); text-transform: uppercase; opacity: 0.75; }
+.ssm-panel-mod-kind .ssm-decoy { text-transform: none; }
 /* A card's hover: its player text, and for a GM its GM text too, in Foundry's tooltip. */
 #tooltip.ssm-panel-tip .ssm-panel-tip-line { margin: 0; white-space: pre-line; }
 #tooltip.ssm-panel-tip .ssm-panel-tip-line + .ssm-panel-tip-line { margin-top: 0.35rem; }
