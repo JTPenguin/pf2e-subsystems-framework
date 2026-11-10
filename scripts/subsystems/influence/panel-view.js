@@ -3,7 +3,7 @@
  * Every entry is built field by field: a new field on the data can't reach players until it is added here.
  */
 
-import { isUniversalDiscovery, isUniversalInfluence } from "./data.js";
+import { isUniversalDiscovery, isUniversalInfluence, MODIFIER_KINDS } from "./data.js";
 import { currentDc } from "./run.js";
 
 /** Scale for a bar when the NPC has no thresholds. Every threshold sets the scale, hidden or not: Justin accepts that players can work out the goal from the bar. */
@@ -79,7 +79,8 @@ function npcView(system, npc) {
     points: npc.points,
     discovery: npc.discovery.filter(isVisibleDiscovery).map((row) => ({ id: row.id, skill: row.skill, lore: row.lore, dc: currentDc(system, npc, row) })),
     influence: npc.influence.filter(isVisibleInfluence).map((row) => ({ id: row.id, skill: row.skill, lore: row.lore, dc: currentDc(system, npc, row) })),
-    known: npc.modifiers.filter(isVisible).map((row) => modifierView(system, npc, row)),
+    // Resistances, then weaknesses, then Other; each keeps the GM's order.
+    known: MODIFIER_KINDS.flatMap((kind) => npc.modifiers.filter((row) => isVisible(row) && row.kind === kind).map((row) => modifierView(system, npc, row))),
     // A points-only threshold shows as "6: ???": its text stays out of the copy.
     thresholds: npc.thresholds.filter((row) => row.reveal === "points" || row.reveal === "full").sort((a, b) => a.points - b.points).map((row) => ({
       id: row.id, points: row.points, text: row.reveal === "full" ? row.playerText : "", textHidden: row.reveal === "points", reached: !!row.reached,

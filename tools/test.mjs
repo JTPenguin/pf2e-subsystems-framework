@@ -889,6 +889,15 @@ test("revealing each kind of entry adds it, and only its player fields", () => {
   assertNoSecrets(view);
 });
 
+test("the panel lists revealed entries as resistances, weaknesses, then Other, each in stored order", () => {
+  const s = secretSystem();
+  const base = s.npcs[0].modifiers[0];
+  const make = (kind, name) => ({ ...structuredClone(base), id: `${kind}-${name}`, kind, name, revealed: true });
+  s.npcs[0].modifiers = [make("weakness", "w1"), make("other", "o1"), make("resistance", "r1"), make("weakness", "w2"), make("resistance", "r2")];
+  const known = viewOf(s).npcs[0].known;
+  assert.deepEqual(known.map((card) => `${card.kind}:${card.name}`), ["resistance:r1", "resistance:r2", "weakness:w1", "weakness:w2", "other:o1"]);
+});
+
 test("hiding an entry again takes it back out", () => {
   const s = secretSystem();
   const row = s.npcs[0].influence[0];

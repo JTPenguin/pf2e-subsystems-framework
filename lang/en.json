@@ -76,8 +76,11 @@
       "GMText": "GM text",
       "GMLabel": "GM:",
       "Reached": "Reached",
-      "Modifiers": "Weaknesses and resistances",
-      "OtherModifiers": "Other",
+      "Section": {
+        "resistance": "Resistances",
+        "weakness": "Weaknesses",
+        "other": "Other"
+      },
       "AddModifier": "Add entry",
       "EditModifier": "Edit entry",
       "EditModifierTitle": "Edit entry: {name}",

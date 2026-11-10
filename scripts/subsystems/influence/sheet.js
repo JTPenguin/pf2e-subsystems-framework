@@ -7,7 +7,7 @@ import { announceTriggers, writeChallenge } from "./state.js";
 import { advanceRound, applyModifier, canApplyModifier, changeCounter, changePoints, currentDc, cycleThresholdReveal, endRun, resetRun, restoreModifier, startRun, toggleActed, toggleModifier, toggleReached, toggleReveal, undoRound } from "./run.js";
 import { LINK_ROLL_ID } from "../../roll-option.js";
 import { rollCheck, rollTarget } from "./roll.js";
-import { addRow, applyForm, clampCounters, isOtherModifier, isUniversalDiscovery, isUniversalInfluence, limitCounter, LORE, PERCEPTION, nextThresholdReveal, pickFields, removeRow, THRESHOLD_REVEALS } from "./data.js";
+import { addRow, applyForm, clampCounters, isOtherModifier, isUniversalDiscovery, isUniversalInfluence, limitCounter, LORE, MODIFIER_KINDS, PERCEPTION, nextThresholdReveal, pickFields, removeRow, THRESHOLD_REVEALS } from "./data.js";
 import { ModifierWindow } from "./modifier-window.js";
 
 const { DocumentSheetV2, HandlebarsApplicationMixin } = foundry.applications.api;
@@ -17,11 +17,8 @@ const loc = (key) => game.i18n.localize(key);
 /** The eye button's look for each step of a threshold's reveal. */
 const THRESHOLD_EYE = { hidden: { icon: "fa-eye-slash", pressed: "false" }, points: { icon: "fa-eye-low-vision", pressed: "mixed" }, full: { icon: "fa-eye", pressed: "true" } };
 
-/** Modifier views as the GM window's sections, in order: resistances and weaknesses, then Other. Each has a key, a heading and its rows. */
-const modifierGroups = (views) => [
-  { key: "main", heading: loc("SSM.Influence.Modifiers"), rows: views.filter((view) => !isOtherModifier(view)) },
-  { key: "other", heading: loc("SSM.Influence.OtherModifiers"), rows: views.filter(isOtherModifier) },
-];
+/** Modifier views as the GM window's sections, in order: resistances, weaknesses, Other. Each has a key (its kind), a heading and its rows. */
+const modifierGroups = (views) => MODIFIER_KINDS.map((kind) => ({ key: kind, heading: loc(`SSM.Influence.Section.${kind}`), rows: views.filter((view) => view.kind === kind) }));
 const labels = (values, prefix) => Object.fromEntries(values.map((value) => [value, loc(`SSM.Influence.${prefix}.${value}`)]));
 
 /** The GM sheet. It belongs to the journal entry, whose name is the challenge name; the data lives on the typed page. */
@@ -205,10 +202,9 @@ export class InfluenceSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
         discovery: npc.discovery.map((row, i) => ({ ...row, path: `${path}.discovery.${i}`, isLore: row.skill === LORE, universal: isUniversalDiscovery(row) })),
         influence: npc.influence.map((row, i) => ({ ...row, path: `${path}.influence.${i}`, isLore: row.skill === LORE, universal: isUniversalInfluence(row) })),
         thresholds: npc.thresholds.map((row, i) => ({ ...row, path: `${path}.thresholds.${i}` })),
-        // Read-only here: each one is edited in its own window. Other entries get their own section, after the rest.
-        // The first section always shows, as it holds the Add button.
+        // Read-only here: each one is edited in its own window. All three sections show, as each holds an Add button.
         modifierGroups: modifierGroups(npc.modifiers.map((modifier, i) => ({ ...this.#modifierView(system, npc, modifier, false), canEdit: true, path: `${path}.modifiers.${i}` })))
-          .filter((group, i) => i === 0 || group.rows.length).map((group, i) => ({ ...group, canAdd: i === 0 })),
+          .map((group) => ({ ...group, canAdd: true })),
       };
     };
 
@@ -418,10 +414,11 @@ export class InfluenceSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
   }
 
   static async #onAddRow(event, target) {
-    const { list } = target.dataset;
+    const { list, kind } = target.dataset;
     let added;
     await this.#edit((system) => {
       added = addRow(system, list);
+      if (kind) added.kind = kind;
     });
     if (list === "npcs") {
       this.#tab = added.id;

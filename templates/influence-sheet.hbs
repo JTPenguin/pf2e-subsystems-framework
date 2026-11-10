@@ -259,7 +259,7 @@
       </div>
       {{/each}}
       </div>
-      {{#if canAdd}}<button type="button" class="ssm-add" data-action="addRow" data-list="{{npc.path}}.modifiers"><i class="fa-solid fa-plus" inert></i> {{localize "SSM.Influence.AddModifier"}}</button>{{/if}}
+      {{#if canAdd}}<button type="button" class="ssm-add" data-action="addRow" data-list="{{npc.path}}.modifiers" data-kind="{{key}}"><i class="fa-solid fa-plus" inert></i> {{localize "SSM.Influence.AddModifier"}}</button>{{/if}}
     </fieldset>
     {{/each}}
     {{/with}}
