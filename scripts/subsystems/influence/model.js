@@ -65,7 +65,6 @@ export class InfluenceModel extends foundry.abstract.TypeDataModel {
       rounds: new SchemaField({
         current: int(0, { min: 0 }),
         max: int(6, { min: 1 }),
-        length: text(),
       }),
       npcs: list(npcFields()),
       counters: list({

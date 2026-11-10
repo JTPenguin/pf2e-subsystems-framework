@@ -518,8 +518,8 @@ test("applyForm changes the editable parts and never run state", () => {
   const s = runSystem();
   Run.startRun(s);
   Run.changePoints(s, s.npcs[0].id, 2);
-  D.applyForm(s, { rounds: { length: "1 hour" }, run: { status: "finished" } });
-  assert.equal(s.rounds.length, "1 hour");
+  D.applyForm(s, { rounds: { max: 9 }, run: { status: "finished" } });
+  assert.equal(s.rounds.max, 9);
   assert.equal(s.run.status, "active");
   assert.equal(s.npcs[0].points, 3);
 });

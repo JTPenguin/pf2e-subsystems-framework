@@ -290,7 +290,6 @@ export class InfluenceSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
       canHidePanel: active && onPanel && !panel.hidden,
       canShowPanel: active && (!onPanel || !!panel.hidden),
       roundLabel: active || status === "finished" ? game.i18n.format("SSM.Influence.Round", system.rounds) : loc("SSM.Influence.NotStarted"),
-      roundLength: system.rounds.length,
       canNextRound: active && system.rounds.current < system.rounds.max,
       canPreviousRound: active && system.run.roundHistory.length > 0,
       party: [...new Set([...actors.map((actor) => actor.id), ...system.run.acted])].map((id) => {

@@ -33,7 +33,7 @@
       {{#if canShowPanel}}<button type="button" data-action="showPanel" {{#unless canRun}}disabled{{/unless}}>{{localize "SSM.Panel.Show"}}</button>{{/if}}
     </span>
     <span class="ssm-strip-group">
-      <strong>{{roundLabel}}</strong>{{#if roundLength}}<span class="ssm-muted">{{roundLength}}</span>{{/if}}
+      <strong>{{roundLabel}}</strong>
       <button type="button" class="icon fa-solid fa-backward-step" data-action="previousRound" aria-label="{{localize "SSM.Influence.PreviousRound"}}" data-tooltip="{{localize "SSM.Influence.PreviousRound"}}" {{#unless canPreviousRound}}disabled{{/unless}}></button>
       <button type="button" class="icon fa-solid fa-forward-step" data-action="nextRound" aria-label="{{localize "SSM.Influence.NextRound"}}" data-tooltip="{{localize "SSM.Influence.NextRound"}}" {{#unless canNextRound}}disabled{{/unless}}></button>
     </span>
@@ -144,7 +144,6 @@
       <div class="ssm-row">
         <label>{{localize "SSM.Influence.Current"}}<input type="number" min="0" step="1" name="rounds.current" value="{{system.rounds.current}}" {{#if runActive}}disabled{{/if}}></label>
         <label>{{localize "SSM.Influence.Maximum"}}<input type="number" min="1" step="1" name="rounds.max" value="{{system.rounds.max}}"></label>
-        <label class="grow">{{localize "SSM.Influence.RoundLength"}}<input type="text" name="rounds.length" value="{{system.rounds.length}}"></label>
       </div>
     </fieldset>
 

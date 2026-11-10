@@ -81,7 +81,7 @@ Sidebar tab -> Challenge (journal entry + typed page, GM only) -> GM sheet
 | Field | Notes |
 |---|---|
 | Name, premise, GM notes | Premise and notes are rich text |
-| Rounds | Current, maximum, and a free-text round length |
+| Rounds | Current and maximum |
 | NPCs | One or more |
 | Counters | Zero or more |
 | Run state | Inactive, active, or finished; the current round's acted list |
