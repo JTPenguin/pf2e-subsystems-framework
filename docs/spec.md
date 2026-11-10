@@ -158,10 +158,10 @@ The sheet has **Edit** and **Run** modes, like a locked and unlocked actor sheet
 | THRESHOLDS                     | THRESHOLDS                      |
 | v 4  she offers an introduction|   4  he vouches for you         |
 |   8  ???                       |                                 |
+| Discover: Perception           | Discover: Perception            |
 | Influence: Deception,          | Influence: Deception,           |
 |   Diplomacy, Intimidation,     |   Diplomacy, Intimidation       |
 |   Society, Warfare Lore        |                                 |
-| Discover: Perception           | Discover: Perception            |
 | +----------------------------+ | +-----------------------------+ |
 | |WEAKNESS Flattery   ONGOING | | |Straight talk         ONGOING| |
 | |Weak to praise of her art.  | | |Respects a straight answer.  | |
