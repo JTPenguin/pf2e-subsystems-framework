@@ -115,6 +115,28 @@ button.ssm-reached { color: #4f9d5d; }
 :is(.ssm-npc, .ssm-mod-list) .ssm-modifier.ssm-kind-adjustment { border-left-color: #7a9cc6; }
 :is(.ssm-npc, .ssm-mod-list) .ssm-modifier.ssm-mod-spent { opacity: 0.6; }
 
+/* The PF2e NPC and hazard sheet look. The values come from the system's own rules (.actor.npc.sheet and .sheet.hazard in pf2e.css): its fonts, its dark red section bars over a red-edged body, and its spacing. The variables are set on body and .app by the system, so they work here; the fallbacks are the system's values. */
+:is(.ssm-sheet, .ssm-modifier-window) .window-content { font-family: var(--sans-serif, Roboto, sans-serif); font-size: var(--font-size-13, 0.8125rem); }
+:is(.ssm-sheet, .ssm-modifier-window) .window-content :is(h3, h4, legend, button:not(.icon), input, select) { font-family: inherit; }
+.ssm-sheet .ssm-head .ssm-name { font: 700 1.75rem var(--sans-serif-condensed, "Roboto Condensed", Roboto, sans-serif); font-variant: small-caps; }
+.ssm-sheet .ssm-stat-label { font-size: inherit; font-weight: 600; text-transform: none; opacity: 1; }
+.ssm-sheet .ssm-block { margin: 0; padding: 0 var(--space-4, 0.25rem) var(--space-4, 0.25rem); border: 1px solid var(--color-pf-primary, #5e0000); border-radius: 3px; }
+.ssm-sheet .ssm-block-head { margin: 0 calc(-1 * var(--space-4, 0.25rem)) var(--space-4, 0.25rem); padding: 0 var(--space-8, 0.5rem); background: var(--color-pf-primary, #5e0000); border-radius: 2px 2px 0 0; color: var(--text-light, #f7f3e8); line-height: 2em; }
+.ssm-sheet .ssm-block-head > h3 { color: inherit; font-size: inherit; font-weight: 600; line-height: inherit; text-transform: uppercase; }
+.ssm-sheet .ssm-block-head .ssm-stat-label, .ssm-sheet .ssm-block-head .ssm-point-total { color: inherit; }
+.ssm-sheet .ssm-block-head .ssm-point-total { font-size: var(--font-size-16, 1rem); }
+.ssm-sheet .ssm-block-head .ssm-stat > button.icon { border: none; background: none; box-shadow: none; color: inherit; }
+.ssm-sheet .ssm-block-head .ssm-stat > button.icon:hover:not(:disabled) { text-shadow: 0 0 2px var(--text-light, #f7f3e8); }
+.ssm-sheet .ssm-block-head .ssm-stat > button.icon:disabled { opacity: 0.5; }
+.ssm-sheet .ssm-npc-group > h4 { margin: var(--space-4, 0.25rem) 0 var(--space-2, 0.125rem); padding-left: var(--space-2, 0.125rem); border-bottom: 1px solid var(--color-border-book, #7a7971); font-size: inherit; font-weight: 600; opacity: 1; }
+/* The Edit tab: each fieldset is a red-edged box with its legend as a red tab. */
+.ssm-sheet .ssm-body fieldset { padding: var(--space-4, 0.25rem) var(--space-8, 0.5rem) var(--space-8, 0.5rem); border: 1px solid var(--color-pf-primary, #5e0000); border-radius: 3px; }
+.ssm-sheet .ssm-body legend { padding: 0 var(--space-8, 0.5rem); background: var(--color-pf-primary, #5e0000); border-radius: 3px; color: var(--text-light, #f7f3e8); font-weight: 600; line-height: 1.6em; text-transform: uppercase; }
+.ssm-modifier-window .ssm-effect { border-left-color: var(--color-pf-primary, #5e0000); }
+/* A changed DC uses PF2e's colours for adjusted values (as on a weak or elite creature): higher or lower than the base. */
+.ssm-sheet .ssm-skill-dc.ssm-dc-up { color: var(--color-pf-text-adjusted-higher, #009988); }
+.ssm-sheet .ssm-skill-dc.ssm-dc-down { color: var(--color-pf-text-adjusted-lower, #cc3311); }
+
 /* The panel over the canvas. #ui-top ignores the pointer, so only the panel's own area takes clicks. */
 /* The height limit is 80% of #ui-top, which is the top half of the screen at any UI scale. The whole panel scrolls past that, so a redraw keeps the place. #ui-top is scaled but not narrowed, so the width limit divides the scale out. */
 .ssm-panel { pointer-events: auto; align-self: center; flex: none; box-sizing: border-box; width: fit-content; min-width: min(20rem, 100%); max-width: min(100%, calc(100% / var(--ui-scale, 1))); max-height: calc(80% - 0.5rem); overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; overflow-wrap: anywhere; margin-top: 0.5rem; padding: 0.4rem 0.75rem; background: rgba(20, 18, 16, 0.92); border: 1px solid #b8a06a; border-radius: 6px; color: #eee; font-size: var(--font-size-13, 0.8125rem); }

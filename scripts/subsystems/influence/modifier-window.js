@@ -20,7 +20,9 @@ export class ModifierWindow extends HandlebarsApplicationMixin(ApplicationV2) {
     const existing = foundry.applications.instances.get(id);
     if (existing) return existing.render({ force: true });
     if (!findModifier(page.system, npcId, modifierId)) return null;
-    return new ModifierWindow({ id, page, npcId, modifierId }).render({ force: true });
+    // The window takes the challenge sheet's theme, so the two look alike.
+    const theme = page.parent?.sheet?.options.classes.filter((name) => name === "themed" || name.startsWith("theme-")) ?? [];
+    return new ModifierWindow({ id, page, npcId, modifierId, classes: theme }).render({ force: true });
   }
 
   static DEFAULT_OPTIONS = {

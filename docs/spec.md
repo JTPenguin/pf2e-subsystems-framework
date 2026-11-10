@@ -127,6 +127,8 @@ Sidebar tab -> Challenge (journal entry + typed page, GM only) -> GM sheet
 
 The sheet has **Edit** and **Run** modes, like a locked and unlocked actor sheet.
 
+**It looks like the PF2e NPC and hazard sheets.** It uses the system's own fonts, colours and spacing: a light parchment window (unless the GM picks a theme for the sheet), the name in the NPC sheet's condensed small caps, each NPC and the counters in a red-edged box under a dark red bar, and the Edit tab's boxes with red tabs. The modifier window takes the sheet's theme. A changed DC uses PF2e's colours for adjusted values: one for higher than the base, one for lower.
+
 **Run mode is laid out like a statblock:** small labels beside their values, with no boxed fieldsets and no folding sections. It shows:
 
 - One strip at the top with Start, End and Reset, Hide or Show panel, the round clock with advance and undo, the party chips and the Roll as choice.

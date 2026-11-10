@@ -78,6 +78,13 @@ export class InfluenceSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
   /** Ends the listeners for the current press. */
   #pressEnd = null;
 
+  /** PF2e's NPC and hazard sheets are always light (parchment), so this sheet is too, unless the GM picked a theme for it. */
+  _initializeApplicationOptions(options) {
+    options = super._initializeApplicationOptions(options);
+    if (!options.classes.includes("themed")) options.classes.push("themed", "theme-light");
+    return options;
+  }
+
   get page() {
     return challengePage(this.document);
   }
