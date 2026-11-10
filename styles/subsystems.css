@@ -41,6 +41,8 @@
 .ssm-detail { padding-left: 2.5rem; }
 .ssm-decoy { border-color: #c9743a; color: #c9743a; font-weight: bold; }
 .ssm-dc-changed { font-weight: bold; color: var(--color-text-accent, #c9a13a); }
+button.ssm-state { background: none; color: inherit; cursor: pointer; line-height: inherit; height: auto; width: auto; margin: 0; }
+button.ssm-state:disabled { cursor: default; }
 .ssm-state-on { border-color: #4f9d5d; color: #4f9d5d; }
 .ssm-state-spent { opacity: 0.6; text-decoration: line-through; }
 

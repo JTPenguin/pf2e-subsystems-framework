@@ -93,10 +93,7 @@
           <div class="ssm-row ssm-entry">
             {{> ssmEye root=../..}}
             <span class="ssm-grow">{{label}} <span class="ssm-tag">{{kindLabel}}</span> <span class="ssm-tag">{{durationLabel}}</span>{{#if decoy}} <span class="ssm-tag ssm-decoy">{{localize "SSM.Influence.Decoy"}}</span>{{/if}}</span>
-            <span class="ssm-tag ssm-state-{{stateClass}}">{{stateLabel}}</span>
-            {{#if restorable}}<button type="button" data-action="restoreModifier" data-npc="{{npc.id}}" data-id="{{id}}" {{#unless canChange}}disabled{{/unless}}>{{localize "SSM.Influence.Restore"}}</button>
-            {{/if}}
-            {{#unless spent}}<button type="button" data-action="toggleModifier" data-npc="{{npc.id}}" data-id="{{id}}" aria-pressed="{{active}}" {{#unless canChange}}disabled{{/unless}}>{{#if active}}{{localize "SSM.Influence.TurnOff"}}{{else}}{{localize "SSM.Influence.TurnOn"}}{{/if}}</button>{{/unless}}
+            <button type="button" class="ssm-tag ssm-state ssm-state-{{stateClass}}" data-action="{{#if spent}}restoreModifier{{else}}toggleModifier{{/if}}" data-npc="{{npc.id}}" data-id="{{id}}" aria-pressed="{{pressed}}" data-tooltip="{{stateTooltip}}" {{#unless canChange}}disabled{{/unless}}>{{stateLabel}}</button>
             {{#if hasApply}}<button type="button" data-action="applyModifier" data-npc="{{npc.id}}" data-id="{{id}}" {{#unless canApply}}disabled{{/unless}}>{{localize "SSM.Influence.Apply"}}</button>{{/if}}
           </div>
           <div class="ssm-muted ssm-detail">{{effectsText}}{{#if gmText}} &middot; {{gmText}}{{/if}}</div>

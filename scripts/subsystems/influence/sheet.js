@@ -4,7 +4,7 @@ import { hidePanel, panelBlockedBy, panelState, showPanel } from "../../panel/ac
 import { partyPCs } from "../../party.js";
 import { skillLabel } from "./skill-label.js";
 import { announceTriggers, writeChallenge } from "./state.js";
-import { advanceRound, applyModifier, canApplyModifier, canRestoreModifier, changeCounter, changePoints, currentDc, endRun, resetRun, restoreModifier, startRun, toggleActed, toggleModifier, toggleReveal, undoRound } from "./run.js";
+import { advanceRound, applyModifier, canApplyModifier, changeCounter, changePoints, currentDc, endRun, resetRun, restoreModifier, startRun, toggleActed, toggleModifier, toggleReveal, undoRound } from "./run.js";
 import { LINK_ROLL_ID } from "../../roll-option.js";
 import { rollCheck, rollTarget } from "./roll.js";
 import { addRow, applyForm, clampCounters, DURATIONS, EFFECT_TYPES, isUniversalDiscovery, isUniversalInfluence, limitCounter, LORE, MODIFIER_KINDS, PERCEPTION, QUICK_DC_AMOUNTS, pickFields, removeRow, setEffectAmount } from "./data.js";
@@ -322,8 +322,9 @@ export class InfluenceSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
       kindLabel: loc(`SSM.Influence.Kind.${row.kind}`),
       durationLabel: loc(`SSM.Influence.Duration.${row.duration}`),
       stateClass: state,
+      pressed: state === "on",
+      stateTooltip: loc(`SSM.Influence.StateClick.${state}`),
       stateLabel: loc(`SSM.Influence.State.${state}`),
-      restorable: canRestoreModifier(row),
       hasApply: row.effects.some((effect) => effect.type !== "dc"),
       canApply: canChange && canApplyModifier(row),
       canChange,

@@ -161,9 +161,11 @@
       "BaseDc": "Base DC {dc}",
       "RollSkill": "Roll {skill}, DC {dc}, for the chosen PC",
       "PostSkill": "Post a chat link for {skill}",
-      "TurnOn": "Turn on",
-      "TurnOff": "Turn off",
-      "Restore": "Restore",
+      "StateClick": {
+        "on": "Turn off",
+        "off": "Turn on",
+        "spent": "Restore"
+      },
       "State": {
         "on": "On",
         "off": "Off",

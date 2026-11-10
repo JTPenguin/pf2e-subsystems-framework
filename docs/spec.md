@@ -117,7 +117,9 @@ Sidebar tab -> Challenge (journal entry + typed page, GM only) -> GM sheet
 | Rounds | Add or remove rounds |
 | Note only | A consequence with no number, such as "she ends the conversation" |
 
-**How one-time entries work.** The GM turns one on. A DC change applies to the next check it matches. It is spent when that roll arrives, for Influence and Discover alike, so the next check gets the normal DC. If the GM skips Apply on that roll, they Restore the entry. Any other effect applies when the GM clicks apply. Spent entries can be restored.
+**The state tag is the button.** Each modifier's tag (On, Off, Spent) is one button with `aria-pressed`. Click On or Off to switch it; click Spent to restore it. Apply stays a separate button.
+
+**How one-time entries work.** The GM turns one on. A DC change applies to the next check it matches. It is spent when that roll arrives, for Influence and Discover alike, so the next check gets the normal DC. If the GM skips Apply on that roll, they click the Spent tag to restore the entry. Any other effect applies when the GM clicks apply. Spent entries can be restored.
 
 **Counter.** Name, value, optional minimum and maximum, optional trigger values with GM notes, and a revealed flag. When a value reaches a trigger, the GM gets a notice.
 
@@ -202,7 +204,7 @@ A DC change names only skills the panel shows (universal or revealed). It says n
 2. When the message arrives, the active GM's client marks the PC as having acted. Advancing the round clears the markers. The GM can toggle a marker by hand.
 3. **Influence.** The GM's copy of the chat card gets one **Apply** button, showing the suggested change: critical success +2, success +1, failure 0, critical failure −1. Apply adds those points and marks any thresholds they reach. There is no Adjust or Ignore: to use another amount, the GM skips Apply and changes points by hand on the sheet.
 4. **Discover.** No button. The GM's copy of the card gets a reminder of what the result earns: one piece of information, two on a critical success, a false one on a critical failure. The GM reveals entries by hand.
-5. **One-time DC entries** the roll used are spent when it arrives, for both kinds (Justin, 2026-11-09). A second PC rolling before Apply then gets the normal DC, and changing another DC entry before Apply can't leave the entry unspent. If the GM skips Apply on that roll, they Restore the entry on the sheet. A roll used an entry only if it was made at the current DC; a roll at any other DC, such as an old chat link, leaves it for the next check. A roll that arrived with no active GM online spends its entries when it's applied instead.
+5. **One-time DC entries** the roll used are spent when it arrives, for both kinds (Justin, 2026-11-09). A second PC rolling before Apply then gets the normal DC, and changing another DC entry before Apply can't leave the entry unspent. If the GM skips Apply on that roll, they click the entry's Spent tag on the sheet to restore it. A roll used an entry only if it was made at the current DC; a roll at any other DC, such as an old chat link, leaves it for the next check. A roll that arrived with no active GM online spends its entries when it's applied instead.
 
 **Apply works once.** After Apply, the message carries an `applied` flag, so the button shows as Applied and disabled for every GM and after a reload. The challenge also records the roll id, and Apply checks it inside the write queue, so a double click or a stale card can't count a result twice. Only the active GM can press Apply; other GMs see it disabled.
 
