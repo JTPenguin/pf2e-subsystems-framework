@@ -201,7 +201,8 @@ button.ssm-reached { color: #4f9d5d; }
 /* The round bar and the PCs' token images. Only the header drags the panel, so nothing here starts a drag. A PC is lit until they have acted this round, then dimmed. */
 .ssm-panel-run { margin-top: 0.2rem; }
 .ssm-panel-rounds { display: flex; align-items: center; gap: 0.5rem; }
-.ssm-panel-segments { display: flex; gap: 2px; flex: 0 1 12rem; min-width: 3rem; }
+.ssm-panel-rounds-label { flex: none; }
+.ssm-panel-segments { display: flex; gap: 2px; flex: 1 1 4rem; min-width: 3rem; }
 .ssm-panel-segments > span { flex: 1 1 0; height: 0.55rem; background: rgba(255, 255, 255, 0.15); border-radius: 2px; }
 .ssm-panel-segments > span.filled { background: #b8a06a; }
 .ssm-panel-party { display: flex; flex-wrap: wrap; align-items: center; gap: 0.3rem; margin-top: 0.25rem; }
