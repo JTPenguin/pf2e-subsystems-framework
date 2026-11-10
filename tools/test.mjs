@@ -1447,6 +1447,39 @@ test("only a spot with two numbers counts as saved", () => {
   for (const value of [undefined, null, {}, { left: 10 }, { left: "10", top: 20 }, { left: NaN, top: 0 }]) assert.equal(Spot.readSpot(value), null);
 });
 
+/* A panel card's hover */
+
+const escapeHTML = (value) => String(value).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#x27;" })[c]);
+const tipText = { escape: escapeHTML, labels: { player: "Player", gm: "GM" } };
+
+test("a player's hover holds the player text only, even if GM text is passed in", () => {
+  assert.equal(V.cardTooltip({ playerText: "likes praise", gmText: GM_SECRET, isGM: false }, tipText), '<p class="ssm-panel-tip-line">likes praise</p>');
+  assert.equal(V.cardTooltip({ playerText: "", gmText: GM_SECRET, isGM: false }, tipText), "");
+  assert.equal(V.cardTooltip({ playerText: "  ", isGM: false }, tipText), "");
+});
+
+test("a GM's hover labels the player text and the GM text, and is empty with neither", () => {
+  assert.equal(V.cardTooltip({ playerText: "likes praise", gmText: "she is lying", isGM: true }, tipText),
+    '<p class="ssm-panel-tip-line"><strong>Player</strong> likes praise</p><p class="ssm-panel-tip-line"><strong>GM</strong> she is lying</p>');
+  assert.equal(V.cardTooltip({ playerText: "", gmText: "she is lying", isGM: true }, tipText), '<p class="ssm-panel-tip-line"><strong>GM</strong> she is lying</p>');
+  assert.equal(V.cardTooltip({ playerText: "likes praise", gmText: undefined, isGM: true }, tipText), '<p class="ssm-panel-tip-line"><strong>Player</strong> likes praise</p>');
+  assert.equal(V.cardTooltip({ playerText: "", gmText: "", isGM: true }, tipText), "");
+});
+
+test("a hover escapes its text, so it can't add markup", () => {
+  const tip = V.cardTooltip({ playerText: '<img src=x onerror="alert(1)">', gmText: "<b>bold</b> & co", isGM: true }, tipText);
+  assert.ok(!tip.includes("<img") && !tip.includes("<b>"), tip);
+  assert.ok(tip.includes("&lt;img src=x onerror=&quot;alert(1)&quot;&gt;") && tip.includes("&lt;b&gt;bold&lt;/b&gt; &amp; co"), tip);
+});
+
+test("a revealed card in the copy carries its player text but no GM text", () => {
+  const s = secretSystem();
+  revealAll(s);
+  const view = viewOf(s);
+  assert.equal(view.npcs[0].known[0].text, "likes praise");
+  assertNoSecrets(view);
+});
+
 /* Keeping the challenge sheet */
 
 test("a challenge's update drops a sheet change away from its sheet and keeps the rest", () => {

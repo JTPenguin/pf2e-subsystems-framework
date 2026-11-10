@@ -72,6 +72,20 @@ export function changeText(change, { format, list, label }) {
   return format(`${key}.${change.type}.${plural}`, { amount });
 }
 
+/**
+ * A panel card's hover text as HTML, or "" when there is none, so the card shows no hover.
+ * Players get the player text alone. A GM gets the player text and the GM text, each labelled.
+ * The GM text is never in the shared copy: a GM's client passes it in from the challenge itself, and it is ignored unless `isGM`.
+ * `escape` is Foundry's HTML escape, so neither text can add markup. `labels` are { player, gm }.
+ */
+export function cardTooltip({ playerText, gmText, isGM }, { escape, labels }) {
+  const line = (label, text) => `<p class="ssm-panel-tip-line">${label ? `<strong>${escape(label)}</strong> ` : ""}${escape(text)}</p>`;
+  const player = String(playerText ?? "").trim();
+  if (!isGM) return player ? line("", player) : "";
+  const gm = String(gmText ?? "").trim();
+  return (player ? line(labels.player, player) : "") + (gm ? line(labels.gm, gm) : "");
+}
+
 function npcView(system, npc) {
   return {
     id: npc.id,

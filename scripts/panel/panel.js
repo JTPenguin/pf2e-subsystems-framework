@@ -259,6 +259,8 @@ function onSettingChange() {
 function onChallengeChange(entryId) {
   if (entryId !== panelState().id) return;
   schedulePublish();
+  // A GM's panel also reads the challenge (GM text on the cards), and a GM-only change leaves the shared copy as it was, so it redraws here too.
+  if (game.user.isGM) refreshPanel();
 }
 
 function installHooks() {

@@ -1,7 +1,6 @@
 import { MODULE } from "../../constants.js";
-import { isOtherModifier } from "./data.js";
 import { skillLabel } from "./skill-label.js";
-import { buildPanelView, changeText, findPanelRow, pointsBar, roundSegments } from "./panel-view.js";
+import { buildPanelView, cardTooltip, changeText, findPanelRow, pointsBar, roundSegments } from "./panel-view.js";
 import { rollCheck, rollTarget } from "./roll.js";
 import { advanceRound, canAdvanceRound, canUndoRound, toggleActed, toggleModifier, undoRound } from "./run.js";
 import { InfluenceSheet } from "./sheet.js";
@@ -10,19 +9,33 @@ import { challengePage } from "../../registry.js";
 
 const loc = (key) => game.i18n.localize(key);
 
-/** A modifier card's context: its kind (none for Other), duration and state as labels, and each change as text, marked done once it has happened. */
-function modifierCard(row, npcId) {
+/**
+ * A modifier card's context: its kind, duration and state as labels, each change as text, marked done once it has happened,
+ * and the hover text. `gmText` is read from the challenge on a GM's client only; players pass nothing.
+ */
+function modifierCard(row, npcId, gmText) {
   const text = { format: (key, data) => game.i18n.format(key, data), list: (items) => game.i18n.getListFormatter().format(items), label: skillLabel };
+  const labels = { player: loc("SSM.Panel.TipPlayer"), gm: loc("SSM.Panel.TipGM") };
   return {
     ...row,
     npcId,
     name: row.name || loc("SSM.Influence.UnnamedEntry"),
-    kindLabel: isOtherModifier(row) ? "" : loc(`SSM.Influence.Kind.${row.kind}`),
+    kindLabel: loc(`SSM.Influence.Kind.${row.kind}`),
     durationLabel: loc(`SSM.Influence.Duration.${row.duration}`),
     // Struck once it has happened: all of a spent entry, or an applied entry's changes other than a DC change.
     changes: row.changes.map((change) => ({ text: changeText(change, text), done: row.spent || (row.applied && change.type !== "dc") })),
     inactive: !row.active && !row.spent,
+    tooltip: cardTooltip({ playerText: row.text, gmText, isGM: game.user.isGM }, { escape: foundry.utils.escapeHTML, labels }),
   };
+}
+
+/** The GM text of each modifier on the panel, keyed "npcId:modifierId", read from the challenge itself. Empty for players, who can't read the challenge and never get GM text. */
+function gmTexts(state) {
+  const texts = new Map();
+  const entry = game.user.isGM && state ? game.journal.get(state.id) : null;
+  const page = entry && challengePage(entry);
+  for (const npc of page?.system.npcs ?? []) for (const row of npc.modifiers) texts.set(`${npc.id}:${row.id}`, row.gmText);
+  return texts;
 }
 
 /** The GM's round buttons are enabled as the GM window's are: only the active GM, and only when the move does something. The real challenge is read, as the copy has no round history. */
@@ -33,8 +46,9 @@ function roundButtons(state) {
   return { canPreviousRound: run && canUndoRound(page.system), canNextRound: run && canAdvanceRound(page.system) };
 }
 
-/** The Influence panel's context, drawn only from the filtered copy. The GM's round buttons also read the challenge. */
+/** The Influence panel's context, drawn only from the filtered copy. On a GM's client, the round buttons and the cards' GM text also read the challenge. */
 function prepareView(view, state) {
+  const gm = gmTexts(state);
   // Only ids go in the HTML. A click looks the DC up in the copy.
   const skillButton = (npc, n, row, kind) => ({
     id: row.id, npcId: npc.id, kind,
@@ -52,7 +66,7 @@ function prepareView(view, state) {
       bar: pointsBar(npc.points, npc.goal),
       discovery: npc.discovery.map((row) => skillButton(npc, n, row, "discover")),
       influence: npc.influence.map((row) => skillButton(npc, n, row, "influence")),
-      known: npc.known.map((row) => modifierCard(row, npc.id)),
+      known: npc.known.map((row) => modifierCard(row, npc.id, gm.get(`${npc.id}:${row.id}`))),
     })),
     counters: view.counters.map((row) => ({ ...row, name: row.name || loc("SSM.Influence.UnnamedCounter") })),
     party: view.party.map((pc) => ({ ...pc, label: game.i18n.format(pc.acted ? "SSM.Panel.ActedLabel" : "SSM.Panel.NotActedLabel", { name: pc.name }) })),

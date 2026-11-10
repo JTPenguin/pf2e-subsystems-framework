@@ -204,10 +204,13 @@ button.ssm-reached { color: #4f9d5d; }
 .ssm-panel-mod:is(.inactive, .spent) { padding-left: calc(0.35rem + 2px); border-left: 1px solid rgba(184, 160, 106, 0.35); }
 .ssm-panel-mod.spent { opacity: 0.5; }
 .ssm-panel-mod-changes > span.done { text-decoration: line-through; opacity: 0.7; }
-.ssm-panel-mod-head { display: flex; flex-wrap: wrap; align-items: baseline; column-gap: 0.35rem; }
-.ssm-panel-mod-kind, .ssm-panel-mod-duration { font-size: var(--font-size-11, 0.7rem); text-transform: uppercase; opacity: 0.75; }
-.ssm-panel-mod-name { flex: 1 1 auto; min-width: 0; }
-.ssm-panel-mod-duration { margin-left: auto; }
+/* Two rows: name and kind on top, effect and duration below. The left column takes the room and wraps; the right column keeps the labels on one line at the right. */
+.ssm-panel-mod { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: baseline; column-gap: 0.5rem; }
+.ssm-panel-mod-name, .ssm-panel-mod-changes { grid-column: 1; min-width: 0; }
+.ssm-panel-mod-kind, .ssm-panel-mod-duration { grid-column: 2; justify-self: end; white-space: nowrap; font-size: var(--font-size-11, 0.7rem); text-transform: uppercase; opacity: 0.75; }
+/* A card's hover: its player text, and for a GM its GM text too, in Foundry's tooltip. */
+#tooltip.ssm-panel-tip .ssm-panel-tip-line { margin: 0; white-space: pre-line; }
+#tooltip.ssm-panel-tip .ssm-panel-tip-line + .ssm-panel-tip-line { margin-top: 0.35rem; }
 .ssm-panel-mod-changes { color: #e8cf8f; }
 .ssm-panel-mod-changes > span:not(:last-child)::after { content: "; "; }
 .ssm-panel-thresholds { margin-top: 0.25rem; padding: 0.1rem 0.35rem; border: 1px solid rgba(184, 160, 106, 0.35); border-left: 3px solid #b8a06a; border-radius: 3px; background: rgba(255, 255, 255, 0.04); line-height: 1.25; }
