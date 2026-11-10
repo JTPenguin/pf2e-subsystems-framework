@@ -305,7 +305,7 @@ export class InfluenceSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
         discovery: rollRows(npc, npc.discovery, "discover"),
         influence: rollRows(npc, npc.influence, "influence"),
         thresholds: npc.thresholds.map((row) => ({
-          ...row, text: row.playerText || row.gmText, canChange,
+          ...row, canChange,
           textShown: row.reveal === "full",
           revealIcon: THRESHOLD_EYE[row.reveal]?.icon ?? THRESHOLD_EYE.hidden.icon,
           revealPressed: THRESHOLD_EYE[row.reveal]?.pressed ?? "false",

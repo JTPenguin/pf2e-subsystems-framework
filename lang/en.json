@@ -80,6 +80,7 @@
       "AddThreshold": "Add threshold",
       "PlayerText": "Player text",
       "GMText": "GM text",
+      "GMLabel": "GM:",
       "Reached": "Reached",
       "Modifiers": "Weaknesses, resistances, penalties and adjustments",
       "AddModifier": "Add entry",

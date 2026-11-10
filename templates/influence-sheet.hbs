@@ -79,7 +79,7 @@
         <div class="ssm-row ssm-entry ssm-threshold {{#if reached}}ssm-reached-row{{/if}} {{#unless textShown}}ssm-hidden{{/unless}}">
           <button type="button" class="icon fa-solid {{revealIcon}}" data-action="cycleThresholdReveal" data-npc="{{npc.id}}" data-id="{{id}}" aria-label="{{revealTooltip}}" aria-pressed="{{revealPressed}}" data-tooltip="{{revealTooltip}}" {{#unless ../../canRun}}disabled{{/unless}}></button>
           <span class="ssm-threshold-points">{{points}}</span>
-          <span class="ssm-grow">{{text}}</span>
+          <span class="ssm-grow">{{#if playerText}}<span class="ssm-player-text">{{playerText}}</span>{{/if}}{{#if gmText}}<span class="ssm-muted ssm-gm-line"><strong>{{localize "SSM.Influence.GMLabel"}}</strong> {{gmText}}</span>{{/if}}</span>
           <button type="button" class="ssm-tag ssm-state ssm-reached {{#unless reached}}ssm-unreached{{/unless}}" data-action="toggleReached" data-npc="{{npc.id}}" data-id="{{id}}" aria-pressed="{{reached}}" data-tooltip="{{reachedTooltip}}" {{#unless canChange}}disabled{{/unless}}>{{#if reached}}<i class="fa-solid fa-check" aria-hidden="true"></i> {{/if}}{{localize "SSM.Influence.ReachedShort"}}</button>
         </div>
         {{/each}}
@@ -96,7 +96,9 @@
             <button type="button" class="ssm-tag ssm-state ssm-state-{{stateClass}}" data-action="{{#if spent}}restoreModifier{{else}}toggleModifier{{/if}}" data-npc="{{npc.id}}" data-id="{{id}}" aria-pressed="{{pressed}}" data-tooltip="{{stateTooltip}}" {{#unless canChange}}disabled{{/unless}}>{{stateLabel}}</button>
             {{#if hasApply}}<button type="button" data-action="applyModifier" data-npc="{{npc.id}}" data-id="{{id}}" {{#unless canApply}}disabled{{/unless}}>{{localize "SSM.Influence.Apply"}}</button>{{/if}}
           </div>
-          <div class="ssm-muted ssm-detail">{{effectsText}}{{#if gmText}} &middot; {{gmText}}{{/if}}</div>
+          {{#if effectsText}}<div class="ssm-muted ssm-detail">{{effectsText}}</div>{{/if}}
+          {{#if playerText}}<div class="ssm-detail ssm-player-text">{{playerText}}</div>{{/if}}
+          {{#if gmText}}<div class="ssm-muted ssm-detail ssm-gm-line"><strong>{{localize "SSM.Influence.GMLabel"}}</strong> {{gmText}}</div>{{/if}}
         </div>
         {{/each}}
       </div>
