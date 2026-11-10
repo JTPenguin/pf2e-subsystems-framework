@@ -1,6 +1,6 @@
 import { installDirectories } from "./directories.js";
 import { isChallengeType } from "./directory-rules.js";
-import { allSubsystems, subsystemFor } from "./registry.js";
+import { allSubsystems, dropSheetChange, subsystemFor } from "./registry.js";
 import { installPanel } from "./panel/panel.js";
 import { installRollListener } from "./roll-listener.js";
 import { registerInfluence } from "./subsystems/influence/definition.js";
@@ -33,6 +33,27 @@ Hooks.on("preCreateJournalEntry", (entry) => {
   if (!subsystem) return;
   if (!entry.getFlag("core", "sheetClass")) entry.updateSource({ "flags.core.sheetClass": subsystem.sheetId });
   resetNewChallenge(entry, subsystem);
+});
+
+/** A challenge keeps its sheet. Saving Configure Sheet, for a theme say, would switch it to a core one; the theme still saves. */
+Hooks.on("preUpdateJournalEntry", (entry, changes) => {
+  const subsystem = subsystemFor(entry);
+  if (!subsystem || !dropSheetChange(changes, subsystem.sheetId)) return;
+  // No sheet change reaches _onUpdate now, so redraw the sheet here to pick up a new theme.
+  Promise.resolve().then(() => entry._onSheetChange());
+});
+
+/** Puts back the sheet of any challenge that lost it before the hook above existed. */
+Hooks.once("ready", () => {
+  if (!game.user.isActiveGM) return;
+  const updates = [];
+  for (const entry of game.journal) {
+    const subsystem = subsystemFor(entry);
+    if (subsystem && entry.getFlag("core", "sheetClass") !== subsystem.sheetId) {
+      updates.push({ _id: entry.id, "flags.core.sheetClass": subsystem.sheetId });
+    }
+  }
+  if (updates.length) JournalEntry.updateDocuments(updates);
 });
 
 /** A challenge page may only arrive with a new entry. Added to an existing one, it would pull that journal out of the Journal tab. */

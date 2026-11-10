@@ -37,3 +37,18 @@ export const challengePage = (entry) => entry.pages.find((page) => definitions.h
 
 /** The definition for a challenge entry, or undefined. */
 export const subsystemFor = (entry) => definitions.get(challengePage(entry)?.type);
+
+/**
+ * Removes a sheet change from a challenge entry's update unless it points at `sheetId`, and says whether it did.
+ * Configure Sheet can't list the challenge sheet, so saving it, even just for a theme, writes another sheet here.
+ */
+export function dropSheetChange(changes, sheetId) {
+  let dropped = false;
+  const core = changes.flags?.core;
+  for (const key of ["sheetClass", "-=sheetClass"]) {
+    if (core && key in core && core[key] !== sheetId) { delete core[key]; dropped = true; }
+    const path = `flags.core.${key}`;
+    if (path in changes && changes[path] !== sheetId) { delete changes[path]; dropped = true; }
+  }
+  return dropped;
+}

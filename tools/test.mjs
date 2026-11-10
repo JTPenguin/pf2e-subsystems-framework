@@ -30,7 +30,7 @@ const D = await load("subsystems/influence/data");
 const Run = await load("subsystems/influence/run");
 const O = await load("roll-option");
 const V = await load("subsystems/influence/panel-view");
-await load("registry");
+const Reg = await load("registry");
 const L = await load("roll-listener");
 const Spot = await load("panel/spot");
 
@@ -1429,4 +1429,20 @@ test("a panel bigger than the screen keeps its top-left corner visible", () => {
 test("only a spot with two numbers counts as saved", () => {
   assert.deepEqual(Spot.readSpot({ left: 10, top: 20 }), { left: 10, top: 20 });
   for (const value of [undefined, null, {}, { left: 10 }, { left: "10", top: 20 }, { left: NaN, top: 0 }]) assert.equal(Spot.readSpot(value), null);
+});
+
+/* Keeping the challenge sheet */
+
+test("a challenge's update drops a sheet change away from its sheet and keeps the rest", () => {
+  const ours = `${MODULE}.InfluenceSheet`;
+  const nested = { name: "x", flags: { core: { sheetClass: "core.JournalEntrySheet" } } };
+  assert.equal(Reg.dropSheetChange(nested, ours), true);
+  assert.deepEqual(nested, { name: "x", flags: { core: {} } });
+  const dotted = { "flags.core.sheetClass": "", "flags.core.-=sheetClass": null };
+  assert.equal(Reg.dropSheetChange(dotted, ours), true);
+  assert.deepEqual(dotted, {});
+  const repair = { "flags.core.sheetClass": ours, flags: { core: { sheetClass: ours } } };
+  assert.equal(Reg.dropSheetChange(repair, ours), false);
+  assert.deepEqual(repair, { "flags.core.sheetClass": ours, flags: { core: { sheetClass: ours } } });
+  assert.equal(Reg.dropSheetChange({ name: "y" }, ours), false);
 });
