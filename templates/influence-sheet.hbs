@@ -8,7 +8,7 @@
 {{#*inline "ssmModifierEdit"}}<button type="button" class="icon fa-solid fa-pen-to-square" data-action="editModifier" data-npc="{{npc.id}}" data-id="{{id}}" aria-label="{{localize "SSM.Influence.EditModifier"}}" data-tooltip="SSM.Influence.EditModifier"></button>{{/inline}}
 {{#*inline "ssmModifierDetails"}}{{#if effectsText}}<div class="ssm-muted ssm-detail">{{effectsText}}</div>{{/if}}
 {{#if playerText}}<div class="ssm-detail ssm-player-text">{{playerText}}</div>{{/if}}
-{{#if gmText}}<div class="ssm-muted ssm-detail ssm-gm-line"><strong>{{localize "SSM.Influence.GMLabel"}}</strong> {{gmText}}</div>{{/if}}{{/inline}}
+{{#if gmText}}<div class="ssm-detail ssm-gm-line" data-visibility="gm">{{gmText}}</div>{{/if}}{{/inline}}
 <div class="ssm-layout">
   <header class="ssm-head">
     <div class="ssm-row ssm-head-row">
@@ -81,7 +81,7 @@
         <div class="ssm-row ssm-entry ssm-threshold ssm-reveal-{{reveal}} {{#if reached}}ssm-reached-row{{/if}} {{#unless textShown}}ssm-hidden{{/unless}}">
           <button type="button" class="icon fa-solid {{revealIcon}}" data-action="cycleThresholdReveal" data-npc="{{npc.id}}" data-id="{{id}}" aria-label="{{revealTooltip}}" aria-pressed="{{revealPressed}}" data-tooltip="{{revealTooltip}}" {{#unless ../../canRun}}disabled{{/unless}}></button>
           <span class="ssm-threshold-points">{{points}}</span>
-          <span class="ssm-grow">{{#if playerText}}<span class="ssm-player-text">{{playerText}}</span>{{/if}}{{#if gmText}}<span class="ssm-muted ssm-gm-line"><strong>{{localize "SSM.Influence.GMLabel"}}</strong> {{gmText}}</span>{{/if}}</span>
+          <span class="ssm-grow">{{#if playerText}}<span class="ssm-player-text">{{playerText}}</span>{{/if}}{{#if gmText}}<span class="ssm-gm-line" data-visibility="gm">{{gmText}}</span>{{/if}}</span>
           <button type="button" class="ssm-tag ssm-state ssm-reached {{#unless reached}}ssm-unreached{{/unless}}" data-action="toggleReached" data-npc="{{npc.id}}" data-id="{{id}}" aria-pressed="{{reached}}" data-tooltip="{{reachedTooltip}}" {{#unless canChange}}disabled{{/unless}}>{{#if reached}}<i class="fa-solid fa-check" aria-hidden="true"></i> {{/if}}{{localize "SSM.Influence.ReachedShort"}}</button>
         </div>
         {{/each}}

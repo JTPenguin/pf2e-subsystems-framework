@@ -95,7 +95,7 @@ button.ssm-state:disabled { cursor: default; }
 .ssm-reached { border-color: #4f9d5d; color: #4f9d5d; }
 button.ssm-reached { color: #4f9d5d; }
 .ssm-reached.ssm-unreached { opacity: 0.45; }
-/* Hidden text is italic as well as faded. The muted GM line keeps full strength inside a faded card, so it stays readable. */
+/* Hidden text is italic as well as faded. The GM line (PF2e's GM highlight) keeps upright text inside a faded card. */
 .ssm-entry.ssm-hidden > .ssm-grow, .ssm-modifier.ssm-hidden > .ssm-entry > .ssm-grow, .ssm-counter.ssm-hidden .ssm-grow { font-style: italic; }
 .ssm-entry.ssm-hidden .ssm-gm-line, .ssm-modifier.ssm-hidden .ssm-gm-line { font-style: normal; }
 :is(.ssm-entry, .ssm-modifier, .ssm-counter).ssm-hidden .ssm-muted { opacity: 1; }
@@ -239,6 +239,7 @@ button.ssm-reached { color: #4f9d5d; }
 .ssm-card button { width: 100%; }
 .ssm-card-note { margin: 0.2rem 0 0; opacity: 0.8; }
 .ssm-npc .ssm-grow > .ssm-player-text, .ssm-npc .ssm-grow > .ssm-gm-line { display: block; }
+.ssm-npc .ssm-gm-line { width: fit-content; max-width: 100%; line-height: 1.3; }
 
 /* Edit tab skill checks: one table per list, field names in the header. */
 .ssm-checks-wrap { overflow-x: auto; }
