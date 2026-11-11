@@ -1,12 +1,13 @@
 ---
 title: "Decide the design for a generic, flexible subsystem for other challenges"
 kind: feature
-status: proposed
-waits_on: Justin
-blocked_by: [generic-subsystem-shared-mechanics]
+status: dropped
+waits_on: none
+blocked_by: []
 source: "Justin's list of items, 2026-11-11"
 added: 2026-11-11
 updated: 2026-11-11
+outcome: "Merged into generic-subsystem-shared-mechanics, 2026-11-11. Justin chose GM Core's Victory Points framework as the generic subsystem, built first, with the other subsystems as presets of it."
 ---
 # Decide the design for a generic, flexible subsystem for other challenges
 

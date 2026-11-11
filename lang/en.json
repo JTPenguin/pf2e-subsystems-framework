@@ -37,8 +37,7 @@
         "rounds": { "one": "{amount} round", "other": "{amount} rounds" }
       },
       "Thresholds": "Thresholds",
-      "TipPlayer": "Player",
-      "TipGM": "GM",
+      "TipGM": "GM Only",
       "HiddenText": "???",
       "ActedLabel": "{name}: has acted this round",
       "NotActedLabel": "{name}: has not acted this round",

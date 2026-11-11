@@ -16,7 +16,6 @@ const loc = (key) => game.i18n.localize(key);
  */
 function modifierCard(row, npcId, gmText, decoy) {
   const text = { format: (key, data) => game.i18n.format(key, data), list: (items) => game.i18n.getListFormatter().format(items), label: skillLabel };
-  const labels = { player: loc("SSM.Panel.TipPlayer"), gm: loc("SSM.Panel.TipGM") };
   return {
     ...row,
     npcId,
@@ -27,7 +26,7 @@ function modifierCard(row, npcId, gmText, decoy) {
     // Struck once it has happened: all of a spent entry, or an applied entry's changes other than a DC change.
     changes: row.changes.map((change) => ({ text: changeText(change, text), done: row.spent || (row.applied && change.type !== "dc") })),
     inactive: !row.active && !row.spent,
-    tooltip: cardTooltip({ playerText: row.text, gmText, isGM: game.user.isGM }, { escape: foundry.utils.escapeHTML, labels }),
+    tooltip: cardTooltip({ playerText: row.text, gmText, isGM: game.user.isGM }, { escape: foundry.utils.escapeHTML, gmLabel: loc("SSM.Panel.TipGM") }),
   };
 }
 

@@ -1,12 +1,13 @@
 ---
 title: "Decide: remove the Ongoing / One-Time / Repeating types from weak, resist and other"
-kind: decision
-status: needs-decision
-waits_on: Justin
+kind: decision-record
+status: done
+waits_on: none
 blocked_by: []
 source: "Justin's list of items, 2026-11-11"
 added: 2026-11-11
 updated: 2026-11-11
+outcome: "Decided 2026-11-11 by Justin: keep One-time and Ongoing as they are, with auto-spend. No Repeating type. The code never had one (DURATIONS is oneTime and ongoing), so nothing changes."
 ---
 # Decide: remove the Ongoing / One-Time / Repeating types from weak, resist and other
 

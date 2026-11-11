@@ -149,7 +149,7 @@ button.ssm-reached { color: #4f9d5d; }
 
 /* The panel over the canvas. #ui-top ignores the pointer, so only the panel's own area takes clicks. */
 /* The height limit is 80% of #ui-top, which is the top half of the screen at any UI scale. The whole panel scrolls past that, so a redraw keeps the place. #ui-top is scaled but not narrowed, so the width limit divides the scale out. */
-.ssm-panel { pointer-events: auto; align-self: center; flex: none; box-sizing: border-box; width: fit-content; min-width: min(20rem, 100%); max-width: min(100%, calc(100% / var(--ui-scale, 1))); max-height: calc(80% - 0.5rem); overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; overflow-wrap: anywhere; margin-top: 0.5rem; padding: 0.4rem 0.75rem; background: rgba(20, 18, 16, 0.92); border: 1px solid #b8a06a; border-radius: 6px; color: #eee; font-size: var(--font-size-13, 0.8125rem); }
+.ssm-panel { pointer-events: auto; align-self: center; flex: none; box-sizing: border-box; width: fit-content; min-width: min(20rem, 100%); max-width: min(100%, calc(100% / var(--ui-scale, 1))); max-height: calc(80% - 0.5rem); overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; overflow-wrap: anywhere; margin-top: 0.5rem; padding: 0.4rem 0.75rem 0; background: rgba(20, 18, 16, 0.92); border: 1px solid #b8a06a; border-radius: 6px; color: #eee; font-size: var(--font-size-13, 0.8125rem); }
 /* Only the NPC columns set the panel's width. Long text elsewhere wraps instead of stretching it. */
 .ssm-panel-head, .ssm-panel-counters, .ssm-panel-run { contain: inline-size; }
 .ssm-panel[data-position="left"] { align-self: flex-start; }
@@ -160,8 +160,10 @@ button.ssm-reached { color: #4f9d5d; }
 .ssm-panel.moved.sized { display: flex; flex-direction: column; min-width: 0; max-width: none; max-height: none; }
 /* In a panel taller than its content, the handle is pushed down to the bottom. */
 .ssm-panel.sized > .ssm-panel-resize { flex: none; align-self: flex-end; margin-top: auto; }
+/* The panel's bottom padding sits on the content just above the handle, not on the panel. A bottom margin on the handle, cancelling panel padding, shrank the panel's height but not its scroll height, so a panel that fitted showed a scroll bar. */
+.ssm-panel > :nth-last-child(2) { padding-bottom: 0.4rem; }
 /* The corner handle is Foundry's window handle. As the panel's last child it sticks to the bottom-right corner while the content scrolls, and its negative margins keep it from taking up room. */
-.ssm-panel-resize { position: sticky; bottom: -0.4rem; width: 11px; height: 11px; margin: -11px -0.75rem -0.4rem auto; translate: -1px -1px; cursor: nwse-resize; touch-action: none; background: transparent url("../../../ui/resize-handle.webp") no-repeat center / contain; filter: invert(1); opacity: 0.7; }
+.ssm-panel-resize { position: sticky; bottom: 0; width: 11px; height: 11px; margin: -11px -0.75rem 0 auto; translate: -1px -1px; cursor: nwse-resize; touch-action: none; background: transparent url("../../../ui/resize-handle.webp") no-repeat center / contain; filter: invert(1); opacity: 0.7; }
 .ssm-panel-resize:hover, .ssm-panel.resizing .ssm-panel-resize { opacity: 1; }
 .ssm-panel.resizing { user-select: none; }
 .ssm-panel-head { cursor: var(--cursor-grab, grab); touch-action: none; user-select: none; }
@@ -181,6 +183,9 @@ button.ssm-reached { color: #4f9d5d; }
 .ssm-panel-npcs { display: flex; gap: 1rem; margin-top: 0.2rem; }
 .ssm-panel-npc { flex: 1 1 0; min-width: 0; max-width: 32rem; }
 .ssm-panel-npcs.several .ssm-panel-npc { max-width: 17rem; }
+/* The caps above set a panel's natural width. Once the panel is resized, the columns, their bars and their cards fill whatever width it has. */
+.ssm-panel.sized .ssm-panel-npc { max-width: none; }
+.ssm-panel.sized .ssm-panel-npcs.several .ssm-panel-mod { flex-basis: 12rem; }
 .ssm-panel-npc + .ssm-panel-npc { padding-left: 1rem; border-left: 1px solid rgba(184, 160, 106, 0.35); }
 .ssm-panel-npcs.several { font-size: var(--font-size-12, 0.75rem); }
 .ssm-panel-points { display: flex; align-items: center; gap: 0.5rem; }
@@ -222,6 +227,8 @@ button.ssm-reached { color: #4f9d5d; }
 /* A card's hover: its player text, and for a GM its GM text too, in Foundry's tooltip. */
 #tooltip.ssm-panel-tip .ssm-panel-tip-line { margin: 0; white-space: pre-line; }
 #tooltip.ssm-panel-tip .ssm-panel-tip-line + .ssm-panel-tip-line { margin-top: 0.35rem; }
+/* "GM Only" sits on a line of its own, above the GM text. */
+#tooltip.ssm-panel-tip .ssm-panel-tip-label { display: block; }
 .ssm-panel-mod-changes { color: #e8cf8f; }
 .ssm-panel-mod-changes > span:not(:last-child)::after { content: "; "; }
 .ssm-panel-thresholds { margin-top: 0.25rem; padding: 0.1rem 0.35rem; border: 1px solid rgba(184, 160, 106, 0.35); border-left: 3px solid #b8a06a; border-radius: 3px; background: rgba(255, 255, 255, 0.04); line-height: 1.25; }

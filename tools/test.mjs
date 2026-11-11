@@ -1468,7 +1468,7 @@ test("only a size with two numbers counts as saved", () => {
 /* A panel card's hover */
 
 const escapeHTML = (value) => String(value).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#x27;" })[c]);
-const tipText = { escape: escapeHTML, labels: { player: "Player", gm: "GM" } };
+const tipText = { escape: escapeHTML, gmLabel: "GM Only" };
 
 test("a player's hover holds the player text only, even if GM text is passed in", () => {
   assert.equal(V.cardTooltip({ playerText: "likes praise", gmText: GM_SECRET, isGM: false }, tipText), '<p class="ssm-panel-tip-line">likes praise</p>');
@@ -1476,11 +1476,11 @@ test("a player's hover holds the player text only, even if GM text is passed in"
   assert.equal(V.cardTooltip({ playerText: "  ", isGM: false }, tipText), "");
 });
 
-test("a GM's hover labels the player text and the GM text, and is empty with neither", () => {
-  assert.equal(V.cardTooltip({ playerText: "likes praise", gmText: "she is lying", isGM: true }, tipText),
-    '<p class="ssm-panel-tip-line"><strong>Player</strong> likes praise</p><p class="ssm-panel-tip-line"><strong>GM</strong> she is lying</p>');
-  assert.equal(V.cardTooltip({ playerText: "", gmText: "she is lying", isGM: true }, tipText), '<p class="ssm-panel-tip-line"><strong>GM</strong> she is lying</p>');
-  assert.equal(V.cardTooltip({ playerText: "likes praise", gmText: undefined, isGM: true }, tipText), '<p class="ssm-panel-tip-line"><strong>Player</strong> likes praise</p>');
+test("a GM's hover has the player text unlabelled, then GM Only over the GM text, and is empty with neither", () => {
+  const gmLine = '<p class="ssm-panel-tip-line"><strong class="ssm-panel-tip-label">GM Only</strong>she is lying</p>';
+  assert.equal(V.cardTooltip({ playerText: "likes praise", gmText: "she is lying", isGM: true }, tipText), '<p class="ssm-panel-tip-line">likes praise</p>' + gmLine);
+  assert.equal(V.cardTooltip({ playerText: "", gmText: "she is lying", isGM: true }, tipText), gmLine);
+  assert.equal(V.cardTooltip({ playerText: "likes praise", gmText: undefined, isGM: true }, tipText), '<p class="ssm-panel-tip-line">likes praise</p>');
   assert.equal(V.cardTooltip({ playerText: "", gmText: "", isGM: true }, tipText), "");
 });
 
