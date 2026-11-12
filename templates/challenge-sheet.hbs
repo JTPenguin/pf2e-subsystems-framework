@@ -174,7 +174,7 @@
         {{> ssmComplete subject root=..}}
         {{> ssmOrder subject}}
       </header>
-      {{#if subject.statLine}}<div class="ssm-stat-line ssm-gm-line" data-visibility="gm">{{subject.statLine}}</div>{{/if}}
+      {{#if subject.descriptionHtml}}<div class="ssm-subject-description">{{{subject.descriptionHtml}}}</div>{{/if}}
       {{#if subject.counters.length}}<div class="ssm-subject-counters">{{#each subject.counters}}{{> ssmCounterRun root=../..}}{{/each}}</div>{{/if}}
       {{#if subject.actions.length}}
       <div class="ssm-section">
@@ -265,10 +265,13 @@
       <legend>{{@root.subjectLabel}}</legend>
       <div class="ssm-row">
         <label class="grow">{{localize "SSM.Challenge.Name"}}<input type="text" name="{{subject.path}}.name" value="{{subject.name}}"></label>
-        <label class="grow" data-tooltip="SSM.Challenge.StatLineHint">{{localize "SSM.Challenge.StatLine"}}<input type="text" name="{{subject.path}}.statLine" value="{{subject.statLine}}"></label>
         <label class="check"><input type="checkbox" name="{{subject.path}}.revealed" {{checked subject.revealed}}>{{localize "SSM.Challenge.Revealed"}}</label>
         {{> ssmOrder subject}}
         {{#if subject.canRemove}}<button type="button" class="icon fa-solid fa-trash" data-action="removeRow" data-path="{{subject.path}}" aria-label="{{@root.removeSubjectLabel}}" data-tooltip-text="{{@root.removeSubjectLabel}}"></button>{{/if}}
+      </div>
+      <div class="ssm-action-lines ssm-subject-description-edit">
+        <span class="ssm-field-label" data-tooltip="SSM.Challenge.SubjectDescriptionHint">{{localize "SSM.Challenge.SubjectDescription"}}</span>
+        <prose-mirror name="{{subject.path}}.description" toggled value="{{subject.description}}">{{{subject.descriptionHtml}}}</prose-mirror>
       </div>
     </fieldset>
 

@@ -50,6 +50,7 @@
     <div class="ssm-panel-points">
       <span class="ssm-panel-subject-name">{{#if complete}}<i class="fa-solid fa-circle-check ssm-panel-complete" role="img" aria-label="{{localize "SSM.Challenge.Complete"}}" data-tooltip="{{localize "SSM.Challenge.Complete"}}"></i> {{/if}}{{name}}</span>
     </div>
+    {{#if descriptionHtml}}<div class="ssm-panel-subject-description">{{{descriptionHtml}}}</div>{{/if}}
     {{#if counterSet.any}}<div class="ssm-panel-subject-counters">{{> ssmPanelCounters counterSet}}</div>{{/if}}
     {{#if actions.length}}<div class="ssm-panel-actions">
     {{#each actions}}<div class="ssm-panel-action {{#if open}}open{{/if}}">

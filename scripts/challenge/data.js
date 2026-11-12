@@ -86,7 +86,7 @@ export function setCounterNote(system, counterId, actorId, note) {
 export const newAction = () => ({ id: id(), name: "", description: "", secret: false, checks: [] });
 
 /** A subject with no counters. Complete is the GM's alone (spec 14.13). */
-const blankSubject = () => ({ id: id(), name: "", statLine: "", revealed: false, complete: false, counters: [], modifiers: [], actions: [] });
+const blankSubject = () => ({ id: id(), name: "", description: "", revealed: false, complete: false, counters: [], modifiers: [], actions: [] });
 /** A subject with one counter named by the points name, as most presets make them. */
 const pointsSubject = (system, counter = {}) => ({ ...blankSubject(), counters: [newSubjectCounter(system, counter)] });
 
@@ -436,7 +436,7 @@ export function searchText(system) {
   for (const counter of allCounters(system)) parts.push(counter.name, ...thresholds(counter.thresholds));
   for (const modifier of system.modifiers ?? []) parts.push(modifier.name, modifier.category, modifier.playerText, modifier.gmText, ...modifier.effects.map((row) => row.note));
   for (const subject of system.subjects) {
-    parts.push(subject.name, subject.statLine);
+    parts.push(subject.name, subject.description);
     for (const action of subject.actions) parts.push(action.name, action.description);
     for (const modifier of subject.modifiers) parts.push(modifier.name, modifier.category, modifier.playerText, modifier.gmText, ...modifier.effects.map((row) => row.note));
   }

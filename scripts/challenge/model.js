@@ -72,7 +72,8 @@ const counterFields = () => ({
 const subjectFields = () => ({
   id: rowId(),
   name: text(),
-  statLine: text(),
+  // Who or what the subject is, as rich text like an action's description. Players see it but its secret blocks.
+  description: new HTMLField({ required: true, blank: true, initial: "" }),
   revealed: flag(),
   // Set and cleared by the GM only (spec 14.13).
   complete: flag(),
@@ -111,5 +112,15 @@ export class ChallengeModel extends foundry.abstract.TypeDataModel {
         roundHistory: list({ round: int(), acted: ids(), counters: new ObjectField({ required: true, initial: {} }), reached: ids() }),
       }),
     };
+  }
+
+  /** A subject saved with the old GM-only stat line keeps its text as the description. */
+  static migrateData(source) {
+    for (const subject of source.subjects ?? []) {
+      if (typeof subject.statLine !== "string") continue;
+      if (subject.statLine && !subject.description) subject.description = `<p>${foundry.utils.escapeHTML(subject.statLine)}</p>`;
+      delete subject.statLine;
+    }
+    return super.migrateData(source);
   }
 }

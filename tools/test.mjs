@@ -362,7 +362,7 @@ test("applyForm changes the editable parts and never the run state or the preset
 
 test("searchText covers the challenge's text", () => {
   const s = system();
-  Object.assign(sub(s), { name: "Vance", statLine: "Perception +12" });
+  Object.assign(sub(s), { name: "Vance", description: "<p>Perception +12</p>" });
   Object.assign(D.addRow(s, "subjects.0.counters.0.thresholds"), { gmText: "secret ending" });
   Object.assign(D.addRow(s, "counters"), { name: "Suspicion", thresholds: [{ ...D.newThreshold(), gmText: "guards arrive" }] });
   influence(s).name = "Sway";
@@ -436,6 +436,16 @@ test("an action's description reaches the panel copy without its secret blocks",
   assert.equal(copy.description, "<p>Sway them.</p><p><strong>Success</strong> +1</p>");
   assert.doesNotMatch(JSON.stringify(view), /flattery/);
   assert.equal(V.withoutSecrets(""), "");
+});
+
+test("a subject's description reaches the panel copy without its secret blocks", () => {
+  const s = system();
+  sub(s).revealed = true;
+  assert.equal(sub(system()).description, "", "a new subject has an empty description");
+  sub(s).description = '<p>A <em>proud</em> noble.</p><section class="secret" id="secret-y"><p>Owes the guild.</p></section>';
+  const view = V.buildPanelView({ name: "c", system: s, party: [] });
+  assert.equal(view.subjects[0].description, "<p>A <em>proud</em> noble.</p>");
+  assert.doesNotMatch(JSON.stringify(view), /guild/);
 });
 
 /* Rolls */
@@ -898,7 +908,7 @@ const secretSystem = () => {
   s.premise = `<p>${GM_SECRET} premise</p>`;
   s.gmNotes = `<p>${GM_SECRET} notes</p>`;
   const subject = sub(s);
-  Object.assign(subject, { name: "Lady Vance", statLine: `${GM_SECRET} stats` });
+  Object.assign(subject, { name: "Lady Vance", description: `<p>A noble.</p><section class="secret" id="secret-v"><p>${GM_SECRET} stats</p></section>` });
   subject.counters[0].thresholds = [{ ...D.newThreshold(), points: 8, dc: 3, playerText: "she offers an introduction", gmText: `${GM_SECRET} threshold` }];
   subject.modifiers = [{ ...D.newModifier(), name: "Flattery", playerText: "likes praise", gmText: `${GM_SECRET} modifier`, effects: [{ ...D.newEffect(), note: `${GM_SECRET} effect` }] }];
   s.counters = [{ ...D.newCounter(), name: "Suspicion", value: 3, min: -111, max: 222, perRound: 1, thresholds: [{ ...D.newThreshold(), points: 5, playerText: "the guards stir", gmText: `${GM_SECRET} counter threshold` }] }];

@@ -297,7 +297,9 @@ fieldset:has(> .ssm-checks-wrap) { min-width: 0; }
 .ssm-sheet .ssm-subject-hidden { border-style: dashed; }
 .ssm-sheet .ssm-subject-hidden > .ssm-block-head { opacity: var(--ssm-hidden-opacity); }
 .ssm-sheet .ssm-block-head > h3 { flex: 1 1 auto; min-width: 0; }
-.ssm-sheet .ssm-stat-line { width: fit-content; max-width: 100%; margin-bottom: var(--space-4, 0.25rem); line-height: 1.3; }
+.ssm-sheet .ssm-subject-description { margin-bottom: var(--space-4, 0.25rem); line-height: 1.3; }
+.ssm-sheet .ssm-subject-description > :first-child { margin-top: 0; }
+.ssm-sheet .ssm-subject-description > :last-child { margin-bottom: 0; }
 .ssm-sheet .ssm-pc-row { margin-bottom: 0.1rem; }
 .ssm-sheet .ssm-pc-row > button.icon { --button-size: 1.5rem; width: 1.5rem; height: 1.5rem; }
 .ssm-sheet .ssm-counter .ssm-threshold { box-sizing: border-box; border: 1px solid var(--color-border, #7a7971); border-radius: 3px; margin: 0.2rem 0 0 2rem; padding: 0.1rem 0.3rem; }
@@ -327,6 +329,10 @@ fieldset:has(> .ssm-checks-wrap) { min-width: 0; }
 .ssm-panel-action-description { margin-top: 0.2rem; padding-top: 0.2rem; border-top: 1px solid rgba(184, 160, 106, 0.25); font-size: var(--font-size-12, 0.75rem); line-height: 1.35; }
 .ssm-panel-action-description p { margin: 0 0 0.25rem; }
 .ssm-panel-action-description > :last-child { margin-bottom: 0; }
+/* A subject's description: plain text in its column, under the name. */
+.ssm-panel-subject-description { margin: 0.15rem 0 0.25rem; font-size: var(--font-size-12, 0.75rem); line-height: 1.35; }
+.ssm-panel-subject-description p { margin: 0 0 0.25rem; }
+.ssm-panel-subject-description > :last-child { margin-bottom: 0; }
 .ssm-panel-action-name > i { margin-left: 0.15rem; font-size: 0.85em; opacity: 0.75; }
 .ssm-panel-action .ssm-panel-list { display: flex; flex-wrap: wrap; gap: 0 0.25rem; }
 /* A modifier section per category: a heading in the category's colour, then its cards, or "None revealed". The blank category has no heading. */
@@ -385,6 +391,13 @@ fieldset:has(> .ssm-checks-wrap) { min-width: 0; }
 .ssm-sheet .ssm-action-edit prose-mirror.inactive { min-height: 2rem; }
 .ssm-sheet .ssm-action-edit prose-mirror.inactive .editor-content { position: static; }
 .ssm-sheet .ssm-action-edit prose-mirror.active { min-height: 16rem; }
+/* A subject's description editor sizes the same way; its fieldset keeps its full height. */
+.ssm-sheet fieldset:has(> .ssm-subject-description-edit) { flex: none; }
+.ssm-sheet .ssm-subject-description-edit { display: block; margin-top: 0.25rem; }
+.ssm-sheet .ssm-subject-description-edit .ssm-field-label { display: block; }
+.ssm-sheet .ssm-subject-description-edit prose-mirror.inactive { min-height: 2rem; }
+.ssm-sheet .ssm-subject-description-edit prose-mirror.inactive .editor-content { position: static; }
+.ssm-sheet .ssm-subject-description-edit prose-mirror.active { min-height: 16rem; }
 .ssm-sheet .ssm-action-name { font-size: var(--font-size-14, 0.875rem); }
 /* A category's heading inside Modifiers takes the category's stripe colour. */
 .ssm-sheet .ssm-cat-group > .ssm-cat-head { margin: var(--space-4, 0.25rem) 0 var(--space-2, 0.125rem); padding-left: var(--space-4, 0.25rem); border-left: 3px solid var(--ssm-cat, var(--color-border-book, #7a7971)); font-size: inherit; font-weight: 600; }

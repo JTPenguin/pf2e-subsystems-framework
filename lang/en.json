@@ -167,8 +167,8 @@
       "SubjectLabel": "Subject label",
       "NoLimit": "No limit",
       "RoundOpen": "Round {current}",
-      "StatLine": "Stat line",
-      "StatLineHint": "GM only. For example: Perception +12, Will +9.",
+      "SubjectDescription": "Description",
+      "SubjectDescriptionHint": "Who or what the subject is. Players see it on the panel, except its secret blocks.",
       "DirectionLabel": "Direction",
       "Direction": {
         "up": "Counts up",

@@ -290,7 +290,7 @@ Every subsystem runs on one data model, one sheet and one panel: GM Core's [Vict
 | Completion | The GM marks a subject Complete by hand: a check on its column, and its actions fade but still roll. Nothing sets it (14.13). | Justin, 2026-11-12 |
 | Diminishing points | A direction on the counter itself: **counts up** or **counts down**. Not set per threshold. | Justin |
 | Names | Each challenge stores a points name and a subject label. The preset fills them in; the GM can edit them. | Justin |
-| NPC stats | Every subject has one GM-only stat line of free text. Old Perception and Will numbers convert to "Perception +12, Will +9". | Justin |
+| Subject description | Every subject has a rich-text description in place of the old GM-only stat line. Players see it in the subject's column on the panel, under the name, except its secret blocks. An old stat line becomes the description. | Justin, 2026-11-12 |
 | No outcome tables | Rolls change nothing. Actions have no outcome table or maximum points, and the GM changes every value by hand (section 8). | Justin, 2026-11-12 |
 | Per-round and threshold rules | A counter can change by a set amount each round. A threshold can carry effects that apply while it is reached. | Justin |
 | Modifier categories | A modifier's kind becomes a free-text category. The preset suggests names. See 14.7. | Justin, 2026-11-11 |
@@ -324,7 +324,7 @@ Every subsystem runs on one data model, one sheet and one panel: GM Core's [Vict
 
 | Field | Notes |
 |---|---|
-| Name, stat line | The stat line is GM-only |
+| Name, description | The description is rich text. Players see it on the panel, except its secret blocks |
 | Revealed | Off: not on the panel at all |
 | Counters | Zero or more, each a full counter (14.13). A subject with none holds only actions, such as an Infiltration opportunity. |
 | Complete | Set and cleared by the GM only |
@@ -371,7 +371,7 @@ Run mode keeps its layout. Changes:
 Edit mode changes:
 
 - The challenge has the points name, subject label and an optional round maximum.
-- Each subject has the stat line, and a Counters box like the challenge's (14.13).
+- Each subject has the description, and a Counters box like the challenge's (14.13).
 - Each action is a card: its name, Secret and description, then its checks as an inline table. The description is rich text, like an item's, so it can hold the action's degrees of success. Its secret blocks are the GM's alone.
 - Counters have direction, change each round, and thresholds in place of triggers.
 

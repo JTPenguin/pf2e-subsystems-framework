@@ -112,7 +112,7 @@ function toggleAction(state, button) {
   return refreshPanel();
 }
 
-/** An action's description as HTML. The copy holds no secret blocks, and inline rolls and links work as on an item. */
+/** A subject's or an action's description as HTML. The copy holds no secret blocks, and inline rolls and links work as on an item. */
 const enrichDescription = (html) => (html ? foundry.applications.ux.TextEditor.implementation.enrichHTML(html, { secrets: false }) : "");
 
 /** The panel's context, drawn only from the filtered copy. On a GM's client, the round buttons, the decoy tags and the cards' GM text also read the challenge. */
@@ -133,6 +133,7 @@ async function prepareView(view, state) {
     subjects: await Promise.all(view.subjects.map(async (subject, n) => ({
       ...subject,
       name: subjectName(subject, subject.index ?? n, view.subjectLabel),
+      descriptionHtml: await enrichDescription(subject.description),
       // A copy built before subjects had counters has none (spec 14.9): draw the subject without them.
       counterSet: counterSet(subject.counters ?? [], pcs, page),
       // Only ids go in the HTML. A click looks the DC up in the copy.

@@ -80,6 +80,9 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
   /** Each action's enriched description, by action id, from the last context. */
   #actionHtml = new Map();
 
+  /** Each subject's enriched description, by subject id, from the last context. */
+  #subjectHtml = new Map();
+
   #tab = CHALLENGE_TAB;
 
   /** Edit or Run. Null until the user picks: a running challenge opens in Run mode. */
@@ -218,6 +221,10 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
     const actionHtml = new Map();
     for (const action of system.subjects.flatMap((subject) => subject.actions)) actionHtml.set(action.id, action.description ? await enrich(action.description) : "");
     this.#actionHtml = actionHtml;
+    // Each subject's description, by subject id, the same way.
+    const subjectHtml = new Map();
+    for (const subject of system.subjects) subjectHtml.set(subject.id, subject.description ? await enrich(subject.description) : "");
+    this.#subjectHtml = subjectHtml;
     // A both-ways track's Reached follows its value, so its checkbox is left out.
     const thresholds = (rows, path, direction) => rows.map((row, i) => ({ ...row, path: `${path}.thresholds.${i}`, followsValue: direction === BOTH_WAYS }));
     const counterEdit = (counter, path) => ({ ...counter, path, thresholds: thresholds(counter.thresholds, path, counter.direction) });
@@ -227,6 +234,7 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
         ...subject,
         path,
         tabLabel: subjectName(subject, n, subjectLabel),
+        descriptionHtml: subjectHtml.get(subject.id),
         canRemove: system.subjects.length > 1,
         canMoveUp: n > 0,
         canMoveDown: n < system.subjects.length - 1,
@@ -384,7 +392,7 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
         canMoveUp: n > 0,
         canMoveDown: n < system.subjects.length - 1,
         collapsed: isCollapsed(subject.id),
-        statLine: subject.statLine,
+        descriptionHtml: this.#subjectHtml.get(subject.id) ?? "",
         revealed: subject.revealed,
         // Set and cleared by the GM only (spec 14.13).
         complete: subject.complete,

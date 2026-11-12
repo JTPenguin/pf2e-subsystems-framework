@@ -114,6 +114,8 @@ function subjectView(system, subject, party) {
     // Its place in the GM's order, for a stand-in name such as "Obstacle 3".
     index: system.subjects.indexOf(subject),
     name: subject.name,
+    // Everyone sees the description but its secret blocks.
+    description: withoutSecrets(subject.description),
     complete: !!subject.complete,
     // The subject's revealed counters, drawn in its column (spec 14.13).
     counters: (subject.counters ?? []).filter(isVisible).map((counter) => counterView(system, counter, party)),
