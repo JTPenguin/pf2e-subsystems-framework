@@ -6,8 +6,6 @@ import { MODULE } from "./constants.js";
  * Required: id, label (language key), icon, model (page data model), sheet (JournalEntry sheet class).
  * Optional: presets, a list of { id, label, icon } the create button offers, and createSystem(presetId) for a new challenge's data, searchText(system) for full-text search,
  * receiveRoll(page, roll) for a roll as it arrives, from the shared roll listener on the active GM's client.
- * renderRollCard(page, roll, message, content) adds the GM's controls to the drawn `.message-content` of one of its rolls' chat cards. It runs on GM clients only.
- * renderResultCard(page, message, content) does the same for an applied-result card, a message whose module flag `result` names the challenge.
  * resetCopy(system) puts a new challenge's plain source data back to not started, and returns false if it changed nothing.
  * panel: what the shared panel needs (spec section 4). Leave it out for a subsystem with no panel.
  *   isRunning(system): whether the challenge can be on the panel. Any number can run; one is on the panel at a time.

@@ -1,29 +1,15 @@
 import { MODULE } from "../constants.js";
 import { actionName, skillKeyLabel, skillLabel } from "./skill-label.js";
 import { writeChallenge } from "./state.js";
-import { ACTION_FIELDS, addRow, categoryKey, categoryOrder, challengeSkillKeys, DURATIONS, EFFECT_TYPES, entryChanges, findAction, findModifier, mergeForm, MODIFIER_FIELDS, OUTCOME_EFFECT_TYPES, OUTCOMES, QUICK_DC_AMOUNTS, rebaseEntry, removeRow, saveAction, saveModifier, setEffectAmount } from "./data.js";
+import { ACTION_FIELDS, addRow, categoryKey, categoryOrder, challengeSkillKeys, DURATIONS, EFFECT_TYPES, entryChanges, findAction, findModifier, mergeForm, MODIFIER_FIELDS, QUICK_DC_AMOUNTS, rebaseEntry, removeRow, saveAction, saveModifier, setEffectAmount } from "./data.js";
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
 const loc = (key) => game.i18n.localize(key);
 const labels = (values, prefix) => Object.fromEntries(values.map((value) => [value, loc(`SSM.Challenge.${prefix}.${value}`)]));
 
-/** What an effect row shows, by its type. */
-const effectView = (effect, path, canRemove) => ({
-  ...effect, path, canRemove,
-  isDc: effect.type === "dc",
-  isCounter: effect.type === "counter",
-  isNote: effect.type === "note",
-  hasAmount: effect.type !== "note",
-});
-
-/** The effect types as a select's choices. The points type is named after the challenge's points. */
-const effectChoices = (types, system) => {
-  const choices = labels(types, "Effect");
-  if (types.includes("points")) choices.points = system.pointsName || loc("SSM.Challenge.Points");
-  return choices;
-};
-const counterChoices = (system) => ({ "": loc("SSM.Challenge.ChooseCounter"), ...Object.fromEntries(system.counters.map((c) => [c.id, c.name || loc("SSM.Challenge.UnnamedCounter")])) });
+/** What an effect row shows, by its type: a DC change or a note. */
+const effectView = (effect, path, canRemove) => ({ ...effect, path, canRemove, isDc: effect.type === "dc", isNote: effect.type === "note" });
 
 /**
  * A window for one entry of a subject or, for a modifier, of the challenge itself: a modifier or an action (spec sections 6, 14.4 and 14.7).
@@ -247,20 +233,18 @@ export class ModifierWindow extends EntryWindow {
     const skillOptions = subject
       ? Object.fromEntries(subject.actions.flatMap((action) => action.checks.map((row) => [row.id, `${actionName(action)}: ${skillLabel(row)}`])))
       : Object.fromEntries(challengeSkillKeys(system).map((key) => [key, skillKeyLabel(system, key)]));
-    // A challenge-level entry has no subject whose points it could change.
-    const types = subject ? EFFECT_TYPES : EFFECT_TYPES.filter((type) => type !== "points");
     return {
       modifier,
       challengeLevel: !subject,
       // The preset's suggestions and every category in use, offered as the GM types.
       effects: modifier.effects.map((effect, e) => ({ ...effectView(effect, `effects.${e}`, modifier.effects.length > 1), skillOptions })),
       quickDcAmounts: QUICK_DC_AMOUNTS.map((amount) => ({ amount, label: amount > 0 ? `+${amount}` : `${amount}`.replace("-", "−") })),
-      choices: { durations: labels(DURATIONS, "Duration"), effects: effectChoices(types, system), counters: counterChoices(system) },
+      choices: { durations: labels(DURATIONS, "Duration"), effects: labels(EFFECT_TYPES, "Effect") },
     };
   }
 }
 
-/** The window for one action: its name, Secret, maximum points and outcome table. Its checks are edited on the sheet. */
+/** The window for one action: its name, description and Secret. Its checks are edited on the sheet. */
 export class ActionWindow extends EntryWindow {
   static ENTRY = { key: "action", find: findAction, fields: ACTION_FIELDS, save: saveAction, titleKey: "SSM.Challenge.EditActionTitle", unnamed: "SSM.Challenge.UnnamedAction", goneKey: "SSM.Challenge.ActionGone" };
 
@@ -269,15 +253,6 @@ export class ActionWindow extends EntryWindow {
   static PARTS = { form: { template: `modules/${MODULE}/templates/challenge-action.hbs` } };
 
   _entryContext(system, subject, action) {
-    return {
-      action,
-      outcomes: OUTCOMES.map((outcome) => ({
-        key: outcome,
-        label: loc(`SSM.Challenge.Outcome.${outcome}`),
-        list: `outcomes.${outcome}`,
-        effects: action.outcomes[outcome].map((effect, e) => effectView(effect, `outcomes.${outcome}.${e}`, true)),
-      })),
-      choices: { effects: effectChoices(OUTCOME_EFFECT_TYPES, system), counters: counterChoices(system) },
-    };
+    return { action };
   }
 }

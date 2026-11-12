@@ -1,5 +1,4 @@
 import { registerSubsystem } from "../registry.js";
-import { renderChallengeCard, renderResultCard } from "./chat-card.js";
 import { newChallengeSystem, PRESETS, searchText } from "./data.js";
 import { ChallengeModel } from "./model.js";
 import { challengePanel } from "./panel.js";
@@ -19,8 +18,6 @@ export function registerChallenge() {
     createSystem: newChallengeSystem,
     searchText,
     receiveRoll: receiveChallengeRoll,
-    renderRollCard: renderChallengeCard,
-    renderResultCard,
     resetCopy: resetRun,
     panel: challengePanel,
   });

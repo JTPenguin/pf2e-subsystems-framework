@@ -25,8 +25,8 @@ const barOf = (value, track) => (track.range ? bothWaysBar(value, track.range) :
  * A modifier card's context: its category, duration and state as labels, each change as text, marked done once it has happened,
  * and the hover text. `gmText` and `decoy` are read from the challenge on a GM's client only; players pass nothing.
  */
-function modifierCard(row, subjectId, pointsName, gmText, decoy) {
-  const text = { format: (key, data) => game.i18n.format(key, data), list: (items) => game.i18n.getListFormatter().format(items), label: skillLabel, points: pointsName };
+function modifierCard(row, subjectId, gmText, decoy) {
+  const text = { format: (key, data) => game.i18n.format(key, data), list: (items) => game.i18n.getListFormatter().format(items), label: skillLabel };
   return {
     ...row,
     subjectId,
@@ -36,8 +36,8 @@ function modifierCard(row, subjectId, pointsName, gmText, decoy) {
     categoryLabel: row.category,
     stripe: row.colour ? `--ssm-cat: ${row.colour}` : "",
     durationLabel: loc(`SSM.Challenge.Duration.${row.duration}`),
-    // Struck once it has happened: all of a spent entry, or an applied entry's changes other than a DC change.
-    changes: row.changes.map((change) => ({ text: changeText(change, text), done: row.spent || (row.applied && change.type !== "dc") })),
+    // Struck once a one-time entry is spent.
+    changes: row.changes.map((change) => ({ text: changeText(change, text), done: row.spent })),
     inactive: !row.active && !row.spent,
     tooltip: cardTooltip({ playerText: row.text, gmText, isGM: game.user.isGM }, { escape: foundry.utils.escapeHTML, gmLabel: loc("SSM.Panel.TipGM") }),
   };
@@ -73,7 +73,6 @@ function prepareView(view, state) {
   const page = gmPage(state);
   const gm = gmTexts(page);
   const decoys = gmDecoys(page);
-  const pointsName = view.pointsName || loc("SSM.Challenge.Points");
   const pcs = new Map(view.party.map((pc) => [pc.id, pc]));
   const segments = roundSegments(view.rounds.current, view.rounds.max);
   return {
@@ -83,7 +82,7 @@ function prepareView(view, state) {
     ...roundButtons(page),
     several: view.subjects.length > 1,
     // Challenge-level entries: a full-width strip above the subject columns, hidden with none revealed (spec 14.7).
-    challengeMods: (view.modifiers ?? []).map((row) => modifierCard(row, "", pointsName, gm.get(`:${row.id}`), decoys.has(`:${row.id}`))),
+    challengeMods: (view.modifiers ?? []).map((row) => modifierCard(row, "", gm.get(`:${row.id}`), decoys.has(`:${row.id}`))),
     subjects: view.subjects.map((subject, n) => ({
       ...subject,
       name: subjectName(subject, subject.index ?? n, view.subjectLabel),
@@ -104,7 +103,7 @@ function prepareView(view, state) {
       modifierGroups: subject.modifierGroups.map((group) => ({
         heading: group.label,
         stripe: group.colour ? `--ssm-cat: ${group.colour}` : "",
-        cards: group.cards.map((row) => ({ ...modifierCard(row, subject.id, pointsName, gm.get(`${subject.id}:${row.id}`), decoys.has(`${subject.id}:${row.id}`)), categoryLabel: "" })),
+        cards: group.cards.map((row) => ({ ...modifierCard(row, subject.id, gm.get(`${subject.id}:${row.id}`), decoys.has(`${subject.id}:${row.id}`)), categoryLabel: "" })),
       })),
     })),
     // A counter drawn as a bar, steps or a track gets its own row and threshold card; numbers share one line (spec 14.12).

@@ -20,7 +20,7 @@ The first version covers **Influence only**. The data and panel code are built s
 | Rolling | Players click skills on the panel. The GM can also click them, or roll or post chat links from the sheet. | Justin |
 | Roll results | Normal PF2e checks. Players see the degree of success on the chat card as with any other roll, subject to PF2e's own metagame settings. | Justin |
 | Missing Lore | A PC without a listed Lore rolls it untrained (Intelligence +0) from the sheet or panel. Chat links can't do this, as PF2e reports the statistic as missing. | Justin |
-| Applying points | The module suggests the change, and the GM applies it with one button on the roll's chat card | Justin |
+| Applying points | Nothing applies points automatically. The GM changes every value by hand with + and − on the sheet. A roll only marks the PC as acted and spends the one-time DC entries it used. | Justin, 2026-11-12 |
 | NPCs | One challenge holds one or more NPCs and one shared round clock | Justin |
 | Hidden by default | Everything except the NPC name, Influence Points, rounds remaining and the universal skills: Perception for Discovery, and Deception, Diplomacy and Intimidation for Influence | Justin |
 | Universal skills | Always on the panel, with no reveal control and no decoy flag. A new NPC starts with a row for each, at the default DC; the GM can edit or delete them. Existing NPCs are unchanged. A universal row flagged as a decoy (from an import, say) is treated as not a decoy. | Justin |
@@ -59,7 +59,7 @@ Sidebar tab -> Challenge (journal entry + typed page, GM only) -> GM sheet
                                   |
                   Panel on every client (players and GM)
                                   |
-              Player roll -> chat message -> GM presses Apply on the card -> points change
+              Player roll -> chat message -> GM changes points by hand on the sheet
 ```
 
 **Storage.** Each challenge is a `JournalEntry` holding one page of type `pf2e-subsystem-manager.challenge`. Journal entries bring folders, compendiums, JSON export and duplication for free. Players have no ownership of them, so the interface doesn't show them to players.
@@ -70,7 +70,7 @@ Sidebar tab -> Challenge (journal entry + typed page, GM only) -> GM sheet
 
 **Limit on secrecy.** Secrets only need to stay out of the player interface. As elsewhere in Foundry, a player who digs through the browser console may be able to read them, and Justin accepts that. A player-side roll needs the DC, so the copy includes DCs for revealed and universal skills, and the panel doesn't show them. The filtered copy leaves out unrevealed entries, decoy markers and GM text.
 
-**Multiple GMs.** Only the active GM's client writes state and handles roll results. Other GMs see the Apply button on a roll's card, disabled.
+**Multiple GMs.** Only the active GM's client writes state and handles arriving rolls.
 
 **Extension point.** Each subsystem registers one definition: its data model, sheet, the function that builds the filtered copy, and its panel renderer. The sidebar, activation, panel frame and roll listener are shared.
 
@@ -112,14 +112,13 @@ Sidebar tab -> Challenge (journal entry + typed page, GM only) -> GM sheet
 | Effect | What it does |
 |---|---|
 | DC change | Signed amount, on all skills or chosen skills. Sheet offers quick −5, −2, +2 and +5. |
-| Influence Points | Add or remove a flat amount |
-| Counter change | Add or remove from a named counter |
-| Rounds | Add or remove rounds |
 | Note only | A consequence with no number, such as "she ends the conversation" |
 
-**The state control is an icon button.** In the GM window it sits beside the eye, with a check icon (a rotate-back icon when Spent), `aria-pressed`, and a label and tooltip that say On, Off or Spent. Click it to switch On or Off, or to restore a Spent entry. It is solid green when On and looks like the eye button otherwise. Apply stays a separate button.
+Points, counter and rounds effects were removed (Justin, 2026-11-12): the GM makes those changes by hand.
 
-**How one-time entries work.** The GM turns one on. A DC change applies to the next check it matches. It is spent when that roll arrives, for Influence and Discover alike, so the next check gets the normal DC. If the GM skips Apply on that roll, they click the entry's restore button to restore it. Any other effect applies when the GM clicks apply. Spent entries can be restored.
+**The state control is an icon button.** In the GM window it sits beside the eye, with a check icon (a rotate-back icon when Spent), `aria-pressed`, and a label and tooltip that say On, Off or Spent. Click it to switch On or Off, or to restore a Spent entry. It is solid green when On and looks like the eye button otherwise.
+
+**How one-time entries work.** The GM turns one on. A DC change applies to the next check it matches. It is spent when that roll arrives, for Influence and Discover alike, so the next check gets the normal DC. If the roll shouldn't have used it, the GM clicks the entry's restore button.
 
 **Counter.** Name, value, optional minimum and maximum, optional trigger values with GM notes, and a revealed flag. When a value reaches a trigger, the GM gets a notice.
 
@@ -218,24 +217,10 @@ A DC change names only skills the panel shows (universal or revealed). It says n
 
 1. A player clicks a skill, or the GM rolls or posts a link. The check is a normal PF2e roll with the current DC, always hidden from players. The roll carries a module identifier: challenge, NPC, skill, whether it's Influence or Discover, and a roll id. A Discover check has PF2e's `secret` trait, like Recall Knowledge, from the panel, the roll button and a chat link alike: a player's roll is blind, so players see that a roll was made but not its result, and the GM's own roll goes to GMs only. Influence rolls stay public. PF2e's Show Secret Checks setting, if turned on, makes secret rolls visible again.
 2. When the message arrives, the active GM's client marks the PC as having acted. Advancing the round clears the markers. The GM can toggle a marker by hand.
-3. **Influence.** The GM's copy of the chat card gets one **Apply** button, showing the suggested change: critical success +2, success +1, failure 0, critical failure −1. Apply adds those points and marks any thresholds they reach. There is no Adjust or Ignore: to use another amount, the GM skips Apply and changes points by hand on the sheet.
-4. **Discover.** No button. The GM's copy of the card gets a reminder of what the result earns: one piece of information, two on a critical success, a false one on a critical failure. The GM reveals entries by hand.
-5. **One-time DC entries** the roll used are spent when it arrives, for both kinds (Justin, 2026-11-09). A second PC rolling before Apply then gets the normal DC, and changing another DC entry before Apply can't leave the entry unspent. If the GM skips Apply on that roll, they click the entry's restore button on the sheet. A roll used an entry only if it was made at the current DC; a roll at any other DC, such as an old chat link, leaves it for the next check. A roll that arrived with no active GM online spends its entries when it's applied instead.
+3. **Results.** No roll changes points, counters or rounds (Justin, 2026-11-12). The GM reads the degree of success on the card and changes values by hand with + and − on the sheet. The chat card is PF2e's own: the module adds nothing to it, for the GM or for players.
+4. **One-time DC entries** the roll used are spent when it arrives, for both kinds (Justin, 2026-11-09), so the next check gets the normal DC. If the roll shouldn't have used one, the GM clicks the entry's restore button on the sheet. A roll used an entry only if it was made at the current DC; a roll at any other DC, such as an old chat link, leaves it for the next check. A roll that arrives with no active GM online spends nothing.
 
-**Apply works once.** After Apply, the message carries an `applied` flag, so the button shows as Applied and disabled for every GM and after a reload. The challenge also records the roll id, and Apply checks it inside the write queue, so a double click or a stale card can't count a result twice. Only the active GM can press Apply; other GMs see it disabled.
-
-**When Apply is disabled.** The button explains why when the challenge isn't running, or the NPC or skill has been removed. A card whose challenge was deleted shows a note instead. Cards on screen redraw when the challenge starts, ends or resets. A card from before a Reset can still be applied once the challenge is started again, so the GM leaves old cards alone.
-
-**What players see.** The plain PF2e roll, before and after Apply. The button and reminder are added only when a GM's client draws the card. They are never part of the message, which holds only the `applied` flag.
-
-**Rerolls.** A PF2e reroll (Hero Point or the reroll menu) deletes the old message and posts a new one with the same roll id. Each card applies on its own:
-
-| Situation | What happens |
-|---|---|
-| The first roll wasn't applied | Its card is gone. The reroll's card has its own Apply. |
-| The first roll was already applied | The reroll's card shows Apply disabled, with a note to change points by hand if needed. |
-
-A reroll doesn't mark the PC as acted again.
+**Rerolls.** A PF2e reroll (Hero Point or the reroll menu) deletes the old message and posts a new one marked as a reroll. A reroll doesn't mark the PC as acted again and spends no entries.
 
 ## 9. Not in the first version
 
@@ -301,16 +286,16 @@ Every subsystem runs on one data model, one sheet and one panel: GM Core's [Vict
 | Where points live | On each subject. Counters stay challenge-wide. | Justin, 2026-11-11 |
 | Individual subjects | Each PC has their own points on the subject. The panel shows one row per PC: portrait, then points bar. Everyone sees every row. | Justin |
 | Subjects on the panel | Each subject has an eye toggle. Only revealed subjects show, one column each. | Justin |
-| Shared pool | A counter is a full points track: a bar, and the same thresholds a subject has. An action's outcome can add to a counter. There is no third kind of pool. | Justin |
+| Shared pool | A counter is a full points track: a bar, and the same thresholds a subject has. There is no third kind of pool. | Justin |
 | Completion | A subject can have a goal. Reaching it marks the subject Complete: a check on its column, and its actions fade but still roll. The GM can set or clear Complete by hand. | Justin |
 | Diminishing points | A direction on the track itself (a subject's points or a counter): **counts up** or **counts down**. Not set per threshold. | Justin |
 | Names | Each challenge stores a points name and a subject label. The preset fills them in; the GM can edit them. | Justin |
 | NPC stats | Every subject has one GM-only stat line of free text. Old Perception and Will numbers convert to "Perception +12, Will +9". | Justin |
-| Outcome table | Set per action; the GM can edit it. Presets fill it in. | Justin |
+| No outcome tables | Rolls change nothing. Actions have no outcome table or maximum points, and the GM changes every value by hand (section 8). | Justin, 2026-11-12 |
 | Per-round and threshold rules | A counter can change by a set amount each round. A threshold can carry effects that apply while it is reached. | Justin |
 | Modifier categories | A modifier's kind becomes a free-text category. The preset suggests names. See 14.7. | Justin, 2026-11-11 |
 | Challenge-level modifiers | A challenge has its own modifiers, which apply to every check. See 14.7. | Justin, 2026-11-11 |
-| Framework additions | Degree buttons and an applied-result card with Undo; per-PC counters; saves as checks; subject limits, order and collapsing; both-ways tracks. See 14.8. | Justin, 2026-11-11 |
+| Framework additions | Per-PC counters; saves as checks; subject limits, order and collapsing; both-ways tracks. See 14.8. | Justin, 2026-11-11 |
 
 ### 14.2 Data
 
@@ -342,12 +327,12 @@ Every subsystem runs on one data model, one sheet and one panel: GM Core's [Vict
 | Name, stat line | The stat line is GM-only |
 | Revealed | Off: not on the panel at all |
 | Tracks points | On by default. Off for a subject that only holds actions, such as an Infiltration opportunity. |
-| Individual | Off: one shared total. On: one total per PC, keyed by actor. A roll changes the roller's total. |
+| Individual | Off: one shared total. On: one total per PC, keyed by actor. The GM changes each PC's total by hand. |
 | Points, direction, minimum, maximum | The track. The limits are optional (14.8). |
 | Goal | Optional number. Reaching it sets Complete. On an individual subject each PC completes alone, and the subject is Complete when every party PC has. |
 | Complete | Set by the goal, or by hand |
 | Thresholds | As below. An individual subject has a goal only, no thresholds. |
-| Modifiers | As in section 5, with a category in place of the kind (14.7). A points effect on an individual subject changes every PC's total. |
+| Modifiers | As in section 5, with a category in place of the kind (14.7). Their effects are DC changes and notes. |
 | Actions | One or more |
 
 **Action**
@@ -356,9 +341,10 @@ Every subsystem runs on one data model, one sheet and one panel: GM Core's [Vict
 |---|---|
 | Name | "Influence", "Discover", "Overcome" |
 | Secret | The check gets PF2e's `secret` trait, as Discover has today |
+| Description | Plain text everyone sees: what the action is and how players use it |
 | Checks | Rows as today: skill, Perception, Lore or a saving throw (14.8); DC; revealed; decoy. A row can be **always shown**: no eye, never a decoy. This replaces the fixed universal-skill lists. |
-| Outcome table | For each of the four degrees of success, a list of effects: change this subject's points, change a counter, change the rounds, or a note |
-| Maximum points | Optional. The most this action can give in total, counting every points or counter amount above zero. Apply stops there, and the card says so. Losses never count. |
+
+An action has no outcome table and no maximum points (Justin, 2026-11-12).
 
 **Threshold.** One shape for subjects and counters.
 
@@ -371,12 +357,10 @@ Reached is set when the track reaches the threshold in its direction. Only the G
 
 **Counter.** Name, value, direction, optional minimum and maximum, thresholds, revealed, and an optional **change each round**. Next round adds that amount; Previous round takes it back. A counter can be **per PC** (14.8).
 
-### 14.3 Rolls and Apply
+### 14.3 Rolls
 
-- A roll carries the challenge, subject, action, check row and roll id. Section 8's rules for receiving, one-time DC entries, Apply-once and rerolls stay as they are.
-- The GM's card gets one button per degree of success, and each Apply posts an applied-result card with Undo (14.8).
-- A note in the row shows on the GM's card as a reminder. A row with only notes has no button. An empty row shows nothing.
-- Apply changes the points, marks thresholds reached, sets Complete, and changes counters, with the same notices as a hand change.
+- A roll carries the challenge, subject, action, check row and roll id. Section 8's rules for receiving, one-time DC entries and rerolls apply.
+- A roll changes no value. The GM's + and − change points and counters, mark thresholds Reached, set Complete, and give counter notices.
 
 ### 14.4 Sheet
 
@@ -392,7 +376,7 @@ Edit mode changes:
 
 - The challenge has the points name, subject label and an optional round maximum.
 - Each subject has the stat line, Tracks points, Individual, direction and goal.
-- Each action's checks stay an inline table. Its name, Secret, maximum points and outcome table are edited in a window of their own, as modifiers are.
+- Each action's checks stay an inline table. Its name, description and Secret are edited in a window of their own, as modifiers are.
 - Counters have direction, change each round, and thresholds in place of triggers.
 
 ### 14.5 Panel
@@ -410,13 +394,13 @@ A preset is a starting template: its names, and what a new challenge and a new s
 
 | Preset | Names | A new subject has |
 |---|---|---|
-| **Victory Points** (blank) | Victory Points, Subject | Suggested category: Modifier. One action, "Check", with no rows. Outcomes: +2, +1, 0, −1 points. |
-| **Influence** | Influence Points, NPC | Suggested categories: Resistance, Weakness, Other. Revealed. Discover: secret, Perception always shown, outcomes are the three reminder notes. Influence: Deception, Diplomacy and Intimidation always shown, outcomes +2, +1, 0, −1 points. |
-| **Infiltration** | Infiltration Points, Obstacle | Suggested categories: Opportunity, Complication. Counters: Awareness Points (shown, +1 each round, minimum 0, GM Core's tiers at 5 (DC +1), 10 (complication), 15 (DC +1 more, +2 in total) and 20 (fails)) and Edge Points (per PC, shown). Three Add buttons: **Obstacle** (goal 2; Overcome with no checks; +2 or +1 points, +1 or +2 Awareness); **Complication** (no points; Overcome; success is a note, +1 or +2 Awareness); **Opportunity** (no points; Attempt; success notes). The first obstacle starts revealed, later subjects hidden. |
-| **Chase** | Chase Points, Obstacle | No suggested categories. Allow multiple subjects is off. GM notes hold GM Core's reminders and how to set up each chase type. Counters: Party at 1 and Quarry at 2, +1 each round; both minimum 0, maximum 6, Track display, shown. A new obstacle: goal 3, minimum 0, Overcome with no checks, +2, +1, 0, −1 points. The first obstacle starts revealed, later ones hidden. See 14.11. |
-| **Infiltration Preparation** | Edge Points, Preparation | Run before the infiltration; the GM types its results in. Counters: Edge Points (per PC, shown) and Awareness Points (hidden). One revealed subject with no points and GM Core's six activities as actions, every check always shown, secret where the rules say. A dud or cursed Edge Point still adds to Edge, and its row's note tells the GM to write it in the PC's note. No suggested categories. |
+| **Victory Points** (blank) | Victory Points, Subject | Suggested category: Modifier. One action, "Check", with no rows. |
+| **Influence** | Influence Points, NPC | Suggested categories: Resistance, Weakness, Other. Revealed. Discover: secret, Perception always shown. Influence: Deception, Diplomacy and Intimidation always shown. |
+| **Infiltration** | Infiltration Points, Obstacle | Suggested categories: Opportunity, Complication. Counters: Awareness Points (shown, +1 each round, minimum 0, GM Core's tiers at 5 (DC +1), 10 (complication), 15 (DC +1 more, +2 in total) and 20 (fails)) and Edge Points (per PC, shown). Three Add buttons: **Obstacle** (goal 2; Overcome with no checks); **Complication** (no points; Overcome); **Opportunity** (no points; Attempt). The first obstacle starts revealed, later subjects hidden. |
+| **Chase** | Chase Points, Obstacle | No suggested categories. Allow multiple subjects is off. GM notes hold GM Core's reminders and how to set up each chase type. Counters: Party at 1 and Quarry at 2, +1 each round; both minimum 0, maximum 6, Track display, shown. A new obstacle: goal 3, minimum 0, Overcome with no checks. The first obstacle starts revealed, later ones hidden. See 14.11. |
+| **Infiltration Preparation** | Edge Points, Preparation | Run before the infiltration; the GM types its results in. Counters: Edge Points (per PC, shown) and Awareness Points (hidden). One revealed subject with no points and GM Core's six activities as actions, every check always shown, secret where the rules say. GM notes list what each activity gives at each degree, and say that a dud or cursed Edge Point still adds to Edge and goes in the PC's note. No suggested categories. |
 
-A preset can offer several **subject templates**, one Add button each; the first is named by the subject label. A template's outcome rows find the preset's counters by name, else the first counter of the same kind (Justin, 2026-11-11).
+A preset can offer several **subject templates**, one Add button each; the first is named by the subject label.
 
 ### 14.7 Modifier categories and challenge-level modifiers
 
@@ -441,11 +425,10 @@ A preset can offer several **subject templates**, one Add button each; the first
 |---|---|
 | Shape | The same entry as a subject's: name, category, duration, texts, state, effects. |
 | DC change | Applies to every check in the challenge, still filtered by chosen skills. The skills are named, not picked by check: the choices are the skills used by checks in the challenge (a Lore by its name), and each matches that skill on any subject (Justin, 2026-11-11). A one-time one is spent by the next matching check anywhere. A change meant for one subject goes on that subject. |
-| Points effect | Not offered: there is no subject to change. Counter, rounds and note effects work as on a subject. |
 | Sheet | A Challenge box above the subjects, with its cards grouped by category, as a subject's are. Edit mode adds them there the same way. |
 | Panel | Revealed ones show in a full-width strip above the subject columns, grouped by category with no section headings, in the same card style (with the category label) and with the same GM click. Hidden if none are revealed. |
 
-**Left to the GM.** These were weighed and cut, since each saves only a click or two (Justin, 2026-11-11). Outcome notes and threshold text say what the GM should do.
+**Left to the GM.** These were weighed and cut, since each saves only a click or two (Justin, 2026-11-11). GM notes and threshold text say what the GM should do.
 
 | Not built | Instead |
 |---|---|
@@ -467,40 +450,20 @@ A preset can offer several **subject templates**, one Add button each; the first
 
 **Status:** decided with Justin, 2026-11-11; built 2026-11-11. They came from checking every planned subsystem against the framework, using GM Core and real examples: *The Great Toy Heist*, *All or Nothing* (Agents of Edgewatch 3), *Graveclaw* (Blood Lords 2), *Punks in a Powderkeg* (Outlaws of Alkenstar 1), *Ruins of the Radiant Siege* (Agents of Edgewatch 6) and GM Core's Reputation.
 
-**Degree buttons on the roll card.** These replace the single Apply button of 14.3.
-
-| Rule | Detail |
-|---|---|
-| Buttons | One per degree of success whose outcome row has an effect, in order from critical success to critical failure. A notes-only or empty row gets no button. |
-| The rolled degree | Its button is highlighted, like PF2e's damage buttons on a saving throw card. Its notes show on the card as a reminder, as today. |
-| Tooltips | Each button's tooltip lists that row's effects and notes. |
-| Labels | Short: the degree and its change, such as "Success: +1 Influence Point". |
-| Why | Spending an Edge Point (failure becomes success), a Preparation Point (one step up) or an opportunity like Not Like That! means applying a degree other than the one rolled. The GM picks it. |
-| Apply once | Clicking any button applies that row and locks every button on the card, for every GM and after a reload, as section 8's Apply-once rule does. Only the active GM can click. |
-
-**Applied-result card with Undo.**
-
-| Rule | Detail |
-|---|---|
-| The card | Each Apply posts a new chat card, whispered to GMs only, since it can name hidden subjects and counters. It names the roller, the degree applied, and each change made, such as "+1 Influence Point (Vessa), +1 Awareness". |
-| Undo | A button on that card, for the active GM. It reverses exactly what that Apply did, like PF2e's undo on a damage-taken message. Changes made since stay. |
-| What Undo reverses | The actual change to each subject's points and counter, after limits clamped it. The actual change to the round maximum (Justin, 2026-11-11). Thresholds that Apply marked Reached, if the value is no longer past them. A Complete that Apply set, if the goal is no longer reached. The action's maximum-points tally. The roll id in the applied list. |
-| What Undo leaves | One-time DC entries the roll spent on arrival: the GM restores them by hand, as today. Notes. |
-| After Undo | The roll card's buttons unlock, so the GM can pick again. The result card shows Undone, with its button disabled. A reroll of an undone roll can be applied. |
+**Degree buttons and Undo were removed** (Justin, 2026-11-12), with outcome tables. Rolls change nothing, so there is nothing to apply or undo. To use a degree other than the one rolled, such as after spending an Edge Point, the GM changes the values that degree gives by hand.
 
 **Per-PC counters.**
 
 | Rule | Detail |
 |---|---|
 | Shape | A counter setting, **Per PC**: one value per party PC, keyed by actor, with the counter's limits applying to each value. |
-| Outcomes | A counter change in an outcome row changes the roller's value. A modifier's counter effect changes every party PC's value. |
 | Thresholds and goal | None. |
 | Change each round | Not offered. |
 | Sheet | One row per party PC, with the value and add and remove buttons, and the party total beside the counter's name. |
 | Panel | A revealed per-PC counter shows one row per party PC: portrait and value. |
-| Spending | By hand: the GM lowers that PC's value and clicks the degree the spend gives on the roll card. |
-| GM notes | Each PC's row on the sheet has a GM-only note, beside the value. It records which Edge Points are duds, cursed or only for one situation. It saves on its own, Reset puts it back to its state at Start, and Undo leaves it. The panel never sees it. |
-| Dud Edge Points | Not a counter: the failure row adds to Edge, as the PC thinks it worked, and its note tells the GM to write the dud in that PC's note (Justin, 2026-11-11). |
+| Spending | By hand: the GM lowers that PC's value and changes what the new degree gives. |
+| GM notes | Each PC's row on the sheet has a GM-only note, beside the value. It records which Edge Points are duds, cursed or only for one situation. It saves on its own, and Reset puts it back to its state at Start. The panel never sees it. |
+| Dud Edge Points | Not a counter: the GM adds the point to Edge, as the PC thinks it worked, and writes the dud in that PC's note. The preset's GM notes say so (Justin, 2026-11-11 and 2026-11-12). |
 
 **Saving throws as checks.** A check row can be Fortitude, Reflex or Will, as well as a skill, Perception or Lore. It rolls with PF2e's saving throw check at the row's DC and follows every other row rule: reveal, decoy, always shown, DC changes.
 
@@ -538,8 +501,8 @@ The module isn't in real use yet (Justin, 2026-11-11), so nothing is converted. 
 
 - Chase: built as the Chase preset, data only (14.6, 14.11, 14.12). Not built: split paths, shortcuts and solo chases.
 - Infiltration: built as the Infiltration and Infiltration Preparation presets (14.6). Not built: several objectives in sequence, and group checks that pass when half the party succeeds.
-- Research: nothing new. Research Points are a counter; each area is a subject that tracks no points, with a maximum on its action.
-- Enemy Victory Points need nothing new: a counter, changed by outcome rows.
+- Research: Research Points are a counter. Actions no longer have a maximum (Justin, 2026-11-12), so how each area's Maximum RP is tracked is decided when Research is built (items/research-subsystem.md).
+- Enemy Victory Points need nothing new: a counter the GM changes by hand.
 - Reputation (an idea, not yet planned): factions are subjects with no actions on both-ways tracks, −50 to +50, with GM Core's tiers as thresholds.
 
 ### 14.11 Chases
@@ -555,7 +518,7 @@ Chase is a preset and nothing more: no code checks for it. The GM does by eye wh
 | Chase types | No type field. GM notes say how to set up each: Run Away renames Quarry to Pursuers at 0, Competitive to Rival at 1, Beat the Clock hides it and sets a round maximum. |
 | Ending, being stuck, initiative | The GM's call, from the counters. GM notes list GM Core's end conditions and reminders. No notices. |
 | Passing | The GM lowers the obstacle's points with −. |
-| Saves and attacks | Saves are check rows. Attacks and spells are the GM's: pick a degree on the roll card or change points by hand. |
+| Saves and attacks | Saves are check rows. Attacks and spells are the GM's to adjudicate. Points change by hand, as for every roll. |
 | Not built | Split paths, shortcuts and solo chases. |
 
 ### 14.12 One subject at a time and counter displays

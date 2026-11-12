@@ -20,12 +20,11 @@
   <div class="ssm-effect">
     <div class="ssm-row">
       <label>{{localize "SSM.Challenge.EffectLabel"}}<select name="{{path}}.type" data-redraw>{{selectOptions @root.choices.effects selected=type}}</select></label>
-      {{#if hasAmount}}<label>{{localize "SSM.Challenge.Amount"}}<input type="number" step="1" name="{{path}}.amount" value="{{amount}}"></label>{{/if}}
       {{#if isDc}}
+      <label>{{localize "SSM.Challenge.Amount"}}<input type="number" step="1" name="{{path}}.amount" value="{{amount}}"></label>
       <span class="ssm-quick">{{#each @root.quickDcAmounts}}<button type="button" data-action="quickDc" data-path="{{../path}}" data-amount="{{amount}}">{{label}}</button>{{/each}}</span>
       <label class="check"{{#if @root.challengeLevel}} data-tooltip="SSM.Challenge.ChallengeSkillsHint"{{/if}}><input type="checkbox" name="{{path}}.allSkills" data-redraw {{checked allSkills}}>{{localize "SSM.Challenge.AllSkills"}}</label>
       {{/if}}
-      {{#if isCounter}}<label class="grow">{{localize "SSM.Challenge.Counter"}}<select name="{{path}}.counterId">{{selectOptions @root.choices.counters selected=counterId}}</select></label>{{/if}}
       {{#if isNote}}<label class="grow">{{localize "SSM.Challenge.Note"}}<input type="text" name="{{path}}.note" value="{{note}}"></label>{{/if}}
       {{#if canRemove}}<button type="button" class="icon fa-solid fa-trash" data-action="removeRow" data-path="{{path}}" aria-label="{{localize "SSM.Challenge.Remove"}}"></button>{{/if}}
     </div>

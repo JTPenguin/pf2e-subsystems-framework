@@ -20,27 +20,17 @@ const skillName = (row) => ({ skill: row.skill, lore: row.lore });
 /**
  * What one effect does, in terms players may see, or null if it shows nothing. A DC change shows as a DC change ("−2 to DCs vs Diplomacy"),
  * with the amount only, so no DC number appears. A check players can't see is left out without a trace,
- * and a change that covers only hidden checks shows nothing.
- * A counter players can't see hides the whole effect. Notes are the GM's words, so they never show.
+ * and a change that covers only hidden checks shows nothing. Notes are the GM's words, so they never show.
  */
 function changeView(system, subject, effect) {
-  if (!effect.amount) return null;
-  if (effect.type === "dc") {
-    if (effect.allSkills) return { type: "dc", amount: effect.amount, all: true, skills: [] };
-    // A challenge-level entry (no subject) names skills, so it shows the skills of any check players can see (spec 14.7).
-    const rows = subject ? visibleChecks(subject).filter((row) => effect.skills.includes(row.id)) : allVisibleChecks(system).filter((row) => effect.skills.includes(skillKey(row)));
-    if (!rows.length) return null;
-    // Two actions can share a skill: name it once.
-    const shown = [...new Map(rows.map((row) => [`${row.skill}:${row.lore}`, skillName(row)])).values()];
-    return { type: "dc", amount: effect.amount, all: false, skills: shown };
-  }
-  if (effect.type === "points") return subject ? { type: "points", amount: effect.amount } : null;
-  if (effect.type === "rounds") return { type: "rounds", amount: effect.amount };
-  if (effect.type === "counter") {
-    const counter = system.counters.find((candidate) => candidate.id === effect.counterId);
-    return counter && isVisible(counter) ? { type: "counter", amount: effect.amount, counter: counter.name } : null;
-  }
-  return null;
+  if (effect.type !== "dc" || !effect.amount) return null;
+  if (effect.allSkills) return { type: "dc", amount: effect.amount, all: true, skills: [] };
+  // A challenge-level entry (no subject) names skills, so it shows the skills of any check players can see (spec 14.7).
+  const rows = subject ? visibleChecks(subject).filter((row) => effect.skills.includes(row.id)) : allVisibleChecks(system).filter((row) => effect.skills.includes(skillKey(row)));
+  if (!rows.length) return null;
+  // Two actions can share a skill: name it once.
+  const shown = [...new Map(rows.map((row) => [`${row.skill}:${row.lore}`, skillName(row)])).values()];
+  return { type: "dc", amount: effect.amount, all: false, skills: shown };
 }
 
 /** A revealed modifier entry, as a card on the panel. `group` is its category: the label and the stripe colour. `subject` is null for a challenge-level entry. */
@@ -53,31 +43,17 @@ const modifierView = (system, subject, row, group) => ({
   duration: row.duration,
   active: !!row.active,
   spent: !!row.spent,
-  // A one-time entry with a DC change is applied before it is spent: its other effects have happened, its DC change hasn't.
-  applied: !!row.applied,
   changes: row.effects.map((effect) => changeView(system, subject, effect)).filter(Boolean),
 });
 
-/** "Influence Points" for any amount but one, "Influence Point" for one. Names are English and end in "s" when plural. */
-export function pointsText(name, amount) {
-  return Math.abs(amount) === 1 && /[^s]s$/i.test(name) ? name.slice(0, -1) : name;
-}
-
 /**
- * One change as text, such as "−2 to DCs vs Diplomacy" or "−1 Influence Point".
- * `format(key, data)` and `list(items)` are Foundry's localisation, `label(skill)` names a skill and `points` is the challenge's points name, so tools/test.mjs can pass stand-ins.
+ * One DC change as text, such as "−2 to DCs vs Diplomacy".
+ * `format(key, data)` and `list(items)` are Foundry's localisation and `label(skill)` names a skill, so tools/test.mjs can pass stand-ins.
  */
-export function changeText(change, { format, list, label, points }) {
+export function changeText(change, { format, list, label }) {
   const amount = change.amount > 0 ? `+${change.amount}` : `−${-change.amount}`;
-  const plural = Math.abs(change.amount) === 1 ? "one" : "other";
-  const key = "SSM.Panel.Change";
-  if (change.type === "dc") {
-    if (change.all) return format(`${key}.dcAll`, { amount });
-    return format(`${key}.dc`, { amount, skills: list(change.skills.map(label)) });
-  }
-  if (change.type === "counter") return format(`${key}.counter`, { amount, counter: change.counter || format("SSM.Challenge.UnnamedCounter", {}) });
-  if (change.type === "points") return format(`${key}.points`, { amount, points: pointsText(points, change.amount) });
-  return format(`${key}.${change.type}.${plural}`, { amount });
+  if (change.all) return format("SSM.Panel.Change.dcAll", { amount });
+  return format("SSM.Panel.Change.dc", { amount, skills: list(change.skills.map(label)) });
 }
 
 /**

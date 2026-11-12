@@ -30,7 +30,7 @@ Infiltration as a preset of the generic challenge from [[generic-subsystem-share
 
 ## Settled (Justin, 2026-11-11)
 
-Preparation, Edge Points and duds are settled in spec 14.8: a separate preparation challenge, per-PC counters, and the degree buttons on the GM's roll card. Opportunities and complications are in spec 14.7.
+Preparation, Edge Points and duds are settled in spec 14.8: a separate preparation challenge, per-PC counters, and hand changes with + and − (the roll card's degree buttons were removed on 2026-11-12, remove-roll-card-point-automation). Opportunities and complications are in spec 14.7.
 
 **Done when:** a GM can run an infiltration with preparation, obstacles, Awareness and Edge Points, and players can roll its actions from the panel, including Forge Documents. Check it in Foundry with a live test challenge and a player login.
 

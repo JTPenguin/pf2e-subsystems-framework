@@ -41,7 +41,6 @@
             {{> ssmEye root=../../root}}
             <button type="button" class="icon fa-solid {{#if spent}}fa-rotate-left{{else}}fa-check{{/if}} ssm-toggle ssm-toggle-{{stateClass}}" data-action="{{#if spent}}restoreModifier{{else}}toggleModifier{{/if}}" data-subject="{{subjectId}}" data-id="{{id}}" aria-label="{{stateLabel}}" aria-pressed="{{pressed}}" data-tooltip="{{stateTooltip}}" {{#unless canChange}}disabled{{/unless}}></button>
             {{> ssmModifierName}}
-            {{#if hasApply}}<button type="button" data-action="applyModifier" data-subject="{{subjectId}}" data-id="{{id}}" {{#unless canApply}}disabled{{/unless}}>{{localize "SSM.Challenge.Apply"}}</button>{{/if}}
             {{#if canEdit}}{{> ssmModifierEdit}}{{/if}}
           </div>
           {{> ssmModifierDetails}}
@@ -162,7 +161,7 @@
         {{#each subject.actions}}
         <div class="ssm-action-card">
           <div class="ssm-skill-line">
-            <span class="ssm-stat-label">{{label}}{{#if secret}} <i class="fa-solid fa-user-secret" data-tooltip="SSM.Challenge.SecretHint" aria-label="{{localize "SSM.Challenge.Secret"}}"></i>{{/if}}{{#if maxLabel}} <span class="ssm-muted">{{maxLabel}}</span>{{/if}}</span>
+            <span class="ssm-stat-label">{{label}}{{#if secret}} <i class="fa-solid fa-user-secret" data-tooltip="SSM.Challenge.SecretHint" aria-label="{{localize "SSM.Challenge.Secret"}}"></i>{{/if}}</span>
             <span class="ssm-skill-grid">{{#each checks}}{{> ssmSkillChip root=../../..}}{{/each}}</span>
           </div>
           {{#if description}}<div class="ssm-action-description ssm-run-description">{{description}}</div>{{/if}}
@@ -316,11 +315,7 @@
         <button type="button" class="icon fa-solid fa-pen-to-square" data-action="editAction" data-subject="{{subject.id}}" data-id="{{id}}" aria-label="{{localize "SSM.Challenge.EditAction"}}" data-tooltip="SSM.Challenge.EditAction"></button>
         <button type="button" class="icon fa-solid fa-trash" data-action="removeRow" data-path="{{path}}" aria-label="{{localize "SSM.Challenge.RemoveAction"}}" data-tooltip="SSM.Challenge.RemoveAction"></button>
       </div>
-      <div class="ssm-outcome-lines">
-          {{#if description}}<div class="ssm-action-description">{{description}}</div>{{/if}}
-          {{#each outcomeLines}}<div><span class="ssm-stat-label">{{label}}</span> {{text}}</div>{{/each}}
-          {{#if maxPoints}}<div><span class="ssm-stat-label">{{localize "SSM.Challenge.MaxPoints"}}</span> {{maxPoints}}</div>{{/if}}
-      </div>
+      {{#if description}}<div class="ssm-action-lines"><div class="ssm-action-description">{{description}}</div></div>{{/if}}
       <div class="ssm-checks-wrap"><table class="ssm-checks">
         <thead><tr>
           <th>{{localize "SSM.Challenge.Skill"}}</th>

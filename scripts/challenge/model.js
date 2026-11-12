@@ -1,4 +1,4 @@
-import { COUNTER_DISPLAYS, DEFAULT_PRESET, DIRECTIONS, DURATIONS, EFFECT_TYPES, OUTCOMES, PRESETS, STATUSES, THRESHOLD_REVEALS } from "./data.js";
+import { COUNTER_DISPLAYS, DEFAULT_PRESET, DIRECTIONS, DURATIONS, EFFECT_TYPES, PRESETS, STATUSES, THRESHOLD_REVEALS } from "./data.js";
 
 const { ArrayField, BooleanField, HTMLField, NumberField, ObjectField, SchemaField, StringField } = foundry.data.fields;
 
@@ -11,14 +11,13 @@ const list = (fields) => new ArrayField(new SchemaField(fields), { required: tru
 const choice = (choices, initial) => new StringField({ required: true, blank: false, choices, initial });
 const ids = () => new ArrayField(new StringField({ blank: false }), { required: true, initial: [] });
 
-/** One shape for a modifier's effects and an outcome table's rows. */
+/** A modifier's effect: a DC change or a note (spec 14.7). */
 const effectFields = () => ({
   id: rowId(),
   type: choice(EFFECT_TYPES, "note"),
   amount: int(),
   allSkills: flag(true),
   skills: ids(),
-  counterId: text(),
   note: text(),
 });
 
@@ -34,8 +33,6 @@ const modifierFields = () => ({
   spent: flag(),
   revealed: flag(),
   decoy: flag(),
-  // A one-time entry's other effects have been applied, so Apply can't repeat them.
-  applied: flag(),
   effects: list(effectFields()),
 });
 
@@ -48,11 +45,7 @@ const actionFields = () => ({
   // What the action is and how players use it. Plain text that everyone sees.
   description: text(),
   secret: flag(),
-  // The most points this action can give in total, and how many it has given.
-  maxPoints: optionalInt({ min: 0 }),
-  given: int(),
   checks: list({ id: rowId(), skill: text(), lore: text(), dc: int(15, { min: 0 }), revealed: flag(), decoy: flag(), always: flag() }),
-  outcomes: new SchemaField(Object.fromEntries(OUTCOMES.map((outcome) => [outcome, list(effectFields())]))),
 });
 
 const subjectFields = () => ({
@@ -123,12 +116,6 @@ export class ChallengeModel extends foundry.abstract.TypeDataModel {
         baseline: new ObjectField({ required: true, nullable: true, initial: null }),
         // One entry per round advance, so undo can bring back the acted markers, the counters' values and the thresholds the advance reached.
         roundHistory: list({ round: int(), acted: ids(), counters: new ObjectField({ required: true, initial: {} }), reached: ids() }),
-        // The net change Rounds effects have made to the maximum. Reset takes it back off.
-        roundsAdded: int(),
-        // The rolls applied from their chat cards. A reroll keeps its roll's id, so this also stops a reroll counting twice.
-        appliedRolls: ids(),
-        // The rolls whose arrival the active GM handled, which spent their one-time DC entries. Apply doesn't spend them again.
-        receivedRolls: ids(),
       }),
     };
   }

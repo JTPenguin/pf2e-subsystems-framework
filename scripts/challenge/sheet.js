@@ -4,10 +4,10 @@ import { hidePanel, panelState, takePanel } from "../panel/activation.js";
 import { partyPCs } from "../party.js";
 import { actionName, skillKeyLabel, skillLabel, subjectName } from "./skill-label.js";
 import { announceTriggers, writeChallenge } from "./state.js";
-import { advanceRound, applyModifier, canAdvanceRound, canApplyModifier, canUndoRound, changeCounter, changePoints, counterValueOf, currentDc, cycleThresholdReveal, endRun, isComplete, pointsOf, resetRun, restoreModifier, startRun, toggleActed, toggleComplete, toggleModifier, toggleReached, toggleReveal, undoRound } from "./run.js";
+import { advanceRound, canAdvanceRound, canUndoRound, changeCounter, changePoints, counterValueOf, currentDc, cycleThresholdReveal, endRun, isComplete, pointsOf, resetRun, restoreModifier, startRun, toggleActed, toggleComplete, toggleModifier, toggleReached, toggleReveal, undoRound } from "./run.js";
 import { LINK_ROLL_ID } from "../roll-option.js";
 import { rollCheck, rollTarget } from "./roll.js";
-import { addRow, applyForm, COUNTER_DISPLAYS, HIDDEN_DISPLAY, setCounterNote, subjectTemplates, BOTH_WAYS, clampTracks, DIRECTIONS, EDITABLE, groupByCategory, isAlwaysShown, isDecoyCheck, limitTrack, LORE, moveSubject, OUTCOMES, PERCEPTION, nextThresholdReveal, pickFields, removeRow, SAVES, THRESHOLD_REVEALS } from "./data.js";
+import { addRow, applyForm, COUNTER_DISPLAYS, HIDDEN_DISPLAY, setCounterNote, subjectTemplates, BOTH_WAYS, clampTracks, DIRECTIONS, EDITABLE, groupByCategory, isAlwaysShown, isDecoyCheck, limitTrack, LORE, moveSubject, PERCEPTION, nextThresholdReveal, pickFields, removeRow, SAVES, THRESHOLD_REVEALS } from "./data.js";
 import { ActionWindow, ModifierWindow } from "./entry-window.js";
 
 const { DocumentSheetV2, HandlebarsApplicationMixin } = foundry.applications.api;
@@ -61,7 +61,6 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
       changePoints: ChallengeSheet.#onChangePoints,
       changeCounter: ChallengeSheet.#onChangeCounter,
       toggleModifier: ChallengeSheet.#onToggleModifier,
-      applyModifier: ChallengeSheet.#onApplyModifier,
       restoreModifier: ChallengeSheet.#onRestoreModifier,
       toggleReached: ChallengeSheet.#onToggleReached,
       toggleReveal: ChallengeSheet.#onToggleReveal,
@@ -226,8 +225,6 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
           ...action,
           path: `${path}.actions.${a}`,
           label: actionName(action),
-          // What each degree of success does, as the action's window sets it.
-          outcomeLines: OUTCOMES.map((outcome) => ({ label: loc(`SSM.Challenge.Outcome.${outcome}`), text: action.outcomes[outcome].map((effect) => this.#effectText(system, subject, effect)).join("; ") || loc("SSM.Challenge.OutcomeNothing") })),
           checks: action.checks.map((row, i) => ({ ...row, path: `${path}.actions.${a}.checks.${i}`, isLore: row.skill === LORE })),
         })),
         thresholds: thresholds(subject.thresholds, path, subject.direction),
@@ -384,7 +381,6 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
           label: actionName(action),
           description: action.description,
           secret: action.secret,
-          maxLabel: action.maxPoints === null ? "" : game.i18n.format("SSM.Challenge.GivenOf", { given: action.given, max: action.maxPoints }),
           checks: rollRows(subject, action),
         })).filter((action) => action.checks.length),
         thresholds: subject.individual ? [] : thresholdRows(subject.thresholds, subject.id, subject.direction),
@@ -426,25 +422,20 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
       pressed: state === "on",
       stateTooltip: loc(`SSM.Challenge.StateClick.${state}`),
       stateLabel: loc(`SSM.Challenge.State.${state}`),
-      hasApply: row.effects.some((effect) => effect.type !== "dc" && !(challengeLevel && effect.type === "points")),
-      canApply: canChange && canApplyModifier(row, challengeLevel),
       canChange,
       canEdit: game.user.isGM,
       effectsText: row.effects.map((effect) => this.#effectText(system, subject, effect)).join("; "),
     };
   }
 
-  /** One effect of a modifier or an outcome row, as the GM reads it. A challenge-level entry (no subject) names skills by key. */
+  /** One effect of a modifier, as the GM reads it. A challenge-level entry (no subject) names skills by key. */
   #effectText(system, subject, effect) {
     const amount = effect.amount > 0 ? `+${effect.amount}` : `${effect.amount}`.replace("-", "−");
     const named = subject
       ? subject.actions.flatMap((action) => action.checks).filter((row) => effect.skills.includes(row.id)).map(skillLabel)
       : effect.skills.map((key) => skillKeyLabel(system, key));
     const skills = effect.allSkills ? loc("SSM.Challenge.AllSkills") : named.join(", ");
-    const counter = system.counters.find((candidate) => candidate.id === effect.counterId);
-    const counterName = counter ? counter.name || loc("SSM.Challenge.UnnamedCounter") : loc("SSM.Challenge.ChooseCounter");
-    const points = system.pointsName || loc("SSM.Challenge.Points");
-    return game.i18n.format(`SSM.Challenge.EffectText.${effect.type}`, { amount, skills, counter: counterName, note: effect.note, points });
+    return game.i18n.format(`SSM.Challenge.EffectText.${effect.type}`, { amount, skills, note: effect.note });
   }
 
   /* -------------------------------------------- */
@@ -618,10 +609,6 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
 
   static #onToggleModifier(event, target) {
     return this.#run((system) => toggleModifier(system, target.dataset.subject, target.dataset.id));
-  }
-
-  static #onApplyModifier(event, target) {
-    return this.#run((system) => applyModifier(system, target.dataset.subject, target.dataset.id, partyPCs().map((actor) => actor.id)));
   }
 
   static #onRestoreModifier(event, target) {

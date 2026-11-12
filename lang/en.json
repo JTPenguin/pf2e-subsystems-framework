@@ -40,13 +40,7 @@
       "Resize": "Drag to resize",
       "Change": {
         "dc": "{amount} to DCs vs {skills}",
-        "dcAll": "{amount} to all DCs",
-        "points": "{amount} {points}",
-        "counter": "{amount} {counter}",
-        "rounds": {
-          "one": "{amount} round",
-          "other": "{amount} rounds"
-        }
+        "dcAll": "{amount} to all DCs"
       },
       "Thresholds": "Thresholds",
       "TipGM": "GM Only",
@@ -98,16 +92,12 @@
       "EffectLabel": "Effect",
       "Effect": {
         "dc": "DC change",
-        "points": "Points",
-        "counter": "Counter change",
-        "rounds": "Rounds",
         "note": "Note only"
       },
       "AddEffect": "Add effect",
       "Amount": "Amount",
       "AllSkills": "All skills",
       "Counter": "Counter",
-      "ChooseCounter": "Choose a counter",
       "UnnamedCounter": "Unnamed counter",
       "Note": "Consequence",
       "Counters": "Counters",
@@ -150,7 +140,6 @@
       "ReachedShort": "Reached",
       "ReachedSet": "Mark as reached",
       "ReachedClear": "Clear reached",
-      "Apply": "Apply",
       "UnnamedEntry": "Unnamed entry",
       "BaseDc": "Base DC {dc}",
       "RollSkill": "Roll {skill}, DC {dc}, for the chosen PC",
@@ -171,9 +160,6 @@
       "TriggerNoticeBare": "{counter} reached {value}",
       "EffectText": {
         "dc": "DC {amount} ({skills})",
-        "points": "{points} {amount}",
-        "counter": "{counter} {amount}",
-        "rounds": "Rounds {amount}",
         "note": "{note}"
       },
       "Subject": "Subject",
@@ -217,17 +203,6 @@
       "ActionDescription": "Description",
       "ActionDescriptionHint": "What the action is and how players use it",
       "SecretHint": "Rolled as a secret check, like Recall Knowledge.",
-      "MaxPoints": "Maximum points",
-      "MaxPointsHint": "The most this action can give in total. Blank for no limit.",
-      "GivenOf": "{given} of {max} given",
-      "Outcome": {
-        "criticalSuccess": "Critical Success",
-        "success": "Success",
-        "failure": "Failure",
-        "criticalFailure": "Critical Failure"
-      },
-      "OutcomeNothing": "Nothing",
-      "OutcomeNote": "Reminder for the GM",
       "ThresholdAt": "At",
       "ThresholdDcLabel": "DC change",
       "ThresholdDcHint": "Applies while the threshold is reached: to this subject's checks, or to every check for a counter's threshold.",
@@ -270,30 +245,6 @@
         "shown": "Shown"
       }
     },
-    "Card": {
-      "NotActiveGM": "Only the active GM can apply results.",
-      "ChallengeGone": "This roll's challenge no longer exists.",
-      "Blocked": {
-        "gone": "This subject, action or check is no longer in the challenge.",
-        "notRunning": "The challenge isn't running.",
-        "applied": "This result was already applied.",
-        "rerollAfterApply": "The roll this replaced was already applied. Change points by hand on the sheet if needed."
-      },
-      "Capped": "This action has reached its maximum points.",
-      "ApplyDegree": "{degree}: {changes}",
-      "AppliedDegree": "Applied: {degree}. Undo it from its result card to pick again.",
-      "Undo": "Undo",
-      "Undone": "Undone",
-      "UndoBlocked": {
-        "notRunning": "The challenge isn't running, so this can't be undone.",
-        "notApplied": "This result was already undone, or the challenge was reset since."
-      },
-      "Result": {
-        "Heading": "{actor}: {degree} applied",
-        "HeadingNoActor": "{degree} applied",
-        "NoChange": "No change: the values were already at their limits."
-      }
-    },
     "ChoosePreset": "Create Challenge",
     "ChoosePresetHint": "Pick a starting template. Everything can be edited afterwards.",
     "Preset": {
@@ -312,12 +263,6 @@
         "Subject": "NPC",
         "Discover": "Discover",
         "Influence": "Influence",
-        "Reminder": {
-          "criticalSuccess": "Earns two pieces of information.",
-          "success": "Earns one piece of information.",
-          "failure": "Earns nothing.",
-          "criticalFailure": "Earns one false piece of information."
-        },
         "Category": {
           "resistance": "Resistance",
           "weakness": "Weakness",
@@ -336,8 +281,6 @@
         "Opportunity": "Opportunity",
         "AddComplication": "Add Complication",
         "AddOpportunity": "Add Opportunity",
-        "Cleared": "The complication is overcome.",
-        "Benefit": "The PCs gain the opportunity's benefit.",
         "Category": {
           "opportunity": "Opportunity",
           "complication": "Complication"
@@ -368,38 +311,36 @@
         "Cursed": "Cursed: a PC who uses this Edge Point gets a critical failure, even if they spend it after rolling a failure. Write it in the PC's Edge Points note.",
         "BribeContact": {
           "Name": "Bribe Contact",
-          "Description": "Requires a contact (Gain Contact). The bribe is worth at least one-tenth of the Currency per additional PC (Table 10-9); doubling it grants a +2 circumstance bonus. DC: hard or very hard."
+          "Description": "Requires a contact (Gain Contact). The bribe is worth at least one-tenth of the Currency per additional PC (Table 10-9); doubling it grants a +2 circumstance bonus. DC: hard or very hard.",
+          "Outcomes": "Bribe Contact. Success or critical success: +1 Edge. Failure: +1 Edge, a dud, and +1 Awareness. Critical failure: +1 Edge, a dud, and +2 Awareness."
         },
         "ForgeDocuments": {
           "Name": "Forge Documents",
           "Description": "DC: hard or very hard.",
-          "Use": "The Edge Point is usable only when presenting paperwork."
+          "Outcomes": "Forge Documents. Success or critical success: +1 Edge, usable only when presenting paperwork. Failure: +1 Edge, a dud. Critical failure: +1 Edge, cursed."
         },
         "GainContact": {
           "Name": "Gain Contact",
           "Description": "A Lore suited to the contact also works. DC: normal, hard or very hard.",
-          "Use": "Contact made. The PC can now Bribe Contact.",
-          "Failure": "The PC fails to make contact.",
-          "CriticalFailure": "The contact is insulted or spooked: future attempts take a –2 circumstance penalty. Several critical failures may turn the contact against the PCs."
+          "Outcomes": "Gain Contact. Success or critical success: +1 Edge; contact made, so the PC can now Bribe Contact. Failure: the PC fails to make contact. Critical failure: the contact is insulted or spooked, and future attempts take a –2 circumstance penalty. Several critical failures may turn the contact against the PCs."
         },
         "Gossip": {
           "Name": "Gossip",
           "Description": "DC: normal, hard or very hard.",
-          "CriticalSuccess": "Inside information: +2 circumstance bonus to future preparation checks for this infiltration, for the PC and anyone they share it with.",
-          "Success": "The PC gains useful inside information for planning.",
-          "Failure": "The PC learns nothing.",
-          "CriticalFailure": "Mistaken rumours: –2 circumstance penalty to the PC's next preparation check."
+          "Outcomes": "Gossip. Critical success: inside information gives a +2 circumstance bonus to future preparation checks for this infiltration, for the PC and anyone they share it with. Success: useful inside information for planning. Failure: the PC learns nothing. Critical failure: +1 Awareness, and mistaken rumours give a –2 circumstance penalty to the PC's next preparation check."
         },
         "ScoutLocation": {
           "Name": "Scout Location",
           "Description": "DC: normal, hard or very hard.",
-          "Failure": "The PC learns nothing noteworthy."
+          "Outcomes": "Scout Location. Success or critical success: +1 Edge. Failure: the PC learns nothing noteworthy. Critical failure: +1 Edge, cursed."
         },
         "SecureDisguises": {
           "Name": "Secure Disguises",
           "Description": "DC: normal, hard or very hard.",
-          "Use": "The Edge Point is usable only to maintain a cover identity.",
-          "Failure": "The disguise is unusable."
+          "Outcomes": "Secure Disguises. Success or critical success: +1 Edge, usable only to maintain a cover identity. Failure or critical failure: the disguise is unusable."
+        },
+        "GmNotes": {
+          "Intro": "What each activity gives (GM Core). Add Edge and Awareness by hand with + on the counters. A dud or cursed Edge Point still counts, as the PC thinks it worked."
         }
       },
       "chase": {
@@ -407,7 +348,7 @@
         "Points": "Chase Points",
         "Subject": "Obstacle",
         "Overcome": "Overcome",
-        "GmNotes": "Chase reminders (GM Core). Obstacles are cleared in order; extra Chase Points don't carry over, and PCs who haven't acted can go on to the next obstacle. A PC who passes or can't act costs the group 1 CP: use − on the obstacle's points. The Party and Quarry counters hold obstacle numbers. Set both maximums to the number of obstacles. When the party clears an obstacle, add 1 to Party and reveal the next obstacle (that hides the cleared one). The other side moves +1 each round; nudge it by hand on hard obstacles. Chase types: Chase Down: the quarry starts 1 ahead; the party catches it on reaching its obstacle, and it escapes once past the last. Run Away: rename Quarry to Pursuers and start it at 0; the party escapes past the last obstacle or 3 ahead at the end of a round, and is caught if they reach its obstacle. Beat the Clock: hide the other side and set the round maximum to the number of obstacles. Competitive: rename Quarry to Rival and start it at 1; whoever passes the last obstacle first wins, and initiative is rolled each round. If the party is stuck on one obstacle for about 3 rounds, let them find another way. Attack rolls and spells are yours to adjudicate: apply the degree from the roll card or change points by hand.",
+        "GmNotes": "Chase reminders (GM Core). Obstacles are cleared in order; extra Chase Points don't carry over, and PCs who haven't acted can go on to the next obstacle. A PC who passes or can't act costs the group 1 CP: use − on the obstacle's points. The Party and Quarry counters hold obstacle numbers. Set both maximums to the number of obstacles. When the party clears an obstacle, add 1 to Party and reveal the next obstacle (that hides the cleared one). The other side moves +1 each round; nudge it by hand on hard obstacles. Chase types: Chase Down: the quarry starts 1 ahead; the party catches it on reaching its obstacle, and it escapes once past the last. Run Away: rename Quarry to Pursuers and start it at 0; the party escapes past the last obstacle or 3 ahead at the end of a round, and is caught if they reach its obstacle. Beat the Clock: hide the other side and set the round maximum to the number of obstacles. Competitive: rename Quarry to Rival and start it at 1; whoever passes the last obstacle first wins, and initiative is rolled each round. If the party is stuck on one obstacle for about 3 rounds, let them find another way. Rolls never change points: after each roll, use + and − on the obstacle's points. Attack rolls and spells are yours to adjudicate.",
         "Party": "Party",
         "Quarry": "Quarry"
       }

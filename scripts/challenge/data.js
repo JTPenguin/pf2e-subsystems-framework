@@ -5,11 +5,8 @@
 
 export const STATUSES = ["inactive", "active", "finished"];
 export const DURATIONS = ["oneTime", "ongoing"];
-/** What a modifier entry can do. */
-export const EFFECT_TYPES = ["dc", "points", "counter", "rounds", "note"];
-/** What a row of an action's outcome table can do. A DC change belongs to modifiers and thresholds. */
-export const OUTCOME_EFFECT_TYPES = ["points", "counter", "rounds", "note"];
-export const OUTCOMES = ["criticalSuccess", "success", "failure", "criticalFailure"];
+/** What a modifier entry can do: change DCs, or hold a note. Nothing changes points or counters but the GM's own + and − (spec 14.7). */
+export const EFFECT_TYPES = ["dc", "note"];
 export const QUICK_DC_AMOUNTS = [-5, -2, 2, 5];
 /** A track counts up towards its thresholds and goal, or down towards them, or both ways from 0 (spec 14.8). */
 export const DIRECTIONS = ["up", "down", "both"];
@@ -50,9 +47,7 @@ const id = () => foundry.utils.randomID();
 /** A language key's text. Outside Foundry, as in tools/test.mjs, the key itself. */
 const say = (key) => globalThis.game?.i18n?.localize(key) ?? key;
 
-export const newEffect = () => ({ id: id(), type: "note", amount: 0, allSkills: true, skills: [], counterId: "", note: "" });
-const effect = (type, amount = 0, note = "") => ({ ...newEffect(), type, amount, note });
-export const newOutcomeEffect = () => effect("points", 1);
+export const newEffect = () => ({ id: id(), type: "note", amount: 0, allSkills: true, skills: [], note: "" });
 export const newModifier = () => ({
   id: id(), name: "", playerText: "", gmText: "", category: "", duration: "ongoing",
   active: false, spent: false, revealed: false, decoy: false, effects: [newEffect()],
@@ -75,9 +70,7 @@ export function setCounterNote(system, counterId, actorId, note) {
   counter.noteBy = notes;
 }
 
-/** GM Core's accumulating rolls: +2, +1, 0, −1 points. */
-const accumulating = () => ({ criticalSuccess: [effect("points", 2)], success: [effect("points", 1)], failure: [], criticalFailure: [effect("points", -1)] });
-export const newAction = () => ({ id: id(), name: "", description: "", secret: false, maxPoints: null, given: 0, checks: [], outcomes: accumulating() });
+export const newAction = () => ({ id: id(), name: "", description: "", secret: false, checks: [] });
 
 const blankSubject = () => ({
   id: id(), name: "", statLine: "", revealed: false, tracksPoints: true, individual: false,
@@ -89,46 +82,20 @@ const blankSubject = () => ({
  * A preset is a starting template: its names, its counters, and the subjects it can add. After creation everything can be edited.
  * `names` holds language keys; they are written into the challenge as text when it is made.
  * `subjects` lists the subject templates, each { id, label, make(system) }; the sheet offers one Add button per template, the first named by the subject label.
- * A template gets the challenge so its outcome rows can name the challenge's counters.
- * `counters()` and `rounds` are a new challenge's counters and round maximum.
+ * `counters()` and `rounds` are a new challenge's counters and round maximum. `gmNotes` is a language key, or a list of them, one paragraph each.
  */
 const always = (skill) => ({ ...newCheck(), skill, always: true });
-const outcomeTable = (rows) => Object.fromEntries(OUTCOMES.map((outcome) => [outcome, rows[outcome] ?? []]));
-const counterEffect = (counter, amount, note = "") => ({ ...effect("counter", amount, note), counterId: counter?.id ?? "" });
 const threshold = (points, key, { dc = 0, reveal = "points" } = {}) => ({ ...newThreshold(), points, dc, reveal, playerText: say(`${key}.Player`), gmText: say(`${key}.Gm`) });
-
-/**
- * The counter a preset's outcome rows add to, found by the name the preset gave it, so a renamed or removed one is still found or left blank.
- * Falls back to the first counter of the same kind (shared or per PC).
- */
-function presetCounter(system, nameKey, perPc) {
-  const counters = (system?.counters ?? []).filter((counter) => !!counter.perPc === perPc);
-  const name = categoryKey(say(nameKey));
-  return counters.find((counter) => categoryKey(counter.name) === name) ?? counters[0];
-}
 
 const INF = "SSM.Preset.infiltration";
 const CHASE = "SSM.Preset.chase";
 /** A chase's counter: an obstacle number on a track, shown. The GM sets the maximum to the number of obstacles (spec 14.11). */
 const chaseCounter = (name, value, perRound) => ({ ...newCounter(), name: say(`${CHASE}.${name}`), value, min: 0, max: 6, perRound, display: "track", revealed: true });
 const PREP = "SSM.Preset.preparation";
-const awareness = (system) => presetCounter(system, `${INF}.Awareness`, false);
-const edge = (system) => presetCounter(system, `${INF}.Edge`, true);
+const PREP_ACTIVITIES = ["BribeContact", "ForgeDocuments", "GainContact", "Gossip", "ScoutLocation", "SecureDisguises"];
 
-/** GM Core's obstacle: +2 or +1 Infiltration Points, or 1 or 2 Awareness Points. */
-const obstacleOutcomes = (system) => outcomeTable({
-  criticalSuccess: [effect("points", 2)], success: [effect("points", 1)],
-  failure: [counterEffect(awareness(system), 1)], criticalFailure: [counterEffect(awareness(system), 2)],
-});
-
-/** One preparation activity (GM Core, Preparation Activities). Edge Points rows add to the challenge's per-PC Edge counter, Awareness rows to its Awareness counter. */
-function preparationActivity(system, key, { secret = false, skills, rows }) {
-  const edgeOf = () => counterEffect(edge(system), 1);
-  const apOf = (amount) => counterEffect(awareness(system), amount);
-  const note = (name) => effect("note", 0, say(`${PREP}.${key}.${name}`));
-  const outcomes = rows({ edgeOf, apOf, note, dud: () => effect("note", 0, say(`${PREP}.Dud`)), cursed: () => effect("note", 0, say(`${PREP}.Cursed`)) });
-  return { ...newAction(), name: say(`${PREP}.${key}.Name`), description: say(`${PREP}.${key}.Description`), secret, checks: skills.map(always), outcomes: outcomeTable(outcomes) };
-}
+/** One preparation activity (GM Core, Preparation Activities). What each degree gives is in the preset's GM notes. */
+const preparationActivity = (key, { secret = false, skills }) => ({ ...newAction(), name: say(`${PREP}.${key}.Name`), description: say(`${PREP}.${key}.Description`), secret, checks: skills.map(always) });
 
 export const PRESETS = {
   victory: {
@@ -148,17 +115,14 @@ export const PRESETS = {
     rounds: 6,
     subjects: [{
       id: "npc",
-      make: () => {
-        const reminder = (outcome) => [effect("note", 0, say(`SSM.Preset.influence.Reminder.${outcome}`))];
-        return {
-          ...blankSubject(),
-          revealed: true,
-          actions: [
-            { ...newAction(), name: say("SSM.Preset.influence.Discover"), secret: true, checks: [always(PERCEPTION)], outcomes: Object.fromEntries(OUTCOMES.map((outcome) => [outcome, reminder(outcome)])) },
-            { ...newAction(), name: say("SSM.Preset.influence.Influence"), checks: ["deception", "diplomacy", "intimidation"].map(always) },
-          ],
-        };
-      },
+      make: () => ({
+        ...blankSubject(),
+        revealed: true,
+        actions: [
+          { ...newAction(), name: say("SSM.Preset.influence.Discover"), secret: true, checks: [always(PERCEPTION)] },
+          { ...newAction(), name: say("SSM.Preset.influence.Influence"), checks: ["deception", "diplomacy", "intimidation"].map(always) },
+        ],
+      }),
     }],
   },
   /** GM Core's Infiltration. Obstacles earn Infiltration Points; failures add to the party's Awareness Points; Edge Points are per PC. */
@@ -184,26 +148,17 @@ export const PRESETS = {
     subjects: [
       {
         id: "obstacle",
-        make: (system) => ({ ...blankSubject(), goal: 2, actions: [{ ...newAction(), name: say(`${INF}.Overcome`), outcomes: obstacleOutcomes(system) }] }),
+        make: () => ({ ...blankSubject(), goal: 2, actions: [{ ...newAction(), name: say(`${INF}.Overcome`) }] }),
       },
       {
         id: "complication",
         label: `${INF}.AddComplication`,
-        make: (system) => ({
-          ...blankSubject(), name: say(`${INF}.Complication`), tracksPoints: false,
-          actions: [{
-            ...newAction(), name: say(`${INF}.Overcome`),
-            outcomes: outcomeTable({ success: [effect("note", 0, say(`${INF}.Cleared`))], failure: [counterEffect(awareness(system), 1)], criticalFailure: [counterEffect(awareness(system), 2)] }),
-          }],
-        }),
+        make: () => ({ ...blankSubject(), name: say(`${INF}.Complication`), tracksPoints: false, actions: [{ ...newAction(), name: say(`${INF}.Overcome`) }] }),
       },
       {
         id: "opportunity",
         label: `${INF}.AddOpportunity`,
-        make: () => ({
-          ...blankSubject(), name: say(`${INF}.Opportunity`), tracksPoints: false,
-          actions: [{ ...newAction(), name: say(`${INF}.Attempt`), outcomes: outcomeTable({ criticalSuccess: [effect("note", 0, say(`${INF}.Benefit`))], success: [effect("note", 0, say(`${INF}.Benefit`))] }) }],
-        }),
+        make: () => ({ ...blankSubject(), name: say(`${INF}.Opportunity`), tracksPoints: false, actions: [{ ...newAction(), name: say(`${INF}.Attempt`) }] }),
       },
     ],
     // The first obstacle starts on the panel; the GM reveals the rest in turn.
@@ -233,7 +188,7 @@ export const PRESETS = {
   },
   /**
    * GM Core's preparation for an infiltration, run first as its own challenge. Its Edge and Awareness Points are typed into the infiltration by hand.
-   * A dud or cursed Edge Point still adds to Edge, as the PC thinks it worked; the roll card's note tells the GM to write it in that PC's note.
+   * A dud or cursed Edge Point still adds to Edge, as the PC thinks it worked; the GM notes say so, and what each activity gives.
    */
   preparation: {
     id: "preparation",
@@ -242,6 +197,7 @@ export const PRESETS = {
     names: { pointsName: `${INF}.Edge`, subjectLabel: `${PREP}.Subject` },
     // No suggestions: an empty heading would sit under the six activities on the panel.
     categories: [],
+    gmNotes: [`${PREP}.GmNotes.Intro`, ...PREP_ACTIVITIES.map((key) => `${PREP}.${key}.Outcomes`), `${PREP}.Dud`, `${PREP}.Cursed`],
     counters: () => [
       { ...newCounter(), name: say(`${INF}.Edge`), min: 0, perPc: true, revealed: true },
       // Hidden: the bribes and rumours that reached the opposition. It carries into the infiltration.
@@ -249,33 +205,15 @@ export const PRESETS = {
     ],
     subjects: [{
       id: "preparation",
-      make: (system) => ({
+      make: () => ({
         ...blankSubject(), name: say(`${PREP}.Subject`), revealed: true, tracksPoints: false,
         actions: [
-          preparationActivity(system, "BribeContact", {
-            secret: true, skills: ["deception", "diplomacy"],
-            rows: ({ edgeOf, apOf, dud }) => ({ criticalSuccess: [edgeOf()], success: [edgeOf()], failure: [edgeOf(), apOf(1), dud()], criticalFailure: [edgeOf(), apOf(2), dud()] }),
-          }),
-          preparationActivity(system, "ForgeDocuments", {
-            secret: true, skills: ["society"],
-            rows: ({ edgeOf, note, dud, cursed }) => ({ criticalSuccess: [edgeOf(), note("Use")], success: [edgeOf(), note("Use")], failure: [edgeOf(), dud()], criticalFailure: [edgeOf(), cursed()] }),
-          }),
-          preparationActivity(system, "GainContact", {
-            skills: ["diplomacy", "society"],
-            rows: ({ edgeOf, note }) => ({ criticalSuccess: [edgeOf(), note("Use")], success: [edgeOf(), note("Use")], failure: [note("Failure")], criticalFailure: [note("CriticalFailure")] }),
-          }),
-          preparationActivity(system, "Gossip", {
-            secret: true, skills: ["diplomacy"],
-            rows: ({ apOf, note }) => ({ criticalSuccess: [note("CriticalSuccess")], success: [note("Success")], failure: [note("Failure")], criticalFailure: [apOf(1), note("CriticalFailure")] }),
-          }),
-          preparationActivity(system, "ScoutLocation", {
-            secret: true, skills: [PERCEPTION, "society", "stealth"],
-            rows: ({ edgeOf, note, cursed }) => ({ criticalSuccess: [edgeOf()], success: [edgeOf()], failure: [note("Failure")], criticalFailure: [edgeOf(), cursed()] }),
-          }),
-          preparationActivity(system, "SecureDisguises", {
-            skills: ["crafting", "deception", "performance", "society"],
-            rows: ({ edgeOf, note }) => ({ criticalSuccess: [edgeOf(), note("Use")], success: [edgeOf(), note("Use")], failure: [note("Failure")], criticalFailure: [note("Failure")] }),
-          }),
+          preparationActivity("BribeContact", { secret: true, skills: ["deception", "diplomacy"] }),
+          preparationActivity("ForgeDocuments", { secret: true, skills: ["society"] }),
+          preparationActivity("GainContact", { skills: ["diplomacy", "society"] }),
+          preparationActivity("Gossip", { secret: true, skills: ["diplomacy"] }),
+          preparationActivity("ScoutLocation", { secret: true, skills: [PERCEPTION, "society", "stealth"] }),
+          preparationActivity("SecureDisguises", { skills: ["crafting", "deception", "performance", "society"] }),
         ],
       }),
     }],
@@ -344,7 +282,7 @@ export function newChallengeSystem(presetId = DEFAULT_PRESET) {
     modifiers: [],
     counters: preset.counters?.() ?? [],
   };
-  if (preset.gmNotes) system.gmNotes = `<p>${say(preset.gmNotes)}</p>`;
+  if (preset.gmNotes) system.gmNotes = [preset.gmNotes].flat().map((key) => `<p>${say(key)}</p>`).join("");
   if (preset.multipleSubjects === false) system.multipleSubjects = false;
   system.subjects = [{ ...newSubject(system), ...(preset.firstSubject ?? {}) }];
   return system;
@@ -354,7 +292,6 @@ export function newChallengeSystem(presetId = DEFAULT_PRESET) {
 const FACTORIES = {
   subjects: newSubject, actions: newAction, checks: newCheck, thresholds: newThreshold,
   modifiers: newModifier, effects: newEffect, counters: newCounter,
-  ...Object.fromEntries(OUTCOMES.map((outcome) => [outcome, newOutcomeEffect])),
 };
 
 /** Lists that must keep at least one row. */
@@ -363,9 +300,6 @@ const KEEP_ONE = new Set(["subjects", "effects"]);
 const getPath = (object, path) => path.split(".").reduce((value, key) => value?.[key], object);
 
 const allChecks = (subject) => subject.actions.flatMap((action) => action.checks);
-const outcomeEffects = (action) => OUTCOMES.flatMap((outcome) => action.outcomes?.[outcome] ?? []);
-/** Every effect that can name a counter: modifier effects and outcome rows. */
-const counterEffects = (system) => [...allModifiers(system).flatMap((modifier) => modifier.effects), ...system.subjects.flatMap((subject) => subject.actions.flatMap(outcomeEffects))];
 
 /** Add a new row to the list at listPath, for example "subjects.0.actions.1.checks". A new subject comes from the preset's `template`. Returns the row. */
 export function addRow(system, listPath, template) {
@@ -390,8 +324,6 @@ export function removeRow(system, path) {
   if (gone.length) {
     const subject = getPath(system, keys.slice(0, 2).join("."));
     for (const modifier of subject?.modifiers ?? []) for (const row of modifier.effects) row.skills = row.skills.filter((skill) => !gone.includes(skill));
-  } else if (listName === "counters") {
-    for (const row of counterEffects(system)) if (row.counterId === removed.id) row.counterId = "";
   }
   return true;
 }
@@ -402,7 +334,7 @@ export function setEffectAmount(system, path, amount) {
 }
 
 /** Number fields that may be blank. A blank in any other number field keeps the old value. */
-const BLANK_ALLOWED = new Set(["counters.*.min", "counters.*.max", "rounds.max", "subjects.*.goal", "subjects.*.min", "subjects.*.max", "maxPoints"]);
+const BLANK_ALLOWED = new Set(["counters.*.min", "counters.*.max", "rounds.max", "subjects.*.goal", "subjects.*.min", "subjects.*.max"]);
 
 const isPlainObject = (value) => value !== null && typeof value === "object" && !Array.isArray(value);
 
@@ -508,7 +440,7 @@ export function searchText(system) {
   for (const modifier of system.modifiers ?? []) parts.push(modifier.name, modifier.category, modifier.playerText, modifier.gmText, ...modifier.effects.map((row) => row.note));
   for (const subject of system.subjects) {
     parts.push(subject.name, subject.statLine, ...thresholds(subject.thresholds));
-    for (const action of subject.actions) parts.push(action.name, action.description, ...outcomeEffects(action).map((row) => row.note));
+    for (const action of subject.actions) parts.push(action.name, action.description);
     for (const modifier of subject.modifiers) parts.push(modifier.name, modifier.category, modifier.playerText, modifier.gmText, ...modifier.effects.map((row) => row.note));
   }
   return parts.filter(Boolean).join(" ");
@@ -521,7 +453,7 @@ export function searchText(system) {
 
 /** The fields each window edits. The id never changes. */
 export const MODIFIER_FIELDS = ["name", "category", "duration", "playerText", "gmText", "active", "spent", "revealed", "decoy", "effects"];
-export const ACTION_FIELDS = ["name", "description", "secret", "maxPoints", "outcomes"];
+export const ACTION_FIELDS = ["name", "description", "secret"];
 
 const subjectById = (system, subjectId) => system.subjects.find((subject) => subject.id === subjectId);
 /** The modifier list a subject id names. An empty id names the challenge's own list (spec 14.7). */
@@ -542,14 +474,12 @@ export function entryChanges(base, draft, fields) {
 /** A copy of the latest entry with the window's changes on top, so an update from elsewhere keeps the GM's unsaved edits. */
 export const rebaseEntry = (latest, changes) => ({ ...structuredClone(latest), ...structuredClone(changes), id: latest.id });
 
-const counterIds = (system) => new Set(system.counters.map((counter) => counter.id));
-
 /** The skill keys a challenge-level DC change can name: each skill used by a check anywhere in the challenge. */
 export const challengeSkillKeys = (system) => [...new Set(system.subjects.flatMap(allChecks).map(skillKey))];
 
 /**
- * Save the window's changes onto a modifier. Effects drop links to checks or counters that no longer exist.
- * A challenge-level entry names skills, not checks, and has no points effect (spec 14.7). Returns false if the modifier is gone.
+ * Save the window's changes onto a modifier. Effects drop links to checks that no longer exist.
+ * A challenge-level entry names skills, not checks (spec 14.7). Returns false if the modifier is gone.
  */
 export function saveModifier(system, subjectId, modifierId, changes) {
   const modifier = findModifier(system, subjectId, modifierId);
@@ -558,21 +488,14 @@ export function saveModifier(system, subjectId, modifierId, changes) {
   modifier.category = String(modifier.category ?? "").trim();
   const subject = subjectId ? subjectById(system, subjectId) : null;
   const checks = new Set(subject ? allChecks(subject).map((check) => check.id) : challengeSkillKeys(system));
-  const counters = counterIds(system);
-  for (const row of modifier.effects) {
-    if (!subject && row.type === "points") row.type = "note";
-    row.skills = row.skills.filter((skill) => checks.has(skill));
-    if (row.counterId && !counters.has(row.counterId)) row.counterId = "";
-  }
+  for (const row of modifier.effects) row.skills = row.skills.filter((skill) => checks.has(skill));
   return true;
 }
 
-/** Save the window's changes onto an action. Outcome rows drop links to counters that no longer exist. Returns false if the action is gone. */
+/** Save the window's changes onto an action. Returns false if the action is gone. */
 export function saveAction(system, subjectId, actionId, changes) {
   const action = findAction(system, subjectId, actionId);
   if (!action) return false;
   for (const key of ACTION_FIELDS) if (key in changes) action[key] = structuredClone(changes[key]);
-  const counters = counterIds(system);
-  for (const row of outcomeEffects(action)) if (row.counterId && !counters.has(row.counterId)) row.counterId = "";
   return true;
 }

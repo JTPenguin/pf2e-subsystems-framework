@@ -1,4 +1,3 @@
-import { MODULE } from "./constants.js";
 import { challengePage, subsystemFor } from "./registry.js";
 import { findRollOption, parseRollOption, stampLinkRoll } from "./roll-option.js";
 
@@ -22,17 +21,12 @@ export function rollFromMessage(message) {
     ...roll,
     messageId: message.id,
     actorId: actor?.id ?? "",
-    outcome: context.outcome ?? "",
     dc: context.dc?.value ?? null,
     isReroll: !!context.isReroll,
   };
 }
 
-/** The flag on an applied-result card (spec 14.8), which names its challenge. */
-const RESULT_FLAG = "result";
-const resultOf = (message) => message.flags?.[MODULE]?.[RESULT_FLAG] ?? null;
-
-/** The challenge a roll or an applied-result card belongs to: its entry, page and subsystem. Null if the challenge has been deleted. */
+/** The challenge a roll belongs to: its entry, page and subsystem. Null if the challenge has been deleted. */
 export function challengeOf(roll) {
   const entry = game.journal.get(roll.challengeId);
   const subsystem = entry ? subsystemFor(entry) : null;
@@ -41,8 +35,8 @@ export function challengeOf(roll) {
 }
 
 /**
- * Only the active GM's client handles arriving rolls (spec section 4).
- * A PF2e reroll deletes the old message and posts a new one with the same roll option, so a reroll has its own card.
+ * Only the active GM's client handles arriving rolls (spec section 4). The roll card itself is PF2e's own: the module adds nothing to it.
+ * A PF2e reroll deletes the old message and posts a new one with the same roll option, marked as a reroll.
  */
 function onRollMessage(message) {
   if (!game.user.isActiveGM) return;
@@ -51,47 +45,7 @@ function onRollMessage(message) {
   found?.subsystem.receiveRoll?.(found.page, roll);
 }
 
-/**
- * The GM's controls on a module roll's card. They're added to the drawn card on GM clients only, never to the message itself, so players never get them.
- * Foundry calls this hook each time a card is drawn: in the log, a popout and the chat notification.
- */
-function onRenderMessage(message, html) {
-  if (!game.user.isGM) return;
-  const content = html.querySelector(".message-content");
-  const result = resultOf(message);
-  if (result && content) {
-    const found = challengeOf(result);
-    return found?.subsystem.renderResultCard?.(found.page, message, content);
-  }
-  const roll = rollFromMessage(message);
-  if (!roll) return;
-  const found = challengeOf(roll);
-  if (!content) return;
-  if (found) return found.subsystem.renderRollCard?.(found.page, roll, message, content);
-  const note = document.createElement("p");
-  note.className = "ssm-card ssm-card-note";
-  note.textContent = game.i18n.localize("SSM.Card.ChallengeGone");
-  content.append(note);
-}
-
-/**
- * A challenge that starts, ends or resets, or applies or undoes a result, changes what its cards' controls can do,
- * so a GM's client redraws its roll and result cards on screen. Cards not drawn are drawn fresh later.
- */
-function onChallengeUpdate(page, changed) {
-  const relevant = ["system.run.status", "system.run.appliedRolls"].some((path) => foundry.utils.hasProperty(changed, path));
-  if (!game.user.isGM || !relevant) return;
-  const entryId = page.parent?.id;
-  const ids = new Set([...document.querySelectorAll(".chat-message[data-message-id]")].map((li) => li.dataset.messageId));
-  for (const id of ids) {
-    const message = game.messages.get(id);
-    if (message && (rollFromMessage(message) ?? resultOf(message))?.challengeId === entryId) ui.chat.updateMessage(message);
-  }
-}
-
 export function installRollListener() {
   Hooks.on("preCreateChatMessage", prepareRollMessage);
   Hooks.on("createChatMessage", onRollMessage);
-  Hooks.on("renderChatMessageHTML", onRenderMessage);
-  Hooks.on("updateJournalEntryPage", onChallengeUpdate);
 }

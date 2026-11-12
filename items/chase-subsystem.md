@@ -44,7 +44,7 @@ The full design is spec 14.11.
 
 ## Notes kept from the spec step
 
-- Preparation (*Punks in a Powderkeg*'s Scout a Route) is a separate challenge, as for Infiltration; Preparation Points are a per-PC counter spent with the roll card's degree buttons.
+- Preparation (*Punks in a Powderkeg*'s Scout a Route) is a separate challenge, as for Infiltration; Preparation Points are a per-PC counter the GM spends by hand (the roll card's degree buttons were removed on 2026-11-12).
 
 
 **Done when:** a GM can run a chase from a sheet, and players can take its actions from the panel. Check it in Foundry with a live test chase and a player login.
