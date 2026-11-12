@@ -426,7 +426,9 @@ A preset is a starting template: its names, and what a new challenge and a new s
 | Colour | Each category's stripe takes the next colour of a fixed palette, in that order. Influence's three keep today's colours. There is no colour picker. |
 | Other | Not built in. It is one of Influence's suggestions. |
 | Edit tab | One Add entry per category in use, plus a plain Add entry with an empty category. The preset's suggested categories always get one, even when no entry uses them yet (Justin, 2026-11-11). There is no list of categories to edit. |
-| GM window and panel | Section headings and the panel card's right-hand label show the category, as they show the kind today. A blank category groups last, with no heading and no label. |
+| Order on the sheet and panel | A blank category groups first, with no heading and no label, then the labelled ones (Justin, 2026-11-11). |
+| GM window | Under each subject, an Actions section of action cards, then Thresholds, then a Modifiers section with one subsection per category, its heading in the category's colour. The Edit tab has the same Actions and Modifiers headings. |
+| Panel | Each action is a card: its name, a Secret mark, its check buttons, and its description on hover. Then one section per category the subject has, plus the preset's suggestions, with a heading in the category's colour; one with nothing revealed says "None revealed". Its label shows even when every entry in it is hidden. The blank category shows only when one of its entries is revealed. The cards leave out the category label, since the heading names it. |
 
 **Challenge-level modifiers.** The challenge holds its own list of modifier entries, beside each subject's.
 
@@ -436,7 +438,7 @@ A preset is a starting template: its names, and what a new challenge and a new s
 | DC change | Applies to every check in the challenge, still filtered by chosen skills. The skills are named, not picked by check: the choices are the skills used by checks in the challenge (a Lore by its name), and each matches that skill on any subject (Justin, 2026-11-11). A one-time one is spent by the next matching check anywhere. A change meant for one subject goes on that subject. |
 | Points effect | Not offered: there is no subject to change. Counter, rounds and note effects work as on a subject. |
 | Sheet | A Challenge box above the subjects, with its cards grouped by category, as a subject's are. Edit mode adds them there the same way. |
-| Panel | Revealed ones show in a full-width strip above the subject columns, grouped by category, in the same card style and with the same GM click. Hidden if none are revealed. |
+| Panel | Revealed ones show in a full-width strip above the subject columns, grouped by category with no section headings, in the same card style (with the category label) and with the same GM click. Hidden if none are revealed. |
 
 **Left to the GM.** These were weighed and cut, since each saves only a click or two (Justin, 2026-11-11). Outcome notes and threshold text say what the GM should do.
 

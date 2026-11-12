@@ -1062,6 +1062,8 @@ const secretSystem = () => {
 };
 const PARTY = [{ id: "a1", name: "Ezren", img: "ezren.webp" }, { id: "a2", name: "Amiri", img: "" }];
 const viewOf = (s, party = []) => V.buildPanelView({ name: "Banquet", system: s, party });
+/** A subject's panel cards, section by section, as one list. */
+const known = (subject) => subject.modifierGroups.flatMap((group) => group.cards);
 /** Every key and every value in a copy, at any depth. */
 const scan = (value, found = { keys: new Set(), values: new Set() }) => {
   if (Array.isArray(value)) value.forEach((item) => scan(item, found));
@@ -1099,7 +1101,7 @@ test("the copy shows only the defaults before anything is revealed", () => {
     ["SSM.Preset.influence.Discover", true, ["perception"]],
     ["SSM.Preset.influence.Influence", false, ["deception", "diplomacy", "intimidation"]],
   ]);
-  assert.deepEqual([subject.known, subject.thresholds, subject.pcs, view.counters], [[], [], [], []]);
+  assert.deepEqual([known(subject), subject.thresholds, subject.pcs, view.counters], [[], [], [], []]);
   assertNoSecrets(view);
   for (const word of ["Flattery", "Suspicion", "introduction", "guards"]) assert.ok(!JSON.stringify(view).includes(word), word);
 });
@@ -1130,7 +1132,7 @@ test("revealing each kind of entry adds it, and only its player fields", () => {
   const view = viewOf(s);
   const subject = sub(s);
   assert.deepEqual(view.subjects[0].actions[1].checks.at(-1), { id: society(s).id, skill: "society", lore: "", dc: 15 });
-  assert.deepEqual(view.subjects[0].known, [{ id: subject.modifiers[0].id, name: "Flattery", text: "likes praise", category: "", colour: "", duration: "ongoing", active: false, spent: false, applied: false, changes: [] }]);
+  assert.deepEqual(known(view.subjects[0]), [{ id: subject.modifiers[0].id, name: "Flattery", text: "likes praise", category: "", colour: "", duration: "ongoing", active: false, spent: false, applied: false, changes: [] }]);
   assert.deepEqual(view.subjects[0].thresholds, [{ id: subject.thresholds[0].id, points: 8, text: "she offers an introduction", textHidden: false, reached: false }]);
   assert.deepEqual(view.counters, [{ id: s.counters[0].id, name: "Suspicion", value: 3, perPc: false, pcs: [], track: true, scale: 222, range: null, thresholds: [{ id: s.counters[0].thresholds[0].id, points: 5, text: "the guards stir", textHidden: false, reached: false }] }]);
   assertNoSecrets(view);
@@ -1178,7 +1180,7 @@ test("an unrevealed decoy is left out, and an always-shown check is in from the 
   sub(s).modifiers[0].decoy = true;
   let view = viewOf(s);
   assert.deepEqual(view.subjects[0].actions[0].checks, [{ id: discover(s).checks[0].id, skill: "perception", lore: "", dc: 15 }]);
-  assert.deepEqual(view.subjects[0].known, []);
+  assert.deepEqual(known(view.subjects[0]), []);
   assert.ok(!JSON.stringify(view).includes("654"));
   planted.revealed = true;
   view = viewOf(s);
@@ -1198,14 +1200,26 @@ const R_ = "SSM.Preset.influence.Category.resistance";
 const W_ = "SSM.Preset.influence.Category.weakness";
 const O_ = "SSM.Preset.influence.Category.other";
 
-test("the panel groups cards by category: the preset's suggestions in order, then others by first use, the blank one last; each keeps stored order", () => {
+test("the panel groups cards by category: the blank one first, then the preset's suggestions in order, then others by first use; each keeps stored order", () => {
   const s = secretSystem();
   const base = sub(s).modifiers[0];
   const make = (category, name) => ({ ...structuredClone(base), id: `${category}-${name}`, category, name, revealed: true });
   sub(s).modifiers = [make(W_, "w1"), make("Opportunity", "op1"), make("", "b1"), make(O_, "o1"), make(R_, "r1"), make(` ${W_.toUpperCase()} `, "w2"), make("Complication", "c1"), make("opportunity", "op2"), make(R_, "r2")];
-  const cards = viewOf(s).subjects[0].known;
-  assert.deepEqual(cards.map((card) => card.name), ["r1", "r2", "w1", "w2", "o1", "op1", "op2", "c1", "b1"]);
-  assert.deepEqual(cards.map((card) => card.category), [R_, R_, W_, W_, O_, "Opportunity", "Opportunity", "Complication", ""]);
+  const cards = known(viewOf(s).subjects[0]);
+  assert.deepEqual(cards.map((card) => card.name), ["b1", "r1", "r2", "w1", "w2", "o1", "op1", "op2", "c1"]);
+  assert.deepEqual(cards.map((card) => card.category), ["", R_, R_, W_, W_, O_, "Opportunity", "Opportunity", "Complication"]);
+});
+
+test("the panel shows every labelled category, empty when nothing in it is revealed; the blank one only when one of its entries is", () => {
+  const s = secretSystem();
+  const base = sub(s).modifiers[0];
+  const make = (category, name, revealed) => ({ ...structuredClone(base), id: name, category, name, revealed });
+  sub(s).modifiers = [make("", "b1", false), make(W_, "w1", true), make("Opportunity", "op1", false)];
+  const groups = () => viewOf(s).subjects[0].modifierGroups.map((group) => [group.label, group.cards.map((card) => card.name)]);
+  assert.deepEqual(groups(), [[R_, []], [W_, ["w1"]], [O_, []], ["Opportunity", []]]);
+  sub(s).modifiers[0].revealed = true;
+  assert.deepEqual(groups()[0], ["", ["b1"]]);
+  assert.ok(!JSON.stringify(viewOf(s)).includes("op1"), "a hidden entry's name stays out; only its category's label shows");
 });
 
 test("each category's stripe takes the next palette colour; Influence's three keep today's colours; a blank category has none", () => {
@@ -1219,6 +1233,8 @@ test("each category's stripe takes the next palette colour; Influence's three ke
   const groups = D.groupByCategory(s, sub(s).modifiers, { withSuggestions: true });
   assert.deepEqual(groups.map((group) => [group.label, group.rows.length]), [[R_, 0], [W_, 1], [O_, 0], ["Opportunity", 1]], "the Edit tab keeps the suggestions even when empty");
   assert.deepEqual(D.groupByCategory(s, sub(s).modifiers).map((group) => group.label), [W_, "Opportunity"]);
+  sub(s).modifiers.push({ ...D.newModifier(), category: "" });
+  assert.deepEqual(D.groupByCategory(s, sub(s).modifiers).map((group) => group.label), ["", W_, "Opportunity"], "the blank category groups first");
 });
 
 test("thresholds show in the order the track reaches them; points-only shows no text; a missing player text never falls back to GM text", () => {
@@ -1300,7 +1316,7 @@ const cardOf = (effects, over = {}) => {
   const s = secretSystem();
   s.pointsName = "Influence Points";
   sub(s).modifiers = [{ ...D.newModifier(), name: "Flattery", revealed: true, ...over, effects: effects(s).map((row) => ({ ...D.newEffect(), ...row })) }];
-  const [card] = viewOf(s).subjects[0].known;
+  const [card] = known(viewOf(s).subjects[0]);
   return { s, card, texts: card.changes.map((change) => V.changeText(change, { ...enText, points: s.pointsName })) };
 };
 
@@ -1340,7 +1356,7 @@ test("a card carries category, colour, duration and state, its player text and n
   assert.deepEqual([card.category, card.colour, card.duration, card.active, card.spent, card.applied, card.text], [R_, "#c0523f", "oneTime", true, false, false, "likes praise"]);
   assertNoSecrets(card);
   Run.applyModifier(s, sub(s).id, sub(s).modifiers[0].id);
-  assert.deepEqual([viewOf(s).subjects[0].known[0].spent, viewOf(s).subjects[0].known[0].applied], [true, true]);
+  assert.deepEqual([known(viewOf(s).subjects[0])[0].spent, known(viewOf(s).subjects[0])[0].applied], [true, true]);
 });
 
 /* Challenge-level modifiers (spec 14.7) */

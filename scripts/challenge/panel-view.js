@@ -102,8 +102,16 @@ function thresholdViews(rows, direction) {
   }));
 }
 
-/** The revealed entries of a list as cards, grouped by category in category order, the blank category last (spec 14.7). */
+/** The revealed entries of a list as cards, grouped by category: the blank category first, then category order (spec 14.7). */
 const cards = (system, subject, rows) => groupByCategory(system, rows.filter(isVisible)).flatMap((group) => group.rows.map((row) => modifierView(system, subject, row, group)));
+
+/**
+ * A subject's modifiers as the panel's sections (spec 14.7): the blank category first, with no heading, shown only when one of its entries is revealed;
+ * then every labelled category the subject has, plus the preset's suggestions, each with its revealed cards, empty when none are.
+ * A category's label shows even when all its entries are hidden.
+ */
+const cardGroups = (system, subject) => groupByCategory(system, subject.modifiers.filter(isVisible), { withSuggestions: true, keep: subject.modifiers.map((row) => row.category) })
+  .map((group) => ({ label: group.label, colour: group.colour, cards: group.rows.map((row) => modifierView(system, subject, row, group)) }));
 
 /**
  * A both-ways bar's range (spec 14.8): the minimum to the maximum when both are set; otherwise, on each side of 0, the furthest threshold, hidden or not, else 10.
@@ -145,8 +153,8 @@ function subjectView(system, subject, party) {
       secret: !!action.secret,
       checks: action.checks.filter(isVisibleCheck).map((row) => ({ id: row.id, skill: row.skill, lore: row.lore, dc: currentDc(system, subject, row) })),
     })).filter((action) => action.checks.length),
-    // By category: the preset's suggestions first, then others by first use; each keeps the GM's order.
-    known: cards(system, subject, subject.modifiers),
+    // By category: the blank one first, then the preset's suggestions, then others by first use; each keeps the GM's order.
+    modifierGroups: cardGroups(system, subject),
     // An individual subject has a goal only.
     thresholds: subject.individual ? [] : thresholdViews(subject.thresholds, subject.direction),
   };

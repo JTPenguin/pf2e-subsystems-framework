@@ -110,7 +110,7 @@ export const allModifiers = (system) => [...(system.modifiers ?? []), ...system.
 
 /**
  * The categories in order (spec 14.7): the preset's suggestions, then other labels in order of first use. Each is { key, label, colour }.
- * A blank category is left out: it groups last, with no heading and no colour.
+ * A blank category is left out: it groups first, with no heading and no colour.
  */
 export function categoryOrder(system) {
   const order = new Map();
@@ -122,14 +122,15 @@ export function categoryOrder(system) {
 }
 
 /**
- * Rows grouped by category, in category order, with the blank category last. Each group is { key, label, colour, rows }.
- * `withSuggestions` keeps the preset's suggested categories even with no rows, as the Edit tab does.
+ * Rows grouped by category: the blank category first, with no heading, then the labelled ones in category order (spec 14.7). Each group is { key, label, colour, rows }.
+ * A group with no rows is left out, except: `withSuggestions` keeps the preset's suggested categories, as the Edit tab does,
+ * and `keep` (a list of category labels) keeps those, as the panel does for a subject's categories.
  */
-export function groupByCategory(system, rows, { withSuggestions = false } = {}) {
-  const suggested = new Set(suggestedCategories(system).map(categoryKey));
+export function groupByCategory(system, rows, { withSuggestions = false, keep = [] } = {}) {
+  const kept = new Set([...(withSuggestions ? suggestedCategories(system) : []), ...keep].map(categoryKey));
   const groups = categoryOrder(system).map((category) => ({ ...category, rows: rows.filter((row) => categoryKey(row.category) === category.key) }));
   const blank = { key: "", label: "", colour: "", rows: rows.filter((row) => !categoryKey(row.category)) };
-  return [...groups, blank].filter((group) => group.rows.length || (withSuggestions && suggested.has(group.key)));
+  return [blank, ...groups].filter((group) => group.rows.length || (group.key && kept.has(group.key)));
 }
 
 /** Move a subject one place up (−1) or down (+1) in the challenge's order (spec 14.8). Returns false at either end. */

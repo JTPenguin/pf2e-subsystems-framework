@@ -129,7 +129,7 @@ button.ssm-reached { color: #4f9d5d; }
 
 /* The PF2e NPC and hazard sheet look. The values come from the system's own rules (.actor.npc.sheet and .sheet.hazard in pf2e.css): its fonts, its dark red section bars over a red-edged body, and its spacing. The variables are set on body and .app by the system, so they work here; the fallbacks are the system's values. */
 :is(.ssm-sheet, .ssm-modifier-window) .window-content { font-family: var(--sans-serif, Roboto, sans-serif); font-size: var(--font-size-13, 0.8125rem); }
-:is(.ssm-sheet, .ssm-modifier-window) .window-content :is(h3, h4, legend, button:not(.icon), input, select) { font-family: inherit; }
+:is(.ssm-sheet, .ssm-modifier-window) .window-content :is(h3, h4, h5, legend, button:not(.icon), input, select) { font-family: inherit; }
 .ssm-sheet .ssm-head .ssm-name { font: 700 1.75rem var(--sans-serif-condensed, "Roboto Condensed", Roboto, sans-serif); font-variant: small-caps; }
 .ssm-sheet .ssm-stat-label { font-size: inherit; font-weight: 600; text-transform: none; opacity: 1; }
 .ssm-sheet .ssm-block { margin: 0; padding: 0 var(--space-4, 0.25rem) var(--space-4, 0.25rem); border: 1px solid var(--color-pf-primary, #5e0000); border-radius: 3px; }
@@ -314,7 +314,17 @@ fieldset:has(> .ssm-checks-wrap) { min-width: 0; }
 .ssm-panel-pc-row { display: flex; align-items: center; gap: 0.4rem; }
 .ssm-panel-pc-row > .ssm-panel-pc { width: 1.4rem; height: 1.4rem; border-width: 1px; }
 .ssm-panel-pc-row.complete > .ssm-panel-threshold-mark { color: #6fae6a; }
-.ssm-panel-actions > p { margin: 0; }
+/* Each action is a card, like a modifier card but with a plain edge: its name, then its check buttons. The card is the hover target for the description. */
+.ssm-panel-actions { display: flex; flex-direction: column; gap: 0.25rem; margin-top: 0.25rem; }
+.ssm-panel-action { padding: 0.1rem 0.35rem 0.15rem; border: 1px solid rgba(184, 160, 106, 0.35); border-radius: 3px; background: rgba(255, 255, 255, 0.04); line-height: 1.25; }
+.ssm-panel-action-name { display: block; }
+.ssm-panel-action-name > i { margin-left: 0.15rem; font-size: 0.85em; opacity: 0.75; }
+.ssm-panel-action .ssm-panel-list { display: flex; flex-wrap: wrap; gap: 0 0.25rem; }
+/* A modifier section per category: a heading in the category's colour, then its cards, or "None revealed". The blank category has no heading. */
+.ssm-panel-mod-group { margin-top: 0.35rem; }
+.ssm-panel-mod-group > .ssm-panel-mods { margin-top: 0.15rem; }
+.ssm-panel-cat-head { padding-bottom: 0.05rem; border-bottom: 1px solid var(--ssm-cat, rgba(184, 160, 106, 0.35)); color: var(--ssm-cat, #b8a06a); font-size: var(--font-size-11, 0.7rem); font-weight: bold; letter-spacing: 0.04em; text-transform: uppercase; filter: brightness(1.25); }
+.ssm-panel-empty { margin: 0; font-size: var(--font-size-11, 0.7rem); font-style: italic; opacity: 0.55; }
 .ssm-panel-tracks { display: flex; flex-wrap: wrap; gap: 1rem; margin-top: 0.3rem; padding-top: 0.3rem; border-top: 1px solid rgba(184, 160, 106, 0.35); }
 .ssm-panel-track { flex: 1 1 12rem; min-width: 0; }
 
@@ -345,3 +355,18 @@ fieldset:has(> .ssm-checks-wrap) { min-width: 0; }
 .ssm-sheet .ssm-pc-total { margin-left: 0.5rem; }
 .ssm-sheet .ssm-block-head > button.icon.ssm-collapse { --button-size: 1.5rem; width: 1.5rem; height: 1.5rem; flex: none; margin: 0; }
 .ssm-sheet .ssm-section-head { margin: 0.25rem 0 0; font-size: var(--font-size-14, 0.875rem); font-weight: bold; }
+
+/* The sheet's sections: Actions, Thresholds and Modifiers under each subject, in either mode. */
+.ssm-sheet .ssm-section { margin-top: var(--space-4, 0.25rem); }
+.ssm-sheet .ssm-section-title { margin: var(--space-4, 0.25rem) 0 var(--space-4, 0.25rem); padding-left: var(--space-2, 0.125rem); border-bottom: 1px solid var(--color-border-book, #7a7971); font-size: var(--font-size-12, 0.75rem); font-weight: bold; letter-spacing: 0.04em; text-transform: uppercase; }
+/* An action card, styled like a modifier card. */
+.ssm-sheet .ssm-action-card { box-sizing: border-box; min-width: 0; margin-bottom: 0.25rem; padding: 0.2rem 0.3rem; border: 1px solid var(--color-border, #7a7971); border-radius: 3px; background: var(--ssm-reveal-fill); }
+.ssm-sheet .ssm-action-card .ssm-skill-line { margin-bottom: 0; }
+.ssm-sheet .ssm-action-card .ssm-run-description { margin: 0.1rem 0 0; }
+.ssm-sheet .ssm-action-edit { padding: 0.3rem 0.5rem 0.4rem; }
+.ssm-sheet .ssm-action-edit > .ssm-entry > button.icon { --button-size: 1.5rem; width: 1.5rem; height: 1.5rem; }
+.ssm-sheet .ssm-action-edit > .ssm-outcome-lines { margin-bottom: 0.25rem; }
+.ssm-sheet .ssm-action-name { font-size: var(--font-size-14, 0.875rem); }
+/* A category's heading inside Modifiers takes the category's stripe colour. */
+.ssm-sheet .ssm-cat-group > .ssm-cat-head { margin: var(--space-4, 0.25rem) 0 var(--space-2, 0.125rem); padding-left: var(--space-4, 0.25rem); border-left: 3px solid var(--ssm-cat, var(--color-border-book, #7a7971)); font-size: inherit; font-weight: 600; }
+.ssm-sheet fieldset.ssm-mod-group[style] > legend { border-left: 4px solid var(--ssm-cat); }

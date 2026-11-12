@@ -93,11 +93,17 @@ function prepareView(view, state) {
       actions: subject.actions.map((action) => ({
         id: action.id,
         name: actionName(action),
+        secret: action.secret,
         // Everyone sees the description, so it goes in as player text.
         tooltip: cardTooltip({ playerText: action.description, isGM: false }, { escape: foundry.utils.escapeHTML }),
         checks: action.checks.map((row) => ({ id: row.id, subjectId: subject.id, actionId: action.id, label: skillLabel(row), decoy: decoys.has(`${subject.id}:${row.id}`) })),
       })),
-      known: subject.known.map((row) => modifierCard(row, subject.id, pointsName, gm.get(`${subject.id}:${row.id}`), decoys.has(`${subject.id}:${row.id}`))),
+      // One section per category; the heading names the category, so the cards leave out its label (spec 14.7).
+      modifierGroups: subject.modifierGroups.map((group) => ({
+        heading: group.label,
+        stripe: group.colour ? `--ssm-cat: ${group.colour}` : "",
+        cards: group.cards.map((row) => ({ ...modifierCard(row, subject.id, pointsName, gm.get(`${subject.id}:${row.id}`), decoys.has(`${subject.id}:${row.id}`)), categoryLabel: "" })),
+      })),
     })),
     // A counter with thresholds is a track, with a bar and a threshold card. The rest stay plain numbers on one line.
     // A both-ways counter gets a bar with a zero mark even with no thresholds.

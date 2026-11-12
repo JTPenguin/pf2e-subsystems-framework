@@ -22,13 +22,13 @@ const COLLAPSED_FLAG = "collapsedSubjects";
 const isCollapsed = (subjectId) => !!game.user.getFlag(MODULE, COLLAPSED_FLAG)?.[subjectId];
 
 /**
- * Modifier views as the GM window's sections, by category (spec 14.7): the preset's suggestions first, then other labels in order of first use,
- * then the blank category with no heading. Each has a key, a heading, its stripe colour and its rows.
+ * Modifier views as the GM window's sections, by category (spec 14.7): the blank category first, with no heading,
+ * then the preset's suggestions, then other labels in order of first use. Each has a key, a heading, its stripe colour and its rows.
  * On the Edit tab (`forEdit`) the suggested categories and the blank one always show, as each holds an Add button.
  */
 function modifierGroups(system, views, forEdit = false) {
   const groups = groupByCategory(system, views, { withSuggestions: forEdit });
-  if (forEdit && !groups.some((group) => !group.key)) groups.push({ key: "", label: "", colour: "", rows: [] });
+  if (forEdit && !groups.some((group) => !group.key)) groups.unshift({ key: "", label: "", colour: "", rows: [] });
   return groups.map((group) => ({ ...group, heading: group.label, stripe: group.colour ? `--ssm-cat: ${group.colour}` : "", canAdd: forEdit }));
 }
 const labels = (values, prefix) => Object.fromEntries(values.map((value) => [value, loc(`SSM.Challenge.${prefix}.${value}`)]));

@@ -51,6 +51,7 @@
       "Thresholds": "Thresholds",
       "TipGM": "GM Only",
       "HiddenText": "???",
+      "NoneRevealed": "None revealed",
       "ActedLabel": "{name}: has acted this round",
       "NotActedLabel": "{name}: has not acted this round",
       "NoCharacter": "You need an assigned character to roll. Ask the GM to assign one.",
@@ -58,6 +59,8 @@
       "SkillGone": "That check is no longer available."
     },
     "Challenge": {
+      "Actions": "Actions",
+      "Modifiers": "Modifiers",
       "Label": "Challenge",
       "Challenge": "Challenge",
       "Name": "Name",
