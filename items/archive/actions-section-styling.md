@@ -8,7 +8,7 @@ blocked_by: []
 source: "Justin's list of items, 2026-11-12; interview with Justin, 2026-11-12"
 added: 2026-11-12
 updated: 2026-11-12
-outcome: "Built 2026-11-12. Both Edit tabs are one red block with small section titles, as in Run view. The subject's bar holds its name, order arrows and delete button; Revealed stays a checkbox under it (no eye, which only works while running). A hidden subject's block is dashed, as in Run view. Checked live on Influence Test."
+outcome: "Built 2026-11-12, then corrected the same day: Justin wanted a red bar on every section, not one red block per tab. Each Edit-tab section is now its own red block; the subject's first block holds its name, order and delete buttons in the bar, with Revealed as a checkbox under it. Modifier categories keep small headings inside the Modifiers block."
 ---
 # Lay out the Edit tab like Run view
 
@@ -16,7 +16,7 @@ Today the Edit tab mixes three looks: red-edged fieldsets with a red tab label (
 
 ## Decided (Justin, 2026-11-12)
 
-Every section on the Edit tab uses Run view's styling, mirroring its two levels.
+Every section on the Edit tab gets its own red bar, like a subject or Counters in Run view (corrected by Justin, 2026-11-12: the first build put one red block per tab, with small titles inside).
 
 | Tab | Red block (header bar) | Sections inside it |
 |---|---|---|

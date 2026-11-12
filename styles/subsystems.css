@@ -367,12 +367,8 @@ button.ssm-reached { color: #4f9d5d; }
 /* The sheet's sections: Actions, Thresholds and Modifiers under each subject, in either mode. */
 .ssm-sheet .ssm-section { margin-top: var(--space-4, 0.25rem); }
 .ssm-sheet .ssm-section-title { margin: var(--space-4, 0.25rem) 0 var(--space-4, 0.25rem); padding-left: var(--space-2, 0.125rem); border-bottom: 1px solid var(--color-border-book, #7a7971); font-size: var(--font-size-12, 0.75rem); font-weight: bold; letter-spacing: 0.04em; text-transform: uppercase; }
-/* On the Edit tab each block keeps its full height in the scrolling body, so an open editor is not squeezed. A section title with an Add button holds the title on the left and a plain + on the right, as on a PF2e NPC sheet. */
+/* On the Edit tab each section is its own red block; each keeps its full height in the scrolling body, so an open editor is not squeezed. */
 .ssm-sheet .ssm-body > .ssm-edit-block { flex: none; }
-.ssm-sheet .ssm-section-bar { display: flex; align-items: center; gap: var(--space-4, 0.25rem); }
-.ssm-sheet .ssm-section-bar > h4 { flex: 1 1 auto; min-width: 0; margin: 0; border: none; font: inherit; letter-spacing: inherit; text-transform: inherit; opacity: 1; }
-.ssm-sheet .ssm-section-bar > button.ssm-section-add { flex: none; --button-size: 1.25rem; width: 1.25rem; height: 1.25rem; margin: 0; border: none; background: none; box-shadow: none; color: inherit; font-size: var(--font-size-12, 0.75rem); }
-.ssm-sheet .ssm-section-bar > button.ssm-section-add:hover { text-shadow: 0 0 4px var(--color-shadow-primary, #ff0000); }
 /* An action card, styled like a modifier card. */
 .ssm-sheet .ssm-action-card { box-sizing: border-box; min-width: 0; margin-bottom: 0.25rem; padding: 0.2rem 0.3rem; border: 1px solid var(--color-border, #7a7971); border-radius: 3px; background: var(--ssm-reveal-fill); }
 .ssm-sheet .ssm-action-card .ssm-skill-line { margin-bottom: 0; }
