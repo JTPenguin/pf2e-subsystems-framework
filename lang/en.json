@@ -236,7 +236,7 @@
       "RangeMax": "up to {max}",
       "RollLabel": "{action}: {subject}",
       "CategoryLabel": "Category",
-      "CategoryHint": "Any label. Entries group by category, and each category has its own colour.",
+      "CategoryPlaceholder": "Pick or type",
       "AddModifierTo": "Add {category}",
       "ChallengeModifiers": "Challenge modifiers",
       "ChallengeModifiersHint": "Entries for the whole challenge. A DC change applies to every check with the chosen skills, on any subject.",

@@ -2,7 +2,7 @@
   {{#with modifier}}
   <div class="ssm-row">
     <label class="grow">{{localize "SSM.Challenge.Name"}}<input type="text" name="name" value="{{name}}"></label>
-    <label data-tooltip="SSM.Challenge.CategoryHint">{{localize "SSM.Challenge.CategoryLabel"}}<input type="text" name="category" value="{{category}}" list="{{@root.listId}}"></label>
+    <label>{{localize "SSM.Challenge.CategoryLabel"}}<input type="text" name="category" value="{{category}}" placeholder="{{localize "SSM.Challenge.CategoryPlaceholder"}}" autocomplete="off"></label>
     <label>{{localize "SSM.Challenge.DurationLabel"}}<select name="duration">{{selectOptions @root.choices.durations selected=duration}}</select></label>
   </div>
   <div class="ssm-row">
@@ -16,7 +16,6 @@
     <label class="check"><input type="checkbox" name="decoy" {{checked decoy}}>{{localize "SSM.Challenge.Decoy"}}</label>
   </div>
   {{/with}}
-  <datalist id="{{listId}}">{{#each categories}}<option value="{{this}}"></option>{{/each}}</datalist>
   {{#each effects}}
   <div class="ssm-effect">
     <div class="ssm-row">

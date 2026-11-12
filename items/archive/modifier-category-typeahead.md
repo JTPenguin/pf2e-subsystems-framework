@@ -1,12 +1,13 @@
 ---
 title: "Make modifier category a type-ahead field"
 kind: feature
-status: ready
-waits_on: Claude
+status: done
+waits_on: none
 blocked_by: []
 source: "Justin's list of items, 2026-11-11; details from Justin's interview answers, 2026-11-11"
 added: 2026-11-11
 updated: 2026-11-11
+outcome: "Category field uses Foundry's Autocomplete menu with a placeholder; datalist and tooltip removed. Checked in Foundry: focus, partial match, keyboard and mouse pick, new category saved."
 ---
 # Make modifier category a type-ahead field
 
