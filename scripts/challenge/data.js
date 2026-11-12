@@ -85,15 +85,15 @@ export function setCounterNote(system, counterId, actorId, note) {
 
 export const newAction = () => ({ id: id(), name: "", description: "", secret: false, checks: [] });
 
-/** A subject with no counters. Complete is the GM's alone (spec 14.13). */
-const blankSubject = () => ({ id: id(), name: "", description: "", revealed: false, complete: false, counters: [], modifiers: [], actions: [] });
+/** A subject with no counters. Complete is the GM's alone (spec 14.13). Its category is free text, as a modifier's is, from its own suggestions. */
+const blankSubject = () => ({ id: id(), name: "", description: "", category: "", revealed: false, complete: false, counters: [], modifiers: [], actions: [] });
 /** A subject with one counter named by the points name, as most presets make them. */
 const pointsSubject = (system, counter = {}) => ({ ...blankSubject(), counters: [newSubjectCounter(system, counter)] });
 
 /**
  * A preset is a starting template: its names, its counters, and the subjects it can add. After creation everything can be edited.
  * `names` holds language keys; they are written into the challenge as text when it is made.
- * `subjects` lists the subject templates, each { id, label, make(system) }; a subject's counters take the challenge's points name; the sheet offers one Add button per template, the first named by the subject label.
+ * `subject(system)` makes a new subject; its counters take the challenge's points name. `categories` and `subjectCategories` are language keys for the suggested modifier and subject categories.
  * `counters()` and `rounds` are a new challenge's counters and round maximum. `gmNotes` is a language key, or a list of them, one paragraph each.
  */
 const always = (skill) => ({ ...newCheck(), skill, always: true });
@@ -116,7 +116,7 @@ export const PRESETS = {
     icon: "fa-solid fa-trophy",
     names: { pointsName: "SSM.Preset.victory.Points", subjectLabel: "SSM.Preset.victory.Subject" },
     categories: ["SSM.Preset.victory.Category.modifier"],
-    subjects: [{ id: "subject", make: (system) => ({ ...pointsSubject(system), actions: [{ ...newAction(), name: say("SSM.Preset.victory.Check") }] }) }],
+    subject: (system) => ({ ...pointsSubject(system), actions: [{ ...newAction(), name: say("SSM.Preset.victory.Check") }] }),
   },
   influence: {
     id: "influence",
@@ -125,17 +125,14 @@ export const PRESETS = {
     names: { pointsName: "SSM.Preset.influence.Points", subjectLabel: "SSM.Preset.influence.Subject" },
     categories: ["SSM.Preset.influence.Category.resistance", "SSM.Preset.influence.Category.weakness"],
     rounds: 6,
-    subjects: [{
-      id: "npc",
-      make: (system) => ({
-        ...pointsSubject(system),
-        revealed: true,
-        actions: [
-          { ...newAction(), name: say("SSM.Preset.influence.Discover"), secret: true, checks: [always(PERCEPTION)] },
-          { ...newAction(), name: say("SSM.Preset.influence.Influence"), checks: ["deception", "diplomacy", "intimidation"].map(always) },
-        ],
-      }),
-    }],
+    subject: (system) => ({
+      ...pointsSubject(system),
+      revealed: true,
+      actions: [
+        { ...newAction(), name: say("SSM.Preset.influence.Discover"), secret: true, checks: [always(PERCEPTION)] },
+        { ...newAction(), name: say("SSM.Preset.influence.Influence"), checks: ["deception", "diplomacy", "intimidation"].map(always) },
+      ],
+    }),
   },
   /** GM Core's Infiltration. Obstacles earn Infiltration Points; failures add to the party's Awareness Points; Edge Points are per PC. */
   infiltration: {
@@ -144,6 +141,9 @@ export const PRESETS = {
     icon: "fa-solid fa-user-secret",
     names: { pointsName: `${INF}.Points`, subjectLabel: `${INF}.Subject` },
     categories: [`${INF}.Category.opportunity`, `${INF}.Category.complication`],
+    // Complications and opportunities are obstacles the GM recategorises and trims (GM notes).
+    subjectCategories: [`${INF}.SubjectCategory.obstacle`, `${INF}.SubjectCategory.complication`, `${INF}.SubjectCategory.opportunity`],
+    gmNotes: [`${INF}.GmNotes.Complication`, `${INF}.GmNotes.Opportunity`],
     counters: () => [
       {
         ...newCounter(), name: say(`${INF}.Awareness`), min: 0, perRound: 1, revealed: true,
@@ -157,22 +157,7 @@ export const PRESETS = {
       },
       { ...newCounter(), name: say(`${INF}.Edge`), min: 0, perPc: true, revealed: true },
     ],
-    subjects: [
-      {
-        id: "obstacle",
-        make: (system) => ({ ...pointsSubject(system, { max: 2 }), actions: [{ ...newAction(), name: say(`${INF}.Overcome`) }] }),
-      },
-      {
-        id: "complication",
-        label: `${INF}.AddComplication`,
-        make: () => ({ ...blankSubject(), name: say(`${INF}.Complication`), actions: [{ ...newAction(), name: say(`${INF}.Overcome`) }] }),
-      },
-      {
-        id: "opportunity",
-        label: `${INF}.AddOpportunity`,
-        make: () => ({ ...blankSubject(), name: say(`${INF}.Opportunity`), actions: [{ ...newAction(), name: say(`${INF}.Attempt`) }] }),
-      },
-    ],
+    subject: (system) => ({ ...pointsSubject(system, { max: 2 }), actions: [{ ...newAction(), name: say(`${INF}.Overcome`) }] }),
     // The first obstacle starts on the panel; the GM reveals the rest in turn.
     firstSubject: { revealed: true },
   },
@@ -190,11 +175,8 @@ export const PRESETS = {
     gmNotes: `${CHASE}.GmNotes`,
     counters: () => [chaseCounter("Party", 1, 0), chaseCounter("Quarry", 2, 1)],
     multipleSubjects: false,
-    subjects: [{
-      id: "obstacle",
-      // GM Core: about one fewer CP than the party's size. The GM edits it per obstacle.
-      make: (system) => ({ ...pointsSubject(system, { min: 0, max: 3 }), actions: [{ ...newAction(), name: say(`${CHASE}.Overcome`) }] }),
-    }],
+    // GM Core: about one fewer CP than the party's size. The GM edits it per obstacle.
+    subject: (system) => ({ ...pointsSubject(system, { min: 0, max: 3 }), actions: [{ ...newAction(), name: say(`${CHASE}.Overcome`) }] }),
     // The first obstacle starts on the panel; the GM reveals the rest in turn.
     firstSubject: { revealed: true },
   },
@@ -215,20 +197,17 @@ export const PRESETS = {
       // Hidden: the bribes and rumours that reached the opposition. It carries into the infiltration.
       { ...newCounter(), name: say(`${INF}.Awareness`), min: 0 },
     ],
-    subjects: [{
-      id: "preparation",
-      make: () => ({
-        ...blankSubject(), name: say(`${PREP}.Subject`), revealed: true,
-        actions: [
-          preparationActivity("BribeContact", { secret: true, skills: ["deception", "diplomacy"] }),
-          preparationActivity("ForgeDocuments", { secret: true, skills: ["society"] }),
-          preparationActivity("GainContact", { skills: ["diplomacy", "society"] }),
-          preparationActivity("Gossip", { secret: true, skills: ["diplomacy"] }),
-          preparationActivity("ScoutLocation", { secret: true, skills: [PERCEPTION, "society", "stealth"] }),
-          preparationActivity("SecureDisguises", { skills: ["crafting", "deception", "performance", "society"] }),
-        ],
-      }),
-    }],
+    subject: () => ({
+      ...blankSubject(), name: say(`${PREP}.Subject`), revealed: true,
+      actions: [
+        preparationActivity("BribeContact", { secret: true, skills: ["deception", "diplomacy"] }),
+        preparationActivity("ForgeDocuments", { secret: true, skills: ["society"] }),
+        preparationActivity("GainContact", { skills: ["diplomacy", "society"] }),
+        preparationActivity("Gossip", { secret: true, skills: ["diplomacy"] }),
+        preparationActivity("ScoutLocation", { secret: true, skills: [PERCEPTION, "society", "stealth"] }),
+        preparationActivity("SecureDisguises", { skills: ["crafting", "deception", "performance", "society"] }),
+      ],
+    }),
   },
 };
 export const DEFAULT_PRESET = "victory";
@@ -240,18 +219,24 @@ export const suggestedCategories = (system) => (presetOf(system).categories ?? [
 /** Every modifier entry: the challenge's own, then each subject's. */
 export const allModifiers = (system) => [...(system.modifiers ?? []), ...system.subjects.flatMap((subject) => subject.modifiers)];
 
-/**
- * The categories in order (spec 14.7): the preset's suggestions, then other labels in order of first use. Each is { key, label, colour }.
- * A blank category is left out: it groups first, with no heading and no colour.
- */
-export function categoryOrder(system) {
+/** Labels in order with repeats and blanks left out, two that differ only in case or spaces counting as one. Each is { key, label, colour }. */
+function orderLabels(labels) {
   const order = new Map();
-  for (const label of [...suggestedCategories(system), ...allModifiers(system).map((modifier) => modifier.category)]) {
+  for (const label of labels) {
     const key = categoryKey(label);
     if (key && !order.has(key)) order.set(key, String(label).trim());
   }
   return [...order].map(([key, label], index) => ({ key, label, colour: CATEGORY_COLOURS[index % CATEGORY_COLOURS.length] }));
 }
+
+/**
+ * The categories in order (spec 14.7): the preset's suggestions, then other labels in order of first use. Each is { key, label, colour }.
+ * A blank category is left out: it groups first, with no heading and no colour.
+ */
+export const categoryOrder = (system) => orderLabels([...suggestedCategories(system), ...allModifiers(system).map((modifier) => modifier.category)]);
+
+/** Subject categories, kept apart from modifier categories (spec 14.6): the preset's suggestions, then those in use on subjects, in order of first use. */
+export const subjectCategoryOrder = (system) => orderLabels([...(presetOf(system).subjectCategories ?? []).map((key) => say(key)), ...system.subjects.map((subject) => subject.category)]);
 
 /**
  * Rows grouped by category: the blank category first, with no heading, then the labelled ones in category order (spec 14.7). Each group is { key, label, colour, rows }.
@@ -274,14 +259,8 @@ export function moveSubject(system, subjectId, delta) {
   system.subjects.splice(to, 0, subject);
 }
 
-/** The preset's subject templates, for the sheet's Add buttons: { id, label (text, or empty for the subject label) }. */
-export const subjectTemplates = (system) => presetOf(system).subjects.map(({ id, label }) => ({ id, label: label ? say(label) : "" }));
-
-/** A new subject as the challenge's preset makes it, from the named template or the preset's first. */
-export function newSubject(system, templateId) {
-  const templates = presetOf(system).subjects;
-  return (templates.find((template) => template.id === templateId) ?? templates[0]).make(system);
-}
+/** A new subject as the challenge's preset makes it. */
+export const newSubject = (system) => presetOf(system).subject(system);
 
 /** A new challenge's data: the preset's names, counters and round maximum, and its first subject, since a challenge needs at least one. */
 export function newChallengeSystem(presetId = DEFAULT_PRESET) {
@@ -313,13 +292,12 @@ const getPath = (object, path) => path.split(".").reduce((value, key) => value?.
 
 const allChecks = (subject) => subject.actions.flatMap((action) => action.checks);
 
-/** Add a new row to the list at listPath, for example "subjects.0.actions.1.checks". A new subject comes from the preset's `template`. Returns the row. */
-/** Add a row to the list at listPath. `fields` sets starting values on the new row, for example a modifier's category. */
-export function addRow(system, listPath, template, fields = {}) {
+/** Add a row to the list at listPath, for example "subjects.0.actions.1.checks", and return it. `fields` sets starting values on the new row, for example a modifier's category. */
+export function addRow(system, listPath, fields = {}) {
   const list = getPath(system, listPath);
   const make = /^subjects\.\d+\.counters$/.test(listPath) ? newSubjectCounter : FACTORIES[listPath.split(".").at(-1)];
   if (!Array.isArray(list) || !make) throw new Error(`Not a list: ${listPath}`);
-  const row = Object.assign(make(system, template), fields);
+  const row = Object.assign(make(system), fields);
   list.push(row);
   return row;
 }

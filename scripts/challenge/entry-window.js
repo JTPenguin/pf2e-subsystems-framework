@@ -1,7 +1,8 @@
 import { MODULE } from "../constants.js";
 import { actionName, skillKeyLabel, skillLabel } from "./skill-label.js";
 import { writeChallenge } from "./state.js";
-import { addRow, categoryKey, categoryOrder, challengeSkillKeys, DURATIONS, EFFECT_TYPES, entryChanges, findModifier, mergeForm, MODIFIER_FIELDS, QUICK_DC_AMOUNTS, rebaseEntry, removeRow, saveModifier, setEffectAmount } from "./data.js";
+import { CategoryAutocomplete } from "./category-autocomplete.js";
+import { addRow, categoryOrder, challengeSkillKeys, DURATIONS, EFFECT_TYPES, entryChanges, findModifier, mergeForm, MODIFIER_FIELDS, QUICK_DC_AMOUNTS, rebaseEntry, removeRow, saveModifier, setEffectAmount } from "./data.js";
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
@@ -171,59 +172,20 @@ export class ModifierWindow extends EntryWindow {
 
   static PARTS = { form: { template: `modules/${MODULE}/templates/challenge-modifier.hbs` } };
 
-  /** Foundry's suggestion menu for the category field, as its tag fields use it. */
-  #autocomplete = new foundry.applications.ux.Autocomplete.implementation({ onSelect: (identifier) => this.#chooseCategory(identifier) });
-
-  /** Ends the category field's listeners when the window redraws or closes. */
-  #listeners = null;
-
-  get #categoryInput() {
-    return this.form?.querySelector('input[name="category"]') ?? null;
-  }
-
-  #dismissCategories() {
-    if (ui.autocomplete === this.#autocomplete) this.#autocomplete.dismiss();
-  }
-
-  /** Offer the preset's suggestions and every category in use that contain what the GM has typed; all of them when the field is empty. */
-  #refreshCategories() {
-    const input = this.#categoryInput;
-    if (!input) return this.#dismissCategories();
-    const typed = categoryKey(input.value);
-    const entries = categoryOrder(this.page.toObject().system)
-      .filter((category) => category.key.includes(typed) && category.key !== typed)
-      .map((category) => ({ label: category.label, identifier: category.label }));
-    if (entries.length) this.#autocomplete.activate(input, entries);
-    else this.#dismissCategories();
-  }
-
-  #chooseCategory(label) {
-    const input = this.#categoryInput;
-    if (input) input.value = label;
-  }
+  /** The category field's suggestions: the preset's and every modifier category in use. */
+  #categories = new CategoryAutocomplete({
+    findInput: () => this.form?.querySelector('input[name="category"]') ?? null,
+    categories: () => categoryOrder(this.page.toObject().system),
+  });
 
   async _onRender(context, options) {
-    this.#dismissCategories();
-    this.#listeners?.abort();
-    this.#listeners = new AbortController();
+    this.#categories.detach();
     await super._onRender(context, options);
-    const input = this.#categoryInput;
-    if (!input) return;
-    const signal = this.#listeners.signal;
-    const refresh = () => this.#refreshCategories();
-    for (const type of ["click", "focus", "input"]) input.addEventListener(type, refresh, { signal });
-    // A click outside the field and the menu closes the menu, as on Foundry's tag fields.
-    input.ownerDocument.body.addEventListener("click", (event) => {
-      if (event.target === input || this.#autocomplete.element?.contains(event.target)) return;
-      this.#dismissCategories();
-    }, { signal });
-    // A redraw that puts focus back in the field reopens its menu.
-    if (input.ownerDocument.activeElement === input) refresh();
+    this.#categories.attach();
   }
 
   _onClose(options) {
-    this.#dismissCategories();
-    this.#listeners?.abort();
+    this.#categories.detach();
     super._onClose(options);
   }
 

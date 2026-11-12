@@ -279,7 +279,7 @@ test("addRow picks the right row for each list, and a new subject follows the pr
   const own = D.addRow(s, "subjects.0.counters");
   assert.deepEqual([own.name, own.revealed, own.perRound, own.thresholds], ["SSM.Preset.influence.Points", true, 0, []], "a subject's new counter takes the points name and starts shown");
   assert.equal(D.addRow(s, "subjects.0.modifiers").effects.length, 1, "a new modifier starts with one effect");
-  assert.equal(D.addRow(s, "subjects.0.modifiers", undefined, { category: "Leverage" }).category, "Leverage", "a category's + starts the modifier in that category");
+  assert.equal(D.addRow(s, "subjects.0.modifiers", { category: "Leverage" }).category, "Leverage", "a category's + starts the modifier in that category");
   assert.equal(D.addRow(s, "modifiers").category, "", "the section's + leaves the category blank");
   assert.equal(D.addRow(s, "subjects.0.modifiers.0.effects").type, "note");
   assert.deepEqual(D.addRow(s, "subjects.0.actions").checks, []);
@@ -1412,19 +1412,25 @@ test("the Infiltration preset: Awareness Points with GM Core's tiers, per-PC Edg
   assert.deepEqual(D.suggestedCategories(s), ["SSM.Preset.infiltration.Category.opportunity", "SSM.Preset.infiltration.Category.complication"]);
 });
 
-test("an infiltration offers three subject templates; later obstacles start hidden, and complications and opportunities have no counter", () => {
+test("an infiltration's new subjects are obstacles with a blank category, later ones hidden", () => {
   const s = presetSystem("infiltration");
-  assert.deepEqual(D.subjectTemplates(s).map((row) => [row.id, !!row.label]), [["obstacle", false], ["complication", true], ["opportunity", true]]);
   const obstacle = D.addRow(s, "subjects");
-  assert.deepEqual([obstacle.revealed, obstacle.counters.length], [false, 1]);
-  const complication = D.addRow(s, "subjects", "complication");
-  assert.deepEqual([complication.counters, complication.revealed], [[], false]);
-  assertBareAction(complication.actions[0]);
-  const opportunity = D.addRow(s, "subjects", "opportunity");
-  assert.deepEqual(opportunity.counters, []);
-  assertBareAction(opportunity.actions[0]);
-  assert.equal(D.addRow(s, "subjects", "nonsense").counters.length, 1, "an unknown template is the first one");
-  assert.deepEqual(D.subjectTemplates(system()).map((row) => row.id), ["npc"]);
+  assert.deepEqual([obstacle.revealed, obstacle.counters.length, obstacle.category], [false, 1, ""]);
+  assertBareAction(obstacle.actions[0]);
+  assert.equal(D.addRow(system(), "subjects").category, "", "every preset's new subject has a category field");
+  assert.equal(D.newChallengeSystem("infiltration").gmNotes, "<p>SSM.Preset.infiltration.GmNotes.Complication</p><p>SSM.Preset.infiltration.GmNotes.Opportunity</p>", "the GM notes say how to set up complications and opportunities");
+});
+
+test("subject categories suggest the preset's, then those in use, apart from modifier categories", () => {
+  const s = presetSystem("infiltration");
+  const keys = ["obstacle", "complication", "opportunity"].map((key) => `SSM.Preset.infiltration.SubjectCategory.${key}`);
+  assert.deepEqual(D.subjectCategoryOrder(s).map((row) => row.label), keys);
+  D.addRow(s, "subjects", { category: "Guard Post" });
+  D.addRow(s, "subjects", { category: " guard post " });
+  D.addRow(s, "subjects.0.modifiers", { category: "Leverage" });
+  assert.deepEqual(D.subjectCategoryOrder(s).map((row) => row.label), [...keys, "Guard Post"], "repeats count once; modifier categories stay out");
+  assert.ok(!D.categoryOrder(s).some((row) => row.label === "Guard Post"), "subject categories stay out of modifier categories");
+  assert.deepEqual(D.subjectCategoryOrder(system()).map((row) => row.label), [], "a preset with no subject categories suggests none");
 });
 
 test("Awareness Points rise each round and by hand, and their tiers raise every DC by 1, then 2 in total", () => {

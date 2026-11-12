@@ -253,14 +253,18 @@
         "Awareness": "Awareness Points",
         "Edge": "Edge Points",
         "Overcome": "Overcome",
-        "Attempt": "Attempt",
-        "Complication": "Complication",
-        "Opportunity": "Opportunity",
-        "AddComplication": "Add Complication",
-        "AddOpportunity": "Add Opportunity",
         "Category": {
           "opportunity": "Opportunity",
           "complication": "Complication"
+        },
+        "SubjectCategory": {
+          "obstacle": "Obstacle",
+          "complication": "Complication",
+          "opportunity": "Opportunity"
+        },
+        "GmNotes": {
+          "Complication": "Complication: add an obstacle and set its Category to Complication. Remove its Infiltration Points counter, and leave it hidden until its trigger happens. When a failure adds Awareness Points, add them with the Awareness + button. A lasting penalty is a modifier you turn on.",
+          "Opportunity": "Opportunity that needs a roll: add an obstacle, set its Category to Opportunity, remove its counter and rename its action Attempt. One with no roll is a one-time challenge modifier in the Opportunity category instead."
         },
         "Threshold": {
           "5": {

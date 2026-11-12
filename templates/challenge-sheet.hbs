@@ -225,9 +225,7 @@
     {{#each tabs}}
     <button type="button" data-action="selectTab" data-tab="{{id}}" class="{{#if active}}active{{/if}}">{{label}}</button>
     {{/each}}
-    {{#each addSubjectButtons}}
-    <button type="button" class="ssm-add" data-action="addRow" data-list="subjects" data-template="{{id}}"><i class="fa-solid fa-plus" inert></i> {{label}}</button>
-    {{/each}}
+    <button type="button" class="ssm-add" data-action="addRow" data-list="subjects"><i class="fa-solid fa-plus" inert></i> {{addSubjectLabel}}</button>
   </nav>
 
   <section class="ssm-body">
@@ -273,12 +271,13 @@
     {{#with activeSubject as |subject|}}
     <section class="ssm-block ssm-edit-block {{#unless subject.revealed}}ssm-subject-hidden{{/unless}}">
       <header class="ssm-block-head">
-        <h3>{{#if subject.name}}{{subject.name}}{{else}}{{@root.subjectLabel}}{{/if}}</h3>
+        <h3>{{localize "SSM.Challenge.Subject"}}</h3>
         {{> ssmOrder subject}}
         {{#if subject.canRemove}}<button type="button" class="icon fa-solid fa-trash" data-action="removeRow" data-path="{{subject.path}}" aria-label="{{@root.removeSubjectLabel}}" data-tooltip-text="{{@root.removeSubjectLabel}}"></button>{{/if}}
       </header>
       <div class="ssm-row">
         <label class="grow">{{localize "SSM.Challenge.Name"}}<input type="text" name="{{subject.path}}.name" value="{{subject.name}}"></label>
+        <label class="grow">{{localize "SSM.Challenge.CategoryLabel"}}<input type="text" name="{{subject.path}}.category" value="{{subject.category}}" autocomplete="off" data-subject-category></label>
         <label class="check"><input type="checkbox" name="{{subject.path}}.revealed" {{checked subject.revealed}}>{{localize "SSM.Challenge.Revealed"}}</label>
       </div>
       <div class="ssm-subject-description-edit">

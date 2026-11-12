@@ -7,8 +7,9 @@ import { announceTriggers, writeChallenge } from "./state.js";
 import { advanceRound, canAdvanceRound, canUndoRound, changeCounter, counterValueOf, currentDc, cycleThresholdReveal, endRun, resetRun, restoreModifier, startRun, toggleActed, toggleComplete, toggleModifier, toggleReached, toggleReveal, undoRound } from "./run.js";
 import { LINK_ROLL_ID } from "../roll-option.js";
 import { rollCheck, rollTarget } from "./roll.js";
-import { counterMoves, counterValueText, addRow, applyForm, COUNTER_DISPLAYS, setCounterNote, subjectTemplates, BOTH_WAYS, clampTracks, DIRECTIONS, EDITABLE, groupByCategory, isAlwaysShown, isDecoyCheck, LORE, moveSubject, PERCEPTION, nextThresholdReveal, pickFields, removeRow, SAVES, THRESHOLD_REVEALS } from "./data.js";
+import { counterMoves, counterValueText, addRow, applyForm, COUNTER_DISPLAYS, setCounterNote, subjectCategoryOrder, BOTH_WAYS, clampTracks, DIRECTIONS, EDITABLE, groupByCategory, isAlwaysShown, isDecoyCheck, LORE, moveSubject, PERCEPTION, nextThresholdReveal, pickFields, removeRow, SAVES, THRESHOLD_REVEALS } from "./data.js";
 import { ModifierWindow } from "./entry-window.js";
+import { CategoryAutocomplete } from "./category-autocomplete.js";
 
 const { DocumentSheetV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
@@ -150,6 +151,23 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
     return result;
   }
 
+  /** A subject's Category field suggests the preset's subject categories and those in use (spec 14.6). */
+  #subjectCategories = new CategoryAutocomplete({
+    findInput: () => this.element?.querySelector("input[data-subject-category]") ?? null,
+    categories: () => subjectCategoryOrder(this.#source),
+  });
+
+  async _onRender(context, options) {
+    this.#subjectCategories.detach();
+    await super._onRender(context, options);
+    this.#subjectCategories.attach();
+  }
+
+  _onClose(options) {
+    this.#subjectCategories.detach();
+    super._onClose(options);
+  }
+
   /** Catch up on anything held back once the editor closes. */
   async _onFirstRender(context, options) {
     await super._onFirstRender(context, options);
@@ -260,8 +278,7 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
       system,
       subjectLabel,
       pointsName: system.pointsName || loc("SSM.Challenge.Points"),
-      // One Add button per subject template of the preset; the first is named by the subject label.
-      addSubjectButtons: subjectTemplates(system).map(({ id, label }) => ({ id, label: label || game.i18n.format("SSM.Challenge.AddSubject", { subject: subjectLabel }) })),
+      addSubjectLabel: game.i18n.format("SSM.Challenge.AddSubject", { subject: subjectLabel }),
       removeSubjectLabel: game.i18n.format("SSM.Challenge.RemoveSubject", { subject: subjectLabel }),
       premiseHtml: await enrich(system.premise),
       gmNotesHtml: await enrich(system.gmNotes),
@@ -502,11 +519,11 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
   }
 
   static async #onAddRow(event, target) {
-    const { list, template, category } = target.dataset;
+    const { list, category } = target.dataset;
     let added;
     await this.#edit((system) => {
       // A modifier category's + starts the new entry in that category.
-      added = addRow(system, list, template, category ? { category } : {});
+      added = addRow(system, list, category ? { category } : {});
     });
     if (list === "subjects") {
       this.#tab = added.id;

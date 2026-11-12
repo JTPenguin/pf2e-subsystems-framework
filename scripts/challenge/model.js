@@ -74,6 +74,8 @@ const subjectFields = () => ({
   name: text(),
   // Who or what the subject is, as rich text like an action's description. Players see it but its secret blocks.
   description: new HTMLField({ required: true, blank: true, initial: "" }),
+  // Free text, such as Obstacle or Complication; the preset suggests labels, apart from modifier categories (spec 14.6).
+  category: text(),
   revealed: flag(),
   // Set and cleared by the GM only (spec 14.13).
   complete: flag(),

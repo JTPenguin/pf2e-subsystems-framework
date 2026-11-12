@@ -325,6 +325,7 @@ Every subsystem runs on one data model, one sheet and one panel: GM Core's [Vict
 | Field | Notes |
 |---|---|
 | Name, description | The description is rich text. Players see it on the panel, except its secret blocks |
+| Category | Free text, such as Obstacle or Complication. The field suggests the preset's subject categories and those already on subjects, as the GM types; modifier categories stay separate (14.6) |
 | Revealed | Off: not on the panel at all |
 | Counters | Zero or more, each a full counter (14.13). A subject with none holds only actions, such as an Infiltration opportunity. |
 | Complete | Set and cleared by the GM only |
@@ -392,11 +393,11 @@ A preset is a starting template: its names, and what a new challenge and a new s
 |---|---|---|
 | **Victory Points** (blank) | Victory Points, Subject | A Victory Points counter. Suggested category: Modifier. One action, "Check", with no rows. |
 | **Influence** | Influence Points, NPC | An Influence Points counter. Suggested categories: Resistance, Weakness. Revealed. Discover: secret, Perception always shown. Influence: Deception, Diplomacy and Intimidation always shown. |
-| **Infiltration** | Infiltration Points, Obstacle | Suggested categories: Opportunity, Complication. Counters: Awareness Points (shown, +1 each round, minimum 0, GM Core's tiers at 5 (DC +1), 10 (complication), 15 (DC +1 more, +2 in total) and 20 (fails)) and Edge Points (per PC, shown). Three Add buttons: **Obstacle** (an Infiltration Points counter, maximum 2; Overcome with no checks); **Complication** (no counter; Overcome); **Opportunity** (no counter; Attempt). The first obstacle starts revealed, later subjects hidden. |
+| **Infiltration** | Infiltration Points, Obstacle | Suggested categories: Opportunity, Complication. Counters: Awareness Points (shown, +1 each round, minimum 0, GM Core's tiers at 5 (DC +1), 10 (complication), 15 (DC +1 more, +2 in total) and 20 (fails)) and Edge Points (per PC, shown). Suggested subject categories: Obstacle, Complication, Opportunity. A new obstacle: an Infiltration Points counter, maximum 2; Overcome with no checks. GM notes say how to turn an obstacle into a complication or an opportunity. The first obstacle starts revealed, later subjects hidden. |
 | **Chase** | Chase Points, Obstacle | No suggested categories. Allow multiple subjects is off. GM notes hold GM Core's reminders and how to set up each chase type. Counters: Party at 1 and Quarry at 2, +1 each round; both minimum 0, maximum 6, Track display, shown. A new obstacle: a Chase Points counter, 0 to 3; Overcome with no checks. The first obstacle starts revealed, later ones hidden. See 14.11. |
 | **Infiltration Preparation** | Edge Points, Preparation | Run before the infiltration; the GM types its results in. Counters: Edge Points (per PC, shown) and Awareness Points (hidden). One revealed subject with no counter and GM Core's six activities as actions, every check always shown, secret where the rules say. GM notes list what each activity gives at each degree, and say that a dud or cursed Edge Point still adds to Edge and goes in the PC's note. No suggested categories. |
 
-A preset can offer several **subject templates**, one Add button each; the first is named by the subject label.
+A preset makes one kind of subject, so the Edit tab has one Add button, named by the subject label. A preset can suggest **subject categories**, apart from its modifier categories; the GM sets a subject's category by hand (Justin, 2026-11-12).
 
 ### 14.7 Modifier categories and challenge-level modifiers
 
