@@ -1,12 +1,13 @@
 ---
 title: "Add a description field to Actions"
 kind: feature
-status: ready
-waits_on: Claude
+status: done
+waits_on: none
 blocked_by: []
 source: "Justin's list of items, 2026-11-11; details from Justin's interview answers, 2026-11-11"
 added: 2026-11-11
 updated: 2026-11-11
+outcome: "Built: description field in the action window, on the sheet's Run and Edit tabs, and as a panel tooltip. Tests pass; Justin checked it in Foundry on 2026-11-11."
 ---
 # Add a description field to Actions
 

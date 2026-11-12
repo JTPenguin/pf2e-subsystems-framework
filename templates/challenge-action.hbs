@@ -5,6 +5,7 @@
     <label data-tooltip="SSM.Challenge.MaxPointsHint">{{localize "SSM.Challenge.MaxPoints"}}<input type="number" min="0" step="1" name="maxPoints" value="{{maxPoints}}" placeholder="{{localize "SSM.Challenge.NoLimit"}}"></label>
     <label class="check" data-tooltip="SSM.Challenge.SecretHint"><input type="checkbox" name="secret" {{checked secret}}>{{localize "SSM.Challenge.Secret"}}</label>
   </div>
+  <label>{{localize "SSM.Challenge.ActionDescription"}}<textarea class="ssm-autogrow" rows="2" name="description" placeholder="{{localize "SSM.Challenge.ActionDescriptionHint"}}">{{description}}</textarea></label>
   {{/with}}
   {{#each outcomes}}
   <fieldset class="ssm-outcome">

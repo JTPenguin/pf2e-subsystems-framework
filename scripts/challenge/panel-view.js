@@ -141,6 +141,7 @@ function subjectView(system, subject, party) {
     actions: subject.actions.map((action) => ({
       id: action.id,
       name: action.name,
+      description: action.description ?? "",
       secret: !!action.secret,
       checks: action.checks.filter(isVisibleCheck).map((row) => ({ id: row.id, skill: row.skill, lore: row.lore, dc: currentDc(system, subject, row) })),
     })).filter((action) => action.checks.length),

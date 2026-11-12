@@ -210,6 +210,8 @@
       "Always": "Always shown",
       "AlwaysHint": "Players see this check from the start. It has no reveal control and is never a decoy.",
       "Secret": "Secret",
+      "ActionDescription": "Description",
+      "ActionDescriptionHint": "What the action is and how players use it",
       "SecretHint": "Rolled as a secret check, like Recall Knowledge.",
       "MaxPoints": "Maximum points",
       "MaxPointsHint": "The most this action can give in total. Blank for no limit.",

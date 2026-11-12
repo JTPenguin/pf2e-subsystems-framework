@@ -58,7 +58,7 @@ export const newCounter = () => ({ id: id(), name: "", value: 0, direction: "up"
 
 /** GM Core's accumulating rolls: +2, +1, 0, −1 points. */
 const accumulating = () => ({ criticalSuccess: [effect("points", 2)], success: [effect("points", 1)], failure: [], criticalFailure: [effect("points", -1)] });
-export const newAction = () => ({ id: id(), name: "", secret: false, maxPoints: null, given: 0, checks: [], outcomes: accumulating() });
+export const newAction = () => ({ id: id(), name: "", description: "", secret: false, maxPoints: null, given: 0, checks: [], outcomes: accumulating() });
 
 const blankSubject = () => ({
   id: id(), name: "", statLine: "", revealed: false, tracksPoints: true, individual: false,
@@ -289,7 +289,7 @@ export function searchText(system) {
   for (const modifier of system.modifiers ?? []) parts.push(modifier.name, modifier.category, modifier.playerText, modifier.gmText, ...modifier.effects.map((row) => row.note));
   for (const subject of system.subjects) {
     parts.push(subject.name, subject.statLine, ...thresholds(subject.thresholds));
-    for (const action of subject.actions) parts.push(action.name, ...outcomeEffects(action).map((row) => row.note));
+    for (const action of subject.actions) parts.push(action.name, action.description, ...outcomeEffects(action).map((row) => row.note));
     for (const modifier of subject.modifiers) parts.push(modifier.name, modifier.category, modifier.playerText, modifier.gmText, ...modifier.effects.map((row) => row.note));
   }
   return parts.filter(Boolean).join(" ");
@@ -302,7 +302,7 @@ export function searchText(system) {
 
 /** The fields each window edits. The id never changes. */
 export const MODIFIER_FIELDS = ["name", "category", "duration", "playerText", "gmText", "active", "spent", "revealed", "decoy", "effects"];
-export const ACTION_FIELDS = ["name", "secret", "maxPoints", "outcomes"];
+export const ACTION_FIELDS = ["name", "description", "secret", "maxPoints", "outcomes"];
 
 const subjectById = (system, subjectId) => system.subjects.find((subject) => subject.id === subjectId);
 /** The modifier list a subject id names. An empty id names the challenge's own list (spec 14.7). */

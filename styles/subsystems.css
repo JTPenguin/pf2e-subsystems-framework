@@ -66,6 +66,8 @@ button.ssm-toggle.ssm-toggle-on:disabled { opacity: 1; }
 .ssm-stat .ssm-point-total { min-width: 1.75rem; line-height: 1; }
 .ssm-skill-line { display: flex; align-items: flex-start; gap: 0.5rem; margin-bottom: 0.2rem; }
 .ssm-skill-line > .ssm-stat-label { flex: 0 0 6.5rem; line-height: 1.6rem; }
+.ssm-action-description { white-space: pre-line; font-style: italic; }
+.ssm-run-description { padding-left: 7rem; margin-bottom: 0.3rem; }
 /* "0 of 3 given" sits on its own line under the action name. */
 .ssm-skill-line > .ssm-stat-label > .ssm-muted { display: block; line-height: 1.1; font-weight: normal; }
 /* Two or three columns, by the window's width. Each chip fills its cell, so the DCs line up. */

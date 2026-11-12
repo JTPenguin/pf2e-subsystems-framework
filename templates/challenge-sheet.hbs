@@ -161,6 +161,7 @@
         <span class="ssm-stat-label">{{label}}{{#if secret}} <i class="fa-solid fa-user-secret" data-tooltip="SSM.Challenge.SecretHint" aria-label="{{localize "SSM.Challenge.Secret"}}"></i>{{/if}}{{#if maxLabel}} <span class="ssm-muted">{{maxLabel}}</span>{{/if}}</span>
         <span class="ssm-skill-grid">{{#each checks}}{{> ssmSkillChip root=../../..}}{{/each}}</span>
       </div>
+      {{#if description}}<div class="ssm-action-description ssm-run-description">{{description}}</div>{{/if}}
       {{/each}}
       {{#if subject.thresholds.length}}
       <div class="ssm-subject-group">
@@ -296,6 +297,7 @@
       <legend>{{label}}{{#if secret}} <span class="ssm-tag">{{localize "SSM.Challenge.Secret"}}</span>{{/if}}</legend>
       <div class="ssm-row ssm-entry">
         <div class="ssm-grow ssm-outcome-lines">
+          {{#if description}}<div class="ssm-action-description">{{description}}</div>{{/if}}
           {{#each outcomeLines}}<div><span class="ssm-stat-label">{{label}}</span> {{text}}</div>{{/each}}
           {{#if maxPoints}}<div><span class="ssm-stat-label">{{localize "SSM.Challenge.MaxPoints"}}</span> {{maxPoints}}</div>{{/if}}
         </div>

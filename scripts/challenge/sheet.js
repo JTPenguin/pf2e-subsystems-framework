@@ -373,6 +373,7 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
         actions: subject.actions.map((action) => ({
           id: action.id,
           label: actionName(action),
+          description: action.description,
           secret: action.secret,
           maxLabel: action.maxPoints === null ? "" : game.i18n.format("SSM.Challenge.GivenOf", { given: action.given, max: action.maxPoints }),
           checks: rollRows(subject, action),

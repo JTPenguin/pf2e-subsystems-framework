@@ -418,6 +418,7 @@ test("the windows' rows use the shared row edits on the entry alone", () => {
   const merged = D.mergeForm(draft, { name: "Praise", effects: { 0: { amount: null, note: "x" } } });
   assert.deepEqual([merged.name, merged.effects[0].amount, merged.effects[0].note], ["Praise", 5, "x"]);
   const action = D.newAction();
+  assert.equal(action.description, "", "a new action has an empty description");
   D.addRow(action, "outcomes.failure");
   assert.equal(action.outcomes.failure.length, 1);
   assert.equal(D.removeRow(action, "outcomes.failure.0"), true);
@@ -429,8 +430,9 @@ test("saving an action writes the window's fields, keeps its checks and what it 
   const action = influence(s);
   action.given = 2;
   const outcomes = { ...structuredClone(action.outcomes), failure: [effectOf("counter", 1, { counterId: counter.id }), effectOf("counter", 1, { counterId: "gone" })] };
-  assert.equal(D.saveAction(s, sub(s).id, action.id, { name: "Sway", maxPoints: 4, outcomes, given: 99, checks: [] }), true);
-  assert.deepEqual([action.name, action.maxPoints, action.given, action.checks.length], ["Sway", 4, 2, 3]);
+  assert.equal(D.saveAction(s, sub(s).id, action.id, { name: "Sway", description: "Spend an action\nto sway", maxPoints: 4, outcomes, given: 99, checks: [] }), true);
+  assert.deepEqual([action.name, action.description, action.maxPoints, action.given, action.checks.length], ["Sway", "Spend an action\nto sway", 4, 2, 3]);
+  assert.match(D.searchText(s), /to sway/);
   assert.deepEqual(action.outcomes.failure.map((row) => row.counterId), [counter.id, ""]);
   assert.equal(D.saveAction(s, sub(s).id, "gone", { name: "x" }), false);
 });

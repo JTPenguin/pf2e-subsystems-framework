@@ -45,6 +45,8 @@ const thresholdFields = () => ({ id: rowId(), points: int(1), playerText: text()
 const actionFields = () => ({
   id: rowId(),
   name: text(),
+  // What the action is and how players use it. Plain text that everyone sees.
+  description: text(),
   secret: flag(),
   // The most points this action can give in total, and how many it has given.
   maxPoints: optionalInt({ min: 0 }),

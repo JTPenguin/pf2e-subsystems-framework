@@ -93,6 +93,8 @@ function prepareView(view, state) {
       actions: subject.actions.map((action) => ({
         id: action.id,
         name: actionName(action),
+        // Everyone sees the description, so it goes in as player text.
+        tooltip: cardTooltip({ playerText: action.description, isGM: false }, { escape: foundry.utils.escapeHTML }),
         checks: action.checks.map((row) => ({ id: row.id, subjectId: subject.id, actionId: action.id, label: skillLabel(row), decoy: decoys.has(`${subject.id}:${row.id}`) })),
       })),
       known: subject.known.map((row) => modifierCard(row, subject.id, pointsName, gm.get(`${subject.id}:${row.id}`), decoys.has(`${subject.id}:${row.id}`))),

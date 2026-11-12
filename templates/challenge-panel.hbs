@@ -33,7 +33,7 @@
     </div>{{/if}}
     {{> ssmPanelThresholds}}
     <div class="ssm-panel-actions">
-    {{#each actions}}<p><span class="ssm-panel-label">{{name}}</span> <span class="ssm-panel-list">{{#each checks}}<span><button type="button" class="ssm-panel-skill" data-action="rollSkill" data-subject="{{subjectId}}" data-act="{{actionId}}" data-id="{{id}}"><i class="fa-solid fa-dice-d20" aria-hidden="true"></i>{{label}}{{#if decoy}} <span class="ssm-tag ssm-decoy">{{localize "SSM.Challenge.Decoy"}}</span>{{/if}}</button></span>{{/each}}</span></p>{{/each}}
+    {{#each actions}}<p{{#if tooltip}} data-tooltip-html="{{tooltip}}" data-tooltip-class="ssm-panel-tip"{{/if}}><span class="ssm-panel-label">{{name}}</span> <span class="ssm-panel-list">{{#each checks}}<span><button type="button" class="ssm-panel-skill" data-action="rollSkill" data-subject="{{subjectId}}" data-act="{{actionId}}" data-id="{{id}}"><i class="fa-solid fa-dice-d20" aria-hidden="true"></i>{{label}}{{#if decoy}} <span class="ssm-tag ssm-decoy">{{localize "SSM.Challenge.Decoy"}}</span>{{/if}}</button></span>{{/each}}</span></p>{{/each}}
     </div>
     {{#if known.length}}<div class="ssm-panel-mods">
       {{#each known}}{{> ssmPanelMod}}{{/each}}
