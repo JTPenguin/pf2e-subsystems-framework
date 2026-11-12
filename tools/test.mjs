@@ -1134,7 +1134,7 @@ test("revealing each kind of entry adds it, and only its player fields", () => {
   assert.deepEqual(view.subjects[0].actions[1].checks.at(-1), { id: society(s).id, skill: "society", lore: "", dc: 15 });
   assert.deepEqual(known(view.subjects[0]), [{ id: subject.modifiers[0].id, name: "Flattery", text: "likes praise", category: "", colour: "", duration: "ongoing", active: false, spent: false, applied: false, changes: [] }]);
   assert.deepEqual(view.subjects[0].thresholds, [{ id: subject.thresholds[0].id, points: 8, text: "she offers an introduction", textHidden: false, reached: false }]);
-  assert.deepEqual(view.counters, [{ id: s.counters[0].id, name: "Suspicion", value: 3, perPc: false, pcs: [], track: true, scale: 222, range: null, thresholds: [{ id: s.counters[0].thresholds[0].id, points: 5, text: "the guards stir", textHidden: false, reached: false }] }]);
+  assert.deepEqual(view.counters, [{ id: s.counters[0].id, name: "Suspicion", value: 3, perPc: false, pcs: [], display: "bar", slots: null, scale: 222, range: null, thresholds: [{ id: s.counters[0].thresholds[0].id, points: 5, text: "the guards stir", textHidden: false, reached: false }] }]);
   assertNoSecrets(view);
   Run.toggleReveal(s, society(s).id);
   assert.equal(viewOf(s).subjects[0].actions[1].checks.length, 3, "hiding an entry again takes it back out");
@@ -1281,12 +1281,12 @@ test("a revealed counter with no thresholds is a plain number; hidden counter th
   const s = secretSystem();
   s.counters[0].revealed = true;
   let [counter] = viewOf(s).counters;
-  assert.deepEqual([counter.track, counter.thresholds], [true, []]);
+  assert.deepEqual([counter.display, counter.thresholds], ["bar", []]);
   assert.ok(!JSON.stringify(viewOf(s)).includes("guards"));
   s.counters[0].thresholds = [];
   s.counters[0].max = null;
   [counter] = viewOf(s).counters;
-  assert.deepEqual(counter, { id: s.counters[0].id, name: "Suspicion", value: 3, perPc: false, pcs: [], track: false, scale: 0, range: null, thresholds: [] });
+  assert.deepEqual(counter, { id: s.counters[0].id, name: "Suspicion", value: 3, perPc: false, pcs: [], display: "number", slots: null, scale: 0, range: null, thresholds: [] });
 });
 
 test("party markers show who has acted, a PC with no image gets the default icon, and an empty party is fine", () => {
@@ -1528,7 +1528,7 @@ test("a per-PC counter shows a row per party PC on the panel, and no thresholds"
   const s = secretSystem();
   Object.assign(s.counters[0], { perPc: true, revealed: true, value: 1, valueBy: { a1: 3 } });
   const [counter] = viewOf(s, PARTY).counters;
-  assert.deepEqual([counter.perPc, counter.track, counter.pcs, counter.thresholds], [true, false, [{ id: "a1", value: 3 }, { id: "a2", value: 1 }], []]);
+  assert.deepEqual([counter.perPc, counter.display, counter.pcs, counter.thresholds], [true, "perPc", [{ id: "a1", value: 3 }, { id: "a2", value: 1 }], []]);
 });
 
 test("a subject's points stay inside its limits, per PC too", () => {
@@ -1729,127 +1729,87 @@ test("a per-PC counter's GM note: set, cleared when empty, only on a per-PC coun
   assert.ok(!JSON.stringify(viewOf(s, PARTY)).includes("dud"), "the panel never sees a note");
 });
 
-/* Chase (items/chase-subsystem.md) */
+/* Chase (items/chase-subsystem.md, spec 14.11): data only */
 
-const chaseSystem = (obstacles = 4) => {
+test("the Chase preset: Party and Quarry counters on tracks, one obstacle at a time, and obstacles whose Chase Points never drop below 0", () => {
   const s = presetSystem("chase");
-  while (s.subjects.length < obstacles) D.addRow(s, "subjects");
-  return s;
-};
-const clear = (s, n) => { for (let i = 0; i < n; i++) s.subjects[i].complete = true; };
-const noticeKeys = (notices) => notices.map((row) => row.key.split(".").slice(2).join("."));
-
-test("the Chase preset: a Quarry one obstacle ahead moving +1 a round, and obstacles with a goal whose Chase Points never drop below 0", () => {
-  const s = presetSystem("chase");
-  const [quarry] = s.counters;
-  assert.deepEqual([s.pointsName, s.subjectLabel, s.rounds.max], ["SSM.Preset.chase.Points", "SSM.Preset.chase.Subject", null]);
-  assert.deepEqual([quarry.name, quarry.value, quarry.perRound, quarry.min, quarry.revealed], ["SSM.Preset.chase.Other.chaseDown", 2, 1, 0, true]);
-  assert.deepEqual(s.chase, { type: "chaseDown", counterId: quarry.id });
+  assert.deepEqual([s.pointsName, s.subjectLabel, s.rounds.max, s.multipleSubjects], ["SSM.Preset.chase.Points", "SSM.Preset.chase.Subject", null, false]);
+  assert.deepEqual(s.counters.map((row) => [row.name, row.value, row.perRound, row.min, row.max, row.display, row.revealed]), [
+    ["SSM.Preset.chase.Party", 1, 0, 0, 6, "track", true],
+    ["SSM.Preset.chase.Quarry", 2, 1, 0, 6, "track", true],
+  ]);
+  assert.equal(s.chase, undefined, "no chase-only data");
   const [first] = s.subjects;
   assert.deepEqual([first.revealed, first.goal, first.min, first.tracksPoints], [true, 3, 0, true]);
   assert.deepEqual(outcomeOf(first.actions[0]), [["points 2"], ["points 1"], [], ["points -1"]]);
   assert.equal(D.addRow(s, "subjects").revealed, false, "later obstacles start hidden");
   assert.ok(D.newChallengeSystem("chase").gmNotes.includes("SSM.Preset.chase.GmNotes"));
+  assert.equal(D.newChallengeSystem("influence").multipleSubjects, undefined, "other presets keep the model's default, on");
   Run.startRun(s);
   Run.changePoints(s, first.id, -1);
   assert.equal(first.points, 0);
 });
 
-test("changing the chase type renames and places a default-named other side; Beat the Clock hides it and sets one round per obstacle", () => {
-  const s = chaseSystem(5);
-  const [other] = s.counters;
-  D.applyForm(s, { chase: { type: "runAway" } });
-  assert.deepEqual([other.name, other.value, other.revealed], ["SSM.Preset.chase.Other.runAway", 0, true]);
-  D.applyForm(s, { chase: { type: "beatClock" } });
-  assert.deepEqual([other.revealed, s.rounds.max], [false, 5]);
-  D.applyForm(s, { chase: { type: "competitive" } });
-  assert.deepEqual([other.name, other.value, other.revealed], ["SSM.Preset.chase.Other.competitive", 1, true]);
-  other.name = "The Red Hand";
-  D.applyForm(s, { chase: { type: "chaseDown" } });
-  assert.deepEqual([other.name, other.value], ["The Red Hand", 1], "a renamed counter is left alone");
-  D.removeRow(s, "counters.0");
-  assert.equal(s.chase.counterId, "");
+/* Allow multiple subjects (spec 14.12) */
+
+test("without Allow multiple subjects, revealing a subject hides the others, from the eye button or the Edit tab; hiding reveals nothing", () => {
+  const s = presetSystem("chase");
+  D.addRow(s, "subjects");
+  D.addRow(s, "subjects");
+  const [a, b] = s.subjects;
+  Run.toggleReveal(s, b.id);
+  assert.deepEqual(s.subjects.map((row) => row.revealed), [false, true, false]);
+  Run.toggleReveal(s, b.id);
+  assert.deepEqual(s.subjects.map((row) => row.revealed), [false, false, false]);
+  D.applyForm(s, { subjects: { 2: { revealed: true } } });
+  assert.deepEqual(s.subjects.map((row) => row.revealed), [false, false, true]);
+  D.applyForm(s, { subjects: { 0: { name: "Market" } } });
+  assert.deepEqual([s.subjects[0].name, s.subjects[2].revealed], ["Market", true], "an edit that reveals nothing hides nothing");
+  Run.toggleReveal(s, s.counters[0].id);
+  assert.equal(s.subjects[2].revealed, true, "a counter's eye leaves subjects alone");
+  D.applyForm(s, { multipleSubjects: true });
+  Run.toggleReveal(s, a.id);
+  assert.deepEqual(s.subjects.map((row) => row.revealed), [true, false, true]);
+  assert.deepEqual(viewOf(s).subjects.map((row) => [row.name, row.index]), [["Market", 0], ["", 2]], "the panel keeps each subject's place for its stand-in name");
 });
 
-test("a chase's position is the first obstacle not Complete, and each type ends as GM Core says", () => {
-  const s = chaseSystem(4);
-  const [other] = s.counters;
-  const end = () => Run.chaseStatus(s).end;
-  assert.deepEqual([Run.chaseStatus(s).position, Run.chaseStatus(s).other, end()], [1, 2, ""]);
-  clear(s, 1);
-  assert.equal(end(), "caughtQuarry", "the party reaches the quarry's obstacle");
-  other.value = 5;
-  assert.equal(end(), "quarryEscaped");
-  s.subjects[0].complete = false;
-  Object.assign(s.chase, { type: "runAway" });
-  other.value = 0;
-  assert.equal(end(), "");
-  other.value = 1;
-  assert.equal(end(), "caught");
-  clear(s, 4);
-  assert.deepEqual([Run.chaseStatus(s).position, end()], [5, "escaped"]);
-  s.chase.type = "beatClock";
-  assert.deepEqual([Run.chaseStatus(s).other, end()], [null, "cleared"]);
-  s.chase.type = "competitive";
-  assert.equal(end(), "won");
-  s.subjects[3].complete = false;
-  other.value = 5;
-  assert.equal(end(), "rivalWon");
+/* Counter displays (spec 14.12) */
+
+test("a counter's display: Auto keeps today's rule; Steps and Track need a maximum and a fitting range, else a bar", () => {
+  const counter = (extra) => ({ ...D.newCounter(), ...extra });
+  const show = (extra) => V.counterDisplay(counter(extra));
+  assert.deepEqual([show({}), show({ thresholds: [D.newThreshold()] }), show({ direction: "both" }), show({ perPc: true, display: "track" })], ["number", "bar", "bar", "perPc"]);
+  assert.deepEqual([show({ display: "number", thresholds: [D.newThreshold()] }), show({ display: "bar" })], ["number", "bar"]);
+  assert.deepEqual([show({ display: "steps" }), show({ display: "steps", max: 5 }), show({ display: "steps", max: 5, direction: "both" })], ["bar", "steps", "bar"]);
+  assert.deepEqual([show({ display: "track" }), show({ display: "track", max: 5, direction: "both" })], ["bar", "track"]);
 });
 
-test("chase notices: the end once, Run Away's lead at the end of a round, stuck after three rounds, the initiative reminder and the last round", () => {
-  const s = chaseSystem(6);
-  D.applyForm(s, { chase: { type: "runAway" } });
-  const [pursuers] = s.counters;
-  pursuers.perRound = 0;
-  Run.startRun(s);
-  assert.deepEqual(Run.settleChase(s), []);
-  clear(s, 3);
-  assert.deepEqual(Run.settleChase(s), [], "the lead is checked only at the end of a round");
-  Run.advanceRound(s);
-  assert.deepEqual(noticeKeys(Run.settleChase(s)), ["End.lead"]);
-  Run.advanceRound(s);
-  assert.deepEqual(Run.settleChase(s), [], "an end is told once");
-  Run.undoRound(s);
-  Run.undoRound(s);
-  Run.settleChase(s);
-  assert.equal(s.run.chase.end, "", "taking the round back takes back the lead");
-
-  const t = chaseSystem(6);
-  D.applyForm(t, { chase: { type: "competitive" } });
-  t.counters[0].perRound = 0;
-  Run.startRun(t);
-  Run.settleChase(t);
-  const steps = [1, 2, 3].map(() => { Run.advanceRound(t); return noticeKeys(Run.settleChase(t)); });
-  assert.deepEqual(steps, [["Notice.Initiative"], ["Notice.Initiative"], ["Notice.Stuck", "Notice.Initiative"]]);
-  Run.resetRun(t);
-  assert.equal(t.run.chase, null);
-
-  const c = chaseSystem(2);
-  D.applyForm(c, { chase: { type: "beatClock" } });
-  Run.startRun(c);
-  Run.settleChase(c);
-  Run.advanceRound(c);
-  assert.deepEqual(noticeKeys(Run.settleChase(c)), ["Notice.LastRound"]);
-  assert.deepEqual(Run.settleChase(presetSystem("influence")), [], "not a chase");
+test("Steps fill up to the value, a Track marks one slot; revealed thresholds mark their slot; too many slots fall back to a bar", () => {
+  const s = presetSystem("influence");
+  s.counters = [{ ...D.newCounter(), name: "Alarm", value: 2, max: 4, display: "steps", revealed: true, thresholds: [{ ...D.newThreshold(), points: 3, reveal: "points" }, { ...D.newThreshold(), points: 4, reveal: "hidden" }] }];
+  let [row] = viewOf(s).counters;
+  assert.equal(row.display, "steps");
+  assert.deepEqual(row.slots.map((slot) => [slot.number, slot.filled, slot.threshold]), [[1, true, false], [2, true, false], [3, false, true], [4, false, false]], "a hidden threshold leaves no mark");
+  s.counters[0].display = "track";
+  [row] = viewOf(s).counters;
+  assert.deepEqual(row.slots.map((slot) => [slot.number, slot.filled]), [[0, false], [1, false], [2, true], [3, false], [4, false]]);
+  s.counters[0].value = 9;
+  assert.equal(viewOf(s).counters[0].slots.at(-1).filled, true, "a value past the end sits on the last slot");
+  Object.assign(s.counters[0], { direction: "both", min: null, max: 2, value: -1 });
+  assert.deepEqual(viewOf(s).counters[0].slots.map((slot) => [slot.number, slot.filled]), [[-2, false], [-1, true], [0, false], [1, false], [2, false]]);
+  Object.assign(s.counters[0], { direction: "up", min: 0, max: 100 });
+  assert.deepEqual([viewOf(s).counters[0].display, viewOf(s).counters[0].slots], ["bar", null]);
 });
 
-test("a chase's panel shows only the current revealed obstacle and a track that hides unrevealed names", () => {
-  const s = chaseSystem(3);
-  s.subjects[0].name = "Crowded market";
-  s.subjects[1].name = "Rooftops";
-  Run.startRun(s);
-  let view = viewOf(s);
-  assert.deepEqual(view.subjects.map((row) => [row.name, row.index]), [["Crowded market", 0]]);
-  assert.deepEqual(view.counters, [], "the other side is on the track, not in the counters");
-  assert.deepEqual([view.chase.position, view.chase.other, view.chase.total], [1, 2, 3]);
-  assert.deepEqual(view.chase.slots.map((row) => row.name), ["Crowded market", "", ""]);
-  clear(s, 1);
-  assert.deepEqual(viewOf(s).subjects, [], "the next obstacle shows once the GM reveals it");
-  s.subjects[1].revealed = true;
-  view = viewOf(s);
-  assert.deepEqual([view.subjects.map((row) => [row.name, row.index]), view.chase.slots[0].cleared], [[["Rooftops", 1]], true]);
-  s.counters[0].revealed = false;
-  assert.equal(viewOf(s).chase.other, null);
-  assert.equal(viewOf(presetSystem("influence")).chase, null);
+test("the Edit tab's Display list: Hidden hides a counter and keeps its style; a style shows it in that style", () => {
+  const s = presetSystem("chase");
+  const party = () => s.counters[0];
+  D.applyForm(s, { counters: { 0: { show: "hidden" } } });
+  assert.deepEqual([party().revealed, party().display], [false, "track"]);
+  Run.toggleReveal(s, party().id);
+  assert.deepEqual([party().revealed, party().display], [true, "track"], "the eye button brings it back as it was");
+  D.applyForm(s, { counters: { 0: { show: "steps" } } });
+  assert.deepEqual([party().revealed, party().display, "show" in party()], [true, "steps", false]);
+  D.applyForm(s, { counters: { 0: { show: "nonsense" } } });
+  assert.deepEqual([party().revealed, party().display], [true, "steps"]);
 });

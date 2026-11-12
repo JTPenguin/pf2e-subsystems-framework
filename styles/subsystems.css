@@ -377,16 +377,11 @@ fieldset:has(> .ssm-checks-wrap) { min-width: 0; }
 .ssm-sheet .ssm-pc-row > .ssm-pc-note { flex: 1 1 0; width: 0; min-width: 0; height: 1.5rem; }
 .ssm-sheet .ssm-pc-row > .ssm-pc-note + button.icon { margin-left: 0; }
 
-/* A chase's progress track: a slot per obstacle, the party's and the other side's markers (items/chase-subsystem.md). */
-.ssm-panel-chase { margin-top: 0.3rem; contain: inline-size; }
-.ssm-panel-chase-track { display: flex; gap: 2px; list-style: none; margin: 0; padding: 0; }
-.ssm-chase-slot { flex: 1 1 0; min-width: 1.4rem; display: flex; flex-direction: column; align-items: center; gap: 1px; padding: 2px 0; border-radius: 3px; background: rgba(255, 255, 255, 0.1); font-size: 0.75rem; }
-.ssm-chase-slot.cleared { background: rgba(184, 160, 106, 0.45); }
-.ssm-chase-slot.current { outline: 1px solid #b8a06a; }
-.ssm-chase-slot.start, .ssm-chase-slot.finish { background: transparent; }
-.ssm-chase-num { line-height: 1; opacity: 0.8; }
-.ssm-chase-markers { display: flex; gap: 2px; min-height: 0.9rem; font-size: 0.8rem; }
-.ssm-chase-party { color: #8fc98a; }
-.ssm-chase-other { color: #e07a64; }
-.ssm-panel-chase-summary { margin: 0.15rem 0 0; font-size: 0.75rem; opacity: 0.85; }
-.ssm-chase-status { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: baseline; }
+/* A counter drawn as steps or a track (spec 14.12): one slot per value. Steps fill up to the value; a track marks the value's slot. */
+.ssm-panel-slots { display: flex; gap: 2px; flex: 1 1 4rem; min-width: 3rem; list-style: none; margin: 0; padding: 0; }
+.ssm-panel-slots > li { flex: 1 1 0; height: 0.55rem; background: rgba(255, 255, 255, 0.15); border-radius: 2px; }
+.ssm-panel-slots.steps > li.filled { background: #b8a06a; }
+.ssm-panel-slots.track > li { height: 0.8rem; }
+.ssm-panel-slots.track > li.filled { background: #e8cf8f; box-shadow: 0 0 0 1px #fff inset; }
+.ssm-panel-slots > li.threshold { box-shadow: 0 -2px 0 #c9593f inset; }
+.ssm-panel-slots > li.threshold.reached { box-shadow: 0 -2px 0 #8fc98a inset; }

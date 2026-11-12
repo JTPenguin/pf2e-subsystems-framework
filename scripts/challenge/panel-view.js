@@ -4,7 +4,7 @@
  */
 
 import { BOTH_WAYS, groupByCategory, isVisibleCheck, skillKey } from "./data.js";
-import { chaseCounterOf, chaseStatus, counterValueOf, currentDc, currentObstacle, isChase, isComplete, pointsOf } from "./run.js";
+import { counterValueOf, currentDc, isComplete, pointsOf } from "./run.js";
 
 /** Scale for a bar when the track has no goal and no thresholds. */
 const DEFAULT_SCALE = 10;
@@ -164,19 +164,57 @@ function subjectView(system, subject, party) {
 }
 
 /** A revealed counter. One with thresholds is a full track: a bar and its visible thresholds. A per-PC counter has a value per party PC and no thresholds. */
+/**
+ * How the panel draws a counter (spec 14.12): "number", "bar", "steps" or "track". Auto is a bar with thresholds or a both-ways range, else a number.
+ * Steps and Track need a maximum, and Steps a one-way counter; otherwise they draw as a bar. A per-PC counter keeps its per-PC rows.
+ */
+export function counterDisplay(counter) {
+  if (counter.perPc) return "perPc";
+  const both = counter.direction === BOTH_WAYS;
+  const display = counter.display ?? "auto";
+  if (display === "auto") return counter.thresholds.length > 0 || both ? "bar" : "number";
+  if (display === "steps" && (both || counter.max === null)) return "bar";
+  if (display === "track" && counter.max === null) return "bar";
+  return display;
+}
+
+/**
+ * The slots of a Steps or Track counter: one per whole number from the minimum (0 when unset, or −maximum for both ways) to the maximum.
+ * Steps fill every slot above the minimum up to the value; a Track marks only the value's slot. A revealed threshold marks its slot.
+ * Too many slots to draw (over 40) gives none, and the panel falls back to a bar.
+ */
+export function counterSlots(counter, value, display, thresholds) {
+  const hi = counter.max;
+  const lo = counter.min ?? (counter.direction === BOTH_WAYS ? -hi : 0);
+  if (hi === null || hi <= lo || hi - lo > 40) return null;
+  const at = Math.max(lo, Math.min(hi, value));
+  const marks = new Map(thresholds.map((row) => [row.points, row]));
+  const from = display === "steps" ? lo + 1 : lo;
+  return Array.from({ length: hi - from + 1 }, (_, i) => {
+    const number = from + i;
+    const threshold = marks.get(number);
+    return { number, filled: display === "steps" ? number <= at : number === at, threshold: !!threshold, reached: !!threshold?.reached };
+  });
+}
+
 function counterView(system, counter, party) {
   const start = system.run.baseline?.counters?.[counter.id]?.value;
   const perPc = !!counter.perPc;
+  const thresholds = perPc ? [] : thresholdViews(counter.thresholds, counter.direction);
+  let display = counterDisplay(counter);
+  const slots = display === "steps" || display === "track" ? counterSlots(counter, counter.value, display, thresholds) : null;
+  if (!slots && (display === "steps" || display === "track")) display = "bar";
   return {
     id: counter.id,
     name: counter.name,
     value: counter.value,
+    display,
+    slots,
     perPc,
     pcs: perPc ? party.map((pc) => ({ id: pc.id, value: counterValueOf(counter, pc.id) })) : [],
-    track: !perPc && counter.thresholds.length > 0,
     scale: trackScale(counter, counter.value, start),
     range: counter.direction === BOTH_WAYS ? bothWaysRange(counter) : null,
-    thresholds: perPc ? [] : thresholdViews(counter.thresholds, counter.direction),
+    thresholds,
   };
 }
 
@@ -190,39 +228,8 @@ export function roundSegments(current, max) {
   return Array.from({ length: total }, (_, index) => ({ filled: index < filled }));
 }
 
-/**
- * A chase's progress track: one slot per obstacle, in order, with the party's and the other side's obstacle numbers.
- * A hidden obstacle's name stays out. The other side shows only while its counter is revealed.
- */
-function chaseView(system) {
-  const status = chaseStatus(system);
-  const counter = chaseCounterOf(system);
-  const shown = !!counter?.revealed;
-  return {
-    type: status.type,
-    total: status.total,
-    position: status.position,
-    other: shown ? status.other : null,
-    otherName: shown ? counter.name : "",
-    slots: system.subjects.map((subject) => ({ revealed: !!subject.revealed, name: subject.revealed ? subject.name : "", cleared: isComplete(subject) })),
-  };
-}
-
-/**
- * The subjects on the panel. In a chase it is only the party's current obstacle, and only once it is revealed, so clearing one brings up the next
- * the GM has revealed. Otherwise every revealed subject.
- */
-function panelSubjects(system) {
-  if (!isChase(system)) return system.subjects.filter(isVisible);
-  const current = currentObstacle(system)?.subject;
-  return current?.revealed ? [current] : [];
-}
-
 /** The filtered copy. `party` is a list of { id, name, img }. Only revealed subjects and counters go in. */
 export function buildPanelView({ name, system, party }) {
-  const chase = isChase(system) ? chaseView(system) : null;
-  // A chase's other side is on its track, not in the counter list.
-  const counterShown = (counter) => isVisible(counter) && !(chase && counter.id === system.chase.counterId);
   return {
     name,
     pointsName: system.pointsName,
@@ -230,9 +237,8 @@ export function buildPanelView({ name, system, party }) {
     rounds: { current: system.rounds.current, max: system.rounds.max },
     // Challenge-level entries, for the strip above the subject columns (spec 14.7).
     modifiers: cards(system, null, system.modifiers ?? []),
-    subjects: panelSubjects(system).map((subject) => subjectView(system, subject, party)),
-    counters: system.counters.filter(counterShown).map((counter) => counterView(system, counter, party)),
-    chase,
+    subjects: system.subjects.filter(isVisible).map((subject) => subjectView(system, subject, party)),
+    counters: system.counters.filter(isVisible).map((counter) => counterView(system, counter, party)),
     party: party.map(({ id, name: pcName, img }) => ({ id, name: pcName, img: img || DEFAULT_PC_IMAGE, acted: system.run.acted.includes(id) })),
   };
 }

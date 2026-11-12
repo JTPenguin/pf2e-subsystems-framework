@@ -110,7 +110,6 @@
     </span>
     <label class="ssm-strip-group"><span class="ssm-stat-label">{{localize "SSM.Challenge.RollAs"}}</span><select data-roll-as>{{#each actors}}<option value="{{id}}" {{#if selected}}selected{{/if}}>{{name}}</option>{{/each}}</select></label>
     </div>
-    {{#if chaseLine}}<div class="ssm-strip-row ssm-chase-status"><span class="ssm-stat-label">{{localize "SSM.Chase.Label"}}</span><span>{{chaseLine}}</span></div>{{/if}}
   </div>
   {{/with}}
   <section class="ssm-body">
@@ -236,19 +235,9 @@
       <div class="ssm-row">
         <label class="grow">{{localize "SSM.Challenge.PointsName"}}<input type="text" name="pointsName" value="{{system.pointsName}}" placeholder="{{localize "SSM.Challenge.Points"}}"></label>
         <label class="grow">{{localize "SSM.Challenge.SubjectLabel"}}<input type="text" name="subjectLabel" value="{{system.subjectLabel}}" placeholder="{{localize "SSM.Challenge.Subject"}}"></label>
+        <label class="check" data-tooltip="SSM.Challenge.MultipleSubjectsHint"><input type="checkbox" name="multipleSubjects" {{checked system.multipleSubjects}}>{{localize "SSM.Challenge.MultipleSubjects"}}</label>
       </div>
     </fieldset>
-
-    {{#if isChase}}
-    <fieldset>
-      <legend>{{localize "SSM.Chase.Label"}}</legend>
-      <div class="ssm-row">
-        <label class="grow">{{localize "SSM.Chase.TypeLabel"}}<select name="chase.type">{{selectOptions choices.chaseTypes selected=system.chase.type}}</select></label>
-        <label class="grow" data-tooltip="SSM.Chase.CounterHint">{{localize "SSM.Chase.CounterLabel"}}<select name="chase.counterId">{{selectOptions choices.chaseCounters selected=system.chase.counterId}}</select></label>
-      </div>
-      <p class="ssm-muted">{{localize (concat "SSM.Chase.TypeHint." system.chase.type)}}</p>
-    </fieldset>
-    {{/if}}
 
     <fieldset>
       <legend>{{localize "SSM.Challenge.Rounds"}}</legend>
@@ -276,7 +265,7 @@
           <label class="grow">{{localize "SSM.Challenge.Name"}}<input type="text" name="{{path}}.name" value="{{name}}"></label>
           <label>{{localize "SSM.Challenge.Value"}}<input type="number" step="1" name="{{path}}.value" value="{{value}}"></label>
           <label>{{localize "SSM.Challenge.DirectionLabel"}}<select name="{{path}}.direction">{{selectOptions @root.choices.directions selected=direction}}</select></label>
-          <label class="check"><input type="checkbox" name="{{path}}.revealed" {{checked revealed}}>{{localize "SSM.Challenge.Revealed"}}</label>
+          <label data-tooltip="SSM.Challenge.DisplayHint">{{localize "SSM.Challenge.DisplayLabel"}}<select name="{{path}}.show">{{selectOptions showChoices selected=show}}</select></label>
           <button type="button" class="icon fa-solid fa-trash" data-action="removeRow" data-path="{{path}}" aria-label="{{localize "SSM.Challenge.Remove"}}"></button>
         </div>
         <div class="ssm-row">

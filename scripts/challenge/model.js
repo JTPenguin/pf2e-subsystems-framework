@@ -1,4 +1,4 @@
-import { CHASE_TYPES, DEFAULT_PRESET, DIRECTIONS, DURATIONS, EFFECT_TYPES, OUTCOMES, PRESETS, STATUSES, THRESHOLD_REVEALS } from "./data.js";
+import { COUNTER_DISPLAYS, DEFAULT_PRESET, DIRECTIONS, DURATIONS, EFFECT_TYPES, OUTCOMES, PRESETS, STATUSES, THRESHOLD_REVEALS } from "./data.js";
 
 const { ArrayField, BooleanField, HTMLField, NumberField, ObjectField, SchemaField, StringField } = foundry.data.fields;
 
@@ -110,10 +110,12 @@ export class ChallengeModel extends foundry.abstract.TypeDataModel {
         // A GM-only note per PC, by actor id, such as which Edge Points are duds.
         noteBy: new ObjectField({ required: true, initial: {} }),
         thresholds: list(thresholdFields()),
+        // How the panel draws it (spec 14.12).
+        display: choice(COUNTER_DISPLAYS, "auto"),
         revealed: flag(),
       }),
-      // A chase's type and the counter that is the other side (items/chase-subsystem.md). Unused by other presets.
-      chase: new SchemaField({ type: choice(CHASE_TYPES, "chaseDown"), counterId: text() }),
+      // Off: revealing a subject hides the others, so the panel shows one at a time (spec 14.12).
+      multipleSubjects: flag(true),
       run: new SchemaField({
         status: choice(STATUSES, "inactive"),
         acted: ids(),
@@ -127,8 +129,6 @@ export class ChallengeModel extends foundry.abstract.TypeDataModel {
         appliedRolls: ids(),
         // The rolls whose arrival the active GM handled, which spent their one-time DC entries. Apply doesn't spend them again.
         receivedRolls: ids(),
-        // A running chase's last-seen position, the round it got there, the round, and how it ended, so each notice comes once.
-        chase: new ObjectField({ required: true, nullable: true, initial: null }),
       }),
     };
   }

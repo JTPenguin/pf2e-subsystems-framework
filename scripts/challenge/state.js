@@ -1,5 +1,5 @@
 import { EDITABLE } from "./data.js";
-import { applyRoll, receiveRoll, settleChase, syncBothWays, triggerKey, undoApply } from "./run.js";
+import { applyRoll, receiveRoll, syncBothWays, triggerKey, undoApply } from "./run.js";
 
 const queues = new Map();
 
@@ -11,11 +11,8 @@ export function writeChallenge(page, change, options = {}) {
     if (result === false) return false;
     // A both-ways track's Reached follows its value, whatever changed it: a roll, a hand change or a form edit (spec 14.8).
     syncBothWays(system);
-    // A chase's end, stuck and round notices, whatever moved the party or the other side (items/chase-subsystem.md).
-    const notices = settleChase(system);
     const update = Object.fromEntries([...EDITABLE, "run"].map((key) => [key, system[key]]));
     await page.update({ system: update }, options);
-    for (const notice of notices) ui.notifications.info(game.i18n.format(notice.key, notice.data), { permanent: notice.key.includes(".End.") });
     return result;
   };
   const next = (queues.get(page.id) ?? Promise.resolve()).then(run);

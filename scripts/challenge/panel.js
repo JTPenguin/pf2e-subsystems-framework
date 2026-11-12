@@ -17,6 +17,8 @@ function gmPage(state) {
 }
 
 /** A track's bar: a both-ways bar with a zero mark when the track has a range, else a plain one (spec 14.8). */
+/** Counter displays drawn as a row of slots. */
+const SLOTTED = new Set(["steps", "track"]);
 const barOf = (value, track) => (track.range ? bothWaysBar(value, track.range) : pointsBar(value, track.scale));
 
 /**
@@ -105,42 +107,23 @@ function prepareView(view, state) {
         cards: group.cards.map((row) => ({ ...modifierCard(row, subject.id, pointsName, gm.get(`${subject.id}:${row.id}`), decoys.has(`${subject.id}:${row.id}`)), categoryLabel: "" })),
       })),
     })),
-    // A counter with thresholds is a track, with a bar and a threshold card. The rest stay plain numbers on one line.
-    // A both-ways counter gets a bar with a zero mark even with no thresholds.
-    tracks: view.counters.filter((row) => row.track || (row.range && !row.perPc)).map((row) => ({ ...row, name: row.name || loc("SSM.Challenge.UnnamedCounter"), bar: barOf(row.value, row) })),
+    // A counter drawn as a bar, steps or a track gets its own row and threshold card; numbers share one line (spec 14.12).
+    tracks: view.counters.filter((row) => SLOTTED.has(row.display) || row.display === "bar").map((row) => ({
+      ...row,
+      name: row.name || loc("SSM.Challenge.UnnamedCounter"),
+      bar: row.display === "bar" ? barOf(row.value, row) : null,
+      steps: row.display === "steps",
+      slots: row.slots?.map((slot) => ({ ...slot, tooltip: slot.threshold ? game.i18n.format("SSM.Panel.SlotThreshold", { number: slot.number }) : String(slot.number) })) ?? null,
+    })),
     // A per-PC counter shows one row per party PC: portrait and value (spec 14.8).
     pcCounters: view.counters.filter((row) => row.perPc).map((row) => ({
       ...row,
       name: row.name || loc("SSM.Challenge.UnnamedCounter"),
       pcs: row.pcs.map((pc) => ({ ...pc, name: pcs.get(pc.id)?.name ?? "", img: pcs.get(pc.id)?.img ?? "" })),
     })),
-    counters: view.counters.filter((row) => !row.track && !row.range && !row.perPc).map((row) => ({ ...row, name: row.name || loc("SSM.Challenge.UnnamedCounter") })),
-    chase: view.chase ? chaseTrack(view.chase, view.subjectLabel) : null,
+    counters: view.counters.filter((row) => row.display === "number").map((row) => ({ ...row, name: row.name || loc("SSM.Challenge.UnnamedCounter") })),
     party: view.party.map((pc) => ({ ...pc, label: game.i18n.format(pc.acted ? "SSM.Panel.ActedLabel" : "SSM.Panel.NotActedLabel", { name: pc.name }) })),
   };
-}
-
-const CHASE_ICONS = { chaseDown: "fa-person-running", runAway: "fa-skull", competitive: "fa-flag-checkered" };
-
-/**
- * A chase's progress track: a start slot when the other side is behind the first obstacle, a slot per obstacle, and a finish slot.
- * The party's marker sits on its obstacle and the other side's on theirs. A hidden obstacle shows as "?".
- */
-function chaseTrack(chase, subjectLabel) {
-  const label = subjectLabel || loc("SSM.Challenge.Subject");
-  const otherAt = chase.other === null ? null : Math.max(0, Math.min(chase.total + 1, chase.other));
-  const slot = (number, extra) => ({ number, party: chase.position === number, other: otherAt === number, current: chase.position === number, ...extra });
-  const slots = chase.slots.map((row, i) => slot(i + 1, {
-    label: row.revealed ? String(i + 1) : "?",
-    cleared: row.cleared,
-    tooltip: row.revealed ? `${i + 1}. ${row.name || `${label} ${i + 1}`}` : loc("SSM.Chase.Unknown"),
-  }));
-  if (otherAt === 0) slots.unshift(slot(0, { label: "", tooltip: loc("SSM.Chase.Behind"), start: true }));
-  slots.push(slot(chase.total + 1, { label: "", tooltip: loc("SSM.Chase.Finish"), finish: true }));
-  const summary = [game.i18n.format("SSM.Chase.PartyAt", { position: Math.min(chase.position, chase.total), total: chase.total, subject: label })];
-  if (otherAt !== null) summary.push(game.i18n.format("SSM.Chase.OtherAt", { name: chase.otherName || loc("SSM.Challenge.UnnamedCounter"), position: otherAt }));
-  if (chase.position > chase.total) summary[0] = loc("SSM.Chase.PartyDone");
-  return { slots, summary: summary.join(" · "), otherIcon: CHASE_ICONS[chase.type] ?? "fa-person-running", otherName: chase.otherName };
 }
 
 let rolling = false;

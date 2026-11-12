@@ -4,10 +4,10 @@ import { hidePanel, panelState, takePanel } from "../panel/activation.js";
 import { partyPCs } from "../party.js";
 import { actionName, skillKeyLabel, skillLabel, subjectName } from "./skill-label.js";
 import { announceTriggers, writeChallenge } from "./state.js";
-import { advanceRound, applyModifier, canAdvanceRound, chaseStatus, isChase, canApplyModifier, canUndoRound, changeCounter, changePoints, counterValueOf, currentDc, cycleThresholdReveal, endRun, isComplete, pointsOf, resetRun, restoreModifier, startRun, toggleActed, toggleComplete, toggleModifier, toggleReached, toggleReveal, undoRound } from "./run.js";
+import { advanceRound, applyModifier, canAdvanceRound, canApplyModifier, canUndoRound, changeCounter, changePoints, counterValueOf, currentDc, cycleThresholdReveal, endRun, isComplete, pointsOf, resetRun, restoreModifier, startRun, toggleActed, toggleComplete, toggleModifier, toggleReached, toggleReveal, undoRound } from "./run.js";
 import { LINK_ROLL_ID } from "../roll-option.js";
 import { rollCheck, rollTarget } from "./roll.js";
-import { addRow, applyForm, CHASE_TYPES, setCounterNote, subjectTemplates, BOTH_WAYS, clampTracks, DIRECTIONS, EDITABLE, groupByCategory, isAlwaysShown, isDecoyCheck, limitTrack, LORE, moveSubject, OUTCOMES, PERCEPTION, nextThresholdReveal, pickFields, removeRow, SAVES, THRESHOLD_REVEALS } from "./data.js";
+import { addRow, applyForm, COUNTER_DISPLAYS, HIDDEN_DISPLAY, setCounterNote, subjectTemplates, BOTH_WAYS, clampTracks, DIRECTIONS, EDITABLE, groupByCategory, isAlwaysShown, isDecoyCheck, limitTrack, LORE, moveSubject, OUTCOMES, PERCEPTION, nextThresholdReveal, pickFields, removeRow, SAVES, THRESHOLD_REVEALS } from "./data.js";
 import { ActionWindow, ModifierWindow } from "./entry-window.js";
 
 const { DocumentSheetV2, HandlebarsApplicationMixin } = foundry.applications.api;
@@ -239,6 +239,7 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
 
     const subjects = system.subjects.map(subjectView);
     const mode = this.#currentMode;
+    const displayChoices = Object.fromEntries([...COUNTER_DISPLAYS, HIDDEN_DISPLAY].map((key) => [key, loc(`SSM.Challenge.Display.${key}`)]));
     return Object.assign(context, {
       isRun: mode === "run",
       isEdit: mode === "edit",
@@ -252,18 +253,21 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
       removeSubjectLabel: game.i18n.format("SSM.Challenge.RemoveSubject", { subject: subjectLabel }),
       premiseHtml: await enrich(system.premise),
       gmNotesHtml: await enrich(system.gmNotes),
-      counters: system.counters.map((counter, i) => ({ ...counter, path: `counters.${i}`, thresholds: thresholds(counter.thresholds, `counters.${i}`, counter.direction) })),
+      counters: system.counters.map((counter, i) => ({
+        ...counter,
+        path: `counters.${i}`,
+        // One list for how players see it: Hidden, or a display style (spec 14.12). A per-PC counter has its own rows, so only Shown or Hidden.
+        show: counter.revealed ? (counter.perPc ? "auto" : counter.display ?? "auto") : HIDDEN_DISPLAY,
+        showChoices: counter.perPc ? { auto: loc("SSM.Challenge.Display.shown"), [HIDDEN_DISPLAY]: loc(`SSM.Challenge.Display.${HIDDEN_DISPLAY}`) } : displayChoices,
+        thresholds: thresholds(counter.thresholds, `counters.${i}`, counter.direction),
+      })),
       challengeModifierGroups,
       subjects,
       activeSubject: subjects.find((subject) => subject.id === this.#tab) ?? null,
       onChallengeTab: this.#tab === CHALLENGE_TAB,
       tabs: subjects.map((subject) => ({ id: subject.id, label: subject.tabLabel, active: subject.id === this.#tab })),
       runActive: system.run.status === "active",
-      // A chase's type and its other side's counter (items/chase-subsystem.md).
-      isChase: isChase(system),
       choices: {
-        chaseTypes: Object.fromEntries(CHASE_TYPES.map((type) => [type, loc(`SSM.Chase.Type.${type}`)])),
-        chaseCounters: { "": loc("SSM.Chase.NoCounter"), ...Object.fromEntries(system.counters.map((counter, i) => [counter.id, counter.name || `${loc("SSM.Challenge.UnnamedCounter")} ${i + 1}`])) },
         skills: checkSkills,
         thresholdReveals: labels(THRESHOLD_REVEALS, "ThresholdReveal"),
         directions: labels(DIRECTIONS, "Direction"),
@@ -292,17 +296,6 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
     const actors = this.#rollableActors;
     const controlled = canvas.ready ? canvas.tokens.controlled[0]?.actor : null;
     return actors.find((actor) => actor.id === this.#rollAs) ?? actors.find((actor) => actor === controlled) ?? actors[0] ?? null;
-  }
-
-  /** Where a chase stands, for the GM: the type, the party's obstacle, the other side's, and how it ended. */
-  #chaseLine(system, subjectLabel) {
-    const status = chaseStatus(system);
-    const parts = [loc(`SSM.Chase.Type.${status.type}`)];
-    parts.push(status.position > status.total ? loc("SSM.Chase.PartyDone") : game.i18n.format("SSM.Chase.PartyAt", { position: status.position, total: status.total, subject: subjectLabel }));
-    if (status.other !== null) parts.push(game.i18n.format("SSM.Chase.OtherAt", { name: status.counter || loc("SSM.Challenge.UnnamedCounter"), position: status.other }));
-    const end = status.end || (system.run.chase?.end === "lead" ? "lead" : "");
-    if (end) parts.push(game.i18n.format(`SSM.Chase.End.${end}`, { other: status.counter }));
-    return parts.join(" · ");
   }
 
   /** The Run-mode view of the challenge. */
@@ -358,7 +351,6 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
       roundLabel: active || status === "finished" ? game.i18n.format(system.rounds.max === null ? "SSM.Challenge.RoundOpen" : "SSM.Challenge.Round", system.rounds) : loc("SSM.Challenge.NotStarted"),
       canNextRound: canAdvanceRound(system),
       canPreviousRound: canUndoRound(system),
-      chaseLine: isChase(system) ? this.#chaseLine(system, subjectLabel) : "",
       party: [...new Set([...actors.map((actor) => actor.id), ...system.run.acted])].map((id) => {
         const actor = game.actors.get(id);
         return { id, name: actor?.name ?? id, acted: system.run.acted.includes(id) };

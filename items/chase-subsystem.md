@@ -3,10 +3,11 @@ title: "Add the Chase preset"
 kind: feature
 status: in-progress
 waits_on: Justin
+priority: ⏬
 blocked_by: []
 source: "Justin's list of items, 2026-11-11; scope answers from Justin, 2026-11-11"
 added: 2026-11-11
-updated: 2026-11-11
+updated: 2026-11-12
 ---
 # Add the Chase preset
 
@@ -48,10 +49,22 @@ The full design is spec 14.11.
 
 **Done when:** a GM can run a chase from a sheet, and players can take its actions from the panel. Check it in Foundry with a live test chase and a player login.
 
-## Where it stands (2026-11-11)
+## Cut back to data only (Justin, 2026-11-12)
 
-- **Built:** the Chase preset, the chase type and other-side settings, the panel's current-obstacle view and progress track, the sheet's Chase line, and the end, stuck, initiative and last-round notices. Spec 14.6, 14.10 and 14.11 are updated.
-- **Checked:** `tools/test.mjs` (136 pass, 5 new), `tools/check-load.mjs`. Live in the test world as GM and Test Player 1: made a chase from the preset; switching to Run Away renamed the Quarry to Pursuers at 0; started it; both panels showed the track with hidden obstacles as "?" and only the first obstacle. The player rolled Athletics from the panel; the GM applied Critical Success (+2 CP) from the roll card, then + on the sheet cleared the obstacle. The panel emptied until the GM revealed Rooftops, then showed it. Moving the Pursuers to obstacle 2 gave "The Pursuers catch the party." and the sheet's Chase line showed it.
-- **Your calls:** a new obstacle's goal is 3 (GM Core says one or two fewer than the party size; edit per obstacle). Chase Down counts as caught as soon as the party reaches the quarry's obstacle, so a quarry that starts on the party's obstacle is caught at once.
+The first build had chase-only logic: a type field, end and reminder notices, a current-obstacle panel view, a progress track and a Chase line on the sheet. It was cut, so every subsystem runs on the generic framework with no preset-specific code. The first build is in commit 9388006.
+
+| Was automated | Now |
+|---|---|
+| Chase type field | GM notes say how to set up each type |
+| End, lead, stuck, initiative and last-round notices | The GM's call; GM notes list the rules |
+| Panel shows only the current obstacle | Allow multiple subjects is off: revealing the next obstacle hides the cleared one (spec 14.12) |
+| Progress track with both markers | Party and Quarry counters, each drawn as a Track (spec 14.12). The GM adds 1 to Party when an obstacle clears. |
+| Chase line on the sheet | Gone: the sheet shows the obstacles and counters |
+
+## Where it stands (2026-11-12)
+
+- **Built:** the data-only Chase preset, Allow multiple subjects, and counter displays (Hidden, Auto, Number, Bar, Steps, Track). Spec 14.6, 14.11 and 14.12 are updated.
+- **Checked:** `tools/test.mjs` (136 pass), `tools/check-load.mjs`. Live in the test world as GM: a new chase has Party and Quarry on tracks and Allow multiple subjects off; Display set to Hidden in the Edit tab hid Quarry, and Track brought it back; revealing Rooftops in Run mode hid Crowded market, and the panel showed only Rooftops with both tracks; Steps and a threshold mark drew correctly. Not checked with a player login.
+- **Your calls:** both counters start with maximum 6; set them to the number of obstacles. A new obstacle's goal is 3.
 - **Not built:** split paths, shortcuts, solo chases.
-- **Test challenge** "SSM Chase check" is in the test world and on the panel (it took the panel from "SSM Infiltration check", which is still running). Delete it when done.
+- **Test challenges** "SSM Chase check" (old build, still running, off the panel) and "SSM Chase v2 check" (on the panel) are in the test world. Delete them when done.

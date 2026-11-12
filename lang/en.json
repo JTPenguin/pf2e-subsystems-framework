@@ -56,7 +56,8 @@
       "NotActedLabel": "{name}: has not acted this round",
       "NoCharacter": "You need an assigned character to roll. Ask the GM to assign one.",
       "NoGMActor": "Select a token, or pick a PC under Roll as in the challenge window.",
-      "SkillGone": "That check is no longer available."
+      "SkillGone": "That check is no longer available.",
+      "SlotThreshold": "{number}: threshold"
     },
     "Challenge": {
       "Actions": "Actions",
@@ -254,7 +255,20 @@
       "Collapse": "Collapse or expand",
       "PcNote": "GM note",
       "PcNotePlaceholder": "GM note",
-      "PcNoteHint": "GM only. For example: 1 dud (forged papers), 1 only for paperwork."
+      "PcNoteHint": "GM only. For example: 1 dud (forged papers), 1 only for paperwork.",
+      "MultipleSubjects": "Allow multiple subjects",
+      "MultipleSubjectsHint": "On: any number of subjects can be revealed at once, and the panel shows each revealed one. Off: revealing a subject hides every other subject, so players see one at a time. Use off for subjects taken in order, such as a chase's obstacles: revealing the next one moves the panel on in one click. Hiding a subject never reveals another.",
+      "DisplayLabel": "Display",
+      "DisplayHint": "How players see this counter on the panel. Hidden: GM-only; the eye button in Run mode can still reveal it, in the style chosen before. Auto: a bar if it has thresholds or counts both ways, else a number. Steps: filled segments, like the round counter. Track: a marker that moves along a row of slots. Steps and Track need a maximum and show as a bar without one.",
+      "Display": {
+        "auto": "Auto",
+        "number": "Number",
+        "bar": "Bar",
+        "steps": "Steps",
+        "track": "Track",
+        "hidden": "Hidden",
+        "shown": "Shown"
+      }
     },
     "Card": {
       "NotActiveGM": "Only the active GM can apply results.",
@@ -393,53 +407,9 @@
         "Points": "Chase Points",
         "Subject": "Obstacle",
         "Overcome": "Overcome",
-        "Other": {
-          "chaseDown": "Quarry",
-          "runAway": "Pursuers",
-          "competitive": "Rival"
-        },
-        "GmNotes": "Chase reminders (GM Core). Obstacles are cleared in order; extra Chase Points don't carry over, and PCs who haven't acted can go on to the next obstacle. A PC who passes or can't act costs the group 1 CP: use − on the obstacle's points. The other side's counter is its obstacle number and moves +1 each round; nudge it by hand on hard obstacles. Attack rolls and spells are yours to adjudicate: apply the degree from the roll card or change points by hand."
-      }
-    },
-    "Chase": {
-      "Label": "Chase",
-      "TypeLabel": "Chase type",
-      "CounterLabel": "Other side",
-      "CounterHint": "The counter that holds the other side's obstacle number. It moves +1 each round.",
-      "NoCounter": "None",
-      "Type": {
-        "chaseDown": "Chase Down",
-        "runAway": "Run Away",
-        "beatClock": "Beat the Clock",
-        "competitive": "Competitive"
-      },
-      "TypeHint": {
-        "chaseDown": "The party pursues the quarry, which starts one obstacle ahead. The party catches it on reaching its obstacle; it escapes once past the last.",
-        "runAway": "The party flees pursuers who start one obstacle behind. The party escapes past the last obstacle, or three obstacles ahead at the end of a round; it is caught if they reach its obstacle.",
-        "beatClock": "The party must clear every obstacle before the rounds run out: one round per obstacle. There is no other side.",
-        "competitive": "The party races a rival who starts level with it. Whoever passes the last obstacle first wins. Roll initiative each round to see who goes first."
-      },
-      "PartyAt": "Party: {subject} {position} of {total}",
-      "PartyDone": "Party: past the last obstacle",
-      "OtherAt": "{name}: {position}",
-      "Party": "Party",
-      "Unknown": "Obstacle not yet revealed",
-      "Behind": "Behind the first obstacle",
-      "Finish": "Past the last obstacle",
-      "End": {
-        "caughtQuarry": "The party catches the {other}.",
-        "quarryEscaped": "The {other} gets past the last obstacle and escapes.",
-        "escaped": "The party clears the last obstacle and escapes.",
-        "caught": "The {other} catch the party.",
-        "lead": "The party is three obstacles ahead at the end of the round and escapes.",
-        "cleared": "The party clears every obstacle in time.",
-        "won": "The party passes the last obstacle first and wins the race.",
-        "rivalWon": "The {other} passes the last obstacle first and wins the race."
-      },
-      "Notice": {
-        "Stuck": "The party has spent {rounds} rounds on {obstacle}. GM Core suggests letting them find another way, or an NPC helps at a cost.",
-        "Initiative": "Competitive chase: roll initiative to see who acts first this round.",
-        "LastRound": "Beat the Clock: this is the last round."
+        "GmNotes": "Chase reminders (GM Core). Obstacles are cleared in order; extra Chase Points don't carry over, and PCs who haven't acted can go on to the next obstacle. A PC who passes or can't act costs the group 1 CP: use − on the obstacle's points. The Party and Quarry counters hold obstacle numbers. Set both maximums to the number of obstacles. When the party clears an obstacle, add 1 to Party and reveal the next obstacle (that hides the cleared one). The other side moves +1 each round; nudge it by hand on hard obstacles. Chase types: Chase Down: the quarry starts 1 ahead; the party catches it on reaching its obstacle, and it escapes once past the last. Run Away: rename Quarry to Pursuers and start it at 0; the party escapes past the last obstacle or 3 ahead at the end of a round, and is caught if they reach its obstacle. Beat the Clock: hide the other side and set the round maximum to the number of obstacles. Competitive: rename Quarry to Rival and start it at 1; whoever passes the last obstacle first wins, and initiative is rolled each round. If the party is stuck on one obstacle for about 3 rounds, let them find another way. Attack rolls and spells are yours to adjudicate: apply the degree from the roll card or change points by hand.",
+        "Party": "Party",
+        "Quarry": "Quarry"
       }
     }
   }

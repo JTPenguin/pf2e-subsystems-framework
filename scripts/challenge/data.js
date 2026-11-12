@@ -17,16 +17,12 @@ export const BOTH_WAYS = "both";
 /** How much of a threshold players see: nothing, its points ("6: ???"), or its points and player text. The GM's eye button steps through them in this order. */
 export const THRESHOLD_REVEALS = ["hidden", "points", "full"];
 /**
- * A chase's type (GM Core, Types of Chases). Each names the other side's counter and where it starts, and sets the end checks (run.js, chaseStatus).
- * Beat the Clock has no other side: the round maximum is the clock.
+ * How the panel draws a counter (spec 14.12). Auto: a bar with thresholds or a both-ways range, else a number.
+ * Steps and Track need a maximum; without one they draw as a bar.
  */
-export const CHASE_TYPES = ["chaseDown", "runAway", "beatClock", "competitive"];
-/** Where the other side starts, as an obstacle number: the quarry one ahead of the party, the pursuers one behind, a rival level (GM Core). */
-export const CHASE_OTHER = { chaseDown: { start: 2 }, runAway: { start: 0 }, competitive: { start: 1 } };
-/** Run Away ends when the party is this many obstacles ahead at the end of a round. */
-export const CHASE_LEAD = 3;
-/** After about this many rounds on one obstacle, GM Core lets the PCs find another way (If the PCs Get Stuck). */
-export const CHASE_STUCK = 3;
+export const COUNTER_DISPLAYS = ["auto", "number", "bar", "steps", "track"];
+/** The Edit tab's extra Display choice: the counter is GM-only. It sets `revealed`, not `display`. */
+export const HIDDEN_DISPLAY = "hidden";
 export const nextThresholdReveal = (reveal) => THRESHOLD_REVEALS[(THRESHOLD_REVEALS.indexOf(reveal) + 1) % THRESHOLD_REVEALS.length];
 
 /** The value of a check's `skill` field when it is a Lore; the `lore` field then holds the Lore's name. */
@@ -65,7 +61,7 @@ export const newCheck = () => ({ id: id(), skill: "society", lore: "", dc: 15, r
 /** `dc` is a DC change that applies while the threshold is reached. */
 export const newThreshold = () => ({ id: id(), points: 1, playerText: "", gmText: "", reveal: "hidden", reached: false, dc: 0 });
 /** A per-PC counter keeps one value per party PC in `valueBy`, starting from `value` (spec 14.8), and a GM-only note per PC in `noteBy`. */
-export const newCounter = () => ({ id: id(), name: "", value: 0, direction: "up", min: null, max: null, perRound: 0, perPc: false, valueBy: {}, noteBy: {}, thresholds: [], revealed: false });
+export const newCounter = () => ({ id: id(), name: "", value: 0, direction: "up", min: null, max: null, perRound: 0, perPc: false, valueBy: {}, noteBy: {}, thresholds: [], display: "auto", revealed: false });
 
 /** Set a GM-only note for one PC on a per-PC counter, such as which Edge Points are duds. An empty note removes it. Returns false if nothing changed. */
 export function setCounterNote(system, counterId, actorId, note) {
@@ -113,8 +109,8 @@ function presetCounter(system, nameKey, perPc) {
 
 const INF = "SSM.Preset.infiltration";
 const CHASE = "SSM.Preset.chase";
-/** The other side's counter for a chase type: its obstacle number, +1 each round. */
-const chaseCounter = (type) => ({ ...newCounter(), name: say(`${CHASE}.Other.${type}`), value: CHASE_OTHER[type].start, min: 0, perRound: 1, revealed: true });
+/** A chase's counter: an obstacle number on a track, shown. The GM sets the maximum to the number of obstacles (spec 14.11). */
+const chaseCounter = (name, value, perRound) => ({ ...newCounter(), name: say(`${CHASE}.${name}`), value, min: 0, max: 6, perRound, display: "track", revealed: true });
 const PREP = "SSM.Preset.preparation";
 const awareness = (system) => presetCounter(system, `${INF}.Awareness`, false);
 const edge = (system) => presetCounter(system, `${INF}.Edge`, true);
@@ -215,7 +211,8 @@ export const PRESETS = {
   },
   /**
    * GM Core's Chases. Obstacles are subjects in order, each with a goal in Chase Points that never drop below 0.
-   * The other side is a counter holding its obstacle number, +1 each round; `chase` names it and the chase type.
+   * The party and the other side are counters holding their obstacle numbers, drawn as tracks. The other side moves +1 each round;
+   * the GM moves the party when it clears an obstacle. One obstacle shows at a time. No other chase logic (spec 14.11).
    */
   chase: {
     id: "chase",
@@ -224,8 +221,8 @@ export const PRESETS = {
     names: { pointsName: `${CHASE}.Points`, subjectLabel: `${CHASE}.Subject` },
     categories: [],
     gmNotes: `${CHASE}.GmNotes`,
-    counters: () => [chaseCounter("chaseDown")],
-    chase: (system) => ({ type: "chaseDown", counterId: system.counters[0]?.id ?? "" }),
+    counters: () => [chaseCounter("Party", 1, 0), chaseCounter("Quarry", 2, 1)],
+    multipleSubjects: false,
     subjects: [{
       id: "obstacle",
       // GM Core: about one fewer CP than the party's size. The GM edits it per obstacle.
@@ -348,7 +345,7 @@ export function newChallengeSystem(presetId = DEFAULT_PRESET) {
     counters: preset.counters?.() ?? [],
   };
   if (preset.gmNotes) system.gmNotes = `<p>${say(preset.gmNotes)}</p>`;
-  if (preset.chase) system.chase = preset.chase(system);
+  if (preset.multipleSubjects === false) system.multipleSubjects = false;
   system.subjects = [{ ...newSubject(system), ...(preset.firstSubject ?? {}) }];
   return system;
 }
@@ -395,7 +392,6 @@ export function removeRow(system, path) {
     for (const modifier of subject?.modifiers ?? []) for (const row of modifier.effects) row.skills = row.skills.filter((skill) => !gone.includes(skill));
   } else if (listName === "counters") {
     for (const row of counterEffects(system)) if (row.counterId === removed.id) row.counterId = "";
-    if (system.chase?.counterId === removed.id) system.chase.counterId = "";
   }
   return true;
 }
@@ -431,34 +427,38 @@ export function mergeForm(source, form, path = "") {
 }
 
 /** The parts of the data a form may edit. Run state and the preset never come from a form. */
-export const EDITABLE = ["pointsName", "subjectLabel", "premise", "gmNotes", "rounds", "modifiers", "subjects", "counters", "chase"];
+export const EDITABLE = ["pointsName", "subjectLabel", "premise", "gmNotes", "rounds", "modifiers", "subjects", "counters", "multipleSubjects"];
 
-/** Merge expanded form data into the source's editable parts. A changed chase type updates the other side's counter. */
+/**
+ * Merge expanded form data into the source's editable parts. Without Allow multiple subjects, a subject the form newly reveals
+ * hides the others, as the reveal toggle does (spec 14.12).
+ */
 export function applyForm(system, form) {
-  const before = system.chase?.type;
+  const shown = new Set(system.subjects.filter((subject) => subject.revealed).map((subject) => subject.id));
+  splitCounterShow(form);
   const merged = mergeForm(system, form);
   for (const key of EDITABLE) if (key in merged) system[key] = merged[key];
-  if (system.chase && before && system.chase.type !== before) setChaseType(system, before);
+  const newly = system.subjects.find((subject) => subject.revealed && !shown.has(subject.id));
+  if (newly) revealOnly(system, newly);
 }
 
 /**
- * After a chase's type changes from `before`: if the other side's counter still has the old type's name, it takes the new type's name and starting place.
- * Beat the Clock hides that counter, and sets the round maximum to one round per obstacle if it had none. A counter the GM renamed is left alone.
+ * A counter's Display list in the Edit tab holds its style or Hidden (spec 14.12). Hidden hides it and keeps its style for when it is revealed;
+ * a style shows it in that style. The sheet's eye button still reveals and hides it during a run.
  */
-export function setChaseType(system, before) {
-  const { type } = system.chase;
-  const counter = system.counters.find((row) => row.id === system.chase.counterId);
-  if (type === "beatClock" && system.rounds.max === null) system.rounds.max = system.subjects.length;
-  if (!counter) return;
-  const defaultName = (kind) => (CHASE_OTHER[kind] ? categoryKey(say(`${CHASE}.Other.${kind}`)) : null);
-  const named = categoryKey(counter.name);
-  const isDefault = !named || CHASE_TYPES.some((kind) => defaultName(kind) === named);
-  if (!isDefault) return;
-  if (type === "beatClock") counter.revealed = false;
-  else {
-    Object.assign(counter, { name: say(`${CHASE}.Other.${type}`), value: CHASE_OTHER[type].start });
-    if (before === "beatClock") counter.revealed = true;
+function splitCounterShow(form) {
+  for (const row of Object.values(form?.counters ?? {})) {
+    if (!isPlainObject(row) || !("show" in row)) continue;
+    if (row.show === HIDDEN_DISPLAY) row.revealed = false;
+    else if (COUNTER_DISPLAYS.includes(row.show)) Object.assign(row, { revealed: true, display: row.show });
+    delete row.show;
   }
+}
+
+/** Without Allow multiple subjects, revealing `subject` hides every other subject. With it, nothing changes. */
+export function revealOnly(system, subject) {
+  if (system.multipleSubjects !== false) return;
+  for (const other of system.subjects) if (other !== subject) other.revealed = false;
 }
 
 /** Keep only the named fields of expanded form data, for example "premise" or "subjects.0.name". */

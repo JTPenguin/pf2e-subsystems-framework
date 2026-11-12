@@ -3,7 +3,7 @@
  * A function that returns false changed nothing. No Foundry document calls, so tools/test.mjs can check them.
  */
 
-import { BOTH_WAYS, CHASE_LEAD, CHASE_STUCK, clampTracks, limitTrack, modifierList, nextThresholdReveal, OUTCOMES, skillKey } from "./data.js";
+import { BOTH_WAYS, clampTracks, limitTrack, modifierList, nextThresholdReveal, OUTCOMES, revealOnly, skillKey } from "./data.js";
 
 export { OUTCOMES };
 
@@ -254,7 +254,7 @@ export function resetRun(system) {
     console.warn("pf2e-subsystem-manager | Could not restore a challenge's start values", error);
   }
   if (system.rounds.max !== null) system.rounds.max = Math.max(1, system.rounds.max - (system.run.roundsAdded ?? 0));
-  Object.assign(system.run, { status: "inactive", acted: [], roundHistory: [], appliedRolls: [], receivedRolls: [], baseline: null, roundsAdded: 0, chase: null });
+  Object.assign(system.run, { status: "inactive", acted: [], roundHistory: [], appliedRolls: [], receivedRolls: [], baseline: null, roundsAdded: 0 });
 }
 
 /* -------------------------------------------- */
@@ -375,6 +375,7 @@ export function toggleReveal(system, id) {
   if (!entry) return false;
   if (system.counters.includes(entry)) rememberCounter(system, entry);
   entry.revealed = !entry.revealed;
+  if (entry.revealed && system.subjects.includes(entry)) revealOnly(system, entry);
 }
 
 /* -------------------------------------------- */
@@ -553,70 +554,6 @@ export function undoApply(system, record) {
   if (action) action.given = Math.max(0, action.given - (record.given ?? 0));
   system.run.appliedRolls = system.run.appliedRolls.filter((id) => id !== record.rollId);
   syncBothWays(system);
-}
-
-/* -------------------------------------------- */
-/*  Chases                                       */
-/* -------------------------------------------- */
-
-export const isChase = (system) => system.preset === "chase" && !!system.chase;
-
-/** The party's obstacle in a chase: the first in order that isn't Complete, or null once every one is. Its `index` is its place in the order. */
-export function currentObstacle(system) {
-  const index = system.subjects.findIndex((subject) => !isComplete(subject));
-  return index < 0 ? null : { subject: system.subjects[index], index };
-}
-
-/** The other side's counter in a chase, or null in Beat the Clock or when it was removed. */
-export const chaseCounterOf = (system) => (isChase(system) && system.chase.type !== "beatClock" ? system.counters.find((counter) => counter.id === system.chase.counterId) ?? null : null);
-
-/**
- * Where a chase stands. Positions are obstacle numbers from 1; past the last obstacle is `total` + 1.
- * `position` is the party's: the first obstacle not Complete. `other` is the other side's counter value, or null.
- * `end` is how it has ended, or "": the party "caught" the quarry, the quarry "escaped", the party was "caught" by pursuers or "escaped" them,
- * the party "cleared" the course in Beat the Clock, or the party "won" or the rival "lost" them a competitive chase.
- * Run Away's lead of three obstacles is checked only at the end of a round, in settleChase.
- */
-export function chaseStatus(system) {
-  const total = system.subjects.length;
-  const current = currentObstacle(system);
-  const position = current ? current.index + 1 : total + 1;
-  const counter = chaseCounterOf(system);
-  const other = counter ? counter.value : null;
-  const type = system.chase.type;
-  let end = "";
-  if (type === "chaseDown") end = other !== null && position >= other ? "caughtQuarry" : other !== null && other > total ? "quarryEscaped" : "";
-  else if (type === "runAway") end = position > total ? "escaped" : other !== null && other >= position ? "caught" : "";
-  else if (type === "beatClock") end = position > total ? "cleared" : "";
-  else if (type === "competitive") end = position > total ? "won" : other !== null && other > total ? "rivalWon" : "";
-  return { type, total, position, other, counter: counter?.name ?? "", obstacle: current?.subject ?? null, end };
-}
-
-/**
- * Bring a running chase's notices up to date after any change. It keeps `run.chase`: the party's position, the round it got there,
- * the round last seen and how the chase ended, so each notice comes once. Returns notices, each { key, data }:
- * the chase's end; and when a round has moved on, Run Away's lead, an obstacle the party has been stuck on for three rounds,
- * the competitive chase's initiative reminder, and Beat the Clock's last round. Not a chase, or not running: no notices.
- */
-export function settleChase(system) {
-  if (!isChase(system) || system.run.status !== "active") return [];
-  const status = chaseStatus(system);
-  const round = system.rounds.current;
-  const last = system.run.chase ?? { position: status.position, since: round, round, end: "" };
-  const advanced = round > last.round;
-  const notices = [];
-  const since = status.position !== last.position ? round : round < last.since ? round : last.since;
-  // The lead ends a chase at the end of a round, so it holds until that round is taken back.
-  let end = status.end || (last.end === "lead" && round >= last.round ? "lead" : "");
-  if (advanced && !end && status.type === "runAway" && status.other !== null && status.position - status.other >= CHASE_LEAD) end = "lead";
-  if (advanced && !end) {
-    if (status.obstacle && round - since === CHASE_STUCK) notices.push({ key: "SSM.Chase.Notice.Stuck", data: { rounds: CHASE_STUCK, obstacle: status.obstacle.name || `${system.subjectLabel} ${status.position}`.trim() } });
-    if (status.type === "competitive") notices.push({ key: "SSM.Chase.Notice.Initiative", data: {} });
-    if (status.type === "beatClock" && system.rounds.max !== null && round === system.rounds.max) notices.push({ key: "SSM.Chase.Notice.LastRound", data: {} });
-  }
-  if (end && end !== last.end) notices.unshift({ key: `SSM.Chase.End.${end}`, data: { other: status.counter } });
-  system.run.chase = { position: status.position, since, round, end };
-  return notices;
 }
 
 /* -------------------------------------------- */

@@ -413,7 +413,7 @@ A preset is a starting template: its names, and what a new challenge and a new s
 | **Victory Points** (blank) | Victory Points, Subject | Suggested category: Modifier. One action, "Check", with no rows. Outcomes: +2, +1, 0, −1 points. |
 | **Influence** | Influence Points, NPC | Suggested categories: Resistance, Weakness, Other. Revealed. Discover: secret, Perception always shown, outcomes are the three reminder notes. Influence: Deception, Diplomacy and Intimidation always shown, outcomes +2, +1, 0, −1 points. |
 | **Infiltration** | Infiltration Points, Obstacle | Suggested categories: Opportunity, Complication. Counters: Awareness Points (shown, +1 each round, minimum 0, GM Core's tiers at 5 (DC +1), 10 (complication), 15 (DC +1 more, +2 in total) and 20 (fails)) and Edge Points (per PC, shown). Three Add buttons: **Obstacle** (goal 2; Overcome with no checks; +2 or +1 points, +1 or +2 Awareness); **Complication** (no points; Overcome; success is a note, +1 or +2 Awareness); **Opportunity** (no points; Attempt; success notes). The first obstacle starts revealed, later subjects hidden. |
-| **Chase** | Chase Points, Obstacle | No suggested categories. GM notes hold GM Core's reminders (passing costs 1 CP, extra CP don't carry over). A **Chase** box in the Edit tab sets the type (Chase Down, Run Away, Beat the Clock, Competitive) and the counter that is the other side. A new chase is Chase Down with a Quarry counter at obstacle 2, +1 each round, minimum 0, shown. A new obstacle: goal 3, minimum 0, Overcome with no checks, +2, +1, 0, −1 points. The first obstacle starts revealed, later ones hidden. See 14.11. |
+| **Chase** | Chase Points, Obstacle | No suggested categories. Allow multiple subjects is off. GM notes hold GM Core's reminders and how to set up each chase type. Counters: Party at 1 and Quarry at 2, +1 each round; both minimum 0, maximum 6, Track display, shown. A new obstacle: goal 3, minimum 0, Overcome with no checks, +2, +1, 0, −1 points. The first obstacle starts revealed, later ones hidden. See 14.11. |
 | **Infiltration Preparation** | Edge Points, Preparation | Run before the infiltration; the GM types its results in. Counters: Edge Points (per PC, shown) and Awareness Points (hidden). One revealed subject with no points and GM Core's six activities as actions, every check always shown, secret where the rules say. A dud or cursed Edge Point still adds to Edge, and its row's note tells the GM to write it in the PC's note. No suggested categories. |
 
 A preset can offer several **subject templates**, one Add button each; the first is named by the subject label. A template's outcome rows find the preset's counters by name, else the first counter of the same kind (Justin, 2026-11-11).
@@ -536,7 +536,7 @@ The module isn't in real use yet (Justin, 2026-11-11), so nothing is converted. 
 
 ### 14.10 Left to the preset items
 
-- Chase: built as the Chase preset (14.6, 14.11). Not built: split paths, shortcuts and solo chases.
+- Chase: built as the Chase preset, data only (14.6, 14.11, 14.12). Not built: split paths, shortcuts and solo chases.
 - Infiltration: built as the Infiltration and Infiltration Preparation presets (14.6). Not built: several objectives in sequence, and group checks that pass when half the party succeeds.
 - Research: nothing new. Research Points are a counter; each area is a subject that tracks no points, with a maximum on its action.
 - Enemy Victory Points need nothing new: a counter, changed by outcome rows.
@@ -544,17 +544,43 @@ The module isn't in real use yet (Justin, 2026-11-11), so nothing is converted. 
 
 ### 14.11 Chases
 
-**Status:** decided with Justin, 2026-11-11; built 2026-11-11. Rules: GM Core, [Chases](https://2e.aonprd.com/Rules.aspx?ID=3049).
+**Status:** decided with Justin, 2026-11-11; cut back to data only, 2026-11-12. Rules: GM Core, [Chases](https://2e.aonprd.com/Rules.aspx?ID=3049).
+
+Chase is a preset and nothing more: no code checks for it. The GM does by eye what the first build automated (Justin, 2026-11-12).
 
 | Topic | Decision |
 |---|---|
-| Obstacles | Subjects, in the GM's order. The party's obstacle is the first one not Complete. Its goal is the CP it needs. |
-| The other side | A counter holding its obstacle number, +1 each round; the GM nudges it by hand on hard obstacles (Justin). |
-| Changing the type | If the other side's counter still has a type's default name, it takes the new type's name and start: Quarry at 2, Pursuers at 0, Rival at 1. Beat the Clock hides it and, with no round maximum, sets one round per obstacle. A renamed counter is left alone. |
-| Panel | Only the party's obstacle, and only once it is revealed: clearing one brings up the next the GM has revealed (Justin). Above it, a progress track: one slot per obstacle (a hidden one shows "?" and no name), a finish flag, and a start slot when the other side is behind obstacle 1. Markers show the party and, while its counter is revealed, the other side. The other side's counter is left out of the panel's counter list. |
-| Sheet | Run mode's strip gets a Chase line: the type, the party's obstacle, the other side's, and how it ended. |
-| Notices to the GM | After any change, once each: the chase's end. When a round moves on: Run Away's three-obstacle lead (which ends it), three rounds stuck on one obstacle, Competitive's roll-initiative reminder, and Beat the Clock's last round. End notices stay until dismissed. |
-| How each type ends | Chase Down: the party reaches the quarry's obstacle, or the quarry gets past the last. Run Away: the party gets past the last obstacle, or three ahead at the end of a round; the pursuers reach the party's obstacle. Beat the Clock: every obstacle cleared. Competitive: whoever gets past the last obstacle first. |
+| Obstacles | Subjects, in the GM's order. Allow multiple subjects is off, so revealing the next obstacle hides the cleared one (14.12). |
+| The party and the other side | Two counters holding obstacle numbers, drawn as tracks (14.12). The other side moves +1 each round; the GM nudges it on hard obstacles. The GM adds 1 to Party when an obstacle clears. The GM sets both maximums to the number of obstacles. |
+| Chase types | No type field. GM notes say how to set up each: Run Away renames Quarry to Pursuers at 0, Competitive to Rival at 1, Beat the Clock hides it and sets a round maximum. |
+| Ending, being stuck, initiative | The GM's call, from the counters. GM notes list GM Core's end conditions and reminders. No notices. |
 | Passing | The GM lowers the obstacle's points with −. |
 | Saves and attacks | Saves are check rows. Attacks and spells are the GM's: pick a degree on the roll card or change points by hand. |
 | Not built | Split paths, shortcuts and solo chases. |
+
+### 14.12 One subject at a time and counter displays
+
+**Status:** decided with Justin, 2026-11-12; built 2026-11-12. Generic features that replace the first Chase build's custom logic.
+
+**Allow multiple subjects.** A challenge checkbox in the Edit tab's Names box, with a tooltip.
+
+| Rule | Detail |
+|---|---|
+| On (default) | Any number of subjects can be revealed. |
+| Off | Revealing a subject, by the eye button or the Edit tab, hides every other subject. Hiding one reveals nothing. Turning it off changes nothing until the next reveal. |
+| Panel | Unchanged: it shows the revealed subjects. A subject keeps its place for a stand-in name ("Obstacle 3"). |
+
+**Counter display.** One Display list per counter in the Edit tab. It replaces the counter's Revealed checkbox.
+
+| Choice | Panel |
+|---|---|
+| Hidden | Not on the panel. It sets `revealed` and keeps the style, so the Run-mode eye button brings the counter back as it was. |
+| Auto (default) | A bar with thresholds or a both-ways range, else a number: the rule before this section. |
+| Number | Name and value on the shared line. |
+| Bar | The progress bar with its threshold card. |
+| Steps | One segment per value above the minimum, filled up to the value, like the round counter. |
+| Track | One slot per value from the minimum to the maximum, with the value's slot marked. |
+
+- Steps and Track count from the minimum (0 when unset; −maximum for a both-ways counter) to the maximum. Without a maximum, or with more than 40 slots, they draw as a bar. Steps on a both-ways counter draws as a bar.
+- A revealed threshold marks its slot; a reached one in another colour. Hidden thresholds leave no mark.
+- A per-PC counter offers only Shown and Hidden: it keeps its per-PC rows.
