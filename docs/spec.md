@@ -553,13 +553,13 @@ Chase is a preset and nothing more: no code checks for it. The GM does by eye wh
 | Points name | The name a subject's new counter gets, from the preset or the Add counter button. |
 | Tracks points, Individual | Removed. A subject with no counters holds only actions; a per-PC counter on the subject replaces Individual. |
 | Thresholds | Live on the subject's counters. A DC change on one applies to that subject's checks only. The GM gets a notice when one is reached, as for a challenge counter. |
-| Change each round | Not offered: only challenge counters change each round. |
+| Change each round | Offered, as on a challenge counter: Next round adds it and Previous round takes it back (Justin, 2026-11-12). |
 | Revealed | Each counter has its own, on by default. Players see it only while its subject is revealed too. |
 | Removed fields | The subject's `points`, `pointsBy`, `direction`, `min`, `max`, `goal`, `completeBy`, `tracksPoints`, `individual` and `thresholds`. No conversion (14.9). |
 
 | Where | What it shows |
 |---|---|
 | Sheet, Run mode | The subject's counters under its header, each as a challenge counter is: eye, name and limits, + and −, per-PC rows, thresholds. Complete is always in the header. |
-| Sheet, Edit mode | A Counters box under the subject's name, like the challenge's, without Change each round. |
+| Sheet, Edit mode | A Counters box under the subject's name, the same as the challenge's. |
 | Panel | Each revealed counter in the subject's column, under its name, in its display style: bar, steps, track, per-PC rows or a number. |
 

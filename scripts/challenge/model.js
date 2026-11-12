@@ -56,7 +56,7 @@ const counterFields = () => ({
   direction: choice(DIRECTIONS, "up"),
   min: optionalInt(),
   max: optionalInt(),
-  // Added to the value each time the round advances. Only a challenge counter offers it.
+  // Added to the value each time the round advances, on a subject's counter too.
   perRound: int(),
   // One value per party PC, by actor id, each starting from `value` (spec 14.8).
   perPc: flag(),

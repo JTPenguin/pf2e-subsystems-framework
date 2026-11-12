@@ -230,12 +230,12 @@ export const canAdvanceRound = (system) => system.run.status === "active" && (sy
 /** Whether Previous round does anything: there is an advance to undo. */
 export const canUndoRound = (system) => system.run.status === "active" && system.run.roundHistory.length > 0;
 
-/** Move to the next round. Each challenge counter with a change each round takes it; a per-PC counter and a subject's counter have none (spec 14.13). Returns the counter thresholds reached, as notices. */
+/** Move to the next round. Each counter with a change each round takes it, a subject's included; a per-PC counter has none (spec 14.13). Returns the counter thresholds reached, as notices. */
 export function advanceRound(system) {
   if (!canAdvanceRound(system)) return false;
   const out = { triggers: [], reached: [] };
   const counters = {};
-  for (const counter of system.counters) {
+  for (const counter of allCounters(system)) {
     if (!counter.perRound || counter.perPc) continue;
     const before = counter.value;
     if (adjustCounter(system, counter, counter.perRound, out)) counters[counter.id] = before;
@@ -252,7 +252,7 @@ export function undoRound(system) {
   const last = system.run.roundHistory.pop();
   system.rounds.current = last.round;
   system.run.acted = last.acted;
-  for (const counter of system.counters) {
+  for (const counter of allCounters(system)) {
     if (counter.id in (last.counters ?? {})) counter.value = last.counters[counter.id];
     if (counter.direction === BOTH_WAYS) settleThresholds(counter.thresholds, BOTH_WAYS, counter.value);
     else for (const threshold of counter.thresholds) if ((last.reached ?? []).includes(threshold.id)) threshold.reached = false;

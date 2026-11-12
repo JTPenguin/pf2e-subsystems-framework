@@ -220,8 +220,7 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
     this.#actionHtml = actionHtml;
     // A both-ways track's Reached follows its value, so its checkbox is left out.
     const thresholds = (rows, path, direction) => rows.map((row, i) => ({ ...row, path: `${path}.thresholds.${i}`, followsValue: direction === BOTH_WAYS }));
-    // A subject's counter has no change each round (spec 14.13).
-    const counterEdit = (counter, path, onSubject) => ({ ...counter, path, onSubject, thresholds: thresholds(counter.thresholds, path, counter.direction) });
+    const counterEdit = (counter, path) => ({ ...counter, path, thresholds: thresholds(counter.thresholds, path, counter.direction) });
     const subjectView = (subject, n) => {
       const path = `subjects.${n}`;
       return {
@@ -231,7 +230,7 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
         canRemove: system.subjects.length > 1,
         canMoveUp: n > 0,
         canMoveDown: n < system.subjects.length - 1,
-        counters: subject.counters.map((counter, i) => counterEdit(counter, `${path}.counters.${i}`, true)),
+        counters: subject.counters.map((counter, i) => counterEdit(counter, `${path}.counters.${i}`)),
         actions: subject.actions.map((action, a) => ({
           ...action,
           path: `${path}.actions.${a}`,
@@ -260,7 +259,7 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
       removeSubjectLabel: game.i18n.format("SSM.Challenge.RemoveSubject", { subject: subjectLabel }),
       premiseHtml: await enrich(system.premise),
       gmNotesHtml: await enrich(system.gmNotes),
-      counters: system.counters.map((counter, i) => counterEdit(counter, `counters.${i}`, false)),
+      counters: system.counters.map((counter, i) => counterEdit(counter, `counters.${i}`)),
       challengeModifierGroups,
       subjects,
       activeSubject: subjects.find((subject) => subject.id === this.#tab) ?? null,

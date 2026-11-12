@@ -545,11 +545,16 @@ test("a subject can hold several counters, a per-PC one among them, or none", ()
   assert.equal(Run.changeCounter(s, sub(s).id, 1), false, "a subject is not a counter");
 });
 
-test("Next round leaves a subject's counters alone, even with a change each round", () => {
+test("a subject's counter takes its change each round on Next round, with notices, and Previous round takes it back", () => {
   const s = running();
   pts(s).perRound = 2;
+  const { triggers } = Run.advanceRound(s);
+  assert.deepEqual([pts(s).value, pts(s).thresholds.map((t) => t.reached), triggers.map((row) => row.value)], [3, [true, false], [2]]);
+  Run.undoRound(s);
+  assert.deepEqual([pts(s).value, pts(s).thresholds.map((t) => t.reached)], [1, [false, false]]);
+  Object.assign(pts(s), { perPc: true, valueBy: { a1: 4 } });
   Run.advanceRound(s);
-  assert.equal(pts(s).value, 1);
+  assert.deepEqual([pts(s).value, pts(s).valueBy], [1, { a1: 4 }], "a per-PC counter has no change each round");
 });
 
 test("the Reached tag toggles a threshold both ways on a subject's counter or a challenge counter, and a counter moving back never clears it", () => {

@@ -95,7 +95,7 @@
       {{/each}}
       {{#each thresholds}}{{> ssmThresholdRun root=../root}}{{/each}}
       </div>{{/inline}}
-{{!-- A counter in Edit mode, the challenge's or a subject's. Only a challenge counter has a change each round. --}}
+{{!-- A counter in Edit mode, the challenge's or a subject's. --}}
 {{#*inline "ssmCounterEdit"}}<div class="ssm-card ssm-counter-edit">
         <div class="ssm-row">
           <label class="grow">{{localize "SSM.Challenge.Name"}}<input type="text" name="{{path}}.name" value="{{name}}"></label>
@@ -108,7 +108,7 @@
         <div class="ssm-row">
           <label>{{localize "SSM.Challenge.Minimum"}}<input type="number" step="1" name="{{path}}.min" value="{{min}}" placeholder="{{localize "SSM.Challenge.NoLimit"}}"></label>
           <label>{{localize "SSM.Challenge.Maximum"}}<input type="number" step="1" name="{{path}}.max" value="{{max}}" placeholder="{{localize "SSM.Challenge.NoLimit"}}"></label>
-          {{#unless perPc}}{{#unless onSubject}}<label data-tooltip="SSM.Challenge.PerRoundHint">{{localize "SSM.Challenge.PerRound"}}<input type="number" step="1" name="{{path}}.perRound" value="{{perRound}}"></label>{{/unless}}{{/unless}}
+          {{#unless perPc}}<label data-tooltip="SSM.Challenge.PerRoundHint">{{localize "SSM.Challenge.PerRound"}}<input type="number" step="1" name="{{path}}.perRound" value="{{perRound}}"></label>{{/unless}}
           <label class="check" data-tooltip="SSM.Challenge.PerPcHint"><input type="checkbox" name="{{path}}.perPc" {{checked perPc}}>{{localize "SSM.Challenge.PerPc"}}</label>
         </div>
         {{#unless perPc}}

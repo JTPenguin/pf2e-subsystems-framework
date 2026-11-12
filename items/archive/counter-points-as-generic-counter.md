@@ -8,7 +8,7 @@ blocked_by: [remove-roll-card-point-automation]
 source: "Justin's list of items, 2026-11-12; interview with Justin, 2026-11-12"
 added: 2026-11-12
 updated: 2026-11-12
-outcome: "Built 2026-11-12 as spec 14.13. Subjects hold counters on the sheet and panel; presets rebuilt; 117 tests pass; checked live as GM and as a player. The three open points used the proposed answers: no change each round on subject counters, own Revealed (on by default), threshold DC changes apply to that subject's checks."
+outcome: "Built 2026-11-12 as spec 14.13. Subjects hold counters on the sheet and panel; presets rebuilt; 117 tests pass; checked live as GM and as a player. Open points: subject counters have Change each round (Justin, 2026-11-12, overriding the proposed no), own Revealed (on by default), threshold DC changes apply to that subject's checks."
 ---
 # Subjects own counters instead of one points track
 
