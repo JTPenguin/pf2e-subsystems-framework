@@ -314,11 +314,12 @@ const getPath = (object, path) => path.split(".").reduce((value, key) => value?.
 const allChecks = (subject) => subject.actions.flatMap((action) => action.checks);
 
 /** Add a new row to the list at listPath, for example "subjects.0.actions.1.checks". A new subject comes from the preset's `template`. Returns the row. */
-export function addRow(system, listPath, template) {
+/** Add a row to the list at listPath. `fields` sets starting values on the new row, for example a modifier's category. */
+export function addRow(system, listPath, template, fields = {}) {
   const list = getPath(system, listPath);
   const make = /^subjects\.\d+\.counters$/.test(listPath) ? newSubjectCounter : FACTORIES[listPath.split(".").at(-1)];
   if (!Array.isArray(list) || !make) throw new Error(`Not a list: ${listPath}`);
-  const row = make(system, template);
+  const row = Object.assign(make(system, template), fields);
   list.push(row);
   return row;
 }

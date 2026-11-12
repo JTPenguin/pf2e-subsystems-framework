@@ -279,6 +279,8 @@ test("addRow picks the right row for each list, and a new subject follows the pr
   const own = D.addRow(s, "subjects.0.counters");
   assert.deepEqual([own.name, own.revealed, own.perRound, own.thresholds], ["SSM.Preset.influence.Points", true, 0, []], "a subject's new counter takes the points name and starts shown");
   assert.equal(D.addRow(s, "subjects.0.modifiers").effects.length, 1, "a new modifier starts with one effect");
+  assert.equal(D.addRow(s, "subjects.0.modifiers", undefined, { category: "Leverage" }).category, "Leverage", "a category's + starts the modifier in that category");
+  assert.equal(D.addRow(s, "modifiers").category, "", "the section's + leaves the category blank");
   assert.equal(D.addRow(s, "subjects.0.modifiers.0.effects").type, "note");
   assert.deepEqual(D.addRow(s, "subjects.0.actions").checks, []);
   assert.deepEqual(D.addRow(s, "counters").thresholds, []);

@@ -502,10 +502,11 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
   }
 
   static async #onAddRow(event, target) {
-    const { list, template } = target.dataset;
+    const { list, template, category } = target.dataset;
     let added;
     await this.#edit((system) => {
-      added = addRow(system, list, template);
+      // A modifier category's + starts the new entry in that category.
+      added = addRow(system, list, template, category ? { category } : {});
     });
     if (list === "subjects") {
       this.#tab = added.id;
