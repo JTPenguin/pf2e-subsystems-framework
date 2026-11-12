@@ -250,11 +250,30 @@ export function groupByCategory(system, rows, { withSuggestions = false, keep = 
   return [blank, ...groups].filter((group) => group.rows.length || (group.key && kept.has(group.key)));
 }
 
-/** Move a subject one place up (−1) or down (+1) in the challenge's order (spec 14.8). Returns false at either end. */
+/**
+ * Subjects grouped by category (spec 14.4): the blank category first, then the labelled ones in subject category order, each in stored order.
+ * Each group is { key, label, items }. `items` defaults to the subjects; pass a list in step with them, such as their views, to group that.
+ * A category with no subjects is left out.
+ */
+export function subjectGroups(system, items = system.subjects) {
+  const groups = [{ key: "", label: "" }, ...subjectCategoryOrder(system)].map(({ key, label }) => ({ key, label, items: [] }));
+  const byKey = new Map(groups.map((group) => [group.key, group]));
+  items.forEach((item, i) => byKey.get(categoryKey(system.subjects[i].category)).items.push(item));
+  return groups.filter((group) => group.items.length);
+}
+
+/** Put the stored subjects in grouped order, so the panel's columns follow Run view (spec 14.4). Within a category the order stays. */
+export function sortSubjects(system) {
+  system.subjects = subjectGroups(system).flatMap((group) => group.items);
+}
+
+/** Move a subject one place up (−1) or down (+1) in the challenge's order (spec 14.8), within its category. Returns false at either end of its group. */
 export function moveSubject(system, subjectId, delta) {
+  sortSubjects(system);
   const from = system.subjects.findIndex((subject) => subject.id === subjectId);
   const to = from + delta;
   if (from < 0 || to < 0 || to >= system.subjects.length) return false;
+  if (categoryKey(system.subjects[to].category) !== categoryKey(system.subjects[from].category)) return false;
   const [subject] = system.subjects.splice(from, 1);
   system.subjects.splice(to, 0, subject);
 }
@@ -358,8 +377,13 @@ export const EDITABLE = ["pointsName", "subjectLabel", "premise", "gmNotes", "ro
  */
 export function applyForm(system, form) {
   const shown = new Set(system.subjects.filter((subject) => subject.revealed).map((subject) => subject.id));
+  const categories = new Map(system.subjects.map((subject) => [subject.id, categoryKey(subject.category)]));
   const merged = mergeForm(system, form);
   for (const key of EDITABLE) if (key in merged) system[key] = merged[key];
+  // A subject whose category changed moves to the end of its new group (spec 14.4).
+  const moved = system.subjects.filter((subject) => categories.has(subject.id) && categories.get(subject.id) !== categoryKey(subject.category));
+  if (moved.length) system.subjects = [...system.subjects.filter((subject) => !moved.includes(subject)), ...moved];
+  sortSubjects(system);
   const newly = system.subjects.find((subject) => subject.revealed && !shown.has(subject.id));
   if (newly) revealOnly(system, newly);
 }

@@ -1,4 +1,4 @@
-import { EDITABLE } from "./data.js";
+import { EDITABLE, sortSubjects } from "./data.js";
 import { receiveRoll, syncBothWays, triggerKey } from "./run.js";
 
 const queues = new Map();
@@ -11,6 +11,8 @@ export function writeChallenge(page, change, options = {}) {
     if (result === false) return false;
     // A both-ways track's Reached follows its value, whatever changed it: a hand change, a round advance or a form edit (spec 14.8).
     syncBothWays(system);
+    // The stored subjects stay in grouped order, whatever changed them (spec 14.4).
+    sortSubjects(system);
     const update = Object.fromEntries([...EDITABLE, "run"].map((key) => [key, system[key]]));
     await page.update({ system: update }, options);
     return result;

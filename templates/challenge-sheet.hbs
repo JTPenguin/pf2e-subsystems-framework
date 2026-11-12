@@ -174,17 +174,22 @@
     </section>
     {{/if}}
 
-    {{#each subjects as |subject|}}
-    <section class="ssm-subject ssm-block {{#unless subject.revealed}}ssm-subject-hidden{{/unless}} {{#if subject.collapsed}}ssm-collapsed{{/if}}">
-      <header class="ssm-block-head">
+    {{!-- Subjects by category (spec 14.4): the blank category's cards first with no bar, then a red bar per category with its subjects as cards. --}}
+    {{#each subjectGroups as |group|}}
+    {{#if group.heading}}<section class="ssm-block ssm-subject-category">
+      <header class="ssm-block-head"><h3>{{group.heading}}</h3></header>
+    {{/if}}
+    {{#each group.subjects as |subject|}}
+    <section class="ssm-subject ssm-subject-card {{#unless subject.revealed}}ssm-subject-hidden{{/unless}} {{#if subject.collapsed}}ssm-collapsed{{/if}}">
+      <header class="ssm-block-head ssm-card-head">
         <button type="button" class="icon fa-solid {{#if subject.collapsed}}fa-chevron-right{{else}}fa-chevron-down{{/if}} ssm-collapse" data-action="toggleCollapse" data-subject="{{subject.id}}" aria-expanded="{{#if subject.collapsed}}false{{else}}true{{/if}}" aria-label="{{localize "SSM.Challenge.Collapse"}}" data-tooltip="SSM.Challenge.Collapse"></button>
-        {{> ssmEye subject root=..}}
+        {{> ssmEye subject root=../..}}
         <h3>{{subject.name}}</h3>
-        {{> ssmComplete subject root=..}}
+        {{> ssmComplete subject root=../..}}
         {{> ssmOrder subject}}
       </header>
       {{#if subject.descriptionHtml}}<div class="ssm-subject-description">{{{subject.descriptionHtml}}}</div>{{/if}}
-      {{#if subject.counters.length}}<div class="ssm-subject-counters">{{#each subject.counters}}{{> ssmCounterRun root=../..}}{{/each}}</div>{{/if}}
+      {{#if subject.counters.length}}<div class="ssm-subject-counters">{{#each subject.counters}}{{> ssmCounterRun root=../../..}}{{/each}}</div>{{/if}}
       {{#if subject.actions.length}}
       <div class="ssm-section">
         {{> ssmSubsectionHead label=(localize "SSM.Challenge.Actions")}}
@@ -193,7 +198,7 @@
           <div class="ssm-skill-line">
             {{#if descriptionHtml}}<button type="button" class="ssm-stat-label ssm-action-toggle" data-action="toggleAction" data-id="{{id}}" aria-expanded="{{#if open}}true{{else}}false{{/if}}"><i class="fa-solid {{#if open}}fa-chevron-down{{else}}fa-chevron-right{{/if}} ssm-action-chevron" aria-hidden="true"></i>{{label}}{{#if secret}} <i class="fa-solid fa-user-secret" data-tooltip="SSM.Challenge.SecretHint" aria-label="{{localize "SSM.Challenge.Secret"}}"></i>{{/if}}</button>
             {{else}}<span class="ssm-stat-label">{{label}}{{#if secret}} <i class="fa-solid fa-user-secret" data-tooltip="SSM.Challenge.SecretHint" aria-label="{{localize "SSM.Challenge.Secret"}}"></i>{{/if}}</span>{{/if}}
-            <span class="ssm-skill-grid">{{#each checks}}{{> ssmSkillChip root=../../..}}{{/each}}</span>
+            <span class="ssm-skill-grid">{{#each checks}}{{> ssmSkillChip root=../../../..}}{{/each}}</span>
           </div>
           {{#if open}}<div class="ssm-action-description ssm-run-description">{{{descriptionHtml}}}</div>{{/if}}
         </div>
@@ -203,10 +208,12 @@
       {{#if subject.modifierGroups.length}}
       <div class="ssm-section">
         {{> ssmSubsectionHead label=(localize "SSM.Challenge.Modifiers")}}
-        {{> ssmRunModGroups groups=subject.modifierGroups root=..}}
+        {{> ssmRunModGroups groups=subject.modifierGroups root=../..}}
       </div>
       {{/if}}
     </section>
+    {{/each}}
+    {{#if group.heading}}</section>{{/if}}
     {{/each}}
 
     {{#if counters.length}}
@@ -223,6 +230,7 @@
   <nav class="ssm-tabs">
     <button type="button" data-action="selectTab" data-tab="challenge" class="{{#if onChallengeTab}}active{{/if}}">{{localize "SSM.Challenge.Challenge"}}</button>
     {{#each tabs}}
+    {{#if groupLabel}}<span class="ssm-tab-group">{{groupLabel}}</span>{{/if}}
     <button type="button" data-action="selectTab" data-tab="{{id}}" class="{{#if active}}active{{/if}}">{{label}}</button>
     {{/each}}
     <button type="button" class="ssm-add" data-action="addRow" data-list="subjects"><i class="fa-solid fa-plus" inert></i> {{addSubjectLabel}}</button>

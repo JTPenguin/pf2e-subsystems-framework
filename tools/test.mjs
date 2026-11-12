@@ -1433,6 +1433,48 @@ test("subject categories suggest the preset's, then those in use, apart from mod
   assert.deepEqual(D.subjectCategoryOrder(system()).map((row) => row.label), [], "a preset with no subject categories suggests none");
 });
 
+test("subjects group by category, blank first, and the stored order follows (spec 14.4)", () => {
+  const s = presetSystem("infiltration");
+  const [first] = s.subjects;
+  const opp = D.addRow(s, "subjects", { category: "SSM.Preset.infiltration.SubjectCategory.opportunity" });
+  const post = D.addRow(s, "subjects", { category: "Guard Post" });
+  const obstacle = D.addRow(s, "subjects", { category: "SSM.Preset.infiltration.SubjectCategory.obstacle" });
+  const blank = D.addRow(s, "subjects");
+  assert.deepEqual(D.subjectGroups(s).map((group) => [group.label, group.items.map((row) => row.id)]), [
+    ["", [first.id, blank.id]],
+    ["SSM.Preset.infiltration.SubjectCategory.obstacle", [obstacle.id]],
+    ["SSM.Preset.infiltration.SubjectCategory.opportunity", [opp.id]],
+    ["Guard Post", [post.id]],
+  ], "blank first, then the preset's order, then others; empty categories left out");
+  D.sortSubjects(s);
+  assert.deepEqual(s.subjects.map((row) => row.id), [first.id, blank.id, obstacle.id, opp.id, post.id]);
+  const views = s.subjects.map((row) => row.id);
+  assert.deepEqual(D.subjectGroups(s, views)[0].items, [first.id, blank.id], "groups any list in step with the subjects");
+});
+
+test("a subject whose category changes moves to the end of its new group", () => {
+  const s = presetSystem("infiltration");
+  const obstacle = "SSM.Preset.infiltration.SubjectCategory.obstacle";
+  const a = D.addRow(s, "subjects", { category: obstacle });
+  D.sortSubjects(s);
+  const [first] = s.subjects;
+  D.applyForm(s, { subjects: { 0: { category: ` ${obstacle.toLowerCase()} ` } } });
+  assert.deepEqual(s.subjects.map((row) => row.id), [a.id, first.id], "joins the end of the group, matched by case and spaces");
+  D.applyForm(s, { subjects: { 0: { name: "Gate" } } });
+  assert.deepEqual(s.subjects.map((row) => row.id), [a.id, first.id], "other edits keep the order");
+});
+
+test("subjects move up and down only within their category", () => {
+  const s = system();
+  const [a] = s.subjects;
+  const b = D.addRow(s, "subjects", { category: "Hard" });
+  const c = D.addRow(s, "subjects", { category: "Hard" });
+  assert.equal(D.moveSubject(s, a.id, 1), false, "can't move past the end of the blank group");
+  assert.equal(D.moveSubject(s, b.id, -1), false, "can't move into another category");
+  D.moveSubject(s, b.id, 1);
+  assert.deepEqual(s.subjects.map((row) => row.id), [a.id, c.id, b.id]);
+});
+
 test("Awareness Points rise each round and by hand, and their tiers raise every DC by 1, then 2 in total", () => {
   const s = presetSystem("infiltration");
   const [ap] = s.counters;

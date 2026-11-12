@@ -368,6 +368,8 @@ Run mode keeps its layout. Changes:
 - A subject's counters sit under its header, each with + and −, as the challenge's do (14.13).
 - A counter with thresholds shows them as cards, like a subject's.
 - Subjects can be moved up and down, and collapsed (14.8). A per-PC counter lists each party PC, with the party total (14.8).
+- **Subjects group by category** (Justin, 2026-11-12). Each subject is a collapsible card. Uncategorised cards come first with no heading; then each category in use has a red section bar with its subjects' cards under it, in subject category order (14.6). A category bar doesn't collapse. A subject moves up and down only within its category.
+- The stored subject list keeps this grouped order, so the panel's columns follow it. A subject whose category changes moves to the end of its new group.
 
 Edit mode changes:
 
@@ -375,6 +377,7 @@ Edit mode changes:
 - Each subject has the description, and a Counters box like the challenge's (14.13).
 - Each action is a card: its name, Secret and description, then its checks as an inline table. The description is rich text, like an item's, so it can hold the action's degrees of success. Its secret blocks are the GM's alone.
 - Counters have direction, change each round, and thresholds in place of triggers.
+- The subject tabs follow the grouped order, with a small category label before each group's first tab.
 
 ### 14.5 Panel
 

@@ -7,7 +7,7 @@ import { announceTriggers, writeChallenge } from "./state.js";
 import { advanceRound, canAdvanceRound, canUndoRound, changeCounter, counterValueOf, currentDc, cycleThresholdReveal, endRun, resetRun, restoreModifier, startRun, toggleActed, toggleComplete, toggleModifier, toggleReached, toggleReveal, undoRound } from "./run.js";
 import { LINK_ROLL_ID } from "../roll-option.js";
 import { rollCheck, rollTarget } from "./roll.js";
-import { counterMoves, counterValueText, addRow, applyForm, COUNTER_DISPLAYS, setCounterNote, subjectCategoryOrder, BOTH_WAYS, clampTracks, DIRECTIONS, EDITABLE, groupByCategory, isAlwaysShown, isDecoyCheck, LORE, moveSubject, PERCEPTION, nextThresholdReveal, pickFields, removeRow, SAVES, THRESHOLD_REVEALS } from "./data.js";
+import { counterMoves, counterValueText, addRow, applyForm, COUNTER_DISPLAYS, setCounterNote, subjectCategoryOrder, BOTH_WAYS, clampTracks, DIRECTIONS, EDITABLE, groupByCategory, isAlwaysShown, isDecoyCheck, LORE, moveSubject, PERCEPTION, subjectGroups, categoryKey, nextThresholdReveal, pickFields, removeRow, SAVES, THRESHOLD_REVEALS } from "./data.js";
 import { ModifierWindow } from "./entry-window.js";
 import { CategoryAutocomplete } from "./category-autocomplete.js";
 
@@ -24,6 +24,12 @@ const isCollapsed = (subjectId) => !!game.user.getFlag(MODULE, COLLAPSED_FLAG)?.
 
 /** The action cards this user has opened in Run mode, as "pageId:actionId". Each user's own, kept until the page reloads, as on the panel. */
 const openActions = new Set();
+
+/** Whether the subject at index `n` can move up or down: only past a neighbour in the same category (spec 14.4). */
+function canMove(system, n) {
+  const key = (i) => categoryKey(system.subjects[i]?.category);
+  return { canMoveUp: n > 0 && key(n - 1) === key(n), canMoveDown: n < system.subjects.length - 1 && key(n + 1) === key(n) };
+}
 
 /**
  * Modifier views as the GM window's sections, by category (spec 14.7): the blank category first, with no heading,
@@ -252,8 +258,7 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
         tabLabel: subjectName(subject, n, subjectLabel),
         descriptionHtml: subjectHtml.get(subject.id),
         canRemove: system.subjects.length > 1,
-        canMoveUp: n > 0,
-        canMoveDown: n < system.subjects.length - 1,
+        ...canMove(system, n),
         counters: subject.counters.map((counter, i) => counterEdit(counter, `${path}.counters.${i}`)),
         actions: subject.actions.map((action, a) => ({
           ...action,
@@ -287,7 +292,10 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
       subjects,
       activeSubject: subjects.find((subject) => subject.id === this.#tab) ?? null,
       onChallengeTab: this.#tab === CHALLENGE_TAB,
-      tabs: subjects.map((subject) => ({ id: subject.id, label: subject.tabLabel, active: subject.id === this.#tab })),
+      // Tabs in grouped order, a labelled group's first tab carrying its category (spec 14.4).
+      tabs: subjectGroups(system, subjects).flatMap((group) => group.items.map((subject, i) => ({
+        id: subject.id, label: subject.tabLabel, active: subject.id === this.#tab, groupLabel: i === 0 ? group.label : "",
+      }))),
       runActive: system.run.status === "active",
       choices: {
         skills: checkSkills,
@@ -401,11 +409,11 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
       actors: actors.map((actor) => ({ id: actor.id, name: actor.name, selected: actor === selected })),
       // The challenge's own entries, in a box above the subjects (spec 14.7).
       challengeModifierGroups: modifierGroups(system, system.modifiers.map((row) => this.#modifierView(system, null, row, canChange))),
-      subjects: system.subjects.map((subject, n) => ({
+      // Subjects by category: the blank one first with no bar, then a red bar per category (spec 14.4).
+      subjectGroups: subjectGroups(system, system.subjects.map((subject, n) => ({
         id: subject.id,
         name: subjectName(subject, n, subjectLabel),
-        canMoveUp: n > 0,
-        canMoveDown: n < system.subjects.length - 1,
+        ...canMove(system, n),
         collapsed: isCollapsed(subject.id),
         descriptionHtml: this.#subjectHtml.get(subject.id) ?? "",
         revealed: subject.revealed,
@@ -422,7 +430,7 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
           checks: rollRows(subject, action),
         })).filter((action) => action.checks.length),
         modifierGroups: modifierGroups(system, subject.modifiers.map((row) => this.#modifierView(system, subject, row, canChange))),
-      })),
+      }))).map((group) => ({ heading: group.label, subjects: group.items })),
       counters: system.counters.map(counterRun),
     };
   }
