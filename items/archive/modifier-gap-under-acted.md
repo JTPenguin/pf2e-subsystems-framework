@@ -1,13 +1,14 @@
 ---
 title: "Gap between the acted portraits and challenge-level modifiers"
 kind: work
-status: ready
+status: done
 waits_on: Claude
 priority: ⏫
 blocked_by: []
 source: "Justin's list of items, 2026-11-11"
 added: 2026-11-11
 updated: 2026-11-12
+outcome: "Fixed in 3c862f1; Justin checked it live, 2026-11-12."
 ---
 # Gap between the acted portraits and challenge-level modifiers
 

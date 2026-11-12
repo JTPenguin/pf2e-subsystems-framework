@@ -1,13 +1,14 @@
 ---
 title: "Collapsed subjects should show only the header in Run view"
 kind: work
-status: ready
+status: done
 waits_on: Claude
 priority: ⏫
 blocked_by: []
 source: "Justin's list of items, 2026-11-12; interview with Justin, 2026-11-12"
 added: 2026-11-12
 updated: 2026-11-12
+outcome: "Fixed in 3c862f1; Justin checked it live, 2026-11-12."
 ---
 # Collapsed subjects should show only the header in Run view
 
