@@ -110,6 +110,7 @@
     </span>
     <label class="ssm-strip-group"><span class="ssm-stat-label">{{localize "SSM.Challenge.RollAs"}}</span><select data-roll-as>{{#each actors}}<option value="{{id}}" {{#if selected}}selected{{/if}}>{{name}}</option>{{/each}}</select></label>
     </div>
+    {{#if chaseLine}}<div class="ssm-strip-row ssm-chase-status"><span class="ssm-stat-label">{{localize "SSM.Chase.Label"}}</span><span>{{chaseLine}}</span></div>{{/if}}
   </div>
   {{/with}}
   <section class="ssm-body">
@@ -201,7 +202,8 @@
       </div>
       {{#each pcs}}
       <div class="ssm-row ssm-entry ssm-pc-row">
-        <span class="ssm-grow">{{name}}</span>
+        <span class="ssm-pc-name">{{name}}</span>
+        <input type="text" class="ssm-grow ssm-pc-note" value="{{note}}" data-pc-note data-counter="{{../id}}" data-actor="{{id}}" placeholder="{{localize "SSM.Challenge.PcNotePlaceholder"}}" aria-label="{{localize "SSM.Challenge.PcNote"}}" data-tooltip="SSM.Challenge.PcNoteHint">
         <button type="button" class="icon fa-solid fa-minus" data-action="changeCounter" data-id="{{../id}}" data-actor="{{id}}" data-delta="-1" aria-label="{{localize "SSM.Challenge.RemoveFromCounter"}}" {{#unless canRemove}}disabled{{/unless}}></button>
         <strong class="ssm-point-total">{{value}}</strong>
         <button type="button" class="icon fa-solid fa-plus" data-action="changeCounter" data-id="{{../id}}" data-actor="{{id}}" data-delta="1" aria-label="{{localize "SSM.Challenge.AddToCounter"}}" {{#unless canAdd}}disabled{{/unless}}></button>
@@ -222,7 +224,9 @@
     {{#each tabs}}
     <button type="button" data-action="selectTab" data-tab="{{id}}" class="{{#if active}}active{{/if}}">{{label}}</button>
     {{/each}}
-    <button type="button" class="ssm-add" data-action="addRow" data-list="subjects"><i class="fa-solid fa-plus" inert></i> {{addSubjectLabel}}</button>
+    {{#each addSubjectButtons}}
+    <button type="button" class="ssm-add" data-action="addRow" data-list="subjects" data-template="{{id}}"><i class="fa-solid fa-plus" inert></i> {{label}}</button>
+    {{/each}}
   </nav>
 
   <section class="ssm-body">
@@ -234,6 +238,17 @@
         <label class="grow">{{localize "SSM.Challenge.SubjectLabel"}}<input type="text" name="subjectLabel" value="{{system.subjectLabel}}" placeholder="{{localize "SSM.Challenge.Subject"}}"></label>
       </div>
     </fieldset>
+
+    {{#if isChase}}
+    <fieldset>
+      <legend>{{localize "SSM.Chase.Label"}}</legend>
+      <div class="ssm-row">
+        <label class="grow">{{localize "SSM.Chase.TypeLabel"}}<select name="chase.type">{{selectOptions choices.chaseTypes selected=system.chase.type}}</select></label>
+        <label class="grow" data-tooltip="SSM.Chase.CounterHint">{{localize "SSM.Chase.CounterLabel"}}<select name="chase.counterId">{{selectOptions choices.chaseCounters selected=system.chase.counterId}}</select></label>
+      </div>
+      <p class="ssm-muted">{{localize (concat "SSM.Chase.TypeHint." system.chase.type)}}</p>
+    </fieldset>
+    {{/if}}
 
     <fieldset>
       <legend>{{localize "SSM.Challenge.Rounds"}}</legend>

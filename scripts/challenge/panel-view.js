@@ -4,7 +4,7 @@
  */
 
 import { BOTH_WAYS, groupByCategory, isVisibleCheck, skillKey } from "./data.js";
-import { counterValueOf, currentDc, isComplete, pointsOf } from "./run.js";
+import { chaseCounterOf, chaseStatus, counterValueOf, currentDc, currentObstacle, isChase, isComplete, pointsOf } from "./run.js";
 
 /** Scale for a bar when the track has no goal and no thresholds. */
 const DEFAULT_SCALE = 10;
@@ -136,6 +136,8 @@ function subjectView(system, subject, party) {
   const start = system.run.baseline?.subjects?.[subject.id]?.points;
   const view = {
     id: subject.id,
+    // Its place in the GM's order, for a stand-in name such as "Obstacle 3".
+    index: system.subjects.indexOf(subject),
     name: subject.name,
     tracksPoints: !!subject.tracksPoints,
     individual: !!subject.individual,
@@ -188,8 +190,39 @@ export function roundSegments(current, max) {
   return Array.from({ length: total }, (_, index) => ({ filled: index < filled }));
 }
 
+/**
+ * A chase's progress track: one slot per obstacle, in order, with the party's and the other side's obstacle numbers.
+ * A hidden obstacle's name stays out. The other side shows only while its counter is revealed.
+ */
+function chaseView(system) {
+  const status = chaseStatus(system);
+  const counter = chaseCounterOf(system);
+  const shown = !!counter?.revealed;
+  return {
+    type: status.type,
+    total: status.total,
+    position: status.position,
+    other: shown ? status.other : null,
+    otherName: shown ? counter.name : "",
+    slots: system.subjects.map((subject) => ({ revealed: !!subject.revealed, name: subject.revealed ? subject.name : "", cleared: isComplete(subject) })),
+  };
+}
+
+/**
+ * The subjects on the panel. In a chase it is only the party's current obstacle, and only once it is revealed, so clearing one brings up the next
+ * the GM has revealed. Otherwise every revealed subject.
+ */
+function panelSubjects(system) {
+  if (!isChase(system)) return system.subjects.filter(isVisible);
+  const current = currentObstacle(system)?.subject;
+  return current?.revealed ? [current] : [];
+}
+
 /** The filtered copy. `party` is a list of { id, name, img }. Only revealed subjects and counters go in. */
 export function buildPanelView({ name, system, party }) {
+  const chase = isChase(system) ? chaseView(system) : null;
+  // A chase's other side is on its track, not in the counter list.
+  const counterShown = (counter) => isVisible(counter) && !(chase && counter.id === system.chase.counterId);
   return {
     name,
     pointsName: system.pointsName,
@@ -197,8 +230,9 @@ export function buildPanelView({ name, system, party }) {
     rounds: { current: system.rounds.current, max: system.rounds.max },
     // Challenge-level entries, for the strip above the subject columns (spec 14.7).
     modifiers: cards(system, null, system.modifiers ?? []),
-    subjects: system.subjects.filter(isVisible).map((subject) => subjectView(system, subject, party)),
-    counters: system.counters.filter(isVisible).map((counter) => counterView(system, counter, party)),
+    subjects: panelSubjects(system).map((subject) => subjectView(system, subject, party)),
+    counters: system.counters.filter(counterShown).map((counter) => counterView(system, counter, party)),
+    chase,
     party: party.map(({ id, name: pcName, img }) => ({ id, name: pcName, img: img || DEFAULT_PC_IMAGE, acted: system.run.acted.includes(id) })),
   };
 }

@@ -84,7 +84,7 @@ function prepareView(view, state) {
     challengeMods: (view.modifiers ?? []).map((row) => modifierCard(row, "", pointsName, gm.get(`:${row.id}`), decoys.has(`:${row.id}`))),
     subjects: view.subjects.map((subject, n) => ({
       ...subject,
-      name: subjectName(subject, n, view.subjectLabel),
+      name: subjectName(subject, subject.index ?? n, view.subjectLabel),
       bar: barOf(subject.points, subject),
       showPoints: subject.tracksPoints && !subject.individual,
       // One row per PC on an individual subject: portrait, bar, and a check when that PC is done.
@@ -115,8 +115,32 @@ function prepareView(view, state) {
       pcs: row.pcs.map((pc) => ({ ...pc, name: pcs.get(pc.id)?.name ?? "", img: pcs.get(pc.id)?.img ?? "" })),
     })),
     counters: view.counters.filter((row) => !row.track && !row.range && !row.perPc).map((row) => ({ ...row, name: row.name || loc("SSM.Challenge.UnnamedCounter") })),
+    chase: view.chase ? chaseTrack(view.chase, view.subjectLabel) : null,
     party: view.party.map((pc) => ({ ...pc, label: game.i18n.format(pc.acted ? "SSM.Panel.ActedLabel" : "SSM.Panel.NotActedLabel", { name: pc.name }) })),
   };
+}
+
+const CHASE_ICONS = { chaseDown: "fa-person-running", runAway: "fa-skull", competitive: "fa-flag-checkered" };
+
+/**
+ * A chase's progress track: a start slot when the other side is behind the first obstacle, a slot per obstacle, and a finish slot.
+ * The party's marker sits on its obstacle and the other side's on theirs. A hidden obstacle shows as "?".
+ */
+function chaseTrack(chase, subjectLabel) {
+  const label = subjectLabel || loc("SSM.Challenge.Subject");
+  const otherAt = chase.other === null ? null : Math.max(0, Math.min(chase.total + 1, chase.other));
+  const slot = (number, extra) => ({ number, party: chase.position === number, other: otherAt === number, current: chase.position === number, ...extra });
+  const slots = chase.slots.map((row, i) => slot(i + 1, {
+    label: row.revealed ? String(i + 1) : "?",
+    cleared: row.cleared,
+    tooltip: row.revealed ? `${i + 1}. ${row.name || `${label} ${i + 1}`}` : loc("SSM.Chase.Unknown"),
+  }));
+  if (otherAt === 0) slots.unshift(slot(0, { label: "", tooltip: loc("SSM.Chase.Behind"), start: true }));
+  slots.push(slot(chase.total + 1, { label: "", tooltip: loc("SSM.Chase.Finish"), finish: true }));
+  const summary = [game.i18n.format("SSM.Chase.PartyAt", { position: Math.min(chase.position, chase.total), total: chase.total, subject: label })];
+  if (otherAt !== null) summary.push(game.i18n.format("SSM.Chase.OtherAt", { name: chase.otherName || loc("SSM.Challenge.UnnamedCounter"), position: otherAt }));
+  if (chase.position > chase.total) summary[0] = loc("SSM.Chase.PartyDone");
+  return { slots, summary: summary.join(" · "), otherIcon: CHASE_ICONS[chase.type] ?? "fa-person-running", otherName: chase.otherName };
 }
 
 let rolling = false;
@@ -139,7 +163,7 @@ async function rollFromPanel(state, button, event) {
   const actor = game.user.isGM ? gmRollActor(state) : game.user.character;
   if (!actor) return game.user.isGM ? ui.notifications.warn("SSM.Panel.NoGMActor", { localize: true }) : ui.notifications.info("SSM.Panel.NoCharacter", { localize: true });
   const { subject, action, row } = found;
-  const subjectLabel = subjectName(subject, state.view.subjects.indexOf(subject), state.view.subjectLabel);
+  const subjectLabel = subjectName(subject, subject.index ?? state.view.subjects.indexOf(subject), state.view.subjectLabel);
   const target = rollTarget({ challengeId: state.id, subject, subjectLabel, action, row, dc: row.dc });
   // One click, one roll: a double click or a click behind the open roll dialog doesn't start another.
   rolling = true;

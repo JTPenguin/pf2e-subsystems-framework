@@ -19,6 +19,13 @@
   <div class="ssm-panel-rounds">{{#if isGM}}<button type="button" class="ssm-panel-round-button" data-action="previousRound" aria-label="{{localize "SSM.Challenge.PreviousRound"}}" {{#unless canPreviousRound}}disabled{{/unless}}><i class="fa-solid fa-backward-step" inert></i></button>{{/if}}<span class="ssm-panel-segments" role="img" aria-label="{{roundLabel}}">{{#each roundSegments}}<span class="{{#if filled}}filled{{/if}}"></span>{{/each}}</span>{{#if isGM}}<button type="button" class="ssm-panel-round-button" data-action="nextRound" aria-label="{{localize "SSM.Challenge.NextRound"}}" {{#unless canNextRound}}disabled{{/unless}}><i class="fa-solid fa-forward-step" inert></i></button>{{/if}}</div>
   {{#if party.length}}<div class="ssm-panel-party"{{#unless isGM}} role="list"{{/unless}}>{{#each party}}<img class="ssm-panel-pc {{#if acted}}acted{{/if}}"{{#if @root.isGM}} data-action="toggleActed" data-id="{{id}}" role="button" tabindex="0" aria-pressed="{{acted}}"{{else}} role="listitem"{{/if}} src="{{img}}" alt="{{label}}" aria-label="{{label}}" data-tooltip-text="{{name}}" draggable="false">{{/each}}</div>{{/if}}
 </div>
+{{#if chase}}<div class="ssm-panel-chase">
+  <ol class="ssm-panel-chase-track" aria-label="{{chase.summary}}">{{#each chase.slots}}<li class="ssm-chase-slot {{#if cleared}}cleared{{/if}} {{#if current}}current{{/if}} {{#if finish}}finish{{/if}} {{#if start}}start{{/if}}" data-tooltip-text="{{tooltip}}">
+    <span class="ssm-chase-num">{{#if finish}}<i class="fa-solid fa-flag-checkered" aria-hidden="true"></i>{{else}}{{label}}{{/if}}</span>
+    <span class="ssm-chase-markers">{{#if party}}<i class="fa-solid fa-users ssm-chase-party" role="img" aria-label="{{localize "SSM.Chase.Party"}}"></i>{{/if}}{{#if other}}<i class="fa-solid {{../chase.otherIcon}} ssm-chase-other" role="img" aria-label="{{../chase.otherName}}"></i>{{/if}}</span>
+  </li>{{/each}}</ol>
+  <p class="ssm-panel-chase-summary">{{chase.summary}}</p>
+</div>{{/if}}
 {{#if challengeMods.length}}<div class="ssm-panel-mods ssm-panel-challenge-mods">{{#each challengeMods}}{{> ssmPanelMod}}{{/each}}</div>{{/if}}
 <div class="ssm-panel-subjects {{#if several}}several{{/if}}">
   {{#each subjects}}

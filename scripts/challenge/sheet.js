@@ -4,10 +4,10 @@ import { hidePanel, panelState, takePanel } from "../panel/activation.js";
 import { partyPCs } from "../party.js";
 import { actionName, skillKeyLabel, skillLabel, subjectName } from "./skill-label.js";
 import { announceTriggers, writeChallenge } from "./state.js";
-import { advanceRound, applyModifier, canAdvanceRound, canApplyModifier, canUndoRound, changeCounter, changePoints, counterValueOf, currentDc, cycleThresholdReveal, endRun, isComplete, pointsOf, resetRun, restoreModifier, startRun, toggleActed, toggleComplete, toggleModifier, toggleReached, toggleReveal, undoRound } from "./run.js";
+import { advanceRound, applyModifier, canAdvanceRound, chaseStatus, isChase, canApplyModifier, canUndoRound, changeCounter, changePoints, counterValueOf, currentDc, cycleThresholdReveal, endRun, isComplete, pointsOf, resetRun, restoreModifier, startRun, toggleActed, toggleComplete, toggleModifier, toggleReached, toggleReveal, undoRound } from "./run.js";
 import { LINK_ROLL_ID } from "../roll-option.js";
 import { rollCheck, rollTarget } from "./roll.js";
-import { addRow, applyForm, BOTH_WAYS, clampTracks, DIRECTIONS, EDITABLE, groupByCategory, isAlwaysShown, isDecoyCheck, limitTrack, LORE, moveSubject, OUTCOMES, PERCEPTION, nextThresholdReveal, pickFields, removeRow, SAVES, THRESHOLD_REVEALS } from "./data.js";
+import { addRow, applyForm, CHASE_TYPES, setCounterNote, subjectTemplates, BOTH_WAYS, clampTracks, DIRECTIONS, EDITABLE, groupByCategory, isAlwaysShown, isDecoyCheck, limitTrack, LORE, moveSubject, OUTCOMES, PERCEPTION, nextThresholdReveal, pickFields, removeRow, SAVES, THRESHOLD_REVEALS } from "./data.js";
 import { ActionWindow, ModifierWindow } from "./entry-window.js";
 
 const { DocumentSheetV2, HandlebarsApplicationMixin } = foundry.applications.api;
@@ -247,7 +247,8 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
       system,
       subjectLabel,
       pointsName: system.pointsName || loc("SSM.Challenge.Points"),
-      addSubjectLabel: game.i18n.format("SSM.Challenge.AddSubject", { subject: subjectLabel }),
+      // One Add button per subject template of the preset; the first is named by the subject label.
+      addSubjectButtons: subjectTemplates(system).map(({ id, label }) => ({ id, label: label || game.i18n.format("SSM.Challenge.AddSubject", { subject: subjectLabel }) })),
       removeSubjectLabel: game.i18n.format("SSM.Challenge.RemoveSubject", { subject: subjectLabel }),
       premiseHtml: await enrich(system.premise),
       gmNotesHtml: await enrich(system.gmNotes),
@@ -258,7 +259,11 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
       onChallengeTab: this.#tab === CHALLENGE_TAB,
       tabs: subjects.map((subject) => ({ id: subject.id, label: subject.tabLabel, active: subject.id === this.#tab })),
       runActive: system.run.status === "active",
+      // A chase's type and its other side's counter (items/chase-subsystem.md).
+      isChase: isChase(system),
       choices: {
+        chaseTypes: Object.fromEntries(CHASE_TYPES.map((type) => [type, loc(`SSM.Chase.Type.${type}`)])),
+        chaseCounters: { "": loc("SSM.Chase.NoCounter"), ...Object.fromEntries(system.counters.map((counter, i) => [counter.id, counter.name || `${loc("SSM.Challenge.UnnamedCounter")} ${i + 1}`])) },
         skills: checkSkills,
         thresholdReveals: labels(THRESHOLD_REVEALS, "ThresholdReveal"),
         directions: labels(DIRECTIONS, "Direction"),
@@ -287,6 +292,17 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
     const actors = this.#rollableActors;
     const controlled = canvas.ready ? canvas.tokens.controlled[0]?.actor : null;
     return actors.find((actor) => actor.id === this.#rollAs) ?? actors.find((actor) => actor === controlled) ?? actors[0] ?? null;
+  }
+
+  /** Where a chase stands, for the GM: the type, the party's obstacle, the other side's, and how it ended. */
+  #chaseLine(system, subjectLabel) {
+    const status = chaseStatus(system);
+    const parts = [loc(`SSM.Chase.Type.${status.type}`)];
+    parts.push(status.position > status.total ? loc("SSM.Chase.PartyDone") : game.i18n.format("SSM.Chase.PartyAt", { position: status.position, total: status.total, subject: subjectLabel }));
+    if (status.other !== null) parts.push(game.i18n.format("SSM.Chase.OtherAt", { name: status.counter || loc("SSM.Challenge.UnnamedCounter"), position: status.other }));
+    const end = status.end || (system.run.chase?.end === "lead" ? "lead" : "");
+    if (end) parts.push(game.i18n.format(`SSM.Chase.End.${end}`, { other: status.counter }));
+    return parts.join(" · ");
   }
 
   /** The Run-mode view of the challenge. */
@@ -342,6 +358,7 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
       roundLabel: active || status === "finished" ? game.i18n.format(system.rounds.max === null ? "SSM.Challenge.RoundOpen" : "SSM.Challenge.Round", system.rounds) : loc("SSM.Challenge.NotStarted"),
       canNextRound: canAdvanceRound(system),
       canPreviousRound: canUndoRound(system),
+      chaseLine: isChase(system) ? this.#chaseLine(system, subjectLabel) : "",
       party: [...new Set([...actors.map((actor) => actor.id), ...system.run.acted])].map((id) => {
         const actor = game.actors.get(id);
         return { id, name: actor?.name ?? id, acted: system.run.acted.includes(id) };
@@ -386,7 +403,7 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
         // A per-PC counter lists each party PC, and anyone else who has a value, with the party total by its name (spec 14.8).
         const pcs = !counter.perPc ? [] : [...new Set([...partyIds, ...Object.keys(counter.valueBy ?? {})])].map((id) => {
           const value = counterValueOf(counter, id);
-          return { id, name: game.actors.get(id)?.name ?? id, value, ...canMove(value) };
+          return { id, name: game.actors.get(id)?.name ?? id, value, note: counter.noteBy?.[id] ?? "", ...canMove(value) };
         });
         return {
           ...counter,
@@ -470,10 +487,15 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
     });
   }
 
-  /** The Roll-as list isn't challenge data, so it must not save the form. */
+  /** The Roll-as list isn't challenge data, so it must not save the form. A PC's counter note saves on its own. */
   _onChangeForm(formConfig, event) {
     if (event.target.matches?.("[data-roll-as]")) {
       this.#rollAs = event.target.value;
+      return;
+    }
+    if (event.target.matches?.("[data-pc-note]")) {
+      const { counter, actor } = event.target.dataset;
+      if (game.user.isGM) this.#whileSaving(() => writeChallenge(this.page, (system) => setCounterNote(system, counter, actor, event.target.value)));
       return;
     }
     super._onChangeForm(formConfig, event);
@@ -494,10 +516,10 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
   }
 
   static async #onAddRow(event, target) {
-    const { list, category } = target.dataset;
+    const { list, category, template } = target.dataset;
     let added;
     await this.#edit((system) => {
-      added = addRow(system, list);
+      added = addRow(system, list, template);
       if (category) added.category = category;
     });
     if (list === "subjects") {

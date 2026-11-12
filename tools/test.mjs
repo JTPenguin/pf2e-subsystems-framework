@@ -1617,3 +1617,239 @@ test("a both-ways bar spans the limits or the furthest thresholds, with a mark a
   assert.deepEqual(view().range, { lo: -10, hi: 10 });
   assert.equal(viewOf(running()).subjects[0].range, null);
 });
+
+/* Infiltration and its preparation (items/infiltration-subsystem.md) */
+
+const presetSystem = (preset) => ({ ...D.newChallengeSystem(preset), premise: "", gmNotes: "", run: RUN() });
+const outcomeOf = (action) => D.OUTCOMES.map((outcome) => action.outcomes[outcome].map((row) => (row.type === "note" ? "note" : `${row.type} ${row.amount}`)));
+
+test("the Infiltration preset: Awareness Points with GM Core's tiers, per-PC Edge Points, and a revealed first obstacle", () => {
+  const s = presetSystem("infiltration");
+  const [ap, ep] = s.counters;
+  assert.deepEqual([s.pointsName, s.subjectLabel, s.rounds.max], ["SSM.Preset.infiltration.Points", "SSM.Preset.infiltration.Subject", null]);
+  assert.deepEqual([ap.perRound, ap.min, ap.revealed, ap.perPc], [1, 0, true, false]);
+  assert.deepEqual(ap.thresholds.map((row) => [row.points, row.dc, row.reveal]), [[5, 1, "points"], [10, 0, "points"], [15, 1, "points"], [20, 0, "points"]]);
+  assert.deepEqual([ep.perPc, ep.min, ep.revealed], [true, 0, true]);
+  const [obstacle] = s.subjects;
+  assert.deepEqual([obstacle.revealed, obstacle.tracksPoints, obstacle.goal, obstacle.individual], [true, true, 2, false]);
+  assert.deepEqual(outcomeOf(obstacle.actions[0]), [["points 2"], ["points 1"], ["counter 1"], ["counter 2"]]);
+  assert.deepEqual(D.OUTCOMES.slice(2).map((outcome) => obstacle.actions[0].outcomes[outcome][0].counterId), [ap.id, ap.id]);
+  assert.deepEqual(D.suggestedCategories(s), ["SSM.Preset.infiltration.Category.opportunity", "SSM.Preset.infiltration.Category.complication"]);
+});
+
+test("an infiltration offers three subject templates; later obstacles start hidden, and complications and opportunities track no points", () => {
+  const s = presetSystem("infiltration");
+  assert.deepEqual(D.subjectTemplates(s).map((row) => [row.id, !!row.label]), [["obstacle", false], ["complication", true], ["opportunity", true]]);
+  const obstacle = D.addRow(s, "subjects");
+  assert.deepEqual([obstacle.revealed, obstacle.tracksPoints], [false, true]);
+  const complication = D.addRow(s, "subjects", "complication");
+  assert.deepEqual([complication.tracksPoints, complication.revealed], [false, false]);
+  assert.deepEqual(outcomeOf(complication.actions[0]), [[], ["note"], ["counter 1"], ["counter 2"]]);
+  assert.equal(complication.actions[0].outcomes.failure[0].counterId, s.counters[0].id);
+  const opportunity = D.addRow(s, "subjects", "opportunity");
+  assert.deepEqual([opportunity.tracksPoints, outcomeOf(opportunity.actions[0])], [false, [["note"], ["note"], [], []]]);
+  assert.equal(D.addRow(s, "subjects", "nonsense").tracksPoints, true, "an unknown template is the first one");
+  assert.deepEqual(D.subjectTemplates(system()).map((row) => row.id), ["npc"]);
+});
+
+test("a renamed Awareness counter is still found by kind; with none, a new obstacle's failure names no counter", () => {
+  const s = presetSystem("infiltration");
+  s.counters[0].name = "Alarm";
+  assert.equal(D.addRow(s, "subjects").actions[0].outcomes.failure[0].counterId, s.counters[0].id);
+  s.counters = s.counters.filter((counter) => counter.perPc);
+  assert.equal(D.addRow(s, "subjects").actions[0].outcomes.failure[0].counterId, "");
+});
+
+test("Awareness Points rise each round and through failures, and their tiers raise every DC by 1, then 2 in total", () => {
+  const s = presetSystem("infiltration");
+  const [ap] = s.counters;
+  const obstacle = s.subjects[0];
+  obstacle.actions[0].checks.push({ ...D.newCheck(), skill: "stealth", dc: 20 });
+  Run.startRun(s);
+  ap.value = 4;
+  Run.advanceRound(s);
+  assert.equal(ap.value, 5);
+  assert.equal(ap.thresholds[0].reached, true);
+  assert.equal(Run.currentDc(s, obstacle, obstacle.actions[0].checks[0]), 21);
+  const roll = { rollId: "r1", challengeId: "c1", subjectId: obstacle.id, actionId: obstacle.actions[0].id, checkId: obstacle.actions[0].checks[0].id, messageId: "m1", actorId: "a1", outcome: "criticalFailure", dc: null, isReroll: false };
+  for (let n = 0; n < 5; n++) Run.applyRoll(s, { ...roll, rollId: `r${n}` });
+  assert.equal(ap.value, 15);
+  assert.equal(Run.currentDc(s, obstacle, obstacle.actions[0].checks[0]), 22);
+  Run.applyRoll(s, { ...roll, rollId: "ok", outcome: "success" });
+  assert.equal(obstacle.points, 1);
+});
+
+test("the Preparation preset: one revealed subject with GM Core's six activities, secret where the rules say", () => {
+  const s = presetSystem("preparation");
+  const [ep, ap] = s.counters;
+  assert.deepEqual([ep.perPc, ep.revealed, ap.perPc, ap.revealed], [true, true, false, false]);
+  const [prep] = s.subjects;
+  assert.deepEqual([prep.revealed, prep.tracksPoints, s.subjects.length], [true, false, 1]);
+  const named = (key) => prep.actions.find((action) => action.name === `SSM.Preset.preparation.${key}.Name`);
+  assert.deepEqual(prep.actions.map((action) => [action.name.split(".")[3], action.secret, action.checks.map((row) => row.skill).join(" ")]), [
+    ["BribeContact", true, "deception diplomacy"],
+    ["ForgeDocuments", true, "society"],
+    ["GainContact", false, "diplomacy society"],
+    ["Gossip", true, "diplomacy"],
+    ["ScoutLocation", true, "perception society stealth"],
+    ["SecureDisguises", false, "crafting deception performance society"],
+  ]);
+  assert.ok(prep.actions.every((action) => action.checks.every((row) => row.always)));
+  assert.deepEqual(outcomeOf(named("ForgeDocuments")), [["counter 1", "note"], ["counter 1", "note"], ["counter 1", "note"], ["counter 1", "note"]]);
+  assert.deepEqual(outcomeOf(named("BribeContact")), [["counter 1"], ["counter 1"], ["counter 1", "counter 1", "note"], ["counter 1", "counter 2", "note"]]);
+  assert.deepEqual(named("BribeContact").outcomes.criticalFailure.map((row) => row.counterId).slice(0, 2), [ep.id, ap.id]);
+  assert.deepEqual(outcomeOf(named("Gossip")), [["note"], ["note"], ["note"], ["counter 1", "note"]]);
+  assert.equal(named("ForgeDocuments").outcomes.failure[1].note, "SSM.Preset.preparation.Dud");
+  assert.equal(named("ScoutLocation").outcomes.criticalFailure[1].note, "SSM.Preset.preparation.Cursed");
+});
+
+test("a failed Forge Documents still adds the roller's Edge Point, as the PC thinks it worked", () => {
+  const s = presetSystem("preparation");
+  const [ep] = s.counters;
+  const forge = s.subjects[0].actions[1];
+  Run.startRun(s);
+  const { record } = Run.applyRoll(s, { rollId: "r1", challengeId: "c1", subjectId: s.subjects[0].id, actionId: forge.id, checkId: forge.checks[0].id, messageId: "m1", actorId: "a1", outcome: "failure", dc: null, isReroll: false });
+  assert.deepEqual(ep.valueBy, { a1: 1 });
+  assert.ok(record.changes.some((change) => change.type === "counter" && change.actorId === "a1"));
+});
+
+test("a per-PC counter's GM note: set, cleared when empty, only on a per-PC counter, and put back by Reset", () => {
+  const s = presetSystem("infiltration");
+  const [ap, ep] = s.counters;
+  assert.equal(D.setCounterNote(s, ap.id, "a1", "x"), false, "a shared counter has no PC notes");
+  D.setCounterNote(s, ep.id, "a1", "  1 dud (forged papers) ");
+  assert.deepEqual(ep.noteBy, { a1: "1 dud (forged papers)" });
+  assert.equal(D.setCounterNote(s, ep.id, "a1", "1 dud (forged papers)"), false, "no change");
+  Run.startRun(s);
+  D.setCounterNote(s, ep.id, "a2", "paperwork only");
+  D.setCounterNote(s, ep.id, "a1", "");
+  assert.deepEqual(ep.noteBy, { a2: "paperwork only" });
+  Run.resetRun(s);
+  assert.deepEqual(ep.noteBy, { a1: "1 dud (forged papers)" });
+  assert.ok(!JSON.stringify(viewOf(s, PARTY)).includes("dud"), "the panel never sees a note");
+});
+
+/* Chase (items/chase-subsystem.md) */
+
+const chaseSystem = (obstacles = 4) => {
+  const s = presetSystem("chase");
+  while (s.subjects.length < obstacles) D.addRow(s, "subjects");
+  return s;
+};
+const clear = (s, n) => { for (let i = 0; i < n; i++) s.subjects[i].complete = true; };
+const noticeKeys = (notices) => notices.map((row) => row.key.split(".").slice(2).join("."));
+
+test("the Chase preset: a Quarry one obstacle ahead moving +1 a round, and obstacles with a goal whose Chase Points never drop below 0", () => {
+  const s = presetSystem("chase");
+  const [quarry] = s.counters;
+  assert.deepEqual([s.pointsName, s.subjectLabel, s.rounds.max], ["SSM.Preset.chase.Points", "SSM.Preset.chase.Subject", null]);
+  assert.deepEqual([quarry.name, quarry.value, quarry.perRound, quarry.min, quarry.revealed], ["SSM.Preset.chase.Other.chaseDown", 2, 1, 0, true]);
+  assert.deepEqual(s.chase, { type: "chaseDown", counterId: quarry.id });
+  const [first] = s.subjects;
+  assert.deepEqual([first.revealed, first.goal, first.min, first.tracksPoints], [true, 3, 0, true]);
+  assert.deepEqual(outcomeOf(first.actions[0]), [["points 2"], ["points 1"], [], ["points -1"]]);
+  assert.equal(D.addRow(s, "subjects").revealed, false, "later obstacles start hidden");
+  assert.ok(D.newChallengeSystem("chase").gmNotes.includes("SSM.Preset.chase.GmNotes"));
+  Run.startRun(s);
+  Run.changePoints(s, first.id, -1);
+  assert.equal(first.points, 0);
+});
+
+test("changing the chase type renames and places a default-named other side; Beat the Clock hides it and sets one round per obstacle", () => {
+  const s = chaseSystem(5);
+  const [other] = s.counters;
+  D.applyForm(s, { chase: { type: "runAway" } });
+  assert.deepEqual([other.name, other.value, other.revealed], ["SSM.Preset.chase.Other.runAway", 0, true]);
+  D.applyForm(s, { chase: { type: "beatClock" } });
+  assert.deepEqual([other.revealed, s.rounds.max], [false, 5]);
+  D.applyForm(s, { chase: { type: "competitive" } });
+  assert.deepEqual([other.name, other.value, other.revealed], ["SSM.Preset.chase.Other.competitive", 1, true]);
+  other.name = "The Red Hand";
+  D.applyForm(s, { chase: { type: "chaseDown" } });
+  assert.deepEqual([other.name, other.value], ["The Red Hand", 1], "a renamed counter is left alone");
+  D.removeRow(s, "counters.0");
+  assert.equal(s.chase.counterId, "");
+});
+
+test("a chase's position is the first obstacle not Complete, and each type ends as GM Core says", () => {
+  const s = chaseSystem(4);
+  const [other] = s.counters;
+  const end = () => Run.chaseStatus(s).end;
+  assert.deepEqual([Run.chaseStatus(s).position, Run.chaseStatus(s).other, end()], [1, 2, ""]);
+  clear(s, 1);
+  assert.equal(end(), "caughtQuarry", "the party reaches the quarry's obstacle");
+  other.value = 5;
+  assert.equal(end(), "quarryEscaped");
+  s.subjects[0].complete = false;
+  Object.assign(s.chase, { type: "runAway" });
+  other.value = 0;
+  assert.equal(end(), "");
+  other.value = 1;
+  assert.equal(end(), "caught");
+  clear(s, 4);
+  assert.deepEqual([Run.chaseStatus(s).position, end()], [5, "escaped"]);
+  s.chase.type = "beatClock";
+  assert.deepEqual([Run.chaseStatus(s).other, end()], [null, "cleared"]);
+  s.chase.type = "competitive";
+  assert.equal(end(), "won");
+  s.subjects[3].complete = false;
+  other.value = 5;
+  assert.equal(end(), "rivalWon");
+});
+
+test("chase notices: the end once, Run Away's lead at the end of a round, stuck after three rounds, the initiative reminder and the last round", () => {
+  const s = chaseSystem(6);
+  D.applyForm(s, { chase: { type: "runAway" } });
+  const [pursuers] = s.counters;
+  pursuers.perRound = 0;
+  Run.startRun(s);
+  assert.deepEqual(Run.settleChase(s), []);
+  clear(s, 3);
+  assert.deepEqual(Run.settleChase(s), [], "the lead is checked only at the end of a round");
+  Run.advanceRound(s);
+  assert.deepEqual(noticeKeys(Run.settleChase(s)), ["End.lead"]);
+  Run.advanceRound(s);
+  assert.deepEqual(Run.settleChase(s), [], "an end is told once");
+  Run.undoRound(s);
+  Run.undoRound(s);
+  Run.settleChase(s);
+  assert.equal(s.run.chase.end, "", "taking the round back takes back the lead");
+
+  const t = chaseSystem(6);
+  D.applyForm(t, { chase: { type: "competitive" } });
+  t.counters[0].perRound = 0;
+  Run.startRun(t);
+  Run.settleChase(t);
+  const steps = [1, 2, 3].map(() => { Run.advanceRound(t); return noticeKeys(Run.settleChase(t)); });
+  assert.deepEqual(steps, [["Notice.Initiative"], ["Notice.Initiative"], ["Notice.Stuck", "Notice.Initiative"]]);
+  Run.resetRun(t);
+  assert.equal(t.run.chase, null);
+
+  const c = chaseSystem(2);
+  D.applyForm(c, { chase: { type: "beatClock" } });
+  Run.startRun(c);
+  Run.settleChase(c);
+  Run.advanceRound(c);
+  assert.deepEqual(noticeKeys(Run.settleChase(c)), ["Notice.LastRound"]);
+  assert.deepEqual(Run.settleChase(presetSystem("influence")), [], "not a chase");
+});
+
+test("a chase's panel shows only the current revealed obstacle and a track that hides unrevealed names", () => {
+  const s = chaseSystem(3);
+  s.subjects[0].name = "Crowded market";
+  s.subjects[1].name = "Rooftops";
+  Run.startRun(s);
+  let view = viewOf(s);
+  assert.deepEqual(view.subjects.map((row) => [row.name, row.index]), [["Crowded market", 0]]);
+  assert.deepEqual(view.counters, [], "the other side is on the track, not in the counters");
+  assert.deepEqual([view.chase.position, view.chase.other, view.chase.total], [1, 2, 3]);
+  assert.deepEqual(view.chase.slots.map((row) => row.name), ["Crowded market", "", ""]);
+  clear(s, 1);
+  assert.deepEqual(viewOf(s).subjects, [], "the next obstacle shows once the GM reveals it");
+  s.subjects[1].revealed = true;
+  view = viewOf(s);
+  assert.deepEqual([view.subjects.map((row) => [row.name, row.index]), view.chase.slots[0].cleared], [[["Rooftops", 1]], true]);
+  s.counters[0].revealed = false;
+  assert.equal(viewOf(s).chase.other, null);
+  assert.equal(viewOf(presetSystem("influence")).chase, null);
+});

@@ -251,7 +251,10 @@
       "PartyTotal": "Party total {total}",
       "MoveUp": "Move up",
       "MoveDown": "Move down",
-      "Collapse": "Collapse or expand"
+      "Collapse": "Collapse or expand",
+      "PcNote": "GM note",
+      "PcNotePlaceholder": "GM note",
+      "PcNoteHint": "GM only. For example: 1 dud (forged papers), 1 only for paperwork."
     },
     "Card": {
       "NotActiveGM": "Only the active GM can apply results.",
@@ -306,6 +309,137 @@
           "weakness": "Weakness",
           "other": "Other"
         }
+      },
+      "infiltration": {
+        "Label": "Infiltration",
+        "Points": "Infiltration Points",
+        "Subject": "Obstacle",
+        "Awareness": "Awareness Points",
+        "Edge": "Edge Points",
+        "Overcome": "Overcome",
+        "Attempt": "Attempt",
+        "Complication": "Complication",
+        "Opportunity": "Opportunity",
+        "AddComplication": "Add Complication",
+        "AddOpportunity": "Add Opportunity",
+        "Cleared": "The complication is overcome.",
+        "Benefit": "The PCs gain the opportunity's benefit.",
+        "Category": {
+          "opportunity": "Opportunity",
+          "complication": "Complication"
+        },
+        "Threshold": {
+          "5": {
+            "Player": "Suspicions are raised.",
+            "Gm": "Obstacle DCs +1."
+          },
+          "10": {
+            "Player": "Something goes wrong.",
+            "Gm": "The first time the PCs reach this tier, a complication occurs: reveal one."
+          },
+          "15": {
+            "Player": "The opposition is on alert.",
+            "Gm": "With the 5 AP tier, obstacle DCs are +2 in total."
+          },
+          "20": {
+            "Player": "The infiltration fails.",
+            "Gm": "End the challenge."
+          }
+        }
+      },
+      "preparation": {
+        "Label": "Infiltration Preparation",
+        "Subject": "Preparation",
+        "Dud": "Dud: this Edge Point secretly gives no benefit. Write it in the PC's Edge Points note.",
+        "Cursed": "Cursed: a PC who uses this Edge Point gets a critical failure, even if they spend it after rolling a failure. Write it in the PC's Edge Points note.",
+        "BribeContact": {
+          "Name": "Bribe Contact",
+          "Description": "Requires a contact (Gain Contact). The bribe is worth at least one-tenth of the Currency per additional PC (Table 10-9); doubling it grants a +2 circumstance bonus. DC: hard or very hard."
+        },
+        "ForgeDocuments": {
+          "Name": "Forge Documents",
+          "Description": "DC: hard or very hard.",
+          "Use": "The Edge Point is usable only when presenting paperwork."
+        },
+        "GainContact": {
+          "Name": "Gain Contact",
+          "Description": "A Lore suited to the contact also works. DC: normal, hard or very hard.",
+          "Use": "Contact made. The PC can now Bribe Contact.",
+          "Failure": "The PC fails to make contact.",
+          "CriticalFailure": "The contact is insulted or spooked: future attempts take a –2 circumstance penalty. Several critical failures may turn the contact against the PCs."
+        },
+        "Gossip": {
+          "Name": "Gossip",
+          "Description": "DC: normal, hard or very hard.",
+          "CriticalSuccess": "Inside information: +2 circumstance bonus to future preparation checks for this infiltration, for the PC and anyone they share it with.",
+          "Success": "The PC gains useful inside information for planning.",
+          "Failure": "The PC learns nothing.",
+          "CriticalFailure": "Mistaken rumours: –2 circumstance penalty to the PC's next preparation check."
+        },
+        "ScoutLocation": {
+          "Name": "Scout Location",
+          "Description": "DC: normal, hard or very hard.",
+          "Failure": "The PC learns nothing noteworthy."
+        },
+        "SecureDisguises": {
+          "Name": "Secure Disguises",
+          "Description": "DC: normal, hard or very hard.",
+          "Use": "The Edge Point is usable only to maintain a cover identity.",
+          "Failure": "The disguise is unusable."
+        }
+      },
+      "chase": {
+        "Label": "Chase",
+        "Points": "Chase Points",
+        "Subject": "Obstacle",
+        "Overcome": "Overcome",
+        "Other": {
+          "chaseDown": "Quarry",
+          "runAway": "Pursuers",
+          "competitive": "Rival"
+        },
+        "GmNotes": "Chase reminders (GM Core). Obstacles are cleared in order; extra Chase Points don't carry over, and PCs who haven't acted can go on to the next obstacle. A PC who passes or can't act costs the group 1 CP: use − on the obstacle's points. The other side's counter is its obstacle number and moves +1 each round; nudge it by hand on hard obstacles. Attack rolls and spells are yours to adjudicate: apply the degree from the roll card or change points by hand."
+      }
+    },
+    "Chase": {
+      "Label": "Chase",
+      "TypeLabel": "Chase type",
+      "CounterLabel": "Other side",
+      "CounterHint": "The counter that holds the other side's obstacle number. It moves +1 each round.",
+      "NoCounter": "None",
+      "Type": {
+        "chaseDown": "Chase Down",
+        "runAway": "Run Away",
+        "beatClock": "Beat the Clock",
+        "competitive": "Competitive"
+      },
+      "TypeHint": {
+        "chaseDown": "The party pursues the quarry, which starts one obstacle ahead. The party catches it on reaching its obstacle; it escapes once past the last.",
+        "runAway": "The party flees pursuers who start one obstacle behind. The party escapes past the last obstacle, or three obstacles ahead at the end of a round; it is caught if they reach its obstacle.",
+        "beatClock": "The party must clear every obstacle before the rounds run out: one round per obstacle. There is no other side.",
+        "competitive": "The party races a rival who starts level with it. Whoever passes the last obstacle first wins. Roll initiative each round to see who goes first."
+      },
+      "PartyAt": "Party: {subject} {position} of {total}",
+      "PartyDone": "Party: past the last obstacle",
+      "OtherAt": "{name}: {position}",
+      "Party": "Party",
+      "Unknown": "Obstacle not yet revealed",
+      "Behind": "Behind the first obstacle",
+      "Finish": "Past the last obstacle",
+      "End": {
+        "caughtQuarry": "The party catches the {other}.",
+        "quarryEscaped": "The {other} gets past the last obstacle and escapes.",
+        "escaped": "The party clears the last obstacle and escapes.",
+        "caught": "The {other} catch the party.",
+        "lead": "The party is three obstacles ahead at the end of the round and escapes.",
+        "cleared": "The party clears every obstacle in time.",
+        "won": "The party passes the last obstacle first and wins the race.",
+        "rivalWon": "The {other} passes the last obstacle first and wins the race."
+      },
+      "Notice": {
+        "Stuck": "The party has spent {rounds} rounds on {obstacle}. GM Core suggests letting them find another way, or an NPC helps at a cost.",
+        "Initiative": "Competitive chase: roll initiative to see who acts first this round.",
+        "LastRound": "Beat the Clock: this is the last round."
       }
     }
   }
