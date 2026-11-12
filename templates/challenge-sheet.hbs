@@ -159,12 +159,13 @@
       <div class="ssm-section">
         <h4 class="ssm-section-title">{{localize "SSM.Challenge.Actions"}}</h4>
         {{#each subject.actions}}
-        <div class="ssm-action-card">
+        <div class="ssm-action-card {{#if open}}open{{/if}}">
           <div class="ssm-skill-line">
-            <span class="ssm-stat-label">{{label}}{{#if secret}} <i class="fa-solid fa-user-secret" data-tooltip="SSM.Challenge.SecretHint" aria-label="{{localize "SSM.Challenge.Secret"}}"></i>{{/if}}</span>
+            {{#if descriptionHtml}}<button type="button" class="ssm-stat-label ssm-action-toggle" data-action="toggleAction" data-id="{{id}}" aria-expanded="{{#if open}}true{{else}}false{{/if}}"><i class="fa-solid {{#if open}}fa-chevron-down{{else}}fa-chevron-right{{/if}} ssm-action-chevron" aria-hidden="true"></i>{{label}}{{#if secret}} <i class="fa-solid fa-user-secret" data-tooltip="SSM.Challenge.SecretHint" aria-label="{{localize "SSM.Challenge.Secret"}}"></i>{{/if}}</button>
+            {{else}}<span class="ssm-stat-label">{{label}}{{#if secret}} <i class="fa-solid fa-user-secret" data-tooltip="SSM.Challenge.SecretHint" aria-label="{{localize "SSM.Challenge.Secret"}}"></i>{{/if}}</span>{{/if}}
             <span class="ssm-skill-grid">{{#each checks}}{{> ssmSkillChip root=../../..}}{{/each}}</span>
           </div>
-          {{#if description}}<div class="ssm-action-description ssm-run-description">{{description}}</div>{{/if}}
+          {{#if open}}<div class="ssm-action-description ssm-run-description">{{{descriptionHtml}}}</div>{{/if}}
         </div>
         {{/each}}
       </div>
@@ -311,11 +312,14 @@
     {{#each subject.actions}}
     <div class="ssm-action-card ssm-action-edit">
       <div class="ssm-row ssm-entry">
-        <strong class="ssm-action-name ssm-grow">{{label}}{{#if secret}} <span class="ssm-tag">{{localize "SSM.Challenge.Secret"}}</span>{{/if}}</strong>
-        <button type="button" class="icon fa-solid fa-pen-to-square" data-action="editAction" data-subject="{{subject.id}}" data-id="{{id}}" aria-label="{{localize "SSM.Challenge.EditAction"}}" data-tooltip="SSM.Challenge.EditAction"></button>
+        <label class="grow">{{localize "SSM.Challenge.Name"}}<input type="text" name="{{path}}.name" value="{{name}}" placeholder="{{localize "SSM.Challenge.UnnamedAction"}}"></label>
+        <label class="check" data-tooltip="SSM.Challenge.SecretHint"><input type="checkbox" name="{{path}}.secret" {{checked secret}}>{{localize "SSM.Challenge.Secret"}}</label>
         <button type="button" class="icon fa-solid fa-trash" data-action="removeRow" data-path="{{path}}" aria-label="{{localize "SSM.Challenge.RemoveAction"}}" data-tooltip="SSM.Challenge.RemoveAction"></button>
       </div>
-      {{#if description}}<div class="ssm-action-lines"><div class="ssm-action-description">{{description}}</div></div>{{/if}}
+      <div class="ssm-action-lines">
+        <span class="ssm-field-label" data-tooltip="SSM.Challenge.ActionDescriptionHint">{{localize "SSM.Challenge.ActionDescription"}}</span>
+        <prose-mirror name="{{path}}.description" toggled value="{{description}}">{{{descriptionHtml}}}</prose-mirror>
+      </div>
       <div class="ssm-checks-wrap"><table class="ssm-checks">
         <thead><tr>
           <th>{{localize "SSM.Challenge.Skill"}}</th>

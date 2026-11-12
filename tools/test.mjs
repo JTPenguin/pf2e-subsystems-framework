@@ -410,14 +410,25 @@ test("the windows' rows use the shared row edits on the entry alone", () => {
   assert.equal(action.description, "", "a new action has an empty description");
 });
 
-test("saving an action writes the window's fields and keeps its checks", () => {
+test("the Edit tab's form writes an action's name, description and Secret and keeps its checks", () => {
   const s = system();
   const action = influence(s);
-  assert.deepEqual(D.ACTION_FIELDS, ["name", "description", "secret"]);
-  assert.equal(D.saveAction(s, sub(s).id, action.id, { name: "Sway", description: "Spend an action\nto sway", secret: true, checks: [] }), true);
-  assert.deepEqual([action.name, action.description, action.secret, action.checks.length], ["Sway", "Spend an action\nto sway", true, 3]);
+  const a = sub(s).actions.indexOf(action);
+  D.applyForm(s, { subjects: { 0: { actions: { [a]: { name: "Sway", description: "Spend an action\nto sway", secret: true } } } } });
+  const saved = sub(s).actions[a];
+  assert.deepEqual([saved.name, saved.description, saved.secret, saved.checks.length], ["Sway", "Spend an action\nto sway", true, 3]);
   assert.match(D.searchText(s), /to sway/);
-  assert.equal(D.saveAction(s, sub(s).id, "gone", { name: "x" }), false);
+});
+
+test("an action's description reaches the panel copy without its secret blocks", () => {
+  const s = system();
+  sub(s).revealed = true;
+  influence(s).description = '<p>Sway them.</p><section class="secret" id="secret-x"><p>They hate flattery.</p></section><p><strong>Success</strong> +1</p>';
+  const view = V.buildPanelView({ name: "c", system: s, party: [] });
+  const copy = view.subjects[0].actions.find((action) => action.id === influence(s).id);
+  assert.equal(copy.description, "<p>Sway them.</p><p><strong>Success</strong> +1</p>");
+  assert.doesNotMatch(JSON.stringify(view), /flattery/);
+  assert.equal(V.withoutSecrets(""), "");
 });
 
 /* Rolls */

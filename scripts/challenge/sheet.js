@@ -8,7 +8,7 @@ import { advanceRound, canAdvanceRound, canUndoRound, changeCounter, changePoint
 import { LINK_ROLL_ID } from "../roll-option.js";
 import { rollCheck, rollTarget } from "./roll.js";
 import { addRow, applyForm, COUNTER_DISPLAYS, HIDDEN_DISPLAY, setCounterNote, subjectTemplates, BOTH_WAYS, clampTracks, DIRECTIONS, EDITABLE, groupByCategory, isAlwaysShown, isDecoyCheck, limitTrack, LORE, moveSubject, PERCEPTION, nextThresholdReveal, pickFields, removeRow, SAVES, THRESHOLD_REVEALS } from "./data.js";
-import { ActionWindow, ModifierWindow } from "./entry-window.js";
+import { ModifierWindow } from "./entry-window.js";
 
 const { DocumentSheetV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
@@ -20,6 +20,9 @@ const THRESHOLD_EYE = { hidden: { icon: "fa-eye-slash", pressed: "false" }, poin
 /** The user flag holding which subjects this user has collapsed on the sheet, by subject id (spec 14.8). */
 const COLLAPSED_FLAG = "collapsedSubjects";
 const isCollapsed = (subjectId) => !!game.user.getFlag(MODULE, COLLAPSED_FLAG)?.[subjectId];
+
+/** The action cards this user has opened in Run mode, as "pageId:actionId". Each user's own, kept until the page reloads, as on the panel. */
+const openActions = new Set();
 
 /**
  * Modifier views as the GM window's sections, by category (spec 14.7): the blank category first, with no heading,
@@ -46,10 +49,10 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
       addRow: ChallengeSheet.#onAddRow,
       removeRow: ChallengeSheet.#onRemoveRow,
       editModifier: ChallengeSheet.#onEditModifier,
-      editAction: ChallengeSheet.#onEditAction,
       toggleComplete: ChallengeSheet.#onToggleComplete,
       moveSubject: ChallengeSheet.#onMoveSubject,
       toggleCollapse: ChallengeSheet.#onToggleCollapse,
+      toggleAction: ChallengeSheet.#onToggleAction,
       setMode: ChallengeSheet.#onSetMode,
       startRun: ChallengeSheet.#onStartRun,
       endRun: ChallengeSheet.#onEndRun,
@@ -74,6 +77,9 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
   static PARTS = {
     form: { template: `modules/${MODULE}/templates/challenge-sheet.hbs`, scrollable: [".ssm-body"] },
   };
+
+  /** Each action's enriched description, by action id, from the last context. */
+  #actionHtml = new Map();
 
   #tab = CHALLENGE_TAB;
 
@@ -209,6 +215,10 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
     const subjectLabel = system.subjectLabel || loc("SSM.Challenge.Subject");
 
     const enrich = (html) => foundry.applications.ux.TextEditor.implementation.enrichHTML(html, { relativeTo: this.document, secrets: true });
+    // Each action's description, enriched once for both modes, by action id.
+    const actionHtml = new Map();
+    for (const action of system.subjects.flatMap((subject) => subject.actions)) actionHtml.set(action.id, action.description ? await enrich(action.description) : "");
+    this.#actionHtml = actionHtml;
     // A both-ways track's Reached follows its value, so its checkbox is left out.
     const thresholds = (rows, path, direction) => rows.map((row, i) => ({ ...row, path: `${path}.thresholds.${i}`, followsValue: direction === BOTH_WAYS }));
     const subjectView = (subject, n) => {
@@ -225,6 +235,7 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
           ...action,
           path: `${path}.actions.${a}`,
           label: actionName(action),
+          descriptionHtml: actionHtml.get(action.id),
           checks: action.checks.map((row, i) => ({ ...row, path: `${path}.actions.${a}.checks.${i}`, isLore: row.skill === LORE })),
         })),
         thresholds: thresholds(subject.thresholds, path, subject.direction),
@@ -379,7 +390,8 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
         actions: subject.actions.map((action) => ({
           id: action.id,
           label: actionName(action),
-          description: action.description,
+          descriptionHtml: this.#actionHtml.get(action.id) ?? "",
+          open: openActions.has(`${this.page.id}:${action.id}`),
           secret: action.secret,
           checks: rollRows(subject, action),
         })).filter((action) => action.checks.length),
@@ -509,11 +521,11 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
       this.#tab = added.id;
       return this.render();
     }
-    // A new modifier or action opens in its own window, where it is edited.
-    const Window = list.endsWith(".modifiers") ? ModifierWindow : list.endsWith(".actions") ? ActionWindow : null;
+    // A new modifier opens in its own window, where it is edited. A new action is edited on its card.
+    if (!list.endsWith("modifiers")) return;
     // A challenge-level entry has an empty subject id.
     const subjectId = list === "modifiers" ? "" : this.page.system.subjects[Number(list.split(".")[1])]?.id;
-    if (Window && subjectId !== undefined) Window.open(this.page, subjectId, added.id);
+    if (subjectId !== undefined) ModifierWindow.open(this.page, subjectId, added.id);
   }
 
   static #onRemoveRow(event, target) {
@@ -541,10 +553,11 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
     return this.render();
   }
 
-  /** Open an action's own window, from the Edit tab. */
-  static async #onEditAction(event, target) {
-    await this.submit();
-    return ActionWindow.open(this.page, target.dataset.subject, target.dataset.id);
+  /** Open an action's description in Run mode, or close it, by a click on its name. */
+  static #onToggleAction(event, target) {
+    const key = `${this.page.id}:${target.dataset.id}`;
+    if (!openActions.delete(key)) openActions.add(key);
+    return this.render();
   }
 
   static async #onSetMode(event, target) {

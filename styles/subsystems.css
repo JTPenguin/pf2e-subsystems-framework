@@ -66,7 +66,8 @@ button.ssm-toggle.ssm-toggle-on:disabled { opacity: 1; }
 .ssm-stat .ssm-point-total { min-width: 1.75rem; line-height: 1; }
 .ssm-skill-line { display: flex; align-items: flex-start; gap: 0.5rem; margin-bottom: 0.2rem; }
 .ssm-skill-line > .ssm-stat-label { flex: 0 0 6.5rem; line-height: 1.6rem; }
-.ssm-action-description { white-space: pre-line; font-style: italic; }
+.ssm-action-description > :first-child { margin-top: 0; }
+.ssm-action-description > :last-child { margin-bottom: 0; }
 .ssm-run-description { padding-left: 7rem; margin-bottom: 0.3rem; }
 /* Two or three columns, by the window's width. Each chip fills its cell, so the DCs line up. */
 .ssm-skill-grid { flex: 1 1 auto; min-width: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr)); gap: 0.2rem 0.25rem; }
@@ -309,10 +310,17 @@ fieldset:has(> .ssm-checks-wrap) { min-width: 0; }
 .ssm-panel-pc-row { display: flex; align-items: center; gap: 0.4rem; }
 .ssm-panel-pc-row > .ssm-panel-pc { width: 1.4rem; height: 1.4rem; border-width: 1px; }
 .ssm-panel-pc-row.complete > .ssm-panel-threshold-mark { color: #6fae6a; }
-/* Each action is a card, like a modifier card but with a plain edge: its name, then its check buttons. The card is the hover target for the description. */
+/* Each action is a card, like a modifier card but with a plain edge: its name, then its check buttons, then its description when opened. */
 .ssm-panel-actions { display: flex; flex-direction: column; gap: 0.25rem; margin-top: 0.25rem; }
 .ssm-panel-action { padding: 0.1rem 0.35rem 0.15rem; border: 1px solid rgba(184, 160, 106, 0.35); border-radius: 3px; background: rgba(255, 255, 255, 0.04); line-height: 1.25; }
 .ssm-panel-action-name { display: block; }
+/* A card with a description opens by its name: a plain, full-width button with a chevron. */
+.ssm-panel-action-toggle { all: unset; display: block; width: 100%; box-sizing: border-box; cursor: pointer; }
+.ssm-panel-action-toggle:focus-visible { outline: 1px solid #b8a06a; }
+.ssm-panel-action-chevron { width: 0.8rem; margin-right: 0.2rem; font-size: 0.7em; opacity: 0.75; }
+.ssm-panel-action-description { margin-top: 0.2rem; padding-top: 0.2rem; border-top: 1px solid rgba(184, 160, 106, 0.25); font-size: var(--font-size-12, 0.75rem); line-height: 1.35; }
+.ssm-panel-action-description p { margin: 0 0 0.25rem; }
+.ssm-panel-action-description > :last-child { margin-bottom: 0; }
 .ssm-panel-action-name > i { margin-left: 0.15rem; font-size: 0.85em; opacity: 0.75; }
 .ssm-panel-action .ssm-panel-list { display: flex; flex-wrap: wrap; gap: 0 0.25rem; }
 /* A modifier section per category: a heading in the category's colour, then its cards, or "None revealed". The blank category has no heading. */
@@ -351,10 +359,20 @@ fieldset:has(> .ssm-checks-wrap) { min-width: 0; }
 /* An action card, styled like a modifier card. */
 .ssm-sheet .ssm-action-card { box-sizing: border-box; min-width: 0; margin-bottom: 0.25rem; padding: 0.2rem 0.3rem; border: 1px solid var(--color-border, #7a7971); border-radius: 3px; background: var(--ssm-reveal-fill); }
 .ssm-sheet .ssm-action-card .ssm-skill-line { margin-bottom: 0; }
+/* In Run mode a card with a description opens by its name: a plain button with a chevron, as on the panel. */
+.ssm-sheet button.ssm-action-toggle { all: unset; flex: 0 0 6.5rem; box-sizing: border-box; line-height: 1.6rem; font-weight: 600; cursor: pointer; }
+.ssm-sheet button.ssm-action-toggle:focus-visible { outline: 1px solid var(--color-border-highlight, #ff6400); }
+.ssm-sheet .ssm-action-chevron { width: 0.8rem; margin-right: 0.15rem; font-size: 0.7em; opacity: 0.75; }
 .ssm-sheet .ssm-action-card .ssm-run-description { margin: 0.1rem 0 0; }
-.ssm-sheet .ssm-action-edit { padding: 0.3rem 0.5rem 0.4rem; }
+/* The sheet body is a flex column; the card keeps its full height, or an open editor is squeezed. */
+.ssm-sheet .ssm-action-edit { flex: none; padding: 0.3rem 0.5rem 0.4rem; }
 .ssm-sheet .ssm-action-edit > .ssm-entry > button.icon { --button-size: 1.5rem; width: 1.5rem; height: 1.5rem; }
-.ssm-sheet .ssm-action-edit > .ssm-action-lines { margin-bottom: 0.25rem; }
+.ssm-sheet .ssm-action-edit > .ssm-action-lines { display: block; margin-bottom: 0.25rem; }
+.ssm-sheet .ssm-action-edit .ssm-field-label { display: block; }
+/* Foundry's editor fills a fixed box. Closed, the description sizes to its text; open for editing, it gets room for the menu and a few paragraphs. */
+.ssm-sheet .ssm-action-edit prose-mirror.inactive { min-height: 2rem; }
+.ssm-sheet .ssm-action-edit prose-mirror.inactive .editor-content { position: static; }
+.ssm-sheet .ssm-action-edit prose-mirror.active { min-height: 16rem; }
 .ssm-sheet .ssm-action-name { font-size: var(--font-size-14, 0.875rem); }
 /* A category's heading inside Modifiers takes the category's stripe colour. */
 .ssm-sheet .ssm-cat-group > .ssm-cat-head { margin: var(--space-4, 0.25rem) 0 var(--space-2, 0.125rem); padding-left: var(--space-4, 0.25rem); border-left: 3px solid var(--ssm-cat, var(--color-border-book, #7a7971)); font-size: inherit; font-weight: 600; }

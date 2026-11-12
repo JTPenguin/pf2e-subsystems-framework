@@ -1,7 +1,7 @@
 import { MODULE } from "../constants.js";
 import { actionName, skillKeyLabel, skillLabel } from "./skill-label.js";
 import { writeChallenge } from "./state.js";
-import { ACTION_FIELDS, addRow, categoryKey, categoryOrder, challengeSkillKeys, DURATIONS, EFFECT_TYPES, entryChanges, findAction, findModifier, mergeForm, MODIFIER_FIELDS, QUICK_DC_AMOUNTS, rebaseEntry, removeRow, saveAction, saveModifier, setEffectAmount } from "./data.js";
+import { addRow, categoryKey, categoryOrder, challengeSkillKeys, DURATIONS, EFFECT_TYPES, entryChanges, findModifier, mergeForm, MODIFIER_FIELDS, QUICK_DC_AMOUNTS, rebaseEntry, removeRow, saveModifier, setEffectAmount } from "./data.js";
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
@@ -12,7 +12,7 @@ const labels = (values, prefix) => Object.fromEntries(values.map((value) => [val
 const effectView = (effect, path, canRemove) => ({ ...effect, path, canRemove, isDc: effect.type === "dc", isNote: effect.type === "note" });
 
 /**
- * A window for one entry of a subject or, for a modifier, of the challenge itself: a modifier or an action (spec sections 6, 14.4 and 14.7).
+ * A window for one modifier entry of a subject or of the challenge itself (spec sections 6, 14.4 and 14.7).
  * A challenge-level modifier has an empty subject id. It edits a copy and saves it through
  * the page's write queue, so the sheet and the panel redraw as for any other change. It sits in the page's apps: an update from
  * elsewhere redraws it, keeping the GM's unsaved edits, and deleting the entry closes it.
@@ -241,18 +241,5 @@ export class ModifierWindow extends EntryWindow {
       quickDcAmounts: QUICK_DC_AMOUNTS.map((amount) => ({ amount, label: amount > 0 ? `+${amount}` : `${amount}`.replace("-", "−") })),
       choices: { durations: labels(DURATIONS, "Duration"), effects: labels(EFFECT_TYPES, "Effect") },
     };
-  }
-}
-
-/** The window for one action: its name, description and Secret. Its checks are edited on the sheet. */
-export class ActionWindow extends EntryWindow {
-  static ENTRY = { key: "action", find: findAction, fields: ACTION_FIELDS, save: saveAction, titleKey: "SSM.Challenge.EditActionTitle", unnamed: "SSM.Challenge.UnnamedAction", goneKey: "SSM.Challenge.ActionGone" };
-
-  static DEFAULT_OPTIONS = { window: { icon: "fa-solid fa-dice-d20" } };
-
-  static PARTS = { form: { template: `modules/${MODULE}/templates/challenge-action.hbs` } };
-
-  _entryContext(system, subject, action) {
-    return { action };
   }
 }

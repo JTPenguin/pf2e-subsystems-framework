@@ -127,7 +127,7 @@ function subjectView(system, subject, party) {
     actions: subject.actions.map((action) => ({
       id: action.id,
       name: action.name,
-      description: action.description ?? "",
+      description: withoutSecrets(action.description),
       secret: !!action.secret,
       checks: action.checks.filter(isVisibleCheck).map((row) => ({ id: row.id, skill: row.skill, lore: row.lore, dc: currentDc(system, subject, row) })),
     })).filter((action) => action.checks.length),
@@ -203,6 +203,9 @@ export function roundSegments(current, max) {
   const filled = Math.min(total, Math.max(0, Math.floor(current) || 0));
   return Array.from({ length: total }, (_, index) => ({ filled: index < filled }));
 }
+
+/** Rich text without its secret blocks, which only the GM sees. The copy reaches players' clients, so the blocks must not be in it. */
+export const withoutSecrets = (html) => String(html ?? "").replace(/<section\b[^>]*\bclass="[^"]*\bsecret\b[^"]*"[^>]*>[\s\S]*?<\/section>/gi, "").trim();
 
 /** The filtered copy. `party` is a list of { id, name, img }. Only revealed subjects and counters go in. */
 export function buildPanelView({ name, system, party }) {

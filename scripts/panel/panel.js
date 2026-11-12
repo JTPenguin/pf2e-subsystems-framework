@@ -276,7 +276,7 @@ async function draw() {
   const panel = subsystemByType(state.type)?.panel;
   if (!state.view || state.hidden || !panel) return removePanel();
   // isGM lets a template give the GM controls that players see as plain text.
-  const view = await renderTemplate(panel.template, { ...panel.prepareView(state.view, state), isGM: game.user.isGM });
+  const view = await renderTemplate(panel.template, { ...(await panel.prepareView(state.view, state)), isGM: game.user.isGM });
   // A redraw during a press would replace the button being pressed and lose the click. The release catches up.
   if (pressing) {
     heldBack = true;
@@ -286,7 +286,7 @@ async function draw() {
 }
 
 /** Redraw the panel. Calls during a draw run once more afterwards, so the last state is the one on screen. */
-async function refreshPanel() {
+export async function refreshPanel() {
   if (drawing) {
     again = true;
     return;

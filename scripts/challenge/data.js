@@ -447,20 +447,18 @@ export function searchText(system) {
 }
 
 /*
- * A modifier and an action are each edited in a window of their own. The window edits a copy of the entry,
+ * A modifier is edited in a window of its own. The window edits a copy of the entry,
  * then saves only what the GM changed onto the latest data.
  */
 
 /** The fields each window edits. The id never changes. */
 export const MODIFIER_FIELDS = ["name", "category", "duration", "playerText", "gmText", "active", "spent", "revealed", "decoy", "effects"];
-export const ACTION_FIELDS = ["name", "description", "secret"];
 
 const subjectById = (system, subjectId) => system.subjects.find((subject) => subject.id === subjectId);
 /** The modifier list a subject id names. An empty id names the challenge's own list (spec 14.7). */
 export const modifierList = (system, subjectId) => (subjectId ? subjectById(system, subjectId)?.modifiers : system.modifiers);
 /** The modifier or action with this id on this subject, or on the challenge for an empty subject id. Undefined if there is none. */
 export const findModifier = (system, subjectId, modifierId) => modifierList(system, subjectId)?.find((modifier) => modifier.id === modifierId);
-export const findAction = (system, subjectId, actionId) => subjectById(system, subjectId)?.actions.find((action) => action.id === actionId);
 
 const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 
@@ -489,13 +487,5 @@ export function saveModifier(system, subjectId, modifierId, changes) {
   const subject = subjectId ? subjectById(system, subjectId) : null;
   const checks = new Set(subject ? allChecks(subject).map((check) => check.id) : challengeSkillKeys(system));
   for (const row of modifier.effects) row.skills = row.skills.filter((skill) => checks.has(skill));
-  return true;
-}
-
-/** Save the window's changes onto an action. Returns false if the action is gone. */
-export function saveAction(system, subjectId, actionId, changes) {
-  const action = findAction(system, subjectId, actionId);
-  if (!action) return false;
-  for (const key of ACTION_FIELDS) if (key in changes) action[key] = structuredClone(changes[key]);
   return true;
 }

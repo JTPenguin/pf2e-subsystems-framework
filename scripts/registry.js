@@ -10,7 +10,7 @@ import { MODULE } from "./constants.js";
  * panel: what the shared panel needs (spec section 4). Leave it out for a subsystem with no panel.
  *   isRunning(system): whether the challenge can be on the panel. Any number can run; one is on the panel at a time.
  *   buildView({ name, system, party }): the filtered copy, holding only what players may see.
- *   template and prepareView(view): the player panel's template and its context, from the filtered copy alone.
+ *   template and prepareView(view): the player panel's template and its context, from the filtered copy alone. prepareView may be async.
  *   viewActions: { name: (state, button, event) } for buttons any user can press. They read only the filtered copy, `state.view`.
  */
 const definitions = new Map();

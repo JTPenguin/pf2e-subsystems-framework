@@ -1,6 +1,7 @@
 import { MODULE } from "../constants.js";
 import { isDecoyCheck } from "./data.js";
 import { actionName, skillLabel, subjectName } from "./skill-label.js";
+import { refreshPanel } from "../panel/panel.js";
 import { bothWaysBar, buildPanelView, cardTooltip, changeText, findPanelRow, pointsBar, roundSegments } from "./panel-view.js";
 import { rollCheck, rollTarget } from "./roll.js";
 import { advanceRound, canAdvanceRound, canUndoRound, toggleActed, toggleModifier, undoRound } from "./run.js";
@@ -68,8 +69,22 @@ function roundButtons(page) {
   return { canPreviousRound: run && canUndoRound(page.system), canNextRound: run && canAdvanceRound(page.system) };
 }
 
+/** The action cards this user has opened on the panel, as "challengeId:subjectId:actionId". Each user's own, kept until the page reloads. */
+const openActions = new Set();
+const actionKey = (challengeId, subjectId, actionId) => `${challengeId}:${subjectId}:${actionId}`;
+
+/** A click on an action's name opens its description on the panel, or closes it. */
+function toggleAction(state, button) {
+  const key = actionKey(state.id, button.dataset.subject, button.dataset.id);
+  if (!openActions.delete(key)) openActions.add(key);
+  return refreshPanel();
+}
+
+/** An action's description as HTML. The copy holds no secret blocks, and inline rolls and links work as on an item. */
+const enrichDescription = (html) => (html ? foundry.applications.ux.TextEditor.implementation.enrichHTML(html, { secrets: false }) : "");
+
 /** The panel's context, drawn only from the filtered copy. On a GM's client, the round buttons, the decoy tags and the cards' GM text also read the challenge. */
-function prepareView(view, state) {
+async function prepareView(view, state) {
   const page = gmPage(state);
   const gm = gmTexts(page);
   const decoys = gmDecoys(page);
@@ -83,7 +98,7 @@ function prepareView(view, state) {
     several: view.subjects.length > 1,
     // Challenge-level entries: a full-width strip above the subject columns, hidden with none revealed (spec 14.7).
     challengeMods: (view.modifiers ?? []).map((row) => modifierCard(row, "", gm.get(`:${row.id}`), decoys.has(`:${row.id}`))),
-    subjects: view.subjects.map((subject, n) => ({
+    subjects: await Promise.all(view.subjects.map(async (subject, n) => ({
       ...subject,
       name: subjectName(subject, subject.index ?? n, view.subjectLabel),
       bar: barOf(subject.points, subject),
@@ -91,21 +106,23 @@ function prepareView(view, state) {
       // One row per PC on an individual subject: portrait, bar, and a check when that PC is done.
       pcs: subject.tracksPoints ? subject.pcs.map((pc) => ({ ...pc, name: pcs.get(pc.id)?.name ?? "", img: pcs.get(pc.id)?.img ?? "", bar: barOf(pc.points, subject) })) : [],
       // Only ids go in the HTML. A click looks the DC up in the copy.
-      actions: subject.actions.map((action) => ({
+      // A card with a description opens and closes by its name.
+      actions: await Promise.all(subject.actions.map(async (action) => ({
         id: action.id,
+        subjectId: subject.id,
         name: actionName(action),
         secret: action.secret,
-        // Everyone sees the description, so it goes in as player text.
-        tooltip: cardTooltip({ playerText: action.description, isGM: false }, { escape: foundry.utils.escapeHTML }),
+        descriptionHtml: await enrichDescription(action.description),
+        open: openActions.has(actionKey(state.id, subject.id, action.id)),
         checks: action.checks.map((row) => ({ id: row.id, subjectId: subject.id, actionId: action.id, label: skillLabel(row), decoy: decoys.has(`${subject.id}:${row.id}`) })),
-      })),
+      }))),
       // One section per category; the heading names the category, so the cards leave out its label (spec 14.7).
       modifierGroups: subject.modifierGroups.map((group) => ({
         heading: group.label,
         stripe: group.colour ? `--ssm-cat: ${group.colour}` : "",
         cards: group.cards.map((row) => ({ ...modifierCard(row, subject.id, gm.get(`${subject.id}:${row.id}`), decoys.has(`${subject.id}:${row.id}`)), categoryLabel: "" })),
       })),
-    })),
+    }))),
     // A counter drawn as a bar, steps or a track gets its own row and threshold card; numbers share one line (spec 14.12).
     tracks: view.counters.filter((row) => SLOTTED.has(row.display) || row.display === "bar").map((row) => ({
       ...row,
@@ -186,5 +203,5 @@ export const challengePanel = {
   isRunning: (system) => system.run.status === "active",
   buildView: buildPanelView,
   prepareView,
-  viewActions: { rollSkill: rollFromPanel, previousRound: moveRound, nextRound: moveRound, toggleModifier: flipModifier, toggleActed: flipActed },
+  viewActions: { rollSkill: rollFromPanel, previousRound: moveRound, nextRound: moveRound, toggleModifier: flipModifier, toggleActed: flipActed, toggleAction },
 };

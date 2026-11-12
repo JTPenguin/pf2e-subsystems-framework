@@ -376,7 +376,7 @@ Edit mode changes:
 
 - The challenge has the points name, subject label and an optional round maximum.
 - Each subject has the stat line, Tracks points, Individual, direction and goal.
-- Each action's checks stay an inline table. Its name, description and Secret are edited in a window of their own, as modifiers are.
+- Each action is a card: its name, Secret and description, then its checks as an inline table. The description is rich text, like an item's, so it can hold the action's degrees of success. Its secret blocks are the GM's alone.
 - Counters have direction, change each round, and thresholds in place of triggers.
 
 ### 14.5 Panel
@@ -416,8 +416,8 @@ A preset can offer several **subject templates**, one Add button each; the first
 | Other | Not built in. It is one of Influence's suggestions. |
 | Edit tab | One Add entry per category in use, plus a plain Add entry with an empty category. The preset's suggested categories always get one, even when no entry uses them yet (Justin, 2026-11-11). There is no list of categories to edit. |
 | Order on the sheet and panel | A blank category groups first, with no heading and no label, then the labelled ones (Justin, 2026-11-11). |
-| GM window | Under each subject, an Actions section of action cards, then Thresholds, then a Modifiers section with one subsection per category, its heading in the category's colour. The Edit tab has the same Actions and Modifiers headings. |
-| Panel | Each action is a card: its name, a Secret mark, its check buttons, and its description on hover. Then one section per category the subject has, plus the preset's suggestions, with a heading in the category's colour; one with nothing revealed says "None revealed". Its label shows even when every entry in it is hidden. The blank category shows only when one of its entries is revealed. The cards leave out the category label, since the heading names it. |
+| GM window | Under each subject, an Actions section of action cards, then Thresholds, then a Modifiers section with one subsection per category, its heading in the category's colour. In Run mode a card with a description opens and closes by its name to show it, as on the panel. The Edit tab has the same Actions and Modifiers headings. |
+| Panel | Each action is a card: its name, a Secret mark and its check buttons. A card with a description opens and closes by its name to show it, as it does in the GM window's Run mode; each user's open cards are their own. Then one section per category the subject has, plus the preset's suggestions, with a heading in the category's colour; one with nothing revealed says "None revealed". Its label shows even when every entry in it is hidden. The blank category shows only when one of its entries is revealed. The cards leave out the category label, since the heading names it. |
 
 **Challenge-level modifiers.** The challenge holds its own list of modifier entries, beside each subject's.
 
