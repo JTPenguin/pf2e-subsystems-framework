@@ -253,6 +253,11 @@ button.ssm-reached { color: #4f9d5d; }
 .ssm-panel button.ssm-panel-round-button { flex: none; width: auto; height: auto; min-height: 0; margin: 0; padding: 0.25rem 0.4rem; border: none; background: none; box-shadow: none; color: #e8cf8f; font-size: var(--font-size-13, 0.8125rem); line-height: inherit; cursor: pointer; }
 .ssm-panel button.ssm-panel-round-button:hover:not(:disabled), .ssm-panel button.ssm-panel-round-button:focus-visible { color: #fff; }
 .ssm-panel button.ssm-panel-round-button:disabled { opacity: 0.35; cursor: default; }
+/* The GM's − and + around a counter value: small, boxless, like the round buttons. Players get the value alone. */
+.ssm-panel-step { flex: none; display: inline-flex; align-items: center; gap: 0.1rem; white-space: nowrap; }
+.ssm-panel button.ssm-panel-step-button { flex: none; width: auto; height: auto; min-height: 0; margin: 0; padding: 0.1rem 0.25rem; border: none; background: none; box-shadow: none; color: #e8cf8f; font-size: var(--font-size-11, 0.7rem); line-height: inherit; cursor: pointer; }
+.ssm-panel button.ssm-panel-step-button:hover:not(:disabled), .ssm-panel button.ssm-panel-step-button:focus-visible { color: #fff; }
+.ssm-panel button.ssm-panel-step-button:disabled { opacity: 0.35; cursor: default; }
 .ssm-panel-segments { display: flex; gap: 2px; flex: 1 1 4rem; min-width: 3rem; }
 .ssm-panel-segments > span { flex: 1 1 0; height: 0.55rem; background: rgba(255, 255, 255, 0.15); border-radius: 2px; }
 .ssm-panel-segments > span.filled { background: #b8a06a; }

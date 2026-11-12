@@ -1,10 +1,10 @@
 import { MODULE } from "../constants.js";
-import { isDecoyCheck } from "./data.js";
+import { counterMoves, findCounter, isDecoyCheck } from "./data.js";
 import { actionName, skillLabel, subjectName } from "./skill-label.js";
 import { refreshPanel } from "../panel/panel.js";
 import { bothWaysBar, buildPanelView, cardTooltip, changeText, findPanelRow, pointsBar, roundSegments } from "./panel-view.js";
 import { rollCheck, rollTarget } from "./roll.js";
-import { advanceRound, canAdvanceRound, canUndoRound, toggleActed, toggleModifier, undoRound } from "./run.js";
+import { advanceRound, canAdvanceRound, canUndoRound, changeCounter, counterValueOf, toggleActed, toggleModifier, undoRound } from "./run.js";
 import { ChallengeSheet } from "./sheet.js";
 import { announceTriggers, writeChallenge } from "./state.js";
 import { challengePage } from "../registry.js";
@@ -23,11 +23,21 @@ const SLOTTED = new Set(["steps", "track"]);
 const barOf = (value, track) => (track.range ? bothWaysBar(value, track.range) : pointsBar(value, track.scale));
 
 /**
+ * Whether the GM's + and − can move a value, read from the real counter with the sheet's limits. Only the active GM's buttons work, as on the sheet.
+ * Players and a counter gone from the challenge get both off; players never see the buttons anyway.
+ */
+function moves(page, counterId, actorId = "") {
+  const counter = game.user.isActiveGM && page ? findCounter(page.system, counterId)?.counter : null;
+  return counter ? counterMoves(counter, counterValueOf(counter, actorId)) : { canAdd: false, canRemove: false };
+}
+
+/**
  * Counters as the panel draws them, the challenge's below the columns or a subject's in its column (spec 14.12, 14.13):
  * a bar, steps or a track gets its own row and threshold card; per-PC counters a row per party PC; numbers share one line.
+ * On a GM's client each value carries whether its + and − work.
  */
-function counterSet(counters, pcs) {
-  const named = (row) => ({ ...row, name: row.name || loc("SSM.Challenge.UnnamedCounter") });
+function counterSet(counters, pcs, page) {
+  const named = (row) => ({ ...row, name: row.name || loc("SSM.Challenge.UnnamedCounter"), counterId: row.id, ...moves(page, row.id) });
   return {
     tracks: counters.filter((row) => SLOTTED.has(row.display) || row.display === "bar").map((row) => ({
       ...named(row),
@@ -37,7 +47,7 @@ function counterSet(counters, pcs) {
     })),
     pcCounters: counters.filter((row) => row.perPc).map((row) => ({
       ...named(row),
-      pcs: row.pcs.map((pc) => ({ ...pc, name: pcs.get(pc.id)?.name ?? "", img: pcs.get(pc.id)?.img ?? "" })),
+      pcs: row.pcs.map((pc) => ({ ...pc, counterId: row.id, actor: pc.id, name: pcs.get(pc.id)?.name ?? "", img: pcs.get(pc.id)?.img ?? "", ...moves(page, row.id, pc.id) })),
     })),
     numbers: counters.filter((row) => row.display === "number").map(named),
     any: counters.length > 0,
@@ -124,7 +134,7 @@ async function prepareView(view, state) {
       ...subject,
       name: subjectName(subject, subject.index ?? n, view.subjectLabel),
       // A copy built before subjects had counters has none (spec 14.9): draw the subject without them.
-      counterSet: counterSet(subject.counters ?? [], pcs),
+      counterSet: counterSet(subject.counters ?? [], pcs, page),
       // Only ids go in the HTML. A click looks the DC up in the copy.
       // A card with a description opens and closes by its name.
       actions: await Promise.all(subject.actions.map(async (action) => ({
@@ -143,7 +153,7 @@ async function prepareView(view, state) {
         cards: group.cards.map((row) => ({ ...modifierCard(row, subject.id, gm.get(`${subject.id}:${row.id}`), decoys.has(`${subject.id}:${row.id}`)), categoryLabel: "" })),
       })),
     }))),
-    counterSet: counterSet(view.counters, pcs),
+    counterSet: counterSet(view.counters, pcs, page),
     party: view.party.map((pc) => ({ ...pc, label: game.i18n.format(pc.acted ? "SSM.Panel.ActedLabel" : "SSM.Panel.NotActedLabel", { name: pc.name }) })),
   };
 }
@@ -204,10 +214,19 @@ async function flipActed(state, portrait) {
   announceTriggers(await writeChallenge(page, (system) => toggleActed(system, portrait.dataset.id)));
 }
 
+/** A GM click on a value's + or −: the same change as the sheet's button, with the same limits and threshold notices. On a per-PC value it changes that PC's. */
+async function stepCounter(state, button) {
+  const entry = game.journal.get(state.id);
+  const page = entry && challengePage(entry);
+  if (!game.user.isActiveGM || !page) return;
+  const { id, delta, actor } = button.dataset;
+  announceTriggers(await writeChallenge(page, (system) => changeCounter(system, id, Number(delta), actor ?? "")));
+}
+
 export const challengePanel = {
   template: `modules/${MODULE}/templates/challenge-panel.hbs`,
   isRunning: (system) => system.run.status === "active",
   buildView: buildPanelView,
   prepareView,
-  viewActions: { rollSkill: rollFromPanel, previousRound: moveRound, nextRound: moveRound, toggleModifier: flipModifier, toggleActed: flipActed, toggleAction },
+  viewActions: { rollSkill: rollFromPanel, previousRound: moveRound, nextRound: moveRound, toggleModifier: flipModifier, toggleActed: flipActed, toggleAction, changeCounter: stepCounter },
 };

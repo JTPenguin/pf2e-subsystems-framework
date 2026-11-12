@@ -1287,6 +1287,13 @@ test("a per-PC counter: a hand change moves one PC's value inside the limits; no
   assert.deepEqual(counter.valueBy, {});
 });
 
+test("+ and − are off at the limit they would pass, on the sheet and the panel alike", () => {
+  assert.deepEqual(D.counterMoves({ min: 0, max: 3 }, 0), { canAdd: true, canRemove: false });
+  assert.deepEqual(D.counterMoves({ min: 0, max: 3 }, 3), { canAdd: false, canRemove: true });
+  assert.deepEqual(D.counterMoves({ min: null, max: null }, -5), { canAdd: true, canRemove: true }, "no limits, both work");
+  assert.deepEqual(D.counterMoves({ min: 5, max: 2 }, 3), { canAdd: true, canRemove: true }, "broken limits limit nothing");
+});
+
 test("a per-PC counter shows a row per party PC on the panel, and no thresholds", () => {
   const s = secretSystem();
   Object.assign(s.counters[0], { perPc: true, revealed: true, value: 1, valueBy: { a1: 3 } });

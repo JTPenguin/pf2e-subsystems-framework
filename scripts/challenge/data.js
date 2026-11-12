@@ -413,6 +413,9 @@ export function limitTrack({ min = null, max = null }, value) {
   return value;
 }
 
+/** Whether + and − would move a counter from `value`: each is off at the limit it would pass. The sheet and the panel use it alike. */
+export const counterMoves = (counter, value) => ({ canAdd: limitTrack(counter, value + 1) !== value, canRemove: limitTrack(counter, value - 1) !== value });
+
 const limitsBroken = ({ min = null, max = null }) => min !== null && max !== null && min > max;
 const limitEach = (track, values) => Object.fromEntries(Object.entries(values ?? {}).map(([key, value]) => [key, limitTrack(track, value)]));
 

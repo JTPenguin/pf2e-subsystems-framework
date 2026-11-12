@@ -1,13 +1,14 @@
 ---
 title: "Add GM plus and minus buttons to every value on the panel"
 kind: feature
-status: ready
-waits_on: Claude
+status: done
+waits_on: none
 priority: 🔼
 blocked_by: [counter-points-as-generic-counter]
 source: "Justin's list of items, 2026-11-12; interview with Justin, 2026-11-12"
 added: 2026-11-12
 updated: 2026-11-12
+outcome: "Built 2026-11-12. The GM gets − and + beside every counter value on the panel (challenge, subject, per-PC and number counters), reusing the sheet's changeCounter and a shared counterMoves limit check; spec 7 updated; 118 tests pass. Checked live as GM: + on a 1/6 track climbs to 6/6 and then disables. Subject, per-PC and number counters and the player view (no buttons) were checked by rendering the panel from a challenge's data without saving, as changing test-world data was blocked; not yet seen from a real player login."
 ---
 # Add GM plus and minus buttons to every value on the panel
 

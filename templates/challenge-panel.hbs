@@ -11,6 +11,8 @@
   <div class="ssm-panel-thresholds-head">{{localize "SSM.Panel.Thresholds"}}</div>
   {{#each thresholds}}<div class="ssm-panel-threshold {{#if reached}}reached{{/if}}"><span class="ssm-panel-threshold-mark">{{#if reached}}<i class="fa-solid fa-check" role="img" aria-label="{{localize "SSM.Challenge.ReachedShort"}}" data-tooltip="{{localize "SSM.Challenge.ReachedShort"}}"></i>{{/if}}</span> <strong class="ssm-panel-threshold-points">{{points}}</strong> <span class="ssm-panel-threshold-text">{{#if textHidden}}{{localize "SSM.Panel.HiddenText"}}{{else}}{{text}}{{/if}}</span></div>{{/each}}
 </div>{{/if}}{{/inline}}
+{{!-- A counter value. The GM gets − and + around it, doing what the sheet's buttons do; players see the value alone. --}}
+{{#*inline "ssmPanelValue"}}{{#if @root.isGM}}<span class="ssm-panel-step"><button type="button" class="ssm-panel-step-button" data-action="changeCounter" data-id="{{counterId}}"{{#if actor}} data-actor="{{actor}}"{{/if}} data-delta="-1" aria-label="{{localize "SSM.Challenge.RemoveFromCounter"}}" {{#unless canRemove}}disabled{{/unless}}><i class="fa-solid fa-minus" inert></i></button><strong>{{text}}</strong><button type="button" class="ssm-panel-step-button" data-action="changeCounter" data-id="{{counterId}}"{{#if actor}} data-actor="{{actor}}"{{/if}} data-delta="1" aria-label="{{localize "SSM.Challenge.AddToCounter"}}" {{#unless canAdd}}disabled{{/unless}}><i class="fa-solid fa-plus" inert></i></button></span>{{else}}<strong>{{text}}</strong>{{/if}}{{/inline}}
 {{!-- A set of counters: the challenge's below the columns, or a subject's in its column. --}}
 {{#*inline "ssmPanelCounters"}}{{#if tracks.length}}<div class="ssm-panel-tracks">
   {{#each tracks}}
@@ -18,7 +20,7 @@
     <div class="ssm-panel-points">
       <span class="ssm-panel-subject-name">{{name}}</span>
       {{#if slots}}<ol class="ssm-panel-slots {{#if steps}}steps{{else}}track{{/if}}" role="img" aria-label="{{name}}: {{value}}">{{#each slots}}<li class="{{#if filled}}filled{{/if}} {{#if threshold}}threshold{{/if}} {{#if reached}}reached{{/if}}" data-tooltip-text="{{tooltip}}"></li>{{/each}}</ol>{{else}}{{> ssmPanelBar}}{{/if}}
-      <strong>{{text}}</strong>
+      {{> ssmPanelValue}}
     </div>
     {{> ssmPanelThresholds}}
   </div>
@@ -28,11 +30,11 @@
   {{#each pcCounters}}
   <div class="ssm-panel-track ssm-panel-pc-counter">
     <span class="ssm-panel-subject-name">{{name}}</span>
-    <div class="ssm-panel-pc-values">{{#each pcs}}<span class="ssm-panel-pc-value"><img class="ssm-panel-pc" src="{{img}}" alt="{{name}}" data-tooltip-text="{{name}}" draggable="false"><strong>{{text}}</strong></span>{{/each}}</div>
+    <div class="ssm-panel-pc-values">{{#each pcs}}<span class="ssm-panel-pc-value"><img class="ssm-panel-pc" src="{{img}}" alt="{{name}}" data-tooltip-text="{{name}}" draggable="false">{{> ssmPanelValue}}</span>{{/each}}</div>
   </div>
   {{/each}}
 </div>{{/if}}
-{{#if numbers.length}}<p class="ssm-panel-counters">{{#each numbers}}<span>{{name}}: <strong>{{text}}</strong></span>{{/each}}</p>{{/if}}{{/inline}}
+{{#if numbers.length}}<p class="ssm-panel-counters">{{#each numbers}}<span>{{name}}: {{> ssmPanelValue}}</span>{{/each}}</p>{{/if}}{{/inline}}
 <header class="ssm-panel-head">
   {{#if isGM}}<button type="button" class="ssm-panel-name" data-action="openChallenge" data-drag-click><strong>{{name}}</strong></button>{{else}}<strong class="ssm-panel-name">{{name}}</strong>{{/if}}
   <span class="ssm-panel-round-text">{{roundLabel}}</span>
