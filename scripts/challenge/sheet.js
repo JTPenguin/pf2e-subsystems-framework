@@ -27,12 +27,10 @@ const openActions = new Set();
 /**
  * Modifier views as the GM window's sections, by category (spec 14.7): the blank category first, with no heading,
  * then the preset's suggestions, then other labels in order of first use. Each has a key, a heading, its stripe colour and its rows.
- * On the Edit tab (`forEdit`) the suggested categories and the blank one always show, as each holds an Add button.
+ * A category with no entries is left out, on both tabs: the Edit tab adds entries from the Modifiers title.
  */
-function modifierGroups(system, views, forEdit = false) {
-  const groups = groupByCategory(system, views, { withSuggestions: forEdit });
-  if (forEdit && !groups.some((group) => !group.key)) groups.unshift({ key: "", label: "", colour: "", rows: [] });
-  return groups.map((group) => ({ ...group, heading: group.label, stripe: group.colour ? `--ssm-cat: ${group.colour}` : "", canAdd: forEdit }));
+function modifierGroups(system, views) {
+  return groupByCategory(system, views).map((group) => ({ ...group, heading: group.label, stripe: group.colour ? `--ssm-cat: ${group.colour}` : "" }));
 }
 const labels = (values, prefix) => Object.fromEntries(values.map((value) => [value, loc(`SSM.Challenge.${prefix}.${value}`)]));
 
@@ -247,10 +245,10 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
           checks: action.checks.map((row, i) => ({ ...row, path: `${path}.actions.${a}.checks.${i}`, isLore: row.skill === LORE })),
         })),
         // Read-only here: each one is edited in its own window. The suggested categories show even when empty, as each holds an Add button.
-        modifierGroups: modifierGroups(system, subject.modifiers.map((modifier, i) => ({ ...this.#modifierView(system, subject, modifier, false), canEdit: true, path: `${path}.modifiers.${i}` })), true),
+        modifierGroups: modifierGroups(system, subject.modifiers.map((modifier, i) => ({ ...this.#modifierView(system, subject, modifier, false), canEdit: true, path: `${path}.modifiers.${i}` }))),
       };
     };
-    const challengeModifierGroups = modifierGroups(system, system.modifiers.map((modifier, i) => ({ ...this.#modifierView(system, null, modifier, false), canEdit: true, path: `modifiers.${i}` })), true);
+    const challengeModifierGroups = modifierGroups(system, system.modifiers.map((modifier, i) => ({ ...this.#modifierView(system, null, modifier, false), canEdit: true, path: `modifiers.${i}` })));
 
     const subjects = system.subjects.map(subjectView);
     const mode = this.#currentMode;
@@ -504,11 +502,10 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
   }
 
   static async #onAddRow(event, target) {
-    const { list, category, template } = target.dataset;
+    const { list, template } = target.dataset;
     let added;
     await this.#edit((system) => {
       added = addRow(system, list, template);
-      if (category) added.category = category;
     });
     if (list === "subjects") {
       this.#tab = added.id;

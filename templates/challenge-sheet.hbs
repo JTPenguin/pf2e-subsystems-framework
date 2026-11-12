@@ -48,25 +48,29 @@
         {{/each}}
       </div>
 {{/each}}{{/inline}}
-{{!-- A subject's or the challenge's modifier entries on the Edit tab, by category, each with an Add button. `list` is the path of the list they go in. --}}
+{{!-- A subject's or the challenge's modifier entries on the Edit tab, by category: a small heading per category in use, as in Run mode. --}}
 {{#*inline "ssmEditModGroups"}}{{#each groups}}
-    <fieldset class="ssm-mod-group"{{#if stripe}} style="{{stripe}}"{{/if}}>
-      {{#if heading}}<legend>{{heading}}</legend>{{/if}}
-      <div class="ssm-mod-list">
-      {{#each rows}}
-      <div class="ssm-modifier">
-        <div class="ssm-row ssm-entry">
-          {{> ssmModifierName}}
-          {{> ssmModifierEdit}}
-          <button type="button" class="icon fa-solid fa-trash" data-action="removeRow" data-path="{{path}}" aria-label="{{localize "SSM.Challenge.Remove"}}"></button>
+      <div class="ssm-subject-group ssm-cat-group"{{#if stripe}} style="{{stripe}}"{{/if}}>
+        {{#if heading}}<h5 class="ssm-cat-head">{{heading}}</h5>{{/if}}
+        <div class="ssm-mod-list">
+        {{#each rows}}
+        <div class="ssm-modifier">
+          <div class="ssm-row ssm-entry">
+            {{> ssmModifierName}}
+            {{> ssmModifierEdit}}
+            <button type="button" class="icon fa-solid fa-trash" data-action="removeRow" data-path="{{path}}" aria-label="{{localize "SSM.Challenge.Remove"}}"></button>
+          </div>
+          {{> ssmModifierDetails}}
         </div>
-        {{> ssmModifierDetails}}
+        {{/each}}
+        </div>
       </div>
-      {{/each}}
-      </div>
-      {{#if canAdd}}<button type="button" class="ssm-add" data-action="addRow" data-list="{{../list}}" data-category="{{label}}"><i class="fa-solid fa-plus" inert></i> {{#if heading}}{{localize "SSM.Challenge.AddModifierTo" category=heading}}{{else}}{{localize "SSM.Challenge.AddModifier"}}{{/if}}</button>{{/if}}
-    </fieldset>
 {{/each}}{{/inline}}
+{{!-- An Edit-tab section's title, with its Add button on the right, as on a PF2e NPC sheet. `list` is the path of the list it adds to; `add` is the button's label. --}}
+{{#*inline "ssmSectionHead"}}<header class="ssm-section-title ssm-section-bar">
+          <h4{{#if hint}} data-tooltip="{{hint}}"{{/if}}>{{label}}</h4>
+          <button type="button" class="icon fa-solid fa-plus ssm-section-add" data-action="addRow" data-list="{{list}}" aria-label="{{add}}" data-tooltip-text="{{add}}"></button>
+        </header>{{/inline}}
 {{!-- A subject's order buttons, in either mode. --}}
 {{#*inline "ssmOrder"}}<span class="ssm-order">
   <button type="button" class="icon fa-solid fa-arrow-up" data-action="moveSubject" data-subject="{{id}}" data-delta="-1" aria-label="{{localize "SSM.Challenge.MoveUp"}}" data-tooltip="SSM.Challenge.MoveUp" {{#unless canMoveUp}}disabled{{/unless}}></button>
@@ -223,76 +227,80 @@
 
   <section class="ssm-body">
     {{#if onChallengeTab}}
-    <fieldset>
-      <legend>{{localize "SSM.Challenge.Names"}}</legend>
-      <div class="ssm-row">
-        <label class="grow">{{localize "SSM.Challenge.PointsName"}}<input type="text" name="pointsName" value="{{system.pointsName}}" placeholder="{{localize "SSM.Challenge.Points"}}"></label>
-        <label class="grow">{{localize "SSM.Challenge.SubjectLabel"}}<input type="text" name="subjectLabel" value="{{system.subjectLabel}}" placeholder="{{localize "SSM.Challenge.Subject"}}"></label>
-        <label class="check" data-tooltip="SSM.Challenge.MultipleSubjectsHint"><input type="checkbox" name="multipleSubjects" {{checked system.multipleSubjects}}>{{localize "SSM.Challenge.MultipleSubjects"}}</label>
+    <section class="ssm-block ssm-edit-block">
+      <header class="ssm-block-head"><h3>{{localize "SSM.Challenge.Challenge"}}</h3></header>
+
+      <div class="ssm-section">
+        <h4 class="ssm-section-title">{{localize "SSM.Challenge.Names"}}</h4>
+        <div class="ssm-row">
+          <label class="grow">{{localize "SSM.Challenge.PointsName"}}<input type="text" name="pointsName" value="{{system.pointsName}}" placeholder="{{localize "SSM.Challenge.Points"}}"></label>
+          <label class="grow">{{localize "SSM.Challenge.SubjectLabel"}}<input type="text" name="subjectLabel" value="{{system.subjectLabel}}" placeholder="{{localize "SSM.Challenge.Subject"}}"></label>
+          <label class="check" data-tooltip="SSM.Challenge.MultipleSubjectsHint"><input type="checkbox" name="multipleSubjects" {{checked system.multipleSubjects}}>{{localize "SSM.Challenge.MultipleSubjects"}}</label>
+        </div>
       </div>
-    </fieldset>
 
-    <fieldset>
-      <legend>{{localize "SSM.Challenge.Rounds"}}</legend>
-      <div class="ssm-row">
-        <label>{{localize "SSM.Challenge.Current"}}<input type="number" min="0" step="1" name="rounds.current" value="{{system.rounds.current}}" {{#if runActive}}disabled{{/if}}></label>
-        <label>{{localize "SSM.Challenge.Maximum"}}<input type="number" min="1" step="1" name="rounds.max" value="{{system.rounds.max}}" placeholder="{{localize "SSM.Challenge.NoLimit"}}"></label>
+      <div class="ssm-section">
+        <h4 class="ssm-section-title">{{localize "SSM.Challenge.Rounds"}}</h4>
+        <div class="ssm-row">
+          <label>{{localize "SSM.Challenge.Current"}}<input type="number" min="0" step="1" name="rounds.current" value="{{system.rounds.current}}" {{#if runActive}}disabled{{/if}}></label>
+          <label>{{localize "SSM.Challenge.Maximum"}}<input type="number" min="1" step="1" name="rounds.max" value="{{system.rounds.max}}" placeholder="{{localize "SSM.Challenge.NoLimit"}}"></label>
+        </div>
       </div>
-    </fieldset>
 
-    <fieldset>
-      <legend>{{localize "SSM.Challenge.Premise"}}</legend>
-      <prose-mirror name="premise" toggled value="{{system.premise}}">{{{premiseHtml}}}</prose-mirror>
-    </fieldset>
+      <div class="ssm-section">
+        <h4 class="ssm-section-title">{{localize "SSM.Challenge.Premise"}}</h4>
+        <prose-mirror name="premise" toggled value="{{system.premise}}">{{{premiseHtml}}}</prose-mirror>
+      </div>
 
-    <fieldset>
-      <legend>{{localize "SSM.Challenge.GMNotes"}}</legend>
-      <prose-mirror name="gmNotes" toggled value="{{system.gmNotes}}">{{{gmNotesHtml}}}</prose-mirror>
-    </fieldset>
+      <div class="ssm-section">
+        <h4 class="ssm-section-title">{{localize "SSM.Challenge.GMNotes"}}</h4>
+        <prose-mirror name="gmNotes" toggled value="{{system.gmNotes}}">{{{gmNotesHtml}}}</prose-mirror>
+      </div>
 
-    <fieldset>
-      <legend>{{localize "SSM.Challenge.Counters"}}</legend>
-      {{#each counters}}{{> ssmCounterEdit}}{{/each}}
-      <button type="button" class="ssm-add" data-action="addRow" data-list="counters"><i class="fa-solid fa-plus" inert></i> {{localize "SSM.Challenge.AddCounter"}}</button>
-    </fieldset>
+      <div class="ssm-section">
+        {{> ssmSectionHead label=(localize "SSM.Challenge.Counters") list="counters" add=(localize "SSM.Challenge.AddCounter")}}
+        {{#each counters}}{{> ssmCounterEdit}}{{/each}}
+      </div>
 
-    <h3 class="ssm-section-head" data-tooltip="SSM.Challenge.ChallengeModifiersHint">{{localize "SSM.Challenge.ChallengeModifiers"}}</h3>
-    {{> ssmEditModGroups groups=challengeModifierGroups list="modifiers"}}
+      <div class="ssm-section">
+        {{> ssmSectionHead label=(localize "SSM.Challenge.Modifiers") hint="SSM.Challenge.ChallengeModifiersHint" list="modifiers" add=(localize "SSM.Challenge.AddModifier")}}
+        {{> ssmEditModGroups groups=challengeModifierGroups}}
+      </div>
+    </section>
     {{/if}}
 
     {{#with activeSubject as |subject|}}
-    <fieldset>
-      <legend>{{@root.subjectLabel}}</legend>
+    <section class="ssm-block ssm-edit-block {{#unless subject.revealed}}ssm-subject-hidden{{/unless}}">
+      <header class="ssm-block-head">
+        <h3>{{#if subject.name}}{{subject.name}}{{else}}{{@root.subjectLabel}}{{/if}}</h3>
+        {{> ssmOrder subject}}
+        {{#if subject.canRemove}}<button type="button" class="icon fa-solid fa-trash" data-action="removeRow" data-path="{{subject.path}}" aria-label="{{@root.removeSubjectLabel}}" data-tooltip-text="{{@root.removeSubjectLabel}}"></button>{{/if}}
+      </header>
       <div class="ssm-row">
         <label class="grow">{{localize "SSM.Challenge.Name"}}<input type="text" name="{{subject.path}}.name" value="{{subject.name}}"></label>
         <label class="check"><input type="checkbox" name="{{subject.path}}.revealed" {{checked subject.revealed}}>{{localize "SSM.Challenge.Revealed"}}</label>
-        {{> ssmOrder subject}}
-        {{#if subject.canRemove}}<button type="button" class="icon fa-solid fa-trash" data-action="removeRow" data-path="{{subject.path}}" aria-label="{{@root.removeSubjectLabel}}" data-tooltip-text="{{@root.removeSubjectLabel}}"></button>{{/if}}
       </div>
-      <div class="ssm-action-lines ssm-subject-description-edit">
-        <span class="ssm-field-label" data-tooltip="SSM.Challenge.SubjectDescriptionHint">{{localize "SSM.Challenge.SubjectDescription"}}</span>
+      <div class="ssm-subject-description-edit">
         <prose-mirror name="{{subject.path}}.description" toggled value="{{subject.description}}">{{{subject.descriptionHtml}}}</prose-mirror>
       </div>
-    </fieldset>
 
-    <fieldset>
-      <legend>{{localize "SSM.Challenge.Counters"}}</legend>
-      {{#each subject.counters}}{{> ssmCounterEdit}}{{/each}}
-      <button type="button" class="ssm-add" data-action="addRow" data-list="{{subject.path}}.counters"><i class="fa-solid fa-plus" inert></i> {{localize "SSM.Challenge.AddCounter"}}</button>
-    </fieldset>
+      <div class="ssm-section">
+        {{> ssmSectionHead label=(localize "SSM.Challenge.Counters") list=(concat subject.path ".counters") add=(localize "SSM.Challenge.AddCounter")}}
+        {{#each subject.counters}}{{> ssmCounterEdit}}{{/each}}
+      </div>
 
-    <h3 class="ssm-section-head">{{localize "SSM.Challenge.Actions"}}</h3>
-    {{#each subject.actions}}
-    <div class="ssm-action-card ssm-action-edit">
-      <div class="ssm-row ssm-entry">
-        <label class="grow">{{localize "SSM.Challenge.Name"}}<input type="text" name="{{path}}.name" value="{{name}}" placeholder="{{localize "SSM.Challenge.UnnamedAction"}}"></label>
-        <label class="check" data-tooltip="SSM.Challenge.SecretHint"><input type="checkbox" name="{{path}}.secret" {{checked secret}}>{{localize "SSM.Challenge.Secret"}}</label>
-        <button type="button" class="icon fa-solid fa-trash" data-action="removeRow" data-path="{{path}}" aria-label="{{localize "SSM.Challenge.RemoveAction"}}" data-tooltip="SSM.Challenge.RemoveAction"></button>
-      </div>
-      <div class="ssm-action-lines">
-        <span class="ssm-field-label" data-tooltip="SSM.Challenge.ActionDescriptionHint">{{localize "SSM.Challenge.ActionDescription"}}</span>
-        <prose-mirror name="{{path}}.description" toggled value="{{description}}">{{{descriptionHtml}}}</prose-mirror>
-      </div>
+      <div class="ssm-section">
+        {{> ssmSectionHead label=(localize "SSM.Challenge.Actions") list=(concat subject.path ".actions") add=(localize "SSM.Challenge.AddAction")}}
+        {{#each subject.actions}}
+        <div class="ssm-action-card ssm-action-edit">
+          <div class="ssm-row ssm-entry">
+            <label class="grow">{{localize "SSM.Challenge.Name"}}<input type="text" name="{{path}}.name" value="{{name}}" placeholder="{{localize "SSM.Challenge.UnnamedAction"}}"></label>
+            <label class="check" data-tooltip="SSM.Challenge.SecretHint"><input type="checkbox" name="{{path}}.secret" {{checked secret}}>{{localize "SSM.Challenge.Secret"}}</label>
+            <button type="button" class="icon fa-solid fa-trash" data-action="removeRow" data-path="{{path}}" aria-label="{{localize "SSM.Challenge.RemoveAction"}}" data-tooltip="SSM.Challenge.RemoveAction"></button>
+          </div>
+          <div class="ssm-action-lines">
+            <prose-mirror name="{{path}}.description" toggled value="{{description}}">{{{descriptionHtml}}}</prose-mirror>
+          </div>
       <div class="ssm-checks-wrap"><table class="ssm-checks">
         <thead><tr>
           <th>{{localize "SSM.Challenge.Skill"}}</th>
@@ -318,12 +326,15 @@
         </tbody>
       </table></div>
       <button type="button" class="ssm-add" data-action="addRow" data-list="{{path}}.checks"><i class="fa-solid fa-plus" inert></i> {{localize "SSM.Challenge.AddCheck"}}</button>
-    </div>
-    {{/each}}
-    <button type="button" class="ssm-add ssm-add-action" data-action="addRow" data-list="{{subject.path}}.actions"><i class="fa-solid fa-plus" inert></i> {{localize "SSM.Challenge.AddAction"}}</button>
+        </div>
+        {{/each}}
+      </div>
 
-    <h3 class="ssm-section-head">{{localize "SSM.Challenge.Modifiers"}}</h3>
-    {{> ssmEditModGroups groups=subject.modifierGroups list=(concat subject.path ".modifiers")}}
+      <div class="ssm-section">
+        {{> ssmSectionHead label=(localize "SSM.Challenge.Modifiers") list=(concat subject.path ".modifiers") add=(localize "SSM.Challenge.AddModifier")}}
+        {{> ssmEditModGroups groups=subject.modifierGroups}}
+      </div>
+    </section>
     {{/with}}
   </section>
   {{/if}}

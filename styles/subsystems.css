@@ -6,7 +6,6 @@
 .ssm-tabs button { flex: 0 0 auto; width: auto; }
 .ssm-tabs button.active { outline: 1px solid var(--color-border-highlight, #b8a06a); font-weight: bold; }
 .ssm-body { flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 0.5rem; padding-right: 0.25rem; }
-.ssm-body fieldset { margin: 0; flex: none; }
 .ssm-body prose-mirror { min-height: 6rem; }
 .ssm-row { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 0.5rem; margin-bottom: 0.35rem; }
 .ssm-row > label { display: flex; flex-direction: column; font-size: var(--font-size-12, 0.75rem); width: 5.5rem; gap: 0.1rem; }
@@ -140,9 +139,6 @@ button.ssm-reached { color: #4f9d5d; }
 .ssm-sheet .ssm-block-head .ssm-stat > button.icon:hover:not(:disabled) { text-shadow: 0 0 2px var(--text-light, #f7f3e8); }
 .ssm-sheet .ssm-block-head .ssm-stat > button.icon:disabled { opacity: 0.5; }
 .ssm-sheet .ssm-subject-group > h4 { margin: var(--space-4, 0.25rem) 0 var(--space-2, 0.125rem); padding-left: var(--space-2, 0.125rem); border-bottom: 1px solid var(--color-border-book, #7a7971); font-size: inherit; font-weight: 600; opacity: 1; }
-/* The Edit tab: each fieldset is a red-edged box with its legend as a red tab. */
-.ssm-sheet .ssm-body fieldset { padding: var(--space-4, 0.25rem) var(--space-8, 0.5rem) var(--space-8, 0.5rem); border: 1px solid var(--color-pf-primary, #5e0000); border-radius: 3px; }
-.ssm-sheet .ssm-body legend { padding: 0 var(--space-8, 0.5rem); background: var(--color-pf-primary, #5e0000); border-radius: 3px; color: var(--text-light, #f7f3e8); font-weight: 600; line-height: 1.6em; text-transform: uppercase; }
 .ssm-modifier-window .ssm-effect { border-left-color: var(--color-pf-primary, #5e0000); }
 /* A changed DC uses PF2e's colours for adjusted values (as on a weak or elite creature): higher or lower than the base. */
 .ssm-sheet .ssm-skill-dc.ssm-dc-up { color: var(--color-pf-text-adjusted-higher, #009988); }
@@ -277,7 +273,6 @@ button.ssm-reached { color: #4f9d5d; }
 
 /* Edit tab skill checks: one table per list, field names in the header. */
 .ssm-checks-wrap { overflow-x: auto; }
-fieldset:has(> .ssm-checks-wrap) { min-width: 0; }
 .ssm-checks { width: 100%; min-width: 26rem; table-layout: fixed; border-collapse: collapse; margin-bottom: 0.35rem; }
 .ssm-checks th:nth-child(1) { width: 28%; }
 .ssm-checks th:nth-child(3), .ssm-checks th:nth-child(4), .ssm-checks th:nth-child(5) { width: 3.75rem; }
@@ -308,7 +303,6 @@ fieldset:has(> .ssm-checks-wrap) { min-width: 0; }
 .ssm-sheet .ssm-counter .ssm-threshold.ssm-reveal-hidden { opacity: var(--ssm-hidden-opacity); }
 .ssm-sheet .ssm-counter .ssm-grow > .ssm-player-text, .ssm-sheet .ssm-counter .ssm-grow > .ssm-gm-line { display: block; }
 .ssm-sheet .ssm-action-lines { line-height: 1.4; }
-.ssm-sheet .ssm-add-action { margin-bottom: 0.5rem; }
 .ssm-sheet .ssm-counter-edit > .ssm-card { margin-left: 1rem; }
 
 /* The panel: a complete subject, per-PC rows, and counters that are tracks. */
@@ -369,11 +363,16 @@ fieldset:has(> .ssm-checks-wrap) { min-width: 0; }
 .ssm-sheet .ssm-subject.ssm-collapsed > .ssm-block-head { margin-bottom: 0; }
 .ssm-sheet .ssm-pc-total { margin-left: 0.5rem; }
 .ssm-sheet .ssm-block-head > button.icon.ssm-collapse { --button-size: 1.5rem; width: 1.5rem; height: 1.5rem; flex: none; margin: 0; }
-.ssm-sheet .ssm-section-head { margin: 0.25rem 0 0; font-size: var(--font-size-14, 0.875rem); font-weight: bold; }
 
 /* The sheet's sections: Actions, Thresholds and Modifiers under each subject, in either mode. */
 .ssm-sheet .ssm-section { margin-top: var(--space-4, 0.25rem); }
 .ssm-sheet .ssm-section-title { margin: var(--space-4, 0.25rem) 0 var(--space-4, 0.25rem); padding-left: var(--space-2, 0.125rem); border-bottom: 1px solid var(--color-border-book, #7a7971); font-size: var(--font-size-12, 0.75rem); font-weight: bold; letter-spacing: 0.04em; text-transform: uppercase; }
+/* On the Edit tab each block keeps its full height in the scrolling body, so an open editor is not squeezed. A section title with an Add button holds the title on the left and a plain + on the right, as on a PF2e NPC sheet. */
+.ssm-sheet .ssm-body > .ssm-edit-block { flex: none; }
+.ssm-sheet .ssm-section-bar { display: flex; align-items: center; gap: var(--space-4, 0.25rem); }
+.ssm-sheet .ssm-section-bar > h4 { flex: 1 1 auto; min-width: 0; margin: 0; border: none; font: inherit; letter-spacing: inherit; text-transform: inherit; opacity: 1; }
+.ssm-sheet .ssm-section-bar > button.ssm-section-add { flex: none; --button-size: 1.25rem; width: 1.25rem; height: 1.25rem; margin: 0; border: none; background: none; box-shadow: none; color: inherit; font-size: var(--font-size-12, 0.75rem); }
+.ssm-sheet .ssm-section-bar > button.ssm-section-add:hover { text-shadow: 0 0 4px var(--color-shadow-primary, #ff0000); }
 /* An action card, styled like a modifier card. */
 .ssm-sheet .ssm-action-card { box-sizing: border-box; min-width: 0; margin-bottom: 0.25rem; padding: 0.2rem 0.3rem; border: 1px solid var(--color-border, #7a7971); border-radius: 3px; background: var(--ssm-reveal-fill); }
 .ssm-sheet .ssm-action-card .ssm-skill-line { margin-bottom: 0; }
@@ -386,22 +385,18 @@ fieldset:has(> .ssm-checks-wrap) { min-width: 0; }
 .ssm-sheet .ssm-action-edit { flex: none; padding: 0.3rem 0.5rem 0.4rem; }
 .ssm-sheet .ssm-action-edit > .ssm-entry > button.icon { --button-size: 1.5rem; width: 1.5rem; height: 1.5rem; }
 .ssm-sheet .ssm-action-edit > .ssm-action-lines { display: block; margin-bottom: 0.25rem; }
-.ssm-sheet .ssm-action-edit .ssm-field-label { display: block; }
 /* Foundry's editor fills a fixed box. Closed, the description sizes to its text; open for editing, it gets room for the menu and a few paragraphs. */
 .ssm-sheet .ssm-action-edit prose-mirror.inactive { min-height: 2rem; }
 .ssm-sheet .ssm-action-edit prose-mirror.inactive .editor-content { position: static; }
 .ssm-sheet .ssm-action-edit prose-mirror.active { min-height: 16rem; }
-/* A subject's description editor sizes the same way; its fieldset keeps its full height. */
-.ssm-sheet fieldset:has(> .ssm-subject-description-edit) { flex: none; }
+/* A subject's description editor sizes the same way. */
 .ssm-sheet .ssm-subject-description-edit { display: block; margin-top: 0.25rem; }
-.ssm-sheet .ssm-subject-description-edit .ssm-field-label { display: block; }
 .ssm-sheet .ssm-subject-description-edit prose-mirror.inactive { min-height: 2rem; }
 .ssm-sheet .ssm-subject-description-edit prose-mirror.inactive .editor-content { position: static; }
 .ssm-sheet .ssm-subject-description-edit prose-mirror.active { min-height: 16rem; }
 .ssm-sheet .ssm-action-name { font-size: var(--font-size-14, 0.875rem); }
 /* A category's heading inside Modifiers takes the category's stripe colour. */
 .ssm-sheet .ssm-cat-group > .ssm-cat-head { margin: var(--space-4, 0.25rem) 0 var(--space-2, 0.125rem); padding-left: var(--space-4, 0.25rem); border-left: 3px solid var(--ssm-cat, var(--color-border-book, #7a7971)); font-size: inherit; font-weight: 600; }
-.ssm-sheet fieldset.ssm-mod-group[style] > legend { border-left: 4px solid var(--ssm-cat); }
 
 /* A per-PC counter's row: the PC's name, the GM-only note, then the value. */
 .ssm-sheet .ssm-pc-name { flex: 0 0 8rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
