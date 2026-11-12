@@ -18,8 +18,6 @@ export const THRESHOLD_REVEALS = ["hidden", "points", "full"];
  * Steps and Track need a maximum; without one they draw as a bar.
  */
 export const COUNTER_DISPLAYS = ["auto", "number", "bar", "steps", "track"];
-/** The Edit tab's extra Display choice: the counter is GM-only. It sets `revealed`, not `display`. */
-export const HIDDEN_DISPLAY = "hidden";
 export const nextThresholdReveal = (reveal) => THRESHOLD_REVEALS[(THRESHOLD_REVEALS.indexOf(reveal) + 1) % THRESHOLD_REVEALS.length];
 
 /** The value of a check's `skill` field when it is a Lore; the `lore` field then holds the Lore's name. */
@@ -367,24 +365,10 @@ export const EDITABLE = ["pointsName", "subjectLabel", "premise", "gmNotes", "ro
  */
 export function applyForm(system, form) {
   const shown = new Set(system.subjects.filter((subject) => subject.revealed).map((subject) => subject.id));
-  splitCounterShow(form);
   const merged = mergeForm(system, form);
   for (const key of EDITABLE) if (key in merged) system[key] = merged[key];
   const newly = system.subjects.find((subject) => subject.revealed && !shown.has(subject.id));
   if (newly) revealOnly(system, newly);
-}
-
-/**
- * A counter's Display list in the Edit tab holds its style or Hidden (spec 14.12). Hidden hides it and keeps its style for when it is revealed;
- * a style shows it in that style. The sheet's eye button still reveals and hides it during a run.
- */
-function splitCounterShow(form) {
-  for (const row of Object.values(form?.counters ?? {})) {
-    if (!isPlainObject(row) || !("show" in row)) continue;
-    if (row.show === HIDDEN_DISPLAY) row.revealed = false;
-    else if (COUNTER_DISPLAYS.includes(row.show)) Object.assign(row, { revealed: true, display: row.show });
-    delete row.show;
-  }
 }
 
 /** Without Allow multiple subjects, revealing `subject` hides every other subject. With it, nothing changes. */

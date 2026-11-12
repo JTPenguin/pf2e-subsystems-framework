@@ -231,15 +231,13 @@
       "MultipleSubjects": "Allow multiple subjects",
       "MultipleSubjectsHint": "On: any number of subjects can be revealed at once, and the panel shows each revealed one. Off: revealing a subject hides every other subject, so players see one at a time. Use off for subjects taken in order, such as a chase's obstacles: revealing the next one moves the panel on in one click. Hiding a subject never reveals another.",
       "DisplayLabel": "Display",
-      "DisplayHint": "How players see this counter on the panel. Hidden: GM-only; the eye button in Run mode can still reveal it, in the style chosen before. Auto: a bar if it has thresholds or counts both ways, else a number. Steps: filled segments, like the round counter. Track: a marker that moves along a row of slots. Steps and Track need a maximum and show as a bar without one.",
+      "DisplayHint": "How players see this counter on the panel once it is revealed. Auto: a bar if it has thresholds or counts both ways, else a number. Steps: filled segments, like the round counter. Track: a marker that moves along a row of slots. Steps and Track need a maximum and show as a bar without one.",
       "Display": {
         "auto": "Auto",
         "number": "Number",
         "bar": "Bar",
         "steps": "Steps",
-        "track": "Track",
-        "hidden": "Hidden",
-        "shown": "Shown"
+        "track": "Track"
       }
     },
     "ChoosePreset": "Create Challenge",

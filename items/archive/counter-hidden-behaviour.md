@@ -1,8 +1,9 @@
 ---
 title: "Separate a counter's visibility from its display style"
 kind: work
-status: ready
-waits_on: Claude
+status: done
+outcome: "Display holds styles only; a Revealed checkbox beside it, and the Run-mode eye, set visibility. Per-PC counters show only Revealed. Tests pass (117); checked live on SSM Chase v2 check, 2026-11-12."
+waits_on: none
 priority: ⏫
 blocked_by: []
 source: "Justin's list of items, 2026-11-12; interview with Justin, 2026-11-12"

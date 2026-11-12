@@ -7,7 +7,7 @@ import { announceTriggers, writeChallenge } from "./state.js";
 import { advanceRound, canAdvanceRound, canUndoRound, changeCounter, changePoints, counterValueOf, currentDc, cycleThresholdReveal, endRun, isComplete, pointsOf, resetRun, restoreModifier, startRun, toggleActed, toggleComplete, toggleModifier, toggleReached, toggleReveal, undoRound } from "./run.js";
 import { LINK_ROLL_ID } from "../roll-option.js";
 import { rollCheck, rollTarget } from "./roll.js";
-import { addRow, applyForm, COUNTER_DISPLAYS, HIDDEN_DISPLAY, setCounterNote, subjectTemplates, BOTH_WAYS, clampTracks, DIRECTIONS, EDITABLE, groupByCategory, isAlwaysShown, isDecoyCheck, limitTrack, LORE, moveSubject, PERCEPTION, nextThresholdReveal, pickFields, removeRow, SAVES, THRESHOLD_REVEALS } from "./data.js";
+import { addRow, applyForm, COUNTER_DISPLAYS, setCounterNote, subjectTemplates, BOTH_WAYS, clampTracks, DIRECTIONS, EDITABLE, groupByCategory, isAlwaysShown, isDecoyCheck, limitTrack, LORE, moveSubject, PERCEPTION, nextThresholdReveal, pickFields, removeRow, SAVES, THRESHOLD_REVEALS } from "./data.js";
 import { ModifierWindow } from "./entry-window.js";
 
 const { DocumentSheetV2, HandlebarsApplicationMixin } = foundry.applications.api;
@@ -247,7 +247,6 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
 
     const subjects = system.subjects.map(subjectView);
     const mode = this.#currentMode;
-    const displayChoices = Object.fromEntries([...COUNTER_DISPLAYS, HIDDEN_DISPLAY].map((key) => [key, loc(`SSM.Challenge.Display.${key}`)]));
     return Object.assign(context, {
       isRun: mode === "run",
       isEdit: mode === "edit",
@@ -264,9 +263,6 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
       counters: system.counters.map((counter, i) => ({
         ...counter,
         path: `counters.${i}`,
-        // One list for how players see it: Hidden, or a display style (spec 14.12). A per-PC counter has its own rows, so only Shown or Hidden.
-        show: counter.revealed ? (counter.perPc ? "auto" : counter.display ?? "auto") : HIDDEN_DISPLAY,
-        showChoices: counter.perPc ? { auto: loc("SSM.Challenge.Display.shown"), [HIDDEN_DISPLAY]: loc(`SSM.Challenge.Display.${HIDDEN_DISPLAY}`) } : displayChoices,
         thresholds: thresholds(counter.thresholds, `counters.${i}`, counter.direction),
       })),
       challengeModifierGroups,
@@ -278,6 +274,8 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
       choices: {
         skills: checkSkills,
         thresholdReveals: labels(THRESHOLD_REVEALS, "ThresholdReveal"),
+        // Display styles only (spec 14.12); the Revealed checkbox beside the list controls visibility.
+        displays: labels(COUNTER_DISPLAYS, "Display"),
         directions: labels(DIRECTIONS, "Direction"),
       },
     });

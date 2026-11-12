@@ -265,7 +265,8 @@
           <label class="grow">{{localize "SSM.Challenge.Name"}}<input type="text" name="{{path}}.name" value="{{name}}"></label>
           <label>{{localize "SSM.Challenge.Value"}}<input type="number" step="1" name="{{path}}.value" value="{{value}}"></label>
           <label>{{localize "SSM.Challenge.DirectionLabel"}}<select name="{{path}}.direction">{{selectOptions @root.choices.directions selected=direction}}</select></label>
-          <label data-tooltip="SSM.Challenge.DisplayHint">{{localize "SSM.Challenge.DisplayLabel"}}<select name="{{path}}.show">{{selectOptions showChoices selected=show}}</select></label>
+          {{#unless perPc}}<label data-tooltip="SSM.Challenge.DisplayHint">{{localize "SSM.Challenge.DisplayLabel"}}<select name="{{path}}.display">{{selectOptions @root.choices.displays selected=display}}</select></label>{{/unless}}
+          <label class="check"><input type="checkbox" name="{{path}}.revealed" {{checked revealed}}>{{localize "SSM.Challenge.Revealed"}}</label>
           <button type="button" class="icon fa-solid fa-trash" data-action="removeRow" data-path="{{path}}" aria-label="{{localize "SSM.Challenge.Remove"}}"></button>
         </div>
         <div class="ssm-row">

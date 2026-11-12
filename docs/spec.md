@@ -533,11 +533,10 @@ Chase is a preset and nothing more: no code checks for it. The GM does by eye wh
 | Off | Revealing a subject, by the eye button or the Edit tab, hides every other subject. Hiding one reveals nothing. Turning it off changes nothing until the next reveal. |
 | Panel | Unchanged: it shows the revealed subjects. A subject keeps its place for a stand-in name ("Obstacle 3"). |
 
-**Counter display.** One Display list per counter in the Edit tab. It replaces the counter's Revealed checkbox.
+**Counter display.** One Display list per counter in the Edit tab, beside its Revealed checkbox. The list sets the style only; Revealed, like the Run-mode eye button, sets whether players see it, in the style the list shows.
 
 | Choice | Panel |
 |---|---|
-| Hidden | Not on the panel. It sets `revealed` and keeps the style, so the Run-mode eye button brings the counter back as it was. |
 | Auto (default) | A bar with thresholds or a both-ways range, else a number: the rule before this section. |
 | Number | Name and value on the shared line. |
 | Bar | The progress bar with its threshold card. |
@@ -546,4 +545,4 @@ Chase is a preset and nothing more: no code checks for it. The GM does by eye wh
 
 - Steps and Track count from the minimum (0 when unset; −maximum for a both-ways counter) to the maximum. Without a maximum, or with more than 40 slots, they draw as a bar. Steps on a both-ways counter draws as a bar.
 - A revealed threshold marks its slot; a reached one in another colour. Hidden thresholds leave no mark.
-- A per-PC counter offers only Shown and Hidden: it keeps its per-PC rows.
+- A per-PC counter has no Display list, only Revealed: it keeps its per-PC rows.

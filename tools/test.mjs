@@ -1527,15 +1527,16 @@ test("Steps fill up to the value, a Track marks one slot; revealed thresholds ma
   assert.deepEqual([viewOf(s).counters[0].display, viewOf(s).counters[0].slots], ["bar", null]);
 });
 
-test("the Edit tab's Display list: Hidden hides a counter and keeps its style; a style shows it in that style", () => {
+test("the Edit tab sets a counter's style and its visibility separately, and the eye button shows the style picked", () => {
   const s = presetSystem("chase");
   const party = () => s.counters[0];
-  D.applyForm(s, { counters: { 0: { show: "hidden" } } });
-  assert.deepEqual([party().revealed, party().display], [false, "track"]);
+  D.applyForm(s, { counters: { 0: { revealed: false } } });
+  assert.deepEqual([party().revealed, party().display], [false, "track"], "hiding keeps the style");
+  D.applyForm(s, { counters: { 0: { display: "steps", revealed: false } } });
+  assert.deepEqual([party().revealed, party().display], [false, "steps"], "a style can be picked while hidden");
   Run.toggleReveal(s, party().id);
-  assert.deepEqual([party().revealed, party().display], [true, "track"], "the eye button brings it back as it was");
-  D.applyForm(s, { counters: { 0: { show: "steps" } } });
-  assert.deepEqual([party().revealed, party().display, "show" in party()], [true, "steps", false]);
-  D.applyForm(s, { counters: { 0: { show: "nonsense" } } });
-  assert.deepEqual([party().revealed, party().display], [true, "steps"]);
+  assert.deepEqual([party().revealed, party().display], [true, "steps"], "the eye button shows the style picked in Edit");
+  D.applyForm(s, { counters: { 0: { display: "bar", revealed: true } } });
+  assert.deepEqual([party().revealed, party().display], [true, "bar"]);
+  assert.ok(!D.COUNTER_DISPLAYS.includes("hidden"), "Hidden is not a style");
 });
