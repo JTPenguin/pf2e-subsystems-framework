@@ -3,7 +3,7 @@
  * Every entry is built field by field: a new field on the data can't reach players until it is added here.
  */
 
-import { BOTH_WAYS, groupByCategory, isVisibleCheck, skillKey } from "./data.js";
+import { counterValueText, BOTH_WAYS, groupByCategory, isVisibleCheck, skillKey } from "./data.js";
 import { counterValueOf, currentDc } from "./run.js";
 
 /** Scale for a bar when the counter has no maximum and no thresholds. */
@@ -176,10 +176,11 @@ function counterView(system, counter, party) {
     id: counter.id,
     name: counter.name,
     value: counter.value,
+    text: counterValueText(counter, counter.value),
     display,
     slots,
     perPc,
-    pcs: perPc ? party.map((pc) => ({ id: pc.id, value: counterValueOf(counter, pc.id) })) : [],
+    pcs: perPc ? party.map((pc) => ({ id: pc.id, value: counterValueOf(counter, pc.id), text: counterValueText(counter, counterValueOf(counter, pc.id)) })) : [],
     scale: trackScale(counter, counter.value, start),
     range: counter.direction === BOTH_WAYS ? bothWaysRange(counter) : null,
     thresholds,

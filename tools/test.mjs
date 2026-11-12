@@ -941,7 +941,7 @@ test("the copy shows only the defaults before anything is revealed", () => {
   assert.deepEqual(view.rounds, { current: 1, max: 6 });
   const [subject] = view.subjects;
   assert.deepEqual([subject.name, subject.complete], ["Lady Vance", false]);
-  assert.deepEqual(subject.counters, [{ id: pts(s).id, name: "SSM.Preset.influence.Points", value: 2, display: "bar", slots: null, perPc: false, pcs: [], scale: 8, range: null, thresholds: [] }], "a subject's counter starts shown; its hidden threshold sets only the scale");
+  assert.deepEqual(subject.counters, [{ id: pts(s).id, name: "SSM.Preset.influence.Points", value: 2, text: "2", display: "bar", slots: null, perPc: false, pcs: [], scale: 8, range: null, thresholds: [] }], "a subject's counter starts shown; its hidden threshold sets only the scale");
   assert.deepEqual(subject.actions.map((action) => [action.name, action.secret, action.checks.map((row) => row.skill)]), [
     ["SSM.Preset.influence.Discover", true, ["perception"]],
     ["SSM.Preset.influence.Influence", false, ["deception", "diplomacy", "intimidation"]],
@@ -979,7 +979,7 @@ test("revealing each kind of entry adds it, and only its player fields", () => {
   assert.deepEqual(view.subjects[0].actions[1].checks.at(-1), { id: society(s).id, skill: "society", lore: "", dc: 15 });
   assert.deepEqual(known(view.subjects[0]), [{ id: subject.modifiers[0].id, name: "Flattery", text: "likes praise", category: "", colour: "", duration: "ongoing", active: false, spent: false, changes: [] }]);
   assert.deepEqual(view.subjects[0].counters[0].thresholds, [{ id: pts(s).thresholds[0].id, points: 8, text: "she offers an introduction", textHidden: false, reached: false }]);
-  assert.deepEqual(view.counters, [{ id: s.counters[0].id, name: "Suspicion", value: 3, perPc: false, pcs: [], display: "bar", slots: null, scale: 222, range: null, thresholds: [{ id: s.counters[0].thresholds[0].id, points: 5, text: "the guards stir", textHidden: false, reached: false }] }]);
+  assert.deepEqual(view.counters, [{ id: s.counters[0].id, name: "Suspicion", value: 3, text: "3/222", perPc: false, pcs: [], display: "bar", slots: null, scale: 222, range: null, thresholds: [{ id: s.counters[0].thresholds[0].id, points: 5, text: "the guards stir", textHidden: false, reached: false }] }]);
   assertNoSecrets(view);
   Run.toggleReveal(s, society(s).id);
   assert.equal(viewOf(s).subjects[0].actions[1].checks.length, 3, "hiding an entry again takes it back out");
@@ -1117,7 +1117,7 @@ test("a subject shows only its revealed counters, a per-PC one as a row per part
   Run.changeCounter(s, rapport.id, 1, "stranger");
   let view = viewOf(s, PARTY).subjects[0];
   assert.deepEqual(view.counters.map((row) => row.name), ["SSM.Preset.influence.Points", "Rapport"]);
-  assert.deepEqual([view.counters[1].display, view.counters[1].pcs, view.counters[1].thresholds], ["perPc", [{ id: "a1", value: 2 }, { id: "a2", value: 0 }], []]);
+  assert.deepEqual([view.counters[1].display, view.counters[1].pcs, view.counters[1].thresholds], ["perPc", [{ id: "a1", value: 2, text: "2" }, { id: "a2", value: 0, text: "0" }], []]);
   Run.toggleReveal(s, pts(s).id);
   view = viewOf(s, PARTY).subjects[0];
   assert.deepEqual(view.counters.map((row) => row.name), ["Rapport"], "hiding a subject's counter takes it out");
@@ -1136,7 +1136,7 @@ test("a revealed counter with no thresholds is a plain number; hidden counter th
   s.counters[0].thresholds = [];
   s.counters[0].max = null;
   [counter] = viewOf(s).counters;
-  assert.deepEqual(counter, { id: s.counters[0].id, name: "Suspicion", value: 3, perPc: false, pcs: [], display: "number", slots: null, scale: 0, range: null, thresholds: [] });
+  assert.deepEqual(counter, { id: s.counters[0].id, name: "Suspicion", value: 3, text: "3", perPc: false, pcs: [], display: "number", slots: null, scale: 0, range: null, thresholds: [] });
 });
 
 test("party markers show who has acted, a PC with no image gets the default icon, and an empty party is fine", () => {
@@ -1291,7 +1291,7 @@ test("a per-PC counter shows a row per party PC on the panel, and no thresholds"
   const s = secretSystem();
   Object.assign(s.counters[0], { perPc: true, revealed: true, value: 1, valueBy: { a1: 3 } });
   const [counter] = viewOf(s, PARTY).counters;
-  assert.deepEqual([counter.perPc, counter.display, counter.pcs, counter.thresholds], [true, "perPc", [{ id: "a1", value: 3 }, { id: "a2", value: 1 }], []]);
+  assert.deepEqual([counter.perPc, counter.display, counter.pcs, counter.thresholds], [true, "perPc", [{ id: "a1", value: 3, text: "3/222" }, { id: "a2", value: 1, text: "1/222" }], []]);
 });
 
 test("a subject's counter stays inside its limits, per PC too", () => {

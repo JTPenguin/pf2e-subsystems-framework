@@ -18,7 +18,7 @@
     <div class="ssm-panel-points">
       <span class="ssm-panel-subject-name">{{name}}</span>
       {{#if slots}}<ol class="ssm-panel-slots {{#if steps}}steps{{else}}track{{/if}}" role="img" aria-label="{{name}}: {{value}}">{{#each slots}}<li class="{{#if filled}}filled{{/if}} {{#if threshold}}threshold{{/if}} {{#if reached}}reached{{/if}}" data-tooltip-text="{{tooltip}}"></li>{{/each}}</ol>{{else}}{{> ssmPanelBar}}{{/if}}
-      <strong>{{value}}</strong>
+      <strong>{{text}}</strong>
     </div>
     {{> ssmPanelThresholds}}
   </div>
@@ -28,11 +28,11 @@
   {{#each pcCounters}}
   <div class="ssm-panel-track ssm-panel-pc-counter">
     <span class="ssm-panel-subject-name">{{name}}</span>
-    <div class="ssm-panel-pc-values">{{#each pcs}}<span class="ssm-panel-pc-value"><img class="ssm-panel-pc" src="{{img}}" alt="{{name}}" data-tooltip-text="{{name}}" draggable="false"><strong>{{value}}</strong></span>{{/each}}</div>
+    <div class="ssm-panel-pc-values">{{#each pcs}}<span class="ssm-panel-pc-value"><img class="ssm-panel-pc" src="{{img}}" alt="{{name}}" data-tooltip-text="{{name}}" draggable="false"><strong>{{text}}</strong></span>{{/each}}</div>
   </div>
   {{/each}}
 </div>{{/if}}
-{{#if numbers.length}}<p class="ssm-panel-counters">{{#each numbers}}<span>{{name}}: <strong>{{value}}</strong></span>{{/each}}</p>{{/if}}{{/inline}}
+{{#if numbers.length}}<p class="ssm-panel-counters">{{#each numbers}}<span>{{name}}: <strong>{{text}}</strong></span>{{/each}}</p>{{/if}}{{/inline}}
 <header class="ssm-panel-head">
   {{#if isGM}}<button type="button" class="ssm-panel-name" data-action="openChallenge" data-drag-click><strong>{{name}}</strong></button>{{else}}<strong class="ssm-panel-name">{{name}}</strong>{{/if}}
   <span class="ssm-panel-round-text">{{roundLabel}}</span>

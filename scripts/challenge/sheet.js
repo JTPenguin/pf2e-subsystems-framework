@@ -7,7 +7,7 @@ import { announceTriggers, writeChallenge } from "./state.js";
 import { advanceRound, canAdvanceRound, canUndoRound, changeCounter, counterValueOf, currentDc, cycleThresholdReveal, endRun, resetRun, restoreModifier, startRun, toggleActed, toggleComplete, toggleModifier, toggleReached, toggleReveal, undoRound } from "./run.js";
 import { LINK_ROLL_ID } from "../roll-option.js";
 import { rollCheck, rollTarget } from "./roll.js";
-import { addRow, applyForm, COUNTER_DISPLAYS, setCounterNote, subjectTemplates, BOTH_WAYS, clampTracks, DIRECTIONS, EDITABLE, groupByCategory, isAlwaysShown, isDecoyCheck, limitTrack, LORE, moveSubject, PERCEPTION, nextThresholdReveal, pickFields, removeRow, SAVES, THRESHOLD_REVEALS } from "./data.js";
+import { counterValueText, addRow, applyForm, COUNTER_DISPLAYS, setCounterNote, subjectTemplates, BOTH_WAYS, clampTracks, DIRECTIONS, EDITABLE, groupByCategory, isAlwaysShown, isDecoyCheck, limitTrack, LORE, moveSubject, PERCEPTION, nextThresholdReveal, pickFields, removeRow, SAVES, THRESHOLD_REVEALS } from "./data.js";
 import { ModifierWindow } from "./entry-window.js";
 
 const { DocumentSheetV2, HandlebarsApplicationMixin } = foundry.applications.api;
@@ -343,12 +343,12 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
       const canMove = (value) => ({ canAdd: canChange && limitTrack(counter, value + 1) !== value, canRemove: canChange && limitTrack(counter, value - 1) !== value });
       const pcs = !counter.perPc ? [] : [...new Set([...partyIds, ...Object.keys(counter.valueBy ?? {})])].map((id) => {
         const value = counterValueOf(counter, id);
-        return { id, name: game.actors.get(id)?.name ?? id, value, note: counter.noteBy?.[id] ?? "", ...canMove(value) };
+        return { id, name: game.actors.get(id)?.name ?? id, value, valueText: counterValueText(counter, value), note: counter.noteBy?.[id] ?? "", ...canMove(value) };
       });
       return {
         ...counter,
         label: counter.name || loc("SSM.Challenge.UnnamedCounter"),
-        rangeLabel: rangeLabel(counter),
+        valueText: counterValueText(counter, counter.value),
         perRoundLabel: counter.perRound && !counter.perPc ? game.i18n.format("SSM.Challenge.PerRoundOf", { amount: signed(counter.perRound) }) : "",
         ...canMove(counter.value),
         pcs,
@@ -661,9 +661,3 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
   }
 }
 
-/** A counter's limits in words: "0 to 6", "up to 6", "at least 0", or "" with none. */
-function rangeLabel({ min, max }) {
-  if (min === null && max === null) return "";
-  const key = min === null ? "RangeMax" : max === null ? "RangeMin" : "RangeBoth";
-  return `(${game.i18n.format(`SSM.Challenge.${key}`, { min, max })})`;
-}

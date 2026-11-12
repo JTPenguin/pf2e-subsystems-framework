@@ -1,10 +1,11 @@
 ---
 title: 'Show values as "3/6" when they have a maximum'
 kind: feature
-status: ready
+status: done
 waits_on: Claude
 priority: 🔼
 blocked_by: []
+outcome: "Done 2026-11-12: sheet and panel show 3/6, +12 or 3; range labels removed. Checked live (panel Quarry 2/9, no header label) and tests pass."
 source: "Justin's list of items, 2026-11-12; interview with Justin, 2026-11-12"
 added: 2026-11-12
 updated: 2026-11-12

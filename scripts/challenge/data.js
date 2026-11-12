@@ -483,3 +483,9 @@ export function saveModifier(system, subjectId, modifierId, changes) {
   for (const row of modifier.effects) row.skills = row.skills.filter((skill) => checks.has(skill));
   return true;
 }
+
+/** A counter's value as text: "3/6" with a maximum, "+12" on a both-ways track, else just the number. */
+export function counterValueText(counter, value) {
+  if (counter.direction === BOTH_WAYS) return value > 0 ? `+${value}` : `${value}`.replace("-", "\u2212");
+  return counter.max === null || counter.max === undefined ? `${value}` : `${value}/${counter.max}`;
+}

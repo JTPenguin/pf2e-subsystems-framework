@@ -77,10 +77,10 @@
 {{#*inline "ssmCounterRun"}}<div class="ssm-counter {{#unless revealed}}ssm-hidden{{/unless}}">
       <div class="ssm-row ssm-entry">
         {{> ssmEye root=root}}
-        <span class="ssm-grow">{{label}}{{#if rangeLabel}} <span class="ssm-muted">{{rangeLabel}}</span>{{/if}}{{#if perRoundLabel}} <span class="ssm-tag">{{perRoundLabel}}</span>{{/if}}{{#if perPc}} <strong class="ssm-pc-total">{{totalLabel}}</strong>{{/if}}</span>
+        <span class="ssm-grow">{{label}}{{#if perRoundLabel}} <span class="ssm-tag">{{perRoundLabel}}</span>{{/if}}{{#if perPc}} <strong class="ssm-pc-total">{{totalLabel}}</strong>{{/if}}</span>
         {{#unless perPc}}
         <button type="button" class="icon fa-solid fa-minus" data-action="changeCounter" data-id="{{id}}" data-delta="-1" aria-label="{{localize "SSM.Challenge.RemoveFromCounter"}}" {{#unless canRemove}}disabled{{/unless}}></button>
-        <strong class="ssm-point-total">{{value}}</strong>
+        <strong class="ssm-point-total">{{valueText}}</strong>
         <button type="button" class="icon fa-solid fa-plus" data-action="changeCounter" data-id="{{id}}" data-delta="1" aria-label="{{localize "SSM.Challenge.AddToCounter"}}" {{#unless canAdd}}disabled{{/unless}}></button>
         {{/unless}}
       </div>
@@ -89,7 +89,7 @@
         <span class="ssm-pc-name">{{name}}</span>
         <input type="text" class="ssm-grow ssm-pc-note" value="{{note}}" data-pc-note data-counter="{{../id}}" data-actor="{{id}}" placeholder="{{localize "SSM.Challenge.PcNotePlaceholder"}}" aria-label="{{localize "SSM.Challenge.PcNote"}}" data-tooltip="SSM.Challenge.PcNoteHint">
         <button type="button" class="icon fa-solid fa-minus" data-action="changeCounter" data-id="{{../id}}" data-actor="{{id}}" data-delta="-1" aria-label="{{localize "SSM.Challenge.RemoveFromCounter"}}" {{#unless canRemove}}disabled{{/unless}}></button>
-        <strong class="ssm-point-total">{{value}}</strong>
+        <strong class="ssm-point-total">{{valueText}}</strong>
         <button type="button" class="icon fa-solid fa-plus" data-action="changeCounter" data-id="{{../id}}" data-actor="{{id}}" data-delta="1" aria-label="{{localize "SSM.Challenge.AddToCounter"}}" {{#unless canAdd}}disabled{{/unless}}></button>
       </div>
       {{/each}}
