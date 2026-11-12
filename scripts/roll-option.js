@@ -1,21 +1,21 @@
 /*
  * A module roll carries its identity in one PF2e roll option. It works for direct rolls and chat links, and a reroll keeps it.
- * Form: ssm:roll:<kind>:<challengeId>:<npcId>:<entryId>:<rollId>. Ids hold only letters and digits, so no part contains the separator.
+ * Form: ssm:roll:<challengeId>:<subjectId>:<actionId>:<checkId>:<rollId>. Ids hold only letters and digits, so no part contains the separator.
  * No Foundry calls, so tools/test.mjs can check it.
  */
 const PREFIX = "ssm:roll:";
+const PARTS = ["challengeId", "subjectId", "actionId", "checkId", "rollId"];
 
 /** A chat link's rollId until it's rolled. One link can be clicked many times, so each click gets its own id when its message is created. */
 export const LINK_ROLL_ID = "link";
 
-export const buildRollOption = ({ kind, challengeId, npcId, entryId, rollId }) => `${PREFIX}${[kind, challengeId, npcId, entryId, rollId].join(":")}`;
+export const buildRollOption = (roll) => `${PREFIX}${PARTS.map((part) => roll[part]).join(":")}`;
 
 export function parseRollOption(option) {
   if (typeof option !== "string" || !option.startsWith(PREFIX)) return null;
   const parts = option.slice(PREFIX.length).split(":");
-  if (parts.length !== 5 || parts.some((part) => !part)) return null;
-  const [kind, challengeId, npcId, entryId, rollId] = parts;
-  return { kind, challengeId, npcId, entryId, rollId };
+  if (parts.length !== PARTS.length || parts.some((part) => !part)) return null;
+  return Object.fromEntries(PARTS.map((part, index) => [part, parts[index]]));
 }
 
 export const findRollOption = (options) => (Array.isArray(options) ? options.find((option) => parseRollOption(option)) ?? null : null);

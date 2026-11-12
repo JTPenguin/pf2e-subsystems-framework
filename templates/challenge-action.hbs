@@ -1,0 +1,29 @@
+<div class="ssm-layout">
+  {{#with action}}
+  <div class="ssm-row">
+    <label class="grow">{{localize "SSM.Challenge.Name"}}<input type="text" name="name" value="{{name}}"></label>
+    <label data-tooltip="SSM.Challenge.MaxPointsHint">{{localize "SSM.Challenge.MaxPoints"}}<input type="number" min="0" step="1" name="maxPoints" value="{{maxPoints}}" placeholder="{{localize "SSM.Challenge.NoLimit"}}"></label>
+    <label class="check" data-tooltip="SSM.Challenge.SecretHint"><input type="checkbox" name="secret" {{checked secret}}>{{localize "SSM.Challenge.Secret"}}</label>
+  </div>
+  {{/with}}
+  {{#each outcomes}}
+  <fieldset class="ssm-outcome">
+    <legend>{{label}}</legend>
+    {{#each effects}}
+    <div class="ssm-effect">
+      <div class="ssm-row">
+        <label>{{localize "SSM.Challenge.EffectLabel"}}<select name="{{path}}.type" data-redraw>{{selectOptions @root.choices.effects selected=type}}</select></label>
+        {{#if hasAmount}}<label>{{localize "SSM.Challenge.Amount"}}<input type="number" step="1" name="{{path}}.amount" value="{{amount}}"></label>{{/if}}
+        {{#if isCounter}}<label class="grow">{{localize "SSM.Challenge.Counter"}}<select name="{{path}}.counterId">{{selectOptions @root.choices.counters selected=counterId}}</select></label>{{/if}}
+        {{#if isNote}}<label class="grow">{{localize "SSM.Challenge.OutcomeNote"}}<input type="text" name="{{path}}.note" value="{{note}}"></label>{{/if}}
+        <button type="button" class="icon fa-solid fa-trash" data-action="removeRow" data-path="{{path}}" aria-label="{{localize "SSM.Challenge.Remove"}}"></button>
+      </div>
+    </div>
+    {{else}}<p class="ssm-muted">{{localize "SSM.Challenge.OutcomeNothing"}}</p>{{/each}}
+    <button type="button" class="ssm-add" data-action="addRow" data-list="{{list}}"><i class="fa-solid fa-plus" inert></i> {{localize "SSM.Challenge.AddEffect"}}</button>
+  </fieldset>
+  {{/each}}
+  <div class="ssm-row ssm-modifier-buttons">
+    <button type="submit" class="ssm-save"><i class="fa-solid fa-floppy-disk" inert></i> {{localize "SSM.Challenge.SaveModifier"}}</button>
+  </div>
+</div>

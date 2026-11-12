@@ -3,7 +3,7 @@ title: "Add the Research preset"
 kind: feature
 status: ready
 waits_on: Claude
-blocked_by: [generic-subsystem-shared-mechanics]
+blocked_by: []
 source: "Justin's list of items, 2026-11-11"
 added: 2026-11-11
 updated: 2026-11-11
@@ -20,8 +20,8 @@ Research as a preset of the generic challenge from [[generic-subsystem-shared-me
 | **Research checks** | Placed around the library. Each lists skills with DCs, and a Maximum RP: once reached, that check gives no more | Subjects (library areas) with one action each, and the action's maximum points |
 | **Research activity** | Crit success 2 RP, success 1 RP, failure 0, crit failure a false discovery and −1 RP | The outcome table; the false discovery is a note for the GM |
 | **Thresholds** | RP needed and what it gives, from fewest RP to most | Thresholds |
-| **Timed events** | Triggered by time, not RP | Counter thresholds on the round counter, or round notes |
-| **Round length** | 10 minutes to a day, set by the GM | Round length text |
+| **Timed events** | Triggered by time, not RP | A "Days" counter that changes by +1 each round, with thresholds (checked against *Ruins of the Radiant Siege*, 2026-11-11) |
+| **Round length** | 10 minutes to a day, set by the GM | The GM's notes (round length was removed) |
 
 ## Open questions for the spec step
 

@@ -1,0 +1,64 @@
+{{!-- A points bar. A both-ways bar spans its range, has a mark at 0, and fills from 0 to the value. --}}
+{{#*inline "ssmPanelBar"}}{{#if bar.both}}<span class="ssm-panel-bar both {{#if bar.negative}}negative{{/if}}"><span style="left: {{bar.left}}%; width: {{bar.width}}%"></span><i class="ssm-panel-zero" style="left: {{bar.zero}}%"></i></span>{{else}}<span class="ssm-panel-bar {{#if bar.negative}}negative{{/if}}"><span style="width: {{bar.percent}}%"></span></span>{{/if}}{{/inline}}
+{{!-- A modifier card, on a subject or in the challenge strip. --}}
+{{#*inline "ssmPanelMod"}}<div class="ssm-panel-mod {{#if stripe}}categorised{{/if}} {{#if inactive}}inactive{{/if}} {{#if spent}}spent{{/if}}"{{#if stripe}} style="{{stripe}}"{{/if}}{{#if tooltip}} data-tooltip-html="{{tooltip}}" data-tooltip-class="ssm-panel-tip"{{/if}}{{#if @root.isGM}}{{#unless spent}} data-action="toggleModifier" data-subject="{{subjectId}}" data-id="{{id}}" role="button" tabindex="0" aria-pressed="{{active}}"{{/unless}}{{/if}}>
+        <strong class="ssm-panel-mod-name">{{name}}</strong>
+        <span class="ssm-panel-mod-kind">{{categoryLabel}}{{#if decoy}} <span class="ssm-tag ssm-decoy">{{localize "SSM.Challenge.Decoy"}}</span>{{/if}}</span>
+        <span class="ssm-panel-mod-changes">{{#each changes}}<span class="{{#if done}}done{{/if}}">{{text}}</span>{{/each}}</span>
+        <span class="ssm-panel-mod-duration">{{#if spent}}{{localize "SSM.Challenge.Spent"}}{{else}}{{durationLabel}}{{/if}}</span>
+      </div>{{/inline}}
+{{#*inline "ssmPanelThresholds"}}{{#if thresholds.length}}<div class="ssm-panel-thresholds">
+  <div class="ssm-panel-thresholds-head">{{localize "SSM.Panel.Thresholds"}}</div>
+  {{#each thresholds}}<div class="ssm-panel-threshold {{#if reached}}reached{{/if}}"><span class="ssm-panel-threshold-mark">{{#if reached}}<i class="fa-solid fa-check" role="img" aria-label="{{localize "SSM.Challenge.ReachedShort"}}" data-tooltip="{{localize "SSM.Challenge.ReachedShort"}}"></i>{{/if}}</span> <strong class="ssm-panel-threshold-points">{{points}}</strong> <span class="ssm-panel-threshold-text">{{#if textHidden}}{{localize "SSM.Panel.HiddenText"}}{{else}}{{text}}{{/if}}</span></div>{{/each}}
+</div>{{/if}}{{/inline}}
+<header class="ssm-panel-head">
+  {{#if isGM}}<button type="button" class="ssm-panel-name" data-action="openChallenge" data-drag-click><strong>{{name}}</strong></button>{{else}}<strong class="ssm-panel-name">{{name}}</strong>{{/if}}
+  <span class="ssm-panel-round-text">{{roundLabel}}</span>
+</header>
+<div class="ssm-panel-run">
+  <div class="ssm-panel-rounds">{{#if isGM}}<button type="button" class="ssm-panel-round-button" data-action="previousRound" aria-label="{{localize "SSM.Challenge.PreviousRound"}}" {{#unless canPreviousRound}}disabled{{/unless}}><i class="fa-solid fa-backward-step" inert></i></button>{{/if}}<span class="ssm-panel-segments" role="img" aria-label="{{roundLabel}}">{{#each roundSegments}}<span class="{{#if filled}}filled{{/if}}"></span>{{/each}}</span>{{#if isGM}}<button type="button" class="ssm-panel-round-button" data-action="nextRound" aria-label="{{localize "SSM.Challenge.NextRound"}}" {{#unless canNextRound}}disabled{{/unless}}><i class="fa-solid fa-forward-step" inert></i></button>{{/if}}</div>
+  {{#if party.length}}<div class="ssm-panel-party"{{#unless isGM}} role="list"{{/unless}}>{{#each party}}<img class="ssm-panel-pc {{#if acted}}acted{{/if}}"{{#if @root.isGM}} data-action="toggleActed" data-id="{{id}}" role="button" tabindex="0" aria-pressed="{{acted}}"{{else}} role="listitem"{{/if}} src="{{img}}" alt="{{label}}" aria-label="{{label}}" data-tooltip-text="{{name}}" draggable="false">{{/each}}</div>{{/if}}
+</div>
+{{#if challengeMods.length}}<div class="ssm-panel-mods ssm-panel-challenge-mods">{{#each challengeMods}}{{> ssmPanelMod}}{{/each}}</div>{{/if}}
+<div class="ssm-panel-subjects {{#if several}}several{{/if}}">
+  {{#each subjects}}
+  <div class="ssm-panel-subject {{#if complete}}complete{{/if}}">
+    <div class="ssm-panel-points">
+      <span class="ssm-panel-subject-name">{{#if complete}}<i class="fa-solid fa-circle-check ssm-panel-complete" role="img" aria-label="{{localize "SSM.Challenge.Complete"}}" data-tooltip="{{localize "SSM.Challenge.Complete"}}"></i> {{/if}}{{name}}</span>
+      {{#if showPoints}}{{> ssmPanelBar}}
+      <strong>{{points}}</strong>{{/if}}
+    </div>
+    {{#if pcs.length}}<div class="ssm-panel-pcs">
+      {{#each pcs}}<div class="ssm-panel-pc-row {{#if complete}}complete{{/if}}"><img class="ssm-panel-pc" src="{{img}}" alt="{{name}}" data-tooltip-text="{{name}}" draggable="false">{{> ssmPanelBar}}<strong>{{points}}</strong><span class="ssm-panel-threshold-mark">{{#if complete}}<i class="fa-solid fa-check" role="img" aria-label="{{localize "SSM.Challenge.Complete"}}"></i>{{/if}}</span></div>{{/each}}
+    </div>{{/if}}
+    {{> ssmPanelThresholds}}
+    <div class="ssm-panel-actions">
+    {{#each actions}}<p><span class="ssm-panel-label">{{name}}</span> <span class="ssm-panel-list">{{#each checks}}<span><button type="button" class="ssm-panel-skill" data-action="rollSkill" data-subject="{{subjectId}}" data-act="{{actionId}}" data-id="{{id}}"><i class="fa-solid fa-dice-d20" aria-hidden="true"></i>{{label}}{{#if decoy}} <span class="ssm-tag ssm-decoy">{{localize "SSM.Challenge.Decoy"}}</span>{{/if}}</button></span>{{/each}}</span></p>{{/each}}
+    </div>
+    {{#if known.length}}<div class="ssm-panel-mods">
+      {{#each known}}{{> ssmPanelMod}}{{/each}}
+    </div>{{/if}}
+  </div>
+  {{/each}}
+</div>
+{{#if tracks.length}}<div class="ssm-panel-tracks">
+  {{#each tracks}}
+  <div class="ssm-panel-track">
+    <div class="ssm-panel-points">
+      <span class="ssm-panel-subject-name">{{name}}</span>
+      {{> ssmPanelBar}}
+      <strong>{{value}}</strong>
+    </div>
+    {{> ssmPanelThresholds}}
+  </div>
+  {{/each}}
+</div>{{/if}}
+{{#if pcCounters.length}}<div class="ssm-panel-tracks">
+  {{#each pcCounters}}
+  <div class="ssm-panel-track ssm-panel-pc-counter">
+    <span class="ssm-panel-subject-name">{{name}}</span>
+    <div class="ssm-panel-pc-values">{{#each pcs}}<span class="ssm-panel-pc-value"><img class="ssm-panel-pc" src="{{img}}" alt="{{name}}" data-tooltip-text="{{name}}" draggable="false"><strong>{{value}}</strong></span>{{/each}}</div>
+  </div>
+  {{/each}}
+</div>{{/if}}
+{{#if counters.length}}<p class="ssm-panel-counters">{{#each counters}}<span>{{name}}: <strong>{{value}}</strong></span>{{/each}}</p>{{/if}}

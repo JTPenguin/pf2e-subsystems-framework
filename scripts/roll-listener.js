@@ -1,3 +1,4 @@
+import { MODULE } from "./constants.js";
 import { challengePage, subsystemFor } from "./registry.js";
 import { findRollOption, parseRollOption, stampLinkRoll } from "./roll-option.js";
 
@@ -27,7 +28,11 @@ export function rollFromMessage(message) {
   };
 }
 
-/** The challenge a roll belongs to: its entry, page and subsystem. Null if the challenge has been deleted. */
+/** The flag on an applied-result card (spec 14.8), which names its challenge. */
+const RESULT_FLAG = "result";
+const resultOf = (message) => message.flags?.[MODULE]?.[RESULT_FLAG] ?? null;
+
+/** The challenge a roll or an applied-result card belongs to: its entry, page and subsystem. Null if the challenge has been deleted. */
 export function challengeOf(roll) {
   const entry = game.journal.get(roll.challengeId);
   const subsystem = entry ? subsystemFor(entry) : null;
@@ -52,10 +57,15 @@ function onRollMessage(message) {
  */
 function onRenderMessage(message, html) {
   if (!game.user.isGM) return;
+  const content = html.querySelector(".message-content");
+  const result = resultOf(message);
+  if (result && content) {
+    const found = challengeOf(result);
+    return found?.subsystem.renderResultCard?.(found.page, message, content);
+  }
   const roll = rollFromMessage(message);
   if (!roll) return;
   const found = challengeOf(roll);
-  const content = html.querySelector(".message-content");
   if (!content) return;
   if (found) return found.subsystem.renderRollCard?.(found.page, roll, message, content);
   const note = document.createElement("p");
@@ -64,14 +74,18 @@ function onRenderMessage(message, html) {
   content.append(note);
 }
 
-/** A challenge that starts, ends or resets changes what its cards' controls can do, so a GM's client redraws the cards on screen. Cards not drawn are drawn fresh later. */
+/**
+ * A challenge that starts, ends or resets, or applies or undoes a result, changes what its cards' controls can do,
+ * so a GM's client redraws its roll and result cards on screen. Cards not drawn are drawn fresh later.
+ */
 function onChallengeUpdate(page, changed) {
-  if (!game.user.isGM || !foundry.utils.hasProperty(changed, "system.run.status")) return;
+  const relevant = ["system.run.status", "system.run.appliedRolls"].some((path) => foundry.utils.hasProperty(changed, path));
+  if (!game.user.isGM || !relevant) return;
   const entryId = page.parent?.id;
   const ids = new Set([...document.querySelectorAll(".chat-message[data-message-id]")].map((li) => li.dataset.messageId));
   for (const id of ids) {
     const message = game.messages.get(id);
-    if (message && rollFromMessage(message)?.challengeId === entryId) ui.chat.updateMessage(message);
+    if (message && (rollFromMessage(message) ?? resultOf(message))?.challengeId === entryId) ui.chat.updateMessage(message);
   }
 }
 

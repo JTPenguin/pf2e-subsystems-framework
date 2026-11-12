@@ -1,7 +1,7 @@
 {
   "id": "pf2e-subsystem-manager",
   "title": "PF2e Subsystem Manager",
-  "description": "Run Pathfinder 2e subsystems from sheets, with a player panel over the canvas. The first version covers Influence.",
+  "description": "Run Pathfinder 2e subsystems from sheets, with a player panel over the canvas. Every subsystem is a Victory Points challenge; Influence is a preset.",
   "version": "0.1.0",
   "compatibility": { "minimum": "14", "verified": "14" },
   "authors": [{ "name": "Justin" }],
@@ -10,7 +10,7 @@
   },
   "documentTypes": {
     "JournalEntryPage": {
-      "influence": { "htmlFields": ["premise", "gmNotes"] }
+      "challenge": { "htmlFields": ["premise", "gmNotes"] }
     }
   },
   "esmodules": ["scripts/module.js"],

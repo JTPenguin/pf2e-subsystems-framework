@@ -1,4 +1,4 @@
-import { ACTIVE_SETTING, MODULE, POSITION_SETTING, SPOT_SETTING } from "../constants.js";
+import { ACTIVE_SETTING, MODULE, POSITION_SETTING, SPOT_SETTING, TAB } from "../constants.js";
 import { allSubsystems, subsystemByType } from "../registry.js";
 import { panelState, schedulePublish } from "./activation.js";
 import { clampSize, clampSpot, readSize, readSpot } from "./spot.js";
@@ -316,7 +316,7 @@ function onPressEnd() {
   }, 100);
 }
 
-/** Open sheets show Start, Hide and Show from the setting, so they redraw when the active challenge or its hidden state changes. */
+/** Open sheets show Start, Hide and Show from the setting, and the Subsystems tab marks the panel's challenge, so both redraw when it or its hidden state changes. */
 function refreshSheets() {
   const { id, hidden } = panelState();
   const key = `${id ?? ""}:${!!hidden}`;
@@ -325,6 +325,8 @@ function refreshSheets() {
     return;
   }
   sheetKey = key;
+  // The Subsystems tab marks the challenge on the panel.
+  ui[TAB]?.render();
   for (const app of foundry.applications.instances.values()) {
     // The render context tells the sheet this is an outside update, so it won't throw away text being typed.
     if (app.rendered && allSubsystems().some((subsystem) => app instanceof subsystem.sheet)) app.render({ renderContext: "ssmPanel" });

@@ -2,7 +2,7 @@
   "TYPES": {
     "JournalEntryPage": {
       "pf2e-subsystem-manager": {
-        "influence": "Influence Challenge"
+        "challenge": "Challenge"
       }
     }
   },
@@ -12,6 +12,13 @@
     "Create": "Create Challenge",
     "NewChallenge": "New Challenge",
     "PageRefused": "A challenge page can't be added to an existing journal entry. Create a challenge from the Subsystems tab.",
+    "Running": {
+      "Running": "Running",
+      "OnPanel": "On the panel",
+      "Filter": "Show only running challenges",
+      "None": "No challenges are running.",
+      "ShowOnPanel": "Show on panel"
+    },
     "Drop": {
       "NotAChallenge": "Only challenges can go in the Subsystems tab.",
       "ChallengeInJournal": "Challenges stay in the Subsystems tab.",
@@ -21,20 +28,25 @@
     "Panel": {
       "Hide": "Hide panel",
       "Show": "Show panel",
-      "Blocked": "{name} is on the panel. End it before starting another challenge.",
+      "Replaced": "{name} left the panel. It is still running; right-click it in the Subsystems tab and choose Show on panel to bring it back.",
       "PositionName": "Panel position",
       "PositionHint": "Where the challenge panel starts at the top of the screen. Anyone can drag it by its header to a spot of their own.",
-      "Position": { "center": "Top centre", "left": "Top left", "right": "Top right" },
+      "Position": {
+        "center": "Top centre",
+        "left": "Top left",
+        "right": "Top right"
+      },
       "ResetPosition": "Reset position and size",
       "Resize": "Drag to resize",
-      "Influence": "Influence",
-      "Discover": "Discover",
       "Change": {
         "dc": "{amount} to DCs vs {skills}",
         "dcAll": "{amount} to all DCs",
-        "points": { "one": "{amount} Influence Point", "other": "{amount} Influence Points" },
+        "points": "{amount} {points}",
         "counter": "{amount} {counter}",
-        "rounds": { "one": "{amount} round", "other": "{amount} rounds" }
+        "rounds": {
+          "one": "{amount} round",
+          "other": "{amount} rounds"
+        }
       },
       "Thresholds": "Thresholds",
       "TipGM": "GM Only",
@@ -45,8 +57,8 @@
       "NoGMActor": "Select a token, or pick a PC under Roll as in the challenge window.",
       "SkillGone": "That check is no longer available."
     },
-    "Influence": {
-      "Label": "Influence",
+    "Challenge": {
+      "Label": "Challenge",
       "Challenge": "Challenge",
       "Name": "Name",
       "Premise": "Premise",
@@ -55,16 +67,7 @@
       "Current": "Current",
       "Minimum": "Minimum",
       "Maximum": "Maximum",
-      "NPC": "NPC",
-      "AddNPC": "Add NPC",
-      "RemoveNPC": "Remove NPC",
-      "Perception": "Perception",
-      "Will": "Will",
       "Points": "Points",
-      "Discovery": "Discovery checks",
-      "AddDiscovery": "Add Discovery check",
-      "InfluenceSkills": "Influence skills",
-      "AddInfluence": "Add Influence skill",
       "Skill": "Skill",
       "Lore": "Lore",
       "LoreName": "Lore name",
@@ -76,22 +79,11 @@
       "PlayerText": "Player text",
       "GMText": "GM text",
       "Reached": "Reached",
-      "Section": {
-        "resistance": "Resistances",
-        "weakness": "Weaknesses",
-        "other": "Other"
-      },
       "AddModifier": "Add entry",
       "EditModifier": "Edit entry",
       "EditModifierTitle": "Edit entry: {name}",
       "SaveModifier": "Save",
       "ModifierGone": "That entry was deleted, so the changes were not saved.",
-      "KindLabel": "Kind",
-      "Kind": {
-        "resistance": "Resistance",
-        "weakness": "Weakness",
-        "other": "Other"
-      },
       "DurationLabel": "Duration",
       "Duration": {
         "oneTime": "One-time",
@@ -102,7 +94,7 @@
       "EffectLabel": "Effect",
       "Effect": {
         "dc": "DC change",
-        "points": "Influence Points",
+        "points": "Points",
         "counter": "Counter change",
         "rounds": "Rounds",
         "note": "Note only"
@@ -117,10 +109,6 @@
       "Counters": "Counters",
       "AddCounter": "Add counter",
       "Value": "Value",
-      "CounterLimits": "A counter's minimum is above its maximum, so its value was not limited.",
-      "TriggerValue": "Trigger at",
-      "TriggerNote": "GM note",
-      "AddTrigger": "Add trigger",
       "Remove": "Remove",
       "Mode": {
         "edit": "Edit",
@@ -132,7 +120,7 @@
       "EndConfirm": "End this challenge? The panel closes for everyone. The final state stays on the sheet.",
       "Reset": "Reset",
       "ResetTitle": "Reset challenge",
-      "ResetConfirm": "Return this challenge to unspent? Points, rounds and reveals go back to how they were at Start.",
+      "ResetConfirm": "Return this challenge to unspent? Points, counters, rounds and reveals go back to how they were at Start.",
       "NotActiveGM": "Another GM is running this challenge. Only the active GM can change it.",
       "Round": "Round {current} of {max}",
       "NotStarted": "Not started",
@@ -159,16 +147,6 @@
       "ReachedSet": "Mark as reached",
       "ReachedClear": "Clear reached",
       "Apply": "Apply",
-      "RollLabel": {
-        "influence": "Influence: {npc}",
-        "discover": "Discover: {npc}"
-      },
-      "Reminder": {
-        "criticalSuccess": "Earns two pieces of information.",
-        "success": "Earns one piece of information.",
-        "failure": "Earns nothing.",
-        "criticalFailure": "Earns one false piece of information."
-      },
       "UnnamedEntry": "Unnamed entry",
       "BaseDc": "Base DC {dc}",
       "RollSkill": "Roll {skill}, DC {dc}, for the chosen PC",
@@ -189,22 +167,140 @@
       "TriggerNoticeBare": "{counter} reached {value}",
       "EffectText": {
         "dc": "DC {amount} ({skills})",
-        "points": "Influence Points {amount}",
+        "points": "{points} {amount}",
         "counter": "{counter} {amount}",
         "rounds": "Rounds {amount}",
         "note": "{note}"
-      }
+      },
+      "Subject": "Subject",
+      "AddSubject": "Add {subject}",
+      "RemoveSubject": "Remove {subject}",
+      "Names": "Names",
+      "PointsName": "Points name",
+      "SubjectLabel": "Subject label",
+      "NoLimit": "No limit",
+      "RoundOpen": "Round {current}",
+      "StatLine": "Stat line",
+      "StatLineHint": "GM only. For example: Perception +12, Will +9.",
+      "TracksPoints": "Tracks points",
+      "TracksPointsHint": "Turn off for a subject that only holds actions.",
+      "Individual": "Individual",
+      "IndividualHint": "Each PC has their own points here. A roll changes the roller's points.",
+      "StartPoints": "Starting points",
+      "DirectionLabel": "Direction",
+      "Direction": {
+        "up": "Counts up",
+        "down": "Counts down",
+        "both": "Both ways"
+      },
+      "Goal": "Goal",
+      "NoGoal": "None",
+      "GoalHint": "Reaching the goal marks the subject Complete.",
+      "GoalOf": "Goal {goal}",
+      "Complete": "Complete",
+      "CompleteSet": "Mark as complete",
+      "CompleteClear": "Clear complete",
+      "AddAction": "Add action",
+      "RemoveAction": "Remove action",
+      "EditAction": "Edit action",
+      "EditActionTitle": "Edit action: {name}",
+      "UnnamedAction": "Unnamed action",
+      "ActionGone": "That action was deleted, so the changes were not saved.",
+      "AddCheck": "Add check",
+      "Always": "Always shown",
+      "AlwaysHint": "Players see this check from the start. It has no reveal control and is never a decoy.",
+      "Secret": "Secret",
+      "SecretHint": "Rolled as a secret check, like Recall Knowledge.",
+      "MaxPoints": "Maximum points",
+      "MaxPointsHint": "The most this action can give in total. Blank for no limit.",
+      "GivenOf": "{given} of {max} given",
+      "Outcome": {
+        "criticalSuccess": "Critical Success",
+        "success": "Success",
+        "failure": "Failure",
+        "criticalFailure": "Critical Failure"
+      },
+      "OutcomeNothing": "Nothing",
+      "OutcomeNote": "Reminder for the GM",
+      "ThresholdAt": "At",
+      "ThresholdDcLabel": "DC change",
+      "ThresholdDcHint": "Applies while the threshold is reached: to this subject's checks, or to every check for a counter's threshold.",
+      "ThresholdDc": "DCs {amount}",
+      "PerRound": "Change each round",
+      "PerRoundHint": "Added when the round advances. Previous round takes it back.",
+      "PerRoundOf": "{amount} each round",
+      "RangeBoth": "{min} to {max}",
+      "RangeMin": "at least {min}",
+      "RangeMax": "up to {max}",
+      "RollLabel": "{action}: {subject}",
+      "CategoryLabel": "Category",
+      "CategoryHint": "Any label. Entries group by category, and each category has its own colour.",
+      "AddModifierTo": "Add {category}",
+      "ChallengeModifiers": "Challenge modifiers",
+      "ChallengeModifiersHint": "Entries for the whole challenge. A DC change applies to every check with the chosen skills, on any subject.",
+      "ChallengeSkillsHint": "Off: pick skills. The change applies to every check with those skills, on any subject.",
+      "TrackLimits": "A minimum is above its maximum, so that value was not limited.",
+      "ReachedFollows": "Reached follows the value on a track that counts both ways.",
+      "PerPc": "Per PC",
+      "PerPcHint": "One value for each party PC. A roll changes the roller's value; a modifier changes everyone's. No thresholds or change each round.",
+      "PartyTotal": "Party total {total}",
+      "MoveUp": "Move up",
+      "MoveDown": "Move down",
+      "Collapse": "Collapse or expand"
     },
     "Card": {
-      "Apply": "Apply {points}",
-      "Applied": "Applied",
       "NotActiveGM": "Only the active GM can apply results.",
       "ChallengeGone": "This roll's challenge no longer exists.",
       "Blocked": {
-        "gone": "This NPC or skill is no longer in the challenge.",
+        "gone": "This subject, action or check is no longer in the challenge.",
         "notRunning": "The challenge isn't running.",
         "applied": "This result was already applied.",
         "rerollAfterApply": "The roll this replaced was already applied. Change points by hand on the sheet if needed."
+      },
+      "Capped": "This action has reached its maximum points.",
+      "ApplyDegree": "{degree}: {changes}",
+      "AppliedDegree": "Applied: {degree}. Undo it from its result card to pick again.",
+      "Undo": "Undo",
+      "Undone": "Undone",
+      "UndoBlocked": {
+        "notRunning": "The challenge isn't running, so this can't be undone.",
+        "notApplied": "This result was already undone, or the challenge was reset since."
+      },
+      "Result": {
+        "Heading": "{actor}: {degree} applied",
+        "HeadingNoActor": "{degree} applied",
+        "NoChange": "No change: the values were already at their limits."
+      }
+    },
+    "ChoosePreset": "Create Challenge",
+    "ChoosePresetHint": "Pick a starting template. Everything can be edited afterwards.",
+    "Preset": {
+      "victory": {
+        "Label": "Victory Points",
+        "Points": "Victory Points",
+        "Subject": "Subject",
+        "Check": "Check",
+        "Category": {
+          "modifier": "Modifier"
+        }
+      },
+      "influence": {
+        "Label": "Influence",
+        "Points": "Influence Points",
+        "Subject": "NPC",
+        "Discover": "Discover",
+        "Influence": "Influence",
+        "Reminder": {
+          "criticalSuccess": "Earns two pieces of information.",
+          "success": "Earns one piece of information.",
+          "failure": "Earns nothing.",
+          "criticalFailure": "Earns one false piece of information."
+        },
+        "Category": {
+          "resistance": "Resistance",
+          "weakness": "Weakness",
+          "other": "Other"
+        }
       }
     }
   }

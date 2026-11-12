@@ -1,8 +1,21 @@
 import { FOLDER_FLAG, MODULE, TAB } from "./constants.js";
 import { allSubsystems, subsystemFor } from "./registry.js";
-import { ancestorsToShow, dropAllowed, isChallenge, isChallengeFolder, pruneTree, stripHtml } from "./directory-rules.js";
+import { ancestorsToShow, dropAllowed, flattenTree, isChallenge, isChallengeFolder, pruneTree, stripHtml } from "./directory-rules.js";
+import { hidePanel, runState, takePanel } from "./panel/activation.js";
 
 const loc = (key) => game.i18n.localize(key);
+
+/** Ask which preset a new challenge starts from. Returns its id, or null if the dialog was closed. A subsystem with one preset or none needs no dialog. */
+async function choosePreset(subsystem) {
+  const presets = subsystem.presets ?? [];
+  if (presets.length < 2) return presets[0]?.id ?? undefined;
+  return foundry.applications.api.DialogV2.wait({
+    window: { title: "SSM.ChoosePreset" },
+    content: `<p>${loc("SSM.ChoosePresetHint")}</p>`,
+    buttons: presets.map((preset) => ({ action: preset.id, label: preset.label, icon: preset.icon })),
+    rejectClose: false,
+  });
+}
 
 /** Behaviour shared by the Subsystems tab and the filtered Journal tab. */
 const FilteredDirectory = (Base, wantChallenges) => class extends Base {
@@ -85,9 +98,47 @@ function defineDirectories() {
     }
   }
 
+  /** The mark on a running challenge's row. A hidden panel's challenge gets the plain running mark. */
+  const RUN_MARKS = {
+    panel: { icon: "fa-eye", label: "SSM.Running.OnPanel" },
+    running: { icon: "fa-play", label: "SSM.Running.Running" },
+  };
+
   class ChallengeDirectory extends FilteredDirectory(DocumentDirectory, true) {
     static tabName = TAB;
-    static DEFAULT_OPTIONS = { collection: "JournalEntry" };
+    static DEFAULT_OPTIONS = { collection: "JournalEntry", actions: { toggleRunning: ChallengeDirectory.#onToggleRunning } };
+
+    /** The Running filter. Off on each load. */
+    #runningOnly = false;
+
+    static #onToggleRunning() {
+      this.#runningOnly = !this.#runningOnly;
+      return this.render();
+    }
+
+    async _prepareDirectoryContext(context, options) {
+      await super._prepareDirectoryContext(context, options);
+      if (this.#runningOnly) context.tree = flattenTree(context.tree, (entry) => !!runState(entry), (a, b) => a.name.localeCompare(b.name, game.i18n.lang));
+    }
+
+    _getEntryContextOptions() {
+      const entryOf = (li) => this.collection.get(li.closest("[data-entry-id]").dataset.entryId);
+      return [
+        {
+          label: "SSM.Running.ShowOnPanel",
+          icon: "fa-solid fa-eye",
+          visible: (li) => game.user.isActiveGM && runState(entryOf(li)) === "running",
+          onClick: (event, li) => takePanel(entryOf(li)),
+        },
+        {
+          label: "SSM.Panel.Hide",
+          icon: "fa-solid fa-eye-slash",
+          visible: (li) => game.user.isActiveGM && runState(entryOf(li)) === "panel",
+          onClick: () => hidePanel(),
+        },
+        ...super._getEntryContextOptions(),
+      ];
+    }
 
     get title() {
       return loc("SSM.Tab");
@@ -107,17 +158,69 @@ function defineDirectories() {
       await super._onRender(context, options);
       const label = this.element.querySelector(".create-entry span");
       if (label) label.textContent = loc("SSM.Create");
+      this.#drawRunningFilter();
+      this.#drawRunMarks();
+    }
+
+    /** The filter button sits in core's search bar, so it is added here rather than in a template of our own. */
+    #drawRunningFilter() {
+      const search = this.element.querySelector(".directory-header search");
+      if (!search) return;
+      let button = search.querySelector(".ssm-running-filter");
+      if (!button) {
+        button = document.createElement("button");
+        button.type = "button";
+        button.className = "inline-control icon fa-solid fa-play ssm-running-filter";
+        button.dataset.action = "toggleRunning";
+        button.dataset.tooltip = loc("SSM.Running.Filter");
+        button.setAttribute("aria-label", loc("SSM.Running.Filter"));
+        const sort = search.querySelector(".toggle-sort");
+        if (sort) sort.before(button);
+        else search.append(button);
+      }
+      button.classList.toggle("active", this.#runningOnly);
+      button.setAttribute("aria-pressed", String(this.#runningOnly));
+    }
+
+    #drawRunMarks() {
+      const list = this.element.querySelector(".directory-list");
+      if (!list) return;
+      for (const li of list.querySelectorAll(".directory-item.entry[data-entry-id]")) {
+        const entry = this.collection.get(li.dataset.entryId);
+        const mark = entry && RUN_MARKS[runState(entry)];
+        // An empty slot on the other rows keeps every name in line.
+        if (!mark) {
+          const slot = document.createElement("span");
+          slot.className = "ssm-run-mark";
+          slot.setAttribute("aria-hidden", "true");
+          li.querySelector(".entry-name")?.before(slot);
+          continue;
+        }
+        const icon = document.createElement("i");
+        icon.className = `fa-solid ${mark.icon} ssm-run-mark`;
+        icon.dataset.tooltip = loc(mark.label);
+        icon.setAttribute("aria-label", loc(mark.label));
+        icon.setAttribute("role", "img");
+        li.querySelector(".entry-name")?.before(icon);
+      }
+      if (this.#runningOnly && !list.querySelector(".directory-item")) {
+        const empty = document.createElement("li");
+        empty.className = "ssm-running-none";
+        empty.textContent = loc("SSM.Running.None");
+        list.append(empty);
+      }
     }
 
     async _onCreateEntry(event, target) {
       event.stopPropagation();
       const folder = target.closest(".directory-item")?.dataset.folderId ?? null;
-      // Influence is the only subsystem so far. A second one needs a chooser here.
       const [subsystem] = allSubsystems();
+      const preset = await choosePreset(subsystem);
+      if (preset === null) return null;
       const entry = await JournalEntry.implementation.create({
         name: loc("SSM.NewChallenge"),
         folder,
-        pages: [{ name: loc(subsystem.label), type: subsystem.pageType, system: subsystem.createSystem?.() ?? {} }],
+        pages: [{ name: loc(subsystem.label), type: subsystem.pageType, system: subsystem.createSystem?.(preset) ?? {} }],
       });
       entry?.sheet.render(true);
       return entry;
@@ -146,7 +249,13 @@ function defineDirectories() {
   return { ChallengeDirectory, JournalDirectory: class extends FilteredDirectory(CONFIG.ui.journal, false) {} };
 }
 
+/** Starting, ending or resetting a challenge changes its mark in the Subsystems tab. Core redraws the tab only for name, folder and the like. */
+function onChallengeUpdate(page, changed) {
+  if (game.user.isGM && foundry.utils.hasProperty(changed, "system.run.status")) ui[TAB]?.render();
+}
+
 export function installDirectories() {
+  Hooks.on("updateJournalEntryPage", onChallengeUpdate);
   const { ChallengeDirectory, JournalDirectory } = defineDirectories();
   CONFIG.ui[TAB] = ChallengeDirectory;
   CONFIG.ui.journal = JournalDirectory;

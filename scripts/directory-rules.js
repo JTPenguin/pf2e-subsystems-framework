@@ -69,5 +69,17 @@ export function ancestorsToShow(entry, wantChallenges) {
   return ids;
 }
 
+/** Every entry in the tree that passes `keep`, as one root with no folders. The Running filter lists challenges this way, wherever their folders are. */
+export function flattenTree(root, keep, compare) {
+  const entries = [];
+  const walk = (node) => {
+    entries.push(...node.entries.filter(keep));
+    node.children.forEach(walk);
+  };
+  walk(root);
+  if (compare) entries.sort(compare);
+  return { ...root, entries, children: [] };
+}
+
 /** Plain text from rich text, for searching. */
 export const stripHtml = (html) => String(html ?? "").replace(/<[^>]*>/g, " ");

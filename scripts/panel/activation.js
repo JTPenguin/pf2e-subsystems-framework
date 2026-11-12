@@ -52,10 +52,29 @@ export function schedulePublish() {
   }, COALESCE_MS);
 }
 
-/** The other challenge holding the panel, if there is one. Only one can be active. A stale id blocks nothing. */
-export function panelBlockedBy(entry) {
+/** The other challenge on the panel, if there is one, shown or hidden. A stale id counts as none. */
+export function panelHolder(entry) {
   const { id } = panelState();
   return id && id !== entry.id ? game.journal.get(id) ?? null : null;
+}
+
+/**
+ * Put a challenge on the panel in place of any other. Any number of challenges can run; the one that leaves the panel keeps
+ * running, with its state on its own page. Says which one left.
+ */
+export function takePanel(entry) {
+  if (!game.user.isActiveGM) return;
+  const other = panelHolder(entry);
+  if (other) ui.notifications.info(game.i18n.format("SSM.Panel.Replaced", { name: other.name }));
+  return showPanel(entry);
+}
+
+/** "panel" if players see this challenge on the panel now, "running" if it runs otherwise (a hidden panel included), or null. */
+export function runState(entry) {
+  const page = challengePage(entry);
+  if (!page || !subsystemFor(entry)?.panel?.isRunning(page.system)) return null;
+  const { id, hidden } = panelState();
+  return id === entry.id && !hidden ? "panel" : "running";
 }
 
 export function showPanel(entry) {

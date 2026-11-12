@@ -3,10 +3,10 @@ import { isChallengeType } from "./directory-rules.js";
 import { allSubsystems, dropSheetChange, subsystemFor } from "./registry.js";
 import { installPanel } from "./panel/panel.js";
 import { installRollListener } from "./roll-listener.js";
-import { registerInfluence } from "./subsystems/influence/definition.js";
+import { registerChallenge } from "./challenge/definition.js";
 
 Hooks.once("init", () => {
-  registerInfluence();
+  registerChallenge();
   const { DocumentSheetConfig } = foundry.applications.apps;
   for (const subsystem of allSubsystems()) {
     CONFIG.JournalEntryPage.dataModels[subsystem.pageType] = subsystem.model;
