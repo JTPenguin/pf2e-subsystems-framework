@@ -3,10 +3,11 @@ title: "Add the Research preset"
 kind: feature
 status: ready
 waits_on: Claude
+priority: ⏬
 blocked_by: []
 source: "Justin's list of items, 2026-11-11"
 added: 2026-11-11
-updated: 2026-11-11
+updated: 2026-11-12
 ---
 # Add the Research preset
 
@@ -29,3 +30,5 @@ Research as a preset of the generic challenge from [[generic-subsystem-shared-me
 - RP is party-wide in the rules, but a library has several areas. Proposed: points live on the challenge, and each area tracks only how much it has given towards its maximum.
 
 **Done when:** a GM can run a research challenge, and players can roll its checks from the panel. Check it in Foundry with a live test challenge and a player login.
+
+**Note (2026-11-12):** outcome tables and an action's maximum points are being removed (remove-roll-card-point-automation), so the plan above no longer works as written. The GM tracks each area's Maximum RP by eye, or with a counter's maximum once subjects own counters (counter-points-as-generic-counter). Revisit when Research is built.

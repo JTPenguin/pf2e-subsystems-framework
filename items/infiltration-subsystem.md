@@ -3,10 +3,11 @@ title: "Add the Infiltration preset"
 kind: feature
 status: in-progress
 waits_on: Justin
+priority: ⏬
 blocked_by: []
 source: "Justin's list of items, 2026-11-11; scope answers from Justin, 2026-11-11"
 added: 2026-11-11
-updated: 2026-11-11
+updated: 2026-11-12
 ---
 # Add the Infiltration preset
 

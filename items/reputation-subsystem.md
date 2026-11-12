@@ -3,10 +3,11 @@ title: "Add the Reputation preset"
 kind: idea
 status: proposed
 waits_on: Justin
+priority: ⏬
 blocked_by: []
 source: "Mapping the subsystems onto the generic framework, with Justin, 2026-11-11; Blood Lords uses it throughout"
 added: 2026-11-11
-updated: 2026-11-11
+updated: 2026-11-12
 ---
 # Add the Reputation preset
 
