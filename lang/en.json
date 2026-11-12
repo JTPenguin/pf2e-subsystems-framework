@@ -260,8 +260,7 @@
         "Influence": "Influence",
         "Category": {
           "resistance": "Resistance",
-          "weakness": "Weakness",
-          "other": "Other"
+          "weakness": "Weakness"
         }
       },
       "infiltration": {

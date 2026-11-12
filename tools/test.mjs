@@ -1037,7 +1037,7 @@ test("the copy gives a revealed Lore check its name, and a hidden one nothing", 
 
 const R_ = "SSM.Preset.influence.Category.resistance";
 const W_ = "SSM.Preset.influence.Category.weakness";
-const O_ = "SSM.Preset.influence.Category.other";
+const O_ = "Other"; // no longer a suggestion: a label typed by hand
 
 test("the panel groups cards by category: the blank one first, then the preset's suggestions in order, then others by first use; each keeps stored order", () => {
   const s = secretSystem();
@@ -1045,8 +1045,8 @@ test("the panel groups cards by category: the blank one first, then the preset's
   const make = (category, name) => ({ ...structuredClone(base), id: `${category}-${name}`, category, name, revealed: true });
   sub(s).modifiers = [make(W_, "w1"), make("Opportunity", "op1"), make("", "b1"), make(O_, "o1"), make(R_, "r1"), make(` ${W_.toUpperCase()} `, "w2"), make("Complication", "c1"), make("opportunity", "op2"), make(R_, "r2")];
   const cards = known(viewOf(s).subjects[0]);
-  assert.deepEqual(cards.map((card) => card.name), ["b1", "r1", "r2", "w1", "w2", "o1", "op1", "op2", "c1"]);
-  assert.deepEqual(cards.map((card) => card.category), ["", R_, R_, W_, W_, O_, "Opportunity", "Opportunity", "Complication"]);
+  assert.deepEqual(cards.map((card) => card.name), ["b1", "r1", "r2", "w1", "w2", "op1", "op2", "o1", "c1"]);
+  assert.deepEqual(cards.map((card) => card.category), ["", R_, R_, W_, W_, "Opportunity", "Opportunity", O_, "Complication"]);
 });
 
 test("the panel shows every labelled category, empty when nothing in it is revealed; the blank one only when one of its entries is", () => {
@@ -1055,22 +1055,22 @@ test("the panel shows every labelled category, empty when nothing in it is revea
   const make = (category, name, revealed) => ({ ...structuredClone(base), id: name, category, name, revealed });
   sub(s).modifiers = [make("", "b1", false), make(W_, "w1", true), make("Opportunity", "op1", false)];
   const groups = () => viewOf(s).subjects[0].modifierGroups.map((group) => [group.label, group.cards.map((card) => card.name)]);
-  assert.deepEqual(groups(), [[R_, []], [W_, ["w1"]], [O_, []], ["Opportunity", []]]);
+  assert.deepEqual(groups(), [[R_, []], [W_, ["w1"]], ["Opportunity", []]]);
   sub(s).modifiers[0].revealed = true;
   assert.deepEqual(groups()[0], ["", ["b1"]]);
   assert.ok(!JSON.stringify(viewOf(s)).includes("op1"), "a hidden entry's name stays out; only its category's label shows");
 });
 
-test("each category's stripe takes the next palette colour; Influence's three keep today's colours; a blank category has none", () => {
+test("each category's stripe takes the next palette colour; Influence's two keep today's colours; a blank category has none", () => {
   const s = system();
   sub(s).modifiers = [{ ...D.newModifier(), category: "Opportunity" }, { ...D.newModifier(), category: W_ }];
   s.modifiers = [{ ...D.newModifier(), category: "Lucky" }];
   const order = D.categoryOrder(s);
-  assert.deepEqual(order.map((row) => row.label), [R_, W_, O_, "Lucky", "Opportunity"], "the challenge's own entries count first, then each subject's");
-  assert.deepEqual(order.map((row) => row.colour), ["#c0523f", "#6fae6a", "#7a9cc6", D.CATEGORY_COLOURS[3], D.CATEGORY_COLOURS[4]]);
+  assert.deepEqual(order.map((row) => row.label), [R_, W_, "Lucky", "Opportunity"], "the challenge's own entries count first, then each subject's");
+  assert.deepEqual(order.map((row) => row.colour), ["#c0523f", "#6fae6a", D.CATEGORY_COLOURS[2], D.CATEGORY_COLOURS[3]]);
   assert.deepEqual(D.categoryOrder(system("victory")).map((row) => row.label), ["SSM.Preset.victory.Category.modifier"]);
   const groups = D.groupByCategory(s, sub(s).modifiers, { withSuggestions: true });
-  assert.deepEqual(groups.map((group) => [group.label, group.rows.length]), [[R_, 0], [W_, 1], [O_, 0], ["Opportunity", 1]], "the Edit tab keeps the suggestions even when empty");
+  assert.deepEqual(groups.map((group) => [group.label, group.rows.length]), [[R_, 0], [W_, 1], ["Opportunity", 1]], "the Edit tab keeps the suggestions even when empty");
   assert.deepEqual(D.groupByCategory(s, sub(s).modifiers).map((group) => group.label), [W_, "Opportunity"]);
   sub(s).modifiers.push({ ...D.newModifier(), category: "" });
   assert.deepEqual(D.groupByCategory(s, sub(s).modifiers).map((group) => group.label), ["", W_, "Opportunity"], "the blank category groups first");

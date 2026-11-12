@@ -31,7 +31,7 @@ export const skillKey = (check) => (check.skill === LORE ? `lore:${(check.lore |
 
 /**
  * Modifier categories (spec 14.7). A category is free text; two labels that differ only in case or spaces are one category.
- * Stripe colours come from this palette in category order. Influence's Resistance, Weakness and Other keep the first three.
+ * Stripe colours come from this palette in category order. Influence's Resistance and Weakness keep the first two.
  */
 export const CATEGORY_COLOURS = ["#c0523f", "#6fae6a", "#7a9cc6", "#d1a03c", "#9a72c4", "#4fa8a0", "#c66f9f", "#8f8a5a"];
 export const categoryKey = (label) => String(label ?? "").trim().toLowerCase();
@@ -109,7 +109,7 @@ export const PRESETS = {
     label: "SSM.Preset.influence.Label",
     icon: "fa-solid fa-comments",
     names: { pointsName: "SSM.Preset.influence.Points", subjectLabel: "SSM.Preset.influence.Subject" },
-    categories: ["SSM.Preset.influence.Category.resistance", "SSM.Preset.influence.Category.weakness", "SSM.Preset.influence.Category.other"],
+    categories: ["SSM.Preset.influence.Category.resistance", "SSM.Preset.influence.Category.weakness"],
     rounds: 6,
     subjects: [{
       id: "npc",

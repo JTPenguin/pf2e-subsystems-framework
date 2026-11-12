@@ -209,6 +209,7 @@ button.ssm-reached { color: #4f9d5d; }
 .ssm-panel button.ssm-panel-skill:hover { text-shadow: 0 0 8px #c9593f; }
 .ssm-panel button.ssm-panel-skill:focus-visible { outline: 1px solid #c9593f; outline-offset: -1px; }
 /* One card per revealed modifier. The kind's colour stripe shows only while the entry is On: no stripe means Off. A spent one is dimmed. A change that has happened is struck through. */
+.ssm-panel-mods.ssm-panel-challenge-mods { margin-top: 0.6rem; }
 .ssm-panel-mods { display: flex; flex-wrap: wrap; gap: 0.25rem; margin-top: 0.25rem; }
 .ssm-panel-mod { flex: 1 1 12rem; min-width: 0; padding: 0.1rem 0.35rem; border: 1px solid rgba(184, 160, 106, 0.35); border-left: 3px solid #b8a06a; border-radius: 3px; background: rgba(255, 255, 255, 0.04); line-height: 1.25; }
 .ssm-panel-subjects.several .ssm-panel-mod { flex-basis: 100%; }
@@ -349,6 +350,8 @@ fieldset:has(> .ssm-checks-wrap) { min-width: 0; }
 .ssm-sheet .ssm-block-head .ssm-order > button.icon { border: none; background: none; box-shadow: none; color: inherit; }
 .ssm-sheet .ssm-block-head .ssm-order > button.icon:disabled { opacity: 0.4; }
 .ssm-sheet .ssm-subject.ssm-collapsed > :not(.ssm-block-head) { display: none; }
+.ssm-sheet .ssm-subject.ssm-collapsed { padding-bottom: 0; }
+.ssm-sheet .ssm-subject.ssm-collapsed > .ssm-block-head { margin-bottom: 0; }
 .ssm-sheet .ssm-pc-total { margin-left: 0.5rem; }
 .ssm-sheet .ssm-block-head > button.icon.ssm-collapse { --button-size: 1.5rem; width: 1.5rem; height: 1.5rem; flex: none; margin: 0; }
 .ssm-sheet .ssm-section-head { margin: 0.25rem 0 0; font-size: var(--font-size-14, 0.875rem); font-weight: bold; }

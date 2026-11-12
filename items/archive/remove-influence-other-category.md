@@ -1,13 +1,14 @@
 ---
 title: 'Remove "Other" as a default Influence category'
 kind: work
-status: ready
+status: done
 waits_on: Claude
 priority: ⏫
 blocked_by: []
 source: "Justin's list of items, 2026-11-12; interview with Justin, 2026-11-12"
 added: 2026-11-12
 updated: 2026-11-12
+outcome: "Influence suggests Resistance and Weakness only; spec 14.6 and 14.7, strings and tests updated."
 ---
 # Remove "Other" as a default Influence category
 

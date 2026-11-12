@@ -395,7 +395,7 @@ A preset is a starting template: its names, and what a new challenge and a new s
 | Preset | Names | A new subject has |
 |---|---|---|
 | **Victory Points** (blank) | Victory Points, Subject | Suggested category: Modifier. One action, "Check", with no rows. |
-| **Influence** | Influence Points, NPC | Suggested categories: Resistance, Weakness, Other. Revealed. Discover: secret, Perception always shown. Influence: Deception, Diplomacy and Intimidation always shown. |
+| **Influence** | Influence Points, NPC | Suggested categories: Resistance, Weakness. Revealed. Discover: secret, Perception always shown. Influence: Deception, Diplomacy and Intimidation always shown. |
 | **Infiltration** | Infiltration Points, Obstacle | Suggested categories: Opportunity, Complication. Counters: Awareness Points (shown, +1 each round, minimum 0, GM Core's tiers at 5 (DC +1), 10 (complication), 15 (DC +1 more, +2 in total) and 20 (fails)) and Edge Points (per PC, shown). Three Add buttons: **Obstacle** (goal 2; Overcome with no checks); **Complication** (no points; Overcome); **Opportunity** (no points; Attempt). The first obstacle starts revealed, later subjects hidden. |
 | **Chase** | Chase Points, Obstacle | No suggested categories. Allow multiple subjects is off. GM notes hold GM Core's reminders and how to set up each chase type. Counters: Party at 1 and Quarry at 2, +1 each round; both minimum 0, maximum 6, Track display, shown. A new obstacle: goal 3, minimum 0, Overcome with no checks. The first obstacle starts revealed, later ones hidden. See 14.11. |
 | **Infiltration Preparation** | Edge Points, Preparation | Run before the infiltration; the GM types its results in. Counters: Edge Points (per PC, shown) and Awareness Points (hidden). One revealed subject with no points and GM Core's six activities as actions, every check always shown, secret where the rules say. GM notes list what each activity gives at each degree, and say that a dud or cursed Edge Point still adds to Edge and goes in the PC's note. No suggested categories. |
@@ -412,8 +412,8 @@ A preset can offer several **subject templates**, one Add button each; the first
 |---|---|
 | Suggestions | The preset suggests labels in the modifier window (14.6). The GM can type any label. |
 | Order | Cards group by category: the preset's suggestions first, in their order, then other labels in order of first use. |
-| Colour | Each category's stripe takes the next colour of a fixed palette, in that order. Influence's three keep today's colours. There is no colour picker. |
-| Other | Not built in. It is one of Influence's suggestions. |
+| Colour | Each category's stripe takes the next colour of a fixed palette, in that order. Influence's two keep today's colours. There is no colour picker. |
+| Other | Not built in, and not suggested. An entry that fits no category goes in the blank one; the GM can still type "Other". |
 | Edit tab | One Add entry per category in use, plus a plain Add entry with an empty category. The preset's suggested categories always get one, even when no entry uses them yet (Justin, 2026-11-11). There is no list of categories to edit. |
 | Order on the sheet and panel | A blank category groups first, with no heading and no label, then the labelled ones (Justin, 2026-11-11). |
 | GM window | Under each subject, an Actions section of action cards, then Thresholds, then a Modifiers section with one subsection per category, its heading in the category's colour. In Run mode a card with a description opens and closes by its name to show it, as on the panel. The Edit tab has the same Actions and Modifiers headings. |
