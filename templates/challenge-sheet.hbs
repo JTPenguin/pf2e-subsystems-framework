@@ -51,7 +51,7 @@
 {{!-- A subject's or the challenge's modifier entries on the Edit tab, by category: a small heading per category in use, as in Run mode. --}}
 {{#*inline "ssmEditModGroups"}}{{#each groups}}
       <div class="ssm-subject-group ssm-cat-group"{{#if stripe}} style="{{stripe}}"{{/if}}>
-        {{#if heading}}{{> ssmSubsectionHead label=heading stripe=stripe list=../list category=label add=(localize "SSM.Challenge.AddModifier")}}{{/if}}
+        {{#if heading}}{{> ssmSubsectionHead label=heading stripe=stripe list=../list category=label addLabel=(localize "SSM.Challenge.AddModifier")}}{{/if}}
         <div class="ssm-mod-list">
         {{#each rows}}
         <div class="ssm-modifier">
@@ -66,15 +66,15 @@
         </div>
       </div>
 {{/each}}{{/inline}}
-{{!-- An Edit-tab section's red bar, with its Add button on the right, as on a PF2e NPC sheet. `list` is the path of the list it adds to; `add` is the button's label. --}}
+{{!-- An Edit-tab section's red bar, with its Add button on the right, as on a PF2e NPC sheet. `list` is the path of the list it adds to; `addLabel` is the button's label. --}}
 {{#*inline "ssmSectionHead"}}<header class="ssm-block-head">
         <h3{{#if hint}} data-tooltip="{{hint}}"{{/if}}>{{label}}</h3>
-        {{#if list}}<button type="button" class="icon fa-solid fa-plus" data-action="addRow" data-list="{{list}}" aria-label="{{add}}" data-tooltip-text="{{add}}"></button>{{/if}}
+        {{#if list}}<button type="button" class="icon fa-solid fa-plus" data-action="addRow" data-list="{{list}}" aria-label="{{addLabel}}" data-tooltip-text="{{addLabel}}"></button>{{/if}}
       </header>{{/inline}}
-{{!-- A subsection's title, in either mode: small uppercase text with a thin underline. `stripe` adds the category's colour stripe on the left; `list` and `add` add a + on the right, as on a section's bar; `category` starts a new modifier in that category. --}}
+{{!-- A subsection's title, in either mode: small uppercase text with a thin underline. `stripe` adds the category's colour stripe on the left; `list` and `addLabel` add a + on the right, as on a section's bar; `category` starts a new modifier in that category. --}}
 {{#*inline "ssmSubsectionHead"}}<h4 class="ssm-section-title ssm-subsection-head{{#if stripe}} ssm-striped{{/if}}">
         <span class="ssm-grow">{{label}}</span>
-        {{#if list}}<button type="button" class="icon fa-solid fa-plus" data-action="addRow" data-list="{{list}}"{{#if category}} data-category="{{category}}"{{/if}} aria-label="{{add}}" data-tooltip-text="{{add}}"></button>{{/if}}
+        {{#if list}}<button type="button" class="icon fa-solid fa-plus" data-action="addRow" data-list="{{list}}"{{#if category}} data-category="{{category}}"{{/if}} aria-label="{{addLabel}}" data-tooltip-text="{{addLabel}}"></button>{{/if}}
       </h4>{{/inline}}
 {{!-- A subject's order buttons, in either mode. --}}
 {{#*inline "ssmOrder"}}<span class="ssm-order">
@@ -121,7 +121,7 @@
           <label class="check" data-tooltip="SSM.Challenge.PerPcHint"><input type="checkbox" name="{{path}}.perPc" {{checked perPc}}>{{localize "SSM.Challenge.PerPc"}}</label>
         </div>
         {{#unless perPc}}
-        {{> ssmSubsectionHead label=(localize "SSM.Challenge.Thresholds") list=(concat path ".thresholds") add=(localize "SSM.Challenge.AddThreshold")}}
+        {{> ssmSubsectionHead label=(localize "SSM.Challenge.Thresholds") list=(concat path ".thresholds") addLabel=(localize "SSM.Challenge.AddThreshold")}}
         {{#each thresholds}}{{> ssmThresholdEdit}}{{else}}<p class="ssm-muted ssm-empty">{{localize "SSM.Challenge.NoThresholds"}}</p>{{/each}}
         {{/unless}}
       </div>{{/inline}}
@@ -260,12 +260,12 @@
     </section>
 
     <section class="ssm-block ssm-edit-block">
-      {{> ssmSectionHead label=(localize "SSM.Challenge.Counters") list="counters" add=(localize "SSM.Challenge.AddCounter")}}
+      {{> ssmSectionHead label=(localize "SSM.Challenge.Counters") list="counters" addLabel=(localize "SSM.Challenge.AddCounter")}}
       {{#each counters}}{{> ssmCounterEdit}}{{/each}}
     </section>
 
     <section class="ssm-block ssm-edit-block">
-      {{> ssmSectionHead label=(localize "SSM.Challenge.Modifiers") hint="SSM.Challenge.ChallengeModifiersHint" list="modifiers" add=(localize "SSM.Challenge.AddModifier")}}
+      {{> ssmSectionHead label=(localize "SSM.Challenge.Modifiers") hint="SSM.Challenge.ChallengeModifiersHint" list="modifiers" addLabel=(localize "SSM.Challenge.AddModifier")}}
       {{> ssmEditModGroups groups=challengeModifierGroups list="modifiers"}}
     </section>
     {{/if}}
@@ -287,12 +287,12 @@
     </section>
 
     <section class="ssm-block ssm-edit-block">
-      {{> ssmSectionHead label=(localize "SSM.Challenge.Counters") list=(concat subject.path ".counters") add=(localize "SSM.Challenge.AddCounter")}}
+      {{> ssmSectionHead label=(localize "SSM.Challenge.Counters") list=(concat subject.path ".counters") addLabel=(localize "SSM.Challenge.AddCounter")}}
       {{#each subject.counters}}{{> ssmCounterEdit}}{{/each}}
     </section>
 
     <section class="ssm-block ssm-edit-block">
-      {{> ssmSectionHead label=(localize "SSM.Challenge.Actions") list=(concat subject.path ".actions") add=(localize "SSM.Challenge.AddAction")}}
+      {{> ssmSectionHead label=(localize "SSM.Challenge.Actions") list=(concat subject.path ".actions") addLabel=(localize "SSM.Challenge.AddAction")}}
       {{#each subject.actions}}
       <div class="ssm-action-card ssm-action-edit">
         <div class="ssm-row ssm-entry">
@@ -303,7 +303,7 @@
         <div class="ssm-action-lines">
           <prose-mirror name="{{path}}.description" toggled value="{{description}}">{{{descriptionHtml}}}</prose-mirror>
         </div>
-      {{> ssmSubsectionHead label=(localize "SSM.Challenge.Checks") list=(concat path ".checks") add=(localize "SSM.Challenge.AddCheck")}}
+      {{> ssmSubsectionHead label=(localize "SSM.Challenge.Checks") list=(concat path ".checks") addLabel=(localize "SSM.Challenge.AddCheck")}}
       <div class="ssm-checks-wrap"><table class="ssm-checks">
         <thead><tr>
           <th>{{localize "SSM.Challenge.Skill"}}</th>
@@ -333,7 +333,7 @@
     </section>
 
     <section class="ssm-block ssm-edit-block">
-      {{> ssmSectionHead label=(localize "SSM.Challenge.Modifiers") list=(concat subject.path ".modifiers") add=(localize "SSM.Challenge.AddModifier")}}
+      {{> ssmSectionHead label=(localize "SSM.Challenge.Modifiers") list=(concat subject.path ".modifiers") addLabel=(localize "SSM.Challenge.AddModifier")}}
       {{> ssmEditModGroups groups=subject.modifierGroups list=(concat subject.path ".modifiers")}}
     </section>
     {{/with}}

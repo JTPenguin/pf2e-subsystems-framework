@@ -1,13 +1,14 @@
 ---
 title: "Group the Challenge tab fields under a Challenge section"
 kind: feature
-status: in-progress
-waits_on: Justin
+status: done
+waits_on: none
 priority: 🔼
 blocked_by: [subsection-add-button]
 source: "Justin's tweaks to the restyled edit view, 2026-11-12; interview with Justin, 2026-11-12"
 added: 2026-11-12
 updated: 2026-11-12
+outcome: "Built in 7dd648b and checked in Foundry on 2026-11-12."
 ---
 # Group the Challenge tab fields under a Challenge section
 
@@ -24,4 +25,3 @@ In the Challenge tab of the Edit view, four red-bar sections become one section 
 
 **Done when:** the Challenge tab shows one Challenge section with the four subsections, every field still saves, and it looks right in Foundry.
 
-**Next step:** built and committed 2026-11-12; tests and an offline template render pass. Still needs the live check in Foundry: the GM slot was taken, so Claude couldn't open the sheet.

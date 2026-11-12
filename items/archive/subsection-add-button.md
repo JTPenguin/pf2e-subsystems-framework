@@ -1,13 +1,14 @@
 ---
 title: "Give subsections one shared style and a + button"
 kind: feature
-status: in-progress
-waits_on: Justin
+status: done
+waits_on: none
 priority: 🔼
 blocked_by: []
 source: "Justin's tweaks to the restyled edit view, 2026-11-12; interview with Justin, 2026-11-12"
 added: 2026-11-12
 updated: 2026-11-12
+outcome: "Built in 7dd648b and checked in Foundry on 2026-11-12."
 ---
 # Give subsections one shared style and a + button
 
@@ -38,4 +39,3 @@ The users of the + are [[counter-thresholds-subsection]], [[modifier-subsection-
 
 **Done when:** the modifier category headings in both views use the new partial and look like Run view's section titles with their colour stripe, and a test subsection's + adds a row. Check it in the browser in Foundry.
 
-**Next step:** built and committed 2026-11-12; tests and an offline template render pass. Still needs the live check in Foundry: the GM slot was taken, so Claude couldn't open the sheet.

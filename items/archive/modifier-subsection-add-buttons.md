@@ -1,13 +1,14 @@
 ---
 title: "Add + buttons to modifier subsections"
 kind: feature
-status: in-progress
-waits_on: Justin
+status: done
+waits_on: none
 priority: 🔼
 blocked_by: [subsection-add-button]
 source: "Justin's tweaks to the restyled edit view, 2026-11-12; interview with Justin, 2026-11-12"
 added: 2026-11-12
 updated: 2026-11-12
+outcome: "Built in 7dd648b and checked in Foundry on 2026-11-12."
 ---
 # Add + buttons to modifier subsections
 
@@ -26,4 +27,3 @@ In the Edit tab's Modifiers section, each category subsection gets a + button. I
 
 **Done when:** a subsection's + adds a modifier in that category and opens its window, a test covers the category, and it's checked in Foundry.
 
-**Next step:** built and committed 2026-11-12; tests and an offline template render pass. Still needs the live check in Foundry: the GM slot was taken, so Claude couldn't open the sheet.
