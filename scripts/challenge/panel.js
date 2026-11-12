@@ -17,10 +17,32 @@ function gmPage(state) {
   return entry ? challengePage(entry) ?? null : null;
 }
 
-/** A track's bar: a both-ways bar with a zero mark when the track has a range, else a plain one (spec 14.8). */
 /** Counter displays drawn as a row of slots. */
 const SLOTTED = new Set(["steps", "track"]);
+/** A counter's bar: a both-ways bar with a zero mark when it has a range, else a plain one (spec 14.8). */
 const barOf = (value, track) => (track.range ? bothWaysBar(value, track.range) : pointsBar(value, track.scale));
+
+/**
+ * Counters as the panel draws them, the challenge's below the columns or a subject's in its column (spec 14.12, 14.13):
+ * a bar, steps or a track gets its own row and threshold card; per-PC counters a row per party PC; numbers share one line.
+ */
+function counterSet(counters, pcs) {
+  const named = (row) => ({ ...row, name: row.name || loc("SSM.Challenge.UnnamedCounter") });
+  return {
+    tracks: counters.filter((row) => SLOTTED.has(row.display) || row.display === "bar").map((row) => ({
+      ...named(row),
+      bar: row.display === "bar" ? barOf(row.value, row) : null,
+      steps: row.display === "steps",
+      slots: row.slots?.map((slot) => ({ ...slot, tooltip: slot.threshold ? game.i18n.format("SSM.Panel.SlotThreshold", { number: slot.number }) : String(slot.number) })) ?? null,
+    })),
+    pcCounters: counters.filter((row) => row.perPc).map((row) => ({
+      ...named(row),
+      pcs: row.pcs.map((pc) => ({ ...pc, name: pcs.get(pc.id)?.name ?? "", img: pcs.get(pc.id)?.img ?? "" })),
+    })),
+    numbers: counters.filter((row) => row.display === "number").map(named),
+    any: counters.length > 0,
+  };
+}
 
 /**
  * A modifier card's context: its category, duration and state as labels, each change as text, marked done once it has happened,
@@ -101,10 +123,8 @@ async function prepareView(view, state) {
     subjects: await Promise.all(view.subjects.map(async (subject, n) => ({
       ...subject,
       name: subjectName(subject, subject.index ?? n, view.subjectLabel),
-      bar: barOf(subject.points, subject),
-      showPoints: subject.tracksPoints && !subject.individual,
-      // One row per PC on an individual subject: portrait, bar, and a check when that PC is done.
-      pcs: subject.tracksPoints ? subject.pcs.map((pc) => ({ ...pc, name: pcs.get(pc.id)?.name ?? "", img: pcs.get(pc.id)?.img ?? "", bar: barOf(pc.points, subject) })) : [],
+      // A copy built before subjects had counters has none (spec 14.9): draw the subject without them.
+      counterSet: counterSet(subject.counters ?? [], pcs),
       // Only ids go in the HTML. A click looks the DC up in the copy.
       // A card with a description opens and closes by its name.
       actions: await Promise.all(subject.actions.map(async (action) => ({
@@ -123,21 +143,7 @@ async function prepareView(view, state) {
         cards: group.cards.map((row) => ({ ...modifierCard(row, subject.id, gm.get(`${subject.id}:${row.id}`), decoys.has(`${subject.id}:${row.id}`)), categoryLabel: "" })),
       })),
     }))),
-    // A counter drawn as a bar, steps or a track gets its own row and threshold card; numbers share one line (spec 14.12).
-    tracks: view.counters.filter((row) => SLOTTED.has(row.display) || row.display === "bar").map((row) => ({
-      ...row,
-      name: row.name || loc("SSM.Challenge.UnnamedCounter"),
-      bar: row.display === "bar" ? barOf(row.value, row) : null,
-      steps: row.display === "steps",
-      slots: row.slots?.map((slot) => ({ ...slot, tooltip: slot.threshold ? game.i18n.format("SSM.Panel.SlotThreshold", { number: slot.number }) : String(slot.number) })) ?? null,
-    })),
-    // A per-PC counter shows one row per party PC: portrait and value (spec 14.8).
-    pcCounters: view.counters.filter((row) => row.perPc).map((row) => ({
-      ...row,
-      name: row.name || loc("SSM.Challenge.UnnamedCounter"),
-      pcs: row.pcs.map((pc) => ({ ...pc, name: pcs.get(pc.id)?.name ?? "", img: pcs.get(pc.id)?.img ?? "" })),
-    })),
-    counters: view.counters.filter((row) => row.display === "number").map((row) => ({ ...row, name: row.name || loc("SSM.Challenge.UnnamedCounter") })),
+    counterSet: counterSet(view.counters, pcs),
     party: view.party.map((pc) => ({ ...pc, label: game.i18n.format(pc.acted ? "SSM.Panel.ActedLabel" : "SSM.Panel.NotActedLabel", { name: pc.name }) })),
   };
 }

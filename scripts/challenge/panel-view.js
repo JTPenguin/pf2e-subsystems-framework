@@ -4,9 +4,9 @@
  */
 
 import { BOTH_WAYS, groupByCategory, isVisibleCheck, skillKey } from "./data.js";
-import { counterValueOf, currentDc, isComplete, pointsOf } from "./run.js";
+import { counterValueOf, currentDc } from "./run.js";
 
-/** Scale for a bar when the track has no goal and no thresholds. */
+/** Scale for a bar when the counter has no maximum and no thresholds. */
 const DEFAULT_SCALE = 10;
 
 const isVisible = (row) => row.revealed;
@@ -99,30 +99,24 @@ function bothWaysRange({ min = null, max = null, thresholds }) {
 }
 
 /**
- * A bar's scale. A track that counts up scales to its goal or its highest threshold, hidden or not: Justin accepts that players can work out the goal from the bar.
- * A track that counts down scales to the value it started the run with. Zero means no scale, and the bar falls back to 10.
+ * A bar's scale. A counter that counts up scales to its maximum or its highest threshold, hidden or not: Justin accepts that players can work out the target from the bar.
+ * A counter that counts down scales to the value it started the run with. Zero means no scale, and the bar falls back to 10.
  * Only this number goes in the copy, never a hidden threshold's text or id.
  */
-function trackScale({ direction, thresholds, goal = null, max = null }, value, startValue) {
+function trackScale({ direction, thresholds, max = null }, value, startValue) {
   if (direction === "down") return Math.max(0, startValue ?? value);
-  return Math.max(0, goal ?? 0, max ?? 0, ...thresholds.map((row) => row.points));
+  return Math.max(0, max ?? 0, ...thresholds.map((row) => row.points));
 }
 
 function subjectView(system, subject, party) {
-  const start = system.run.baseline?.subjects?.[subject.id]?.points;
   const view = {
     id: subject.id,
     // Its place in the GM's order, for a stand-in name such as "Obstacle 3".
     index: system.subjects.indexOf(subject),
     name: subject.name,
-    tracksPoints: !!subject.tracksPoints,
-    individual: !!subject.individual,
-    points: subject.points,
-    complete: isComplete(subject, party.map((pc) => pc.id)),
-    scale: trackScale(subject, subject.points, start),
-    range: subject.direction === BOTH_WAYS ? bothWaysRange(subject) : null,
-    // One row per PC on an individual subject. Everyone sees every row.
-    pcs: subject.individual ? party.map((pc) => ({ id: pc.id, points: pointsOf(subject, pc.id), complete: subject.complete || subject.completeBy.includes(pc.id) })) : [],
+    complete: !!subject.complete,
+    // The subject's revealed counters, drawn in its column (spec 14.13).
+    counters: (subject.counters ?? []).filter(isVisible).map((counter) => counterView(system, counter, party)),
     // An action with no check players can see is left out whole. The DC is in the copy for the roll; the panel never shows it.
     actions: subject.actions.map((action) => ({
       id: action.id,
@@ -133,13 +127,10 @@ function subjectView(system, subject, party) {
     })).filter((action) => action.checks.length),
     // By category: the blank one first, then the preset's suggestions, then others by first use; each keeps the GM's order.
     modifierGroups: cardGroups(system, subject),
-    // An individual subject has a goal only.
-    thresholds: subject.individual ? [] : thresholdViews(subject.thresholds, subject.direction),
   };
   return view;
 }
 
-/** A revealed counter. One with thresholds is a full track: a bar and its visible thresholds. A per-PC counter has a value per party PC and no thresholds. */
 /**
  * How the panel draws a counter (spec 14.12): "number", "bar", "steps" or "track". Auto is a bar with thresholds or a both-ways range, else a number.
  * Steps and Track need a maximum, and Steps a one-way counter; otherwise they draw as a bar. A per-PC counter keeps its per-PC rows.
@@ -173,6 +164,7 @@ export function counterSlots(counter, value, display, thresholds) {
   });
 }
 
+/** A revealed counter, the challenge's or a subject's. One with thresholds is a full track: a bar and its visible thresholds. A per-PC counter has a value per party PC and no thresholds. */
 function counterView(system, counter, party) {
   const start = system.run.baseline?.counters?.[counter.id]?.value;
   const perPc = !!counter.perPc;

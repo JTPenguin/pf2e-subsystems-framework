@@ -3,7 +3,7 @@
  * A function that returns false changed nothing. No Foundry document calls, so tools/test.mjs can check them.
  */
 
-import { BOTH_WAYS, clampTracks, limitTrack, modifierList, nextThresholdReveal, revealOnly, skillKey } from "./data.js";
+import { allCounters, BOTH_WAYS, clampTracks, findCounter, limitTrack, modifierList, nextThresholdReveal, revealOnly, skillKey } from "./data.js";
 
 const isOneTime = (modifier) => modifier.duration === "oneTime";
 /** A subject's entry names its checks by id; a challenge-level entry names skills, so it matches that skill on any subject (spec 14.7). */
@@ -22,14 +22,14 @@ const thresholdDc = (thresholds) => thresholds.reduce((sum, threshold) => sum + 
 
 /**
  * The DC the next roll of this check is made against: its own DC, the live modifier entries (the subject's and the challenge's),
- * the subject's reached thresholds, and every counter's reached thresholds.
+ * the reached thresholds of the subject's own counters, and of every challenge counter.
  */
 export function currentDc(system, subject, check) {
   const modifiers = liveDcModifiers(system, subject, check)
     .flatMap(({ modifier, challengeLevel }) => modifier.effects.filter((effect) => effectMatches(effect, check, challengeLevel)))
     .reduce((sum, effect) => sum + effect.amount, 0);
-  const counters = system.counters.reduce((sum, counter) => sum + thresholdDc(counter.thresholds), 0);
-  return Math.max(0, check.dc + modifiers + thresholdDc(subject.thresholds) + counters);
+  const counters = [...system.counters, ...(subject.counters ?? [])].reduce((sum, counter) => sum + thresholdDc(counter.thresholds), 0);
+  return Math.max(0, check.dc + modifiers + counters);
 }
 
 export const canRestoreModifier = (modifier) => !!modifier.spent;
@@ -40,7 +40,7 @@ const subjectById = (system, id) => system.subjects.find((subject) => subject.id
 const allChecks = (subject) => subject.actions.flatMap((action) => action.checks);
 
 /* -------------------------------------------- */
-/*  Tracks: a subject's points and a counter     */
+/*  Counters: the challenge's and each subject's */
 /* -------------------------------------------- */
 
 /**
@@ -64,72 +64,30 @@ function settleThresholds(thresholds, direction, value) {
   return reached;
 }
 
-/** Make every both-ways track's Reached follow its value, after any change, a form edit included. */
+/** Make every both-ways counter's Reached follow its value, after any change, a form edit included. */
 export function syncBothWays(system) {
-  for (const subject of system.subjects) if (subject.direction === BOTH_WAYS && !subject.individual) settleThresholds(subject.thresholds, BOTH_WAYS, subject.points);
-  for (const counter of system.counters) if (counter.direction === BOTH_WAYS && !counter.perPc) settleThresholds(counter.thresholds, BOTH_WAYS, counter.value);
+  for (const counter of allCounters(system)) if (counter.direction === BOTH_WAYS && !counter.perPc) settleThresholds(counter.thresholds, BOTH_WAYS, counter.value);
 }
-
-/** A both-ways track has no goal. */
-const hasGoal = (subject) => subject.goal !== null && subject.direction !== BOTH_WAYS;
-const goalReached = (subject, value) => hasGoal(subject) && hasReached(subject.direction, value, subject.goal);
-
-/** A PC's points on a subject. On an individual subject each PC starts from the subject's own points. */
-export const pointsOf = (subject, actorId) => (subject.individual ? subject.pointsBy?.[actorId] ?? subject.points : subject.points);
 
 /** A PC's value on a counter. On a per-PC counter each PC starts from the counter's own value. */
 export const counterValueOf = (counter, actorId) => (counter.perPc ? counter.valueBy?.[actorId] ?? counter.value : counter.value);
 
-/** Whether a subject is complete. An individual one is complete once every PC in `partyIds` is. */
-export function isComplete(subject, partyIds = []) {
-  if (subject.complete) return true;
-  return subject.individual && partyIds.length > 0 && partyIds.every((id) => subject.completeBy.includes(id));
-}
-
-/**
- * Add or remove a subject's points from Run mode, inside its limits. On an individual subject they are `actorId`'s points; with no actor nothing changes.
- * A move in the track's direction marks the thresholds and the goal it reaches. Returns false if the points didn't move.
- */
-export function changePoints(system, subjectId, delta, actorId = "") {
-  const subject = subjectById(system, subjectId);
-  if (!subject?.tracksPoints || !delta || (subject.individual && !actorId)) return false;
-  const before = pointsOf(subject, actorId);
-  const value = limitTrack(subject, before + delta);
-  if (value === before) return false;
-  const moving = movesOn(subject.direction, value - before);
-  if (subject.individual) {
-    subject.pointsBy = { ...subject.pointsBy, [actorId]: value };
-    if (moving && goalReached(subject, value) && !subject.completeBy.includes(actorId)) subject.completeBy.push(actorId);
-    return;
-  }
-  subject.points = value;
-  if (!moving) return;
-  settleThresholds(subject.thresholds, subject.direction, value);
-  if (goalReached(subject, value)) subject.complete = true;
-}
-
-/** Mark a subject complete, or clear it, by hand. With an actor, it is that PC's mark on an individual subject. */
-export function toggleComplete(system, subjectId, actorId = "") {
+/** Mark a subject complete, or clear it. Only the GM does, by hand: no counter sets it (spec 14.13). */
+export function toggleComplete(system, subjectId) {
   const subject = subjectById(system, subjectId);
   if (!subject) return false;
-  if (!actorId) {
-    subject.complete = !subject.complete;
-    return;
-  }
-  const at = subject.completeBy.indexOf(actorId);
-  if (at >= 0) subject.completeBy.splice(at, 1);
-  else subject.completeBy.push(actorId);
+  subject.complete = !subject.complete;
 }
 
-/** The subject or counter that owns thresholds, by id. */
-const thresholdOwner = (system, ownerId) => subjectById(system, ownerId) ?? system.counters.find((counter) => counter.id === ownerId) ?? null;
+/** The counter that owns thresholds, the challenge's or a subject's, by id. */
+const thresholdOwner = (system, ownerId) => findCounter(system, ownerId)?.counter ?? null;
 
-/** Mark a threshold reached, or clear it, by hand. A track moving back never clears it. On a both-ways track Reached follows the value, so the GM can't set it. */
+/** Mark a threshold reached, or clear it, by hand. A counter moving back never clears it. On a both-ways counter Reached follows the value, so the GM can't set it. */
 export function toggleReached(system, ownerId, id) {
   const owner = thresholdOwner(system, ownerId);
   const threshold = owner?.thresholds.find((row) => row.id === id);
   if (!threshold || owner.direction === BOTH_WAYS) return false;
-  if (system.counters.includes(owner)) rememberCounter(system, owner);
+  rememberCounter(system, owner);
   threshold.reached = !threshold.reached;
 }
 
@@ -138,7 +96,7 @@ export function cycleThresholdReveal(system, ownerId, id) {
   const owner = thresholdOwner(system, ownerId);
   const threshold = owner?.thresholds.find((row) => row.id === id);
   if (!threshold) return false;
-  if (system.counters.includes(owner)) rememberCounter(system, owner);
+  rememberCounter(system, owner);
   threshold.reveal = nextThresholdReveal(threshold.reveal);
 }
 
@@ -146,11 +104,13 @@ export function cycleThresholdReveal(system, ownerId, id) {
 /*  Start, End and Reset                         */
 /* -------------------------------------------- */
 
-/** The subject rows whose state a reset restores, by list. Thresholds have a three-step `reveal`; the other rows a `revealed` flag. */
+/** The rows whose state a reset restores, by list. Thresholds, on counters, have a three-step `reveal`; the other rows a `revealed` flag. */
 const ROW_STATE = { checks: ["revealed"], thresholds: ["reveal", "reached"], modifiers: ["active", "spent", "revealed"] };
+/** The subject rows a reset restores. A subject's counters are saved with the challenge's. */
+const SUBJECT_ROWS = ["checks", "modifiers"];
 /** What a row added during the run goes back to on reset: hidden, as it can't have been revealed before the run. */
 const HIDDEN = { checks: { revealed: false }, thresholds: { reveal: "hidden", reached: false }, modifiers: { revealed: false, active: false, spent: false } };
-const SUBJECT_STATE = ["points", "pointsBy", "complete", "completeBy", "revealed"];
+const SUBJECT_STATE = ["complete", "revealed"];
 const COUNTER_STATE = ["value", "valueBy", "noteBy", "revealed"];
 const pick = (row, fields) => structuredClone(Object.fromEntries(fields.map((field) => [field, row[field]])));
 const rowsOf = (subject, list) => (list === "checks" ? allChecks(subject) : subject[list]);
@@ -161,11 +121,12 @@ const counterBaseline = (counter) => ({
 });
 
 function takeBaseline(system) {
-  const rows = (subject) => Object.fromEntries(Object.entries(ROW_STATE).flatMap(([list, fields]) => rowsOf(subject, list).map((row) => [row.id, pick(row, fields)])));
+  const rows = (subject) => Object.fromEntries(SUBJECT_ROWS.flatMap((list) => rowsOf(subject, list).map((row) => [row.id, pick(row, ROW_STATE[list])])));
   return {
     round: system.rounds.current,
     subjects: Object.fromEntries(system.subjects.map((subject) => [subject.id, { ...pick(subject, SUBJECT_STATE), rows: rows(subject) }])),
-    counters: Object.fromEntries(system.counters.map((counter) => [counter.id, counterBaseline(counter)])),
+    // Every counter, the subjects' too, by id.
+    counters: Object.fromEntries(allCounters(system).map((counter) => [counter.id, counterBaseline(counter)])),
     modifiers: Object.fromEntries((system.modifiers ?? []).map((row) => [row.id, pick(row, ROW_STATE.modifiers)])),
   };
 }
@@ -174,13 +135,12 @@ function restoreBaseline(system, baseline) {
   system.rounds.current = baseline.round ?? system.rounds.current;
   for (const subject of system.subjects) {
     const saved = baseline.subjects?.[subject.id];
-    // A subject added during the run keeps its points, as nothing says what they were. Its per-PC state can only have come from the run.
-    Object.assign(subject, saved ? pick(saved, SUBJECT_STATE) : { pointsBy: {}, complete: false, completeBy: [], revealed: false });
-    for (const list of Object.keys(ROW_STATE)) {
+    Object.assign(subject, saved ? pick(saved, SUBJECT_STATE) : { complete: false, revealed: false });
+    for (const list of SUBJECT_ROWS) {
       for (const row of rowsOf(subject, list)) Object.assign(row, saved?.rows?.[row.id] ?? HIDDEN[list]);
     }
   }
-  for (const counter of system.counters) {
+  for (const counter of allCounters(system)) {
     const saved = baseline.counters?.[counter.id];
     // A counter added during the run keeps its value; its per-PC values can only have come from the run.
     Object.assign(counter, saved ? pick(saved, COUNTER_STATE) : { valueBy: {} });
@@ -255,9 +215,9 @@ function adjustCounter(system, counter, delta, out, actorId = "") {
 /** The language key for a reached counter threshold's notice, which depends on whether it has GM text. */
 export const triggerKey = (trigger) => (trigger.note ? "SSM.Challenge.TriggerNotice" : "SSM.Challenge.TriggerNoticeBare");
 
-/** Add to or remove from a counter from Run mode; on a per-PC counter, from `actorId`'s value. Returns the thresholds reached, as notices. */
+/** Add to or remove from a counter, the challenge's or a subject's, from Run mode; on a per-PC counter, from `actorId`'s value. Returns the thresholds reached, as notices. */
 export function changeCounter(system, id, delta, actorId = "") {
-  const counter = system.counters.find((candidate) => candidate.id === id);
+  const counter = findCounter(system, id)?.counter;
   if (!isRunning(system) || !counter) return false;
   const out = { triggers: [], reached: [] };
   if (!adjustCounter(system, counter, delta, out, actorId)) return false;
@@ -270,7 +230,7 @@ export const canAdvanceRound = (system) => system.run.status === "active" && (sy
 /** Whether Previous round does anything: there is an advance to undo. */
 export const canUndoRound = (system) => system.run.status === "active" && system.run.roundHistory.length > 0;
 
-/** Move to the next round. Each counter with a change each round takes it; a per-PC counter has none. Returns the counter thresholds reached, as notices. */
+/** Move to the next round. Each challenge counter with a change each round takes it; a per-PC counter and a subject's counter have none (spec 14.13). Returns the counter thresholds reached, as notices. */
 export function advanceRound(system) {
   if (!canAdvanceRound(system)) return false;
   const out = { triggers: [], reached: [] };
@@ -312,7 +272,8 @@ export function toggleActed(system, actorId) {
 
 /** A counter, subject, check or modifier entry by id. Thresholds have their own reveal, above. */
 function findEntry(system, id) {
-  for (const counter of system.counters) if (counter.id === id) return counter;
+  const counter = findCounter(system, id)?.counter;
+  if (counter) return counter;
   for (const modifier of system.modifiers ?? []) if (modifier.id === id) return modifier;
   for (const subject of system.subjects) {
     if (subject.id === id) return subject;
@@ -326,7 +287,7 @@ function findEntry(system, id) {
 export function toggleReveal(system, id) {
   const entry = findEntry(system, id);
   if (!entry) return false;
-  if (system.counters.includes(entry)) rememberCounter(system, entry);
+  if (findCounter(system, id)) rememberCounter(system, entry);
   entry.revealed = !entry.revealed;
   if (entry.revealed && system.subjects.includes(entry)) revealOnly(system, entry);
 }

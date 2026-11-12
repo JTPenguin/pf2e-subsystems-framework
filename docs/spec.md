@@ -283,12 +283,11 @@ Every subsystem runs on one data model, one sheet and one panel: GM Core's [Vict
 
 | Topic | Decision | Source |
 |---|---|---|
-| Where points live | On each subject. Counters stay challenge-wide. | Justin, 2026-11-11 |
-| Individual subjects | Each PC has their own points on the subject. The panel shows one row per PC: portrait, then points bar. Everyone sees every row. | Justin |
+| Where points live | On each subject, as counters of its own (14.13). The challenge keeps its own counters too. | Justin, 2026-11-11 and 2026-11-12 |
 | Subjects on the panel | Each subject has an eye toggle. Only revealed subjects show, one column each. | Justin |
 | Shared pool | A counter is a full points track: a bar, and the same thresholds a subject has. There is no third kind of pool. | Justin |
-| Completion | A subject can have a goal. Reaching it marks the subject Complete: a check on its column, and its actions fade but still roll. The GM can set or clear Complete by hand. | Justin |
-| Diminishing points | A direction on the track itself (a subject's points or a counter): **counts up** or **counts down**. Not set per threshold. | Justin |
+| Completion | The GM marks a subject Complete by hand: a check on its column, and its actions fade but still roll. Nothing sets it (14.13). | Justin, 2026-11-12 |
+| Diminishing points | A direction on the counter itself: **counts up** or **counts down**. Not set per threshold. | Justin |
 | Names | Each challenge stores a points name and a subject label. The preset fills them in; the GM can edit them. | Justin |
 | NPC stats | Every subject has one GM-only stat line of free text. Old Perception and Will numbers convert to "Perception +12, Will +9". | Justin |
 | No outcome tables | Rolls change nothing. Actions have no outcome table or maximum points, and the GM changes every value by hand (section 8). | Justin, 2026-11-12 |
@@ -312,9 +311,9 @@ Every subsystem runs on one data model, one sheet and one panel: GM Core's [Vict
 | Counters | Zero or more |
 | Run state | As today |
 
-**Track.** A subject's points and a counter are both tracks. A track has a value, a direction and thresholds.
+**Track.** A counter, the challenge's or a subject's, has a value, a direction and thresholds.
 
-| Direction | A threshold or goal is reached when | Use |
+| Direction | A threshold is reached when | Use |
 |---|---|---|
 | Counts up | The value rises to it or past it | Influence, Awareness, accumulating points |
 | Counts down | The value falls to it or past it | Diminishing points: start high, lose points |
@@ -326,12 +325,8 @@ Every subsystem runs on one data model, one sheet and one panel: GM Core's [Vict
 |---|---|
 | Name, stat line | The stat line is GM-only |
 | Revealed | Off: not on the panel at all |
-| Tracks points | On by default. Off for a subject that only holds actions, such as an Infiltration opportunity. |
-| Individual | Off: one shared total. On: one total per PC, keyed by actor. The GM changes each PC's total by hand. |
-| Points, direction, minimum, maximum | The track. The limits are optional (14.8). |
-| Goal | Optional number. Reaching it sets Complete. On an individual subject each PC completes alone, and the subject is Complete when every party PC has. |
-| Complete | Set by the goal, or by hand |
-| Thresholds | As below. An individual subject has a goal only, no thresholds. |
+| Counters | Zero or more, each a full counter (14.13). A subject with none holds only actions, such as an Infiltration opportunity. |
+| Complete | Set and cleared by the GM only |
 | Modifiers | As in section 5, with a category in place of the kind (14.7). Their effects are DC changes and notes. |
 | Actions | One or more |
 
@@ -351,16 +346,16 @@ An action has no outcome table and no maximum points (Justin, 2026-11-12).
 | Field | Notes |
 |---|---|
 | Points, player text, GM text, reveal, reached | As today |
-| DC change | Optional. Applies while the threshold is Reached: to that subject's checks for a subject threshold, to every check in the challenge for a counter threshold. The GM text holds any note. |
+| DC change | Optional. Applies while the threshold is Reached: to that subject's checks for a threshold on a subject's counter, to every check in the challenge for one on a challenge counter. The GM text holds any note. |
 
-Reached is set when the track reaches the threshold in its direction. Only the GM clears it, as today. The GM still gets a notice when a counter threshold is reached.
+Reached is set when the counter reaches the threshold in its direction. Only the GM clears it, as today. The GM gets a notice when any counter's threshold is reached.
 
 **Counter.** Name, value, direction, optional minimum and maximum, thresholds, revealed, and an optional **change each round**. Next round adds that amount; Previous round takes it back. A counter can be **per PC** (14.8).
 
 ### 14.3 Rolls
 
 - A roll carries the challenge, subject, action, check row and roll id. Section 8's rules for receiving, one-time DC entries and rerolls apply.
-- A roll changes no value. The GM's + and − change points and counters, mark thresholds Reached, set Complete, and give counter notices.
+- A roll changes no value. The GM's + and − change counters, mark thresholds Reached and give counter notices. Complete is a button of its own.
 
 ### 14.4 Sheet
 
@@ -368,22 +363,22 @@ Run mode keeps its layout. Changes:
 
 - Each subject has an eye by its name, and a Complete tag that is a button, like Reached.
 - Each action is a labelled grid of chips, in the GM's order, as Discovery and Influence are today.
-- An individual subject lists each party PC with their points and add and remove buttons.
+- A subject's counters sit under its header, each with + and −, as the challenge's do (14.13).
 - A counter with thresholds shows them as cards, like a subject's.
 - Subjects can be moved up and down, and collapsed (14.8). A per-PC counter lists each party PC, with the party total (14.8).
 
 Edit mode changes:
 
 - The challenge has the points name, subject label and an optional round maximum.
-- Each subject has the stat line, Tracks points, Individual, direction and goal.
+- Each subject has the stat line, and a Counters box like the challenge's (14.13).
 - Each action is a card: its name, Secret and description, then its checks as an inline table. The description is rich text, like an item's, so it can hold the action's degrees of success. Its secret blocks are the GM's alone.
 - Counters have direction, change each round, and thresholds in place of triggers.
 
 ### 14.5 Panel
 
 - One column per revealed subject. Complete shows a check by the name and fades the actions.
-- The points bar scales to the goal, else to the highest threshold, else to 10. A counts-down track scales to its starting value.
-- An individual subject shows one row per party PC: portrait, bar, and a check when that PC is done.
+- A bar scales to the counter's maximum, else to the highest threshold, else to 10. A counts-down counter scales to its starting value.
+- A subject's revealed counters show in its column, under its name, each in its display style (14.13).
 - Each action is a line: its name, then its visible checks.
 - A revealed counter with thresholds gets a bar and a threshold card. A plain counter stays "Suspicion: 3". A per-PC counter shows a row per PC, and a both-ways track a bar with a zero mark (14.8).
 - Everything else in section 7 stays: cards, round bar, portraits, drag, resize, GM controls.
@@ -394,11 +389,11 @@ A preset is a starting template: its names, and what a new challenge and a new s
 
 | Preset | Names | A new subject has |
 |---|---|---|
-| **Victory Points** (blank) | Victory Points, Subject | Suggested category: Modifier. One action, "Check", with no rows. |
-| **Influence** | Influence Points, NPC | Suggested categories: Resistance, Weakness. Revealed. Discover: secret, Perception always shown. Influence: Deception, Diplomacy and Intimidation always shown. |
-| **Infiltration** | Infiltration Points, Obstacle | Suggested categories: Opportunity, Complication. Counters: Awareness Points (shown, +1 each round, minimum 0, GM Core's tiers at 5 (DC +1), 10 (complication), 15 (DC +1 more, +2 in total) and 20 (fails)) and Edge Points (per PC, shown). Three Add buttons: **Obstacle** (goal 2; Overcome with no checks); **Complication** (no points; Overcome); **Opportunity** (no points; Attempt). The first obstacle starts revealed, later subjects hidden. |
-| **Chase** | Chase Points, Obstacle | No suggested categories. Allow multiple subjects is off. GM notes hold GM Core's reminders and how to set up each chase type. Counters: Party at 1 and Quarry at 2, +1 each round; both minimum 0, maximum 6, Track display, shown. A new obstacle: goal 3, minimum 0, Overcome with no checks. The first obstacle starts revealed, later ones hidden. See 14.11. |
-| **Infiltration Preparation** | Edge Points, Preparation | Run before the infiltration; the GM types its results in. Counters: Edge Points (per PC, shown) and Awareness Points (hidden). One revealed subject with no points and GM Core's six activities as actions, every check always shown, secret where the rules say. GM notes list what each activity gives at each degree, and say that a dud or cursed Edge Point still adds to Edge and goes in the PC's note. No suggested categories. |
+| **Victory Points** (blank) | Victory Points, Subject | A Victory Points counter. Suggested category: Modifier. One action, "Check", with no rows. |
+| **Influence** | Influence Points, NPC | An Influence Points counter. Suggested categories: Resistance, Weakness. Revealed. Discover: secret, Perception always shown. Influence: Deception, Diplomacy and Intimidation always shown. |
+| **Infiltration** | Infiltration Points, Obstacle | Suggested categories: Opportunity, Complication. Counters: Awareness Points (shown, +1 each round, minimum 0, GM Core's tiers at 5 (DC +1), 10 (complication), 15 (DC +1 more, +2 in total) and 20 (fails)) and Edge Points (per PC, shown). Three Add buttons: **Obstacle** (an Infiltration Points counter, maximum 2; Overcome with no checks); **Complication** (no counter; Overcome); **Opportunity** (no counter; Attempt). The first obstacle starts revealed, later subjects hidden. |
+| **Chase** | Chase Points, Obstacle | No suggested categories. Allow multiple subjects is off. GM notes hold GM Core's reminders and how to set up each chase type. Counters: Party at 1 and Quarry at 2, +1 each round; both minimum 0, maximum 6, Track display, shown. A new obstacle: a Chase Points counter, 0 to 3; Overcome with no checks. The first obstacle starts revealed, later ones hidden. See 14.11. |
+| **Infiltration Preparation** | Edge Points, Preparation | Run before the infiltration; the GM types its results in. Counters: Edge Points (per PC, shown) and Awareness Points (hidden). One revealed subject with no counter and GM Core's six activities as actions, every check always shown, secret where the rules say. GM notes list what each activity gives at each degree, and say that a dud or cursed Edge Point still adds to Edge and goes in the PC's note. No suggested categories. |
 
 A preset can offer several **subject templates**, one Add button each; the first is named by the subject label.
 
@@ -443,7 +438,7 @@ A preset can offer several **subject templates**, one Add button each; the first
 | Part | Built as |
 |---|---|
 | Opportunity with no check | A one-time challenge-level modifier, category Opportunity. The GM reveals it when it becomes available and turns it on when a player uses it. |
-| Opportunity that needs a roll | A subject that tracks no points. |
+| Opportunity that needs a roll | A subject with no counter. |
 | Complication | A subject with an action. The GM reveals it when its trigger happens. A lasting penalty from failing it is a modifier the GM turns on. |
 
 ### 14.8 Framework additions
@@ -457,7 +452,7 @@ A preset can offer several **subject templates**, one Add button each; the first
 | Rule | Detail |
 |---|---|
 | Shape | A counter setting, **Per PC**: one value per party PC, keyed by actor, with the counter's limits applying to each value. |
-| Thresholds and goal | None. |
+| Thresholds | None. |
 | Change each round | Not offered. |
 | Sheet | One row per party PC, with the value and add and remove buttons, and the party total beside the counter's name. |
 | Panel | A revealed per-PC counter shows one row per party PC: portrait and value. |
@@ -467,11 +462,11 @@ A preset can offer several **subject templates**, one Add button each; the first
 
 **Saving throws as checks.** A check row can be Fortitude, Reflex or Will, as well as a skill, Perception or Lore. It rolls with PF2e's saving throw check at the row's DC and follows every other row rule: reveal, decoy, always shown, DC changes.
 
-**Subject limits.** A subject's points get the same optional minimum and maximum as a counter. On an individual subject they apply to each PC's points. Chase Points use minimum 0; Reputation uses −50 and +50.
+**Limits.** Every counter, a subject's included, has an optional minimum and maximum. On a per-PC counter they apply to each PC's value. Chase Points use 0 to 3; Reputation uses −50 and +50.
 
 **Subject order.** In both modes of the sheet, each subject has move up and move down buttons. The order is the challenge's subject order, so the panel's columns follow it. It is only for reference: the GM still reveals the next obstacle by hand.
 
-**Collapsible subjects.** Each subject on the sheet can collapse to its header row: name, eye, points and Complete. The state is each user's own, kept across reloads in a user flag, and changes neither the challenge nor the panel.
+**Collapsible subjects.** Each subject on the sheet can collapse to its header row: name, eye and Complete. The state is each user's own, kept across reloads in a user flag, and changes neither the challenge nor the panel.
 
 **Both-ways tracks.** A third direction beside Counts up and Counts down.
 
@@ -479,7 +474,6 @@ A preset can offer several **subject templates**, one Add button each; the first
 |---|---|
 | Thresholds | A threshold above 0 is reached when the value rises to it or past it; one below 0 when it falls to it or past it. A threshold at 0 is never reached. |
 | Reached follows the value | Unlike the other directions, Reached clears itself when the value moves back past the threshold, and the GM can't set it by hand. A DC change on it lasts only while it is reached. |
-| Goal | None. |
 | Panel bar | Spans the minimum to the maximum, with a mark at 0, filled from 0 to the value. Without both limits it spans the furthest threshold on each side, else −10 to 10. |
 
 **Settled without new features.**
@@ -491,7 +485,7 @@ A preset can offer several **subject templates**, one Add button each; the first
 | Obstacles in order; the other side's position | The GM reveals the next obstacle. The pursuers can be a counter that changes by +1 each round. |
 | Research's timed events (day 1, 3, 7, 14) | A "Days" counter that changes by +1 each round, with thresholds. |
 | Complications that last until cleared (Alarm Sounded: AP +2 a round; Drunken Gambler: DC 32) | The GM turns on a challenge-level modifier, or edits the counter's change each round. |
-| Opportunities with a check (Create a Diversion) | A subject that tracks no points. A DC that rises with each repeat is a note. |
+| Opportunities with a check (Create a Diversion) | A subject with no counter. A DC that rises with each repeat is a note. |
 
 ### 14.9 No backward compatibility
 
@@ -503,7 +497,7 @@ The module isn't in real use yet (Justin, 2026-11-11), so nothing is converted. 
 - Infiltration: built as the Infiltration and Infiltration Preparation presets (14.6). Not built: several objectives in sequence, and group checks that pass when half the party succeeds.
 - Research: Research Points are a counter. Actions no longer have a maximum (Justin, 2026-11-12), so how each area's Maximum RP is tracked is decided when Research is built (items/research-subsystem.md).
 - Enemy Victory Points need nothing new: a counter the GM changes by hand.
-- Reputation (an idea, not yet planned): factions are subjects with no actions on both-ways tracks, −50 to +50, with GM Core's tiers as thresholds.
+- Reputation (an idea, not yet planned): factions are subjects with no actions, each with a both-ways counter, −50 to +50, with GM Core's tiers as thresholds.
 
 ### 14.11 Chases
 
@@ -517,7 +511,7 @@ Chase is a preset and nothing more: no code checks for it. The GM does by eye wh
 | The party and the other side | Two counters holding obstacle numbers, drawn as tracks (14.12). The other side moves +1 each round; the GM nudges it on hard obstacles. The GM adds 1 to Party when an obstacle clears. The GM sets both maximums to the number of obstacles. |
 | Chase types | No type field. GM notes say how to set up each: Run Away renames Quarry to Pursuers at 0, Competitive to Rival at 1, Beat the Clock hides it and sets a round maximum. |
 | Ending, being stuck, initiative | The GM's call, from the counters. GM notes list GM Core's end conditions and reminders. No notices. |
-| Passing | The GM lowers the obstacle's points with −. |
+| Passing | The GM lowers the obstacle's Chase Points with −. |
 | Saves and attacks | Saves are check rows. Attacks and spells are the GM's to adjudicate. Points change by hand, as for every roll. |
 | Not built | Split paths, shortcuts and solo chases. |
 
@@ -546,3 +540,26 @@ Chase is a preset and nothing more: no code checks for it. The GM does by eye wh
 - Steps and Track count from the minimum (0 when unset; −maximum for a both-ways counter) to the maximum. Without a maximum, or with more than 40 slots, they draw as a bar. Steps on a both-ways counter draws as a bar.
 - A revealed threshold marks its slot; a reached one in another colour. Hidden thresholds leave no mark.
 - A per-PC counter has no Display list, only Revealed: it keeps its per-PC rows.
+
+### 14.13 Subjects own counters
+
+**Status:** decided with Justin, 2026-11-12; built 2026-11-12. A subject holds a list of counters in place of its one points track. The challenge's own counters stay as they are.
+
+| Topic | Decision |
+|---|---|
+| Shape | A subject has zero or more counters, each the challenge counter's shape: name, value, direction, minimum, maximum, thresholds, display, revealed, per PC. |
+| Goal | Removed. The maximum takes its place. |
+| Complete | Set and cleared by the GM only, on the subject as a whole. No per-PC Complete. Nothing tells the GM when a counter reaches its maximum. |
+| Points name | The name a subject's new counter gets, from the preset or the Add counter button. |
+| Tracks points, Individual | Removed. A subject with no counters holds only actions; a per-PC counter on the subject replaces Individual. |
+| Thresholds | Live on the subject's counters. A DC change on one applies to that subject's checks only. The GM gets a notice when one is reached, as for a challenge counter. |
+| Change each round | Not offered: only challenge counters change each round. |
+| Revealed | Each counter has its own, on by default. Players see it only while its subject is revealed too. |
+| Removed fields | The subject's `points`, `pointsBy`, `direction`, `min`, `max`, `goal`, `completeBy`, `tracksPoints`, `individual` and `thresholds`. No conversion (14.9). |
+
+| Where | What it shows |
+|---|---|
+| Sheet, Run mode | The subject's counters under its header, each as a challenge counter is: eye, name and limits, + and −, per-PC rows, thresholds. Complete is always in the header. |
+| Sheet, Edit mode | A Counters box under the subject's name, like the challenge's, without Change each round. |
+| Panel | Each revealed counter in the subject's column, under its name, in its display style: bar, steps, track, per-PC rows or a number. |
+

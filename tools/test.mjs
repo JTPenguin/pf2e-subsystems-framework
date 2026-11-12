@@ -228,13 +228,13 @@ test("only this module's page types count as challenge types", () => {
 const RUN = () => ({ status: "inactive", acted: [], baseline: null, roundHistory: [] });
 /** A new challenge from a preset, with the fields the data model would add. Language keys stand in for their text. */
 const system = (preset = "influence") => ({ ...D.newChallengeSystem(preset), premise: "<p>Banquet</p>", gmNotes: "", counters: [], run: RUN() });
-/** An Influence challenge whose NPC has 1 point, thresholds at 2 and 5, a Society check on Influence, and a counter at 3. */
+/** An Influence challenge whose NPC's counter has 1 point and thresholds at 2 and 5, a Society check on Influence, and a challenge counter at 3. */
 const runSystem = () => {
   const s = system();
   const subject = s.subjects[0];
-  subject.points = 1;
+  subject.counters[0].value = 1;
   subject.actions[1].checks.push(D.newCheck());
-  subject.thresholds.push({ ...D.newThreshold(), points: 2 }, { ...D.newThreshold(), points: 5 });
+  subject.counters[0].thresholds.push({ ...D.newThreshold(), points: 2 }, { ...D.newThreshold(), points: 5 });
   s.counters.push({ ...D.newCounter(), name: "Suspicion", value: 3 });
   return s;
 };
@@ -244,6 +244,9 @@ const running = () => {
   return s;
 };
 const sub = (s) => s.subjects[0];
+/** The first subject's own counter: the Influence Points the preset gives it. */
+const pts = (s) => sub(s).counters[0];
+const changePts = (s, delta) => Run.changeCounter(s, pts(s).id, delta);
 const discover = (s) => sub(s).actions[0];
 const influence = (s) => sub(s).actions[1];
 /** The Society check on Influence: the one check that isn't always shown. */
@@ -261,6 +264,8 @@ test("a preset fills in the names, the rounds and the first subject", () => {
   const s = system();
   assert.deepEqual([s.preset, s.rounds.max, s.pointsName], ["influence", 6, "SSM.Preset.influence.Points"]);
   assert.equal(sub(s).revealed, true);
+  assert.deepEqual(sub(s).counters.map((row) => [row.name, row.value, row.min, row.max, row.revealed, row.thresholds.length]), [["SSM.Preset.influence.Points", 0, null, null, true, 0]], "an NPC has one Influence Points counter");
+  assert.deepEqual(blank.subjects[0].counters.map((row) => row.name), ["SSM.Preset.victory.Points"]);
   assert.deepEqual([discover(s).secret, influence(s).secret], [true, false]);
   assert.deepEqual(discover(s).checks.map((row) => [row.skill, row.always]), [["perception", true]]);
   assert.deepEqual(influence(s).checks.map((row) => [row.skill, row.always, row.dc]), [["deception", true, 15], ["diplomacy", true, 15], ["intimidation", true, 15]]);
@@ -270,7 +275,9 @@ test("a preset fills in the names, the rounds and the first subject", () => {
 test("addRow picks the right row for each list, and a new subject follows the preset", () => {
   const s = system();
   assert.ok("always" in D.addRow(s, "subjects.0.actions.1.checks"));
-  assert.ok("reached" in D.addRow(s, "subjects.0.thresholds"));
+  assert.ok("reached" in D.addRow(s, "subjects.0.counters.0.thresholds"));
+  const own = D.addRow(s, "subjects.0.counters");
+  assert.deepEqual([own.name, own.revealed, own.perRound, own.thresholds], ["SSM.Preset.influence.Points", true, 0, []], "a subject's new counter takes the points name and starts shown");
   assert.equal(D.addRow(s, "subjects.0.modifiers").effects.length, 1, "a new modifier starts with one effect");
   assert.equal(D.addRow(s, "subjects.0.modifiers.0.effects").type, "note");
   assert.deepEqual(D.addRow(s, "subjects.0.actions").checks, []);
@@ -317,27 +324,27 @@ test("mergeForm: numbered form rows merge into lists, and absent fields survive"
   assert.equal(merged.subjects[0].actions[1].checks[0].always, true, "a form with no Always shown field keeps the old value");
 });
 
-test("mergeForm: blank numbers keep their value, except limits, the round maximum and a goal", () => {
+test("mergeForm: blank numbers keep their value, except limits and the round maximum", () => {
   const s = system();
-  sub(s).goal = 4;
+  Object.assign(pts(s), { max: 4, value: 2 });
   const c = D.addRow(s, "counters");
   Object.assign(c, { min: 1, max: 5 });
-  const merged = D.mergeForm(s, { rounds: { max: null, current: null }, subjects: { 0: { goal: null, points: null, actions: { 1: { checks: { 0: { dc: null } } } } } }, counters: { 0: { min: null, value: null, perRound: null } } });
+  const merged = D.mergeForm(s, { rounds: { max: null, current: null }, subjects: { 0: { counters: { 0: { max: null, value: null } }, actions: { 1: { checks: { 0: { dc: null } } } } } }, counters: { 0: { min: null, value: null, perRound: null } } });
   assert.deepEqual([merged.rounds.max, merged.rounds.current], [null, 0]);
-  assert.deepEqual([merged.subjects[0].goal, merged.subjects[0].points, merged.subjects[0].actions[1].checks[0].dc], [null, 0, 15]);
+  assert.deepEqual([merged.subjects[0].counters[0].max, merged.subjects[0].counters[0].value, merged.subjects[0].actions[1].checks[0].dc], [null, 2, 15]);
   assert.deepEqual([merged.counters[0].min, merged.counters[0].max, merged.counters[0].value, merged.counters[0].perRound], [null, 5, 0, 0]);
 });
 
-test("clampTracks limits counter values and subject points, per PC too, and reports impossible limits", () => {
+test("clampTracks limits every counter's values, a subject's too, per PC too, and reports impossible limits", () => {
   const s = system();
   Object.assign(D.addRow(s, "counters"), { value: 9, max: 5 });
   Object.assign(D.addRow(s, "counters"), { value: -3, min: 0, perPc: true, valueBy: { a1: -5, a2: 2 } });
   Object.assign(D.addRow(s, "counters"), { value: 4, min: 8, max: 2 });
-  Object.assign(sub(s), { points: 60, min: -50, max: 50, pointsBy: { a1: -70 } });
+  Object.assign(pts(s), { value: 60, min: -50, max: 50, perPc: true, valueBy: { a1: -70 } });
   const invalid = D.clampTracks(s);
   assert.deepEqual(s.counters.map((c) => c.value), [5, 0, 4]);
   assert.deepEqual(s.counters[1].valueBy, { a1: 0, a2: 2 });
-  assert.deepEqual([sub(s).points, sub(s).pointsBy], [50, { a1: -50 }]);
+  assert.deepEqual([pts(s).value, pts(s).valueBy], [50, { a1: -50 }]);
   assert.equal(invalid.length, 1);
 });
 
@@ -348,15 +355,15 @@ test("pickFields keeps named fields at their nested paths", () => {
 
 test("applyForm changes the editable parts and never the run state or the preset", () => {
   const s = running();
-  Run.changePoints(s, sub(s).id, 2);
+  changePts(s, 2);
   D.applyForm(s, { rounds: { max: 9 }, pointsName: "Favour", preset: "victory", run: { status: "finished" } });
-  assert.deepEqual([s.rounds.max, s.pointsName, s.preset, s.run.status, sub(s).points], [9, "Favour", "influence", "active", 3]);
+  assert.deepEqual([s.rounds.max, s.pointsName, s.preset, s.run.status, pts(s).value], [9, "Favour", "influence", "active", 3]);
 });
 
 test("searchText covers the challenge's text", () => {
   const s = system();
   Object.assign(sub(s), { name: "Vance", statLine: "Perception +12" });
-  Object.assign(D.addRow(s, "subjects.0.thresholds"), { gmText: "secret ending" });
+  Object.assign(D.addRow(s, "subjects.0.counters.0.thresholds"), { gmText: "secret ending" });
   Object.assign(D.addRow(s, "counters"), { name: "Suspicion", thresholds: [{ ...D.newThreshold(), gmText: "guards arrive" }] });
   influence(s).name = "Sway";
   const text = D.searchText(s);
@@ -496,75 +503,66 @@ test("a roll changes no points and no counter: the GM changes every value by han
   for (const name of ["applyRoll", "outcomePlan", "applyBlock", "undoApply", "undoBlock", "applyModifier", "canApplyModifier"]) assert.equal(Run[name], undefined, name);
 });
 
-/* Tracks: goals, direction, individual subjects */
+/* Subject counters (spec 14.13) */
 
-test("reaching the goal marks a subject Complete, and only the GM clears it", () => {
+test("Complete is the GM's alone: a subject's counter reaching its maximum sets nothing", () => {
   const s = running();
-  sub(s).goal = 3;
-  Run.changePoints(s, sub(s).id, 1);
-  assert.equal(sub(s).complete, false);
-  Run.changePoints(s, sub(s).id, 1);
+  pts(s).max = 2;
+  changePts(s, 5);
+  assert.deepEqual([pts(s).value, sub(s).complete], [2, false]);
+  Run.toggleComplete(s, sub(s).id);
   assert.equal(sub(s).complete, true);
-  Run.changePoints(s, sub(s).id, -2);
+  changePts(s, -2);
   assert.equal(sub(s).complete, true, "dropping points never clears it");
   Run.toggleComplete(s, sub(s).id);
   assert.equal(sub(s).complete, false);
-  Run.toggleComplete(s, sub(s).id);
-  assert.equal(sub(s).complete, true);
   assert.equal(Run.toggleComplete(s, "gone"), false);
+  for (const key of ["points", "pointsBy", "direction", "min", "max", "goal", "completeBy", "tracksPoints", "individual", "thresholds"]) assert.ok(!(key in sub(s)), `a subject has no ${key}`);
+  for (const name of ["changePoints", "pointsOf", "isComplete"]) assert.equal(Run[name], undefined, name);
 });
 
-test("a track that counts down reaches its thresholds and goal as it falls", () => {
+test("a subject's counter that counts down reaches its thresholds as it falls", () => {
   const s = running();
-  Object.assign(sub(s), { direction: "down", points: 6, goal: 0 });
-  sub(s).thresholds = [{ ...D.newThreshold(), points: 4 }, { ...D.newThreshold(), points: 2 }];
-  Run.changePoints(s, sub(s).id, 1);
-  assert.deepEqual(sub(s).thresholds.map((t) => t.reached), [false, false], "moving away reaches nothing");
-  Run.changePoints(s, sub(s).id, -3);
-  assert.deepEqual(sub(s).thresholds.map((t) => t.reached), [true, false]);
-  Run.changePoints(s, sub(s).id, -4);
-  assert.deepEqual([sub(s).thresholds[1].reached, sub(s).complete], [true, true]);
+  Object.assign(pts(s), { direction: "down", value: 6, thresholds: [{ ...D.newThreshold(), points: 4 }, { ...D.newThreshold(), points: 2 }] });
+  changePts(s, 1);
+  assert.deepEqual(pts(s).thresholds.map((t) => t.reached), [false, false], "moving away reaches nothing");
+  changePts(s, -3);
+  assert.deepEqual(pts(s).thresholds.map((t) => t.reached), [true, false]);
+  const { triggers } = changePts(s, -2);
+  assert.deepEqual([pts(s).thresholds[1].reached, triggers.map((row) => row.value)], [true, [2]], "the GM gets a notice, as for a challenge counter");
   assert.equal(Run.hasReached("down", 2, 2), true);
   assert.equal(Run.hasReached("up", 1, 2), false);
 });
 
-test("an individual subject keeps points per PC, starting from the subject's own, and each PC completes alone", () => {
+test("a subject can hold several counters, a per-PC one among them, or none", () => {
   const s = running();
-  Object.assign(sub(s), { individual: true, points: 0, goal: 2 });
-  Run.changePoints(s, sub(s).id, 2, "a1");
-  Run.changePoints(s, sub(s).id, 1, "a2");
-  assert.deepEqual([Run.pointsOf(sub(s), "a1"), Run.pointsOf(sub(s), "a2"), Run.pointsOf(sub(s), "a3"), sub(s).points], [2, 1, 0, 0]);
-  assert.deepEqual(sub(s).completeBy, ["a1"]);
-  assert.equal(Run.isComplete(sub(s), ["a1", "a2"]), false);
-  Run.changePoints(s, sub(s).id, 1, "a2");
-  assert.equal(Run.isComplete(sub(s), ["a1", "a2"]), true);
-  assert.equal(Run.isComplete(sub(s), []), false, "an empty party completes nothing");
-  assert.equal(Run.changePoints(s, sub(s).id, 1), false, "with no PC named, nothing changes");
-  Run.toggleComplete(s, sub(s).id, "a1");
-  assert.deepEqual(sub(s).completeBy, ["a2"]);
-  Run.toggleComplete(s, sub(s).id, "a1");
-  assert.deepEqual(sub(s).completeBy, ["a2", "a1"]);
+  const edge = Object.assign(D.addRow(s, "subjects.0.counters"), { name: "Rapport", perPc: true });
+  Run.changeCounter(s, edge.id, 2, "a1");
+  assert.deepEqual([Run.counterValueOf(edge, "a1"), Run.counterValueOf(edge, "a2"), pts(s).value], [2, 0, 1]);
+  assert.equal(Run.changeCounter(s, edge.id, 1), false, "with no PC named, nothing changes");
+  sub(s).counters = [];
+  assert.equal(Run.changeCounter(s, pts(running()).id, 1), false, "an id from another challenge finds nothing");
+  assert.equal(Run.changeCounter(s, sub(s).id, 1), false, "a subject is not a counter");
 });
 
-test("a subject that tracks no points takes none", () => {
+test("Next round leaves a subject's counters alone, even with a change each round", () => {
   const s = running();
-  sub(s).tracksPoints = false;
-  assert.equal(Run.changePoints(s, sub(s).id, 2), false);
-  assert.equal(sub(s).points, 1);
+  pts(s).perRound = 2;
+  Run.advanceRound(s);
+  assert.equal(pts(s).value, 1);
 });
 
-test("the Reached tag toggles a threshold both ways on a subject or a counter, and a track moving back never clears it", () => {
-  const s = runSystem();
-  const subject = sub(s);
-  const t = subject.thresholds[0];
-  Run.changePoints(s, subject.id, t.points);
+test("the Reached tag toggles a threshold both ways on a subject's counter or a challenge counter, and a counter moving back never clears it", () => {
+  const s = running();
+  const t = pts(s).thresholds[0];
+  changePts(s, t.points);
   assert.equal(t.reached, true);
-  Run.toggleReached(s, subject.id, t.id);
+  Run.toggleReached(s, pts(s).id, t.id);
   assert.equal(t.reached, false);
-  Run.toggleReached(s, subject.id, t.id);
-  Run.changePoints(s, subject.id, -t.points);
+  Run.toggleReached(s, pts(s).id, t.id);
+  changePts(s, -t.points);
   assert.equal(t.reached, true);
-  assert.equal(Run.toggleReached(s, subject.id, "gone"), false);
+  assert.equal(Run.toggleReached(s, pts(s).id, "gone"), false);
   assert.equal(Run.toggleReached(s, "gone", t.id), false);
   const counter = s.counters[0];
   const ct = D.addRow(s, "counters.0.thresholds");
@@ -574,17 +572,18 @@ test("the Reached tag toggles a threshold both ways on a subject or a counter, a
   assert.equal(ct.reveal, "points");
 });
 
-test("the threshold reveal cycle finds the threshold by its owner, so two subjects can share threshold ids", () => {
+test("the threshold reveal cycle finds the threshold by its counter, so two subjects can share threshold ids", () => {
   const s = runSystem();
   const second = D.addRow(s, "subjects");
-  second.thresholds = structuredClone(sub(s).thresholds);
-  const id = second.thresholds[0].id;
-  Run.cycleThresholdReveal(s, second.id, id);
-  Run.cycleThresholdReveal(s, second.id, id);
-  assert.deepEqual([sub(s).thresholds[0].reveal, second.thresholds[0].reveal], ["hidden", "full"]);
-  Run.cycleThresholdReveal(s, second.id, id);
-  assert.equal(second.thresholds[0].reveal, "hidden");
-  assert.equal(Run.cycleThresholdReveal(s, second.id, "gone"), false);
+  second.counters[0].thresholds = structuredClone(pts(s).thresholds);
+  const owner = second.counters[0].id;
+  const id = second.counters[0].thresholds[0].id;
+  Run.cycleThresholdReveal(s, owner, id);
+  Run.cycleThresholdReveal(s, owner, id);
+  assert.deepEqual([pts(s).thresholds[0].reveal, second.counters[0].thresholds[0].reveal], ["hidden", "full"]);
+  Run.cycleThresholdReveal(s, owner, id);
+  assert.equal(second.counters[0].thresholds[0].reveal, "hidden");
+  assert.equal(Run.cycleThresholdReveal(s, owner, "gone"), false);
 });
 
 /* Rounds, reveal and reset */
@@ -658,11 +657,12 @@ test("end keeps the final state; reset returns to how the run started", () => {
   const s = runSystem();
   const subject = sub(s);
   discover(s).checks.push({ ...D.newCheck(), revealed: true });
-  subject.goal = 4;
   s.counters[0].thresholds.push({ ...D.newThreshold(), points: 5, reveal: "points" });
   Run.startRun(s);
   assert.equal(Run.startRun(s), false);
-  Run.changePoints(s, subject.id, 4);
+  changePts(s, 4);
+  Run.toggleComplete(s, subject.id);
+  Run.toggleReveal(s, pts(s).id);
   Run.toggleReveal(s, society(s).id);
   Run.toggleReveal(s, discover(s).checks[1].id);
   Run.toggleReveal(s, subject.id);
@@ -670,14 +670,14 @@ test("end keeps the final state; reset returns to how the run started", () => {
   Run.changeCounter(s, s.counters[0].id, 6);
   Run.cycleThresholdReveal(s, s.counters[0].id, s.counters[0].thresholds[0].id);
   Run.receiveRoll(s, rollOf(s));
-  Run.changePoints(s, subject.id, 1);
+  changePts(s, 1);
   Run.advanceRound(s);
   Run.endRun(s);
-  assert.deepEqual([s.run.status, subject.points, subject.complete], ["finished", 6, true]);
+  assert.deepEqual([s.run.status, pts(s).value, subject.complete, pts(s).revealed], ["finished", 6, true, false]);
   Run.resetRun(s);
   assert.equal(s.run.status, "inactive");
-  assert.deepEqual([s.rounds.current, subject.points, subject.complete, subject.revealed, s.counters[0].value], [0, 1, false, true, 3]);
-  assert.deepEqual(subject.thresholds.map((t) => t.reached), [false, false]);
+  assert.deepEqual([s.rounds.current, pts(s).value, pts(s).revealed, subject.complete, subject.revealed, s.counters[0].value], [0, 1, true, false, true, 3]);
+  assert.deepEqual(pts(s).thresholds.map((t) => t.reached), [false, false]);
   assert.deepEqual([s.counters[0].thresholds[0].reached, s.counters[0].thresholds[0].reveal], [false, "points"]);
   assert.deepEqual([society(s).revealed, discover(s).checks[1].revealed, society(s).dc], [false, true, 22]);
   for (const list of ["acted", "roundHistory"]) assert.deepEqual(s.run[list], [], list);
@@ -685,14 +685,14 @@ test("end keeps the final state; reset returns to how the run started", () => {
   assert.equal(Run.resetRun(s), false);
 });
 
-test("reset clears per-PC points and marks", () => {
+test("reset clears a subject's per-PC counter", () => {
   const s = runSystem();
-  Object.assign(sub(s), { individual: true, points: 0, goal: 1 });
+  Object.assign(pts(s), { perPc: true, value: 0 });
   Run.startRun(s);
-  Run.changePoints(s, sub(s).id, 1, "a1");
-  assert.deepEqual([sub(s).pointsBy, sub(s).completeBy], [{ a1: 1 }, ["a1"]]);
+  Run.changeCounter(s, pts(s).id, 1, "a1");
+  assert.deepEqual(pts(s).valueBy, { a1: 1 });
   Run.resetRun(s);
-  assert.deepEqual([sub(s).pointsBy, sub(s).completeBy], [{}, []]);
+  assert.deepEqual(pts(s).valueBy, {});
 });
 
 test("rows, subjects and counters added during a run go back to hidden and unreached on reset, and keep their place", () => {
@@ -700,10 +700,11 @@ test("rows, subjects and counters added during a run go back to hidden and unrea
   const late = [D.addRow(s, "subjects.0.actions.0.checks"), D.addRow(s, "subjects.0.actions.1.checks"), D.addRow(s, "subjects.0.modifiers")];
   for (const row of late) row.revealed = true;
   Object.assign(late[2], { active: true, spent: true });
-  Object.assign(D.addRow(s, "subjects.0.thresholds"), { reveal: "full", reached: true });
+  Object.assign(D.addRow(s, "subjects.0.counters.0.thresholds"), { reveal: "full", reached: true });
   const subject = D.addRow(s, "subjects");
-  Object.assign(subject, { points: 3, complete: true });
-  subject.thresholds.push({ ...D.newThreshold(), reached: true });
+  subject.complete = true;
+  subject.counters[0].value = 3;
+  subject.counters[0].thresholds.push({ ...D.newThreshold(), reached: true });
   const counter = D.addRow(s, "counters");
   counter.value = 2;
   counter.thresholds.push({ ...D.newThreshold(), points: 4 });
@@ -712,17 +713,17 @@ test("rows, subjects and counters added during a run go back to hidden and unrea
   Run.resetRun(s);
   assert.deepEqual(late.map((row) => row.revealed), [false, false, false]);
   assert.deepEqual([late[2].active, late[2].spent], [false, false]);
-  assert.deepEqual([sub(s).thresholds.at(-1).reveal, sub(s).thresholds.at(-1).reached], ["hidden", false]);
-  assert.deepEqual([subject.points, subject.complete, subject.revealed, subject.thresholds[0].reached], [3, false, false, false], "a new subject has no start points to go back to");
+  assert.deepEqual([pts(s).thresholds.at(-1).reveal, pts(s).thresholds.at(-1).reached], ["hidden", false]);
+  assert.deepEqual([subject.counters[0].value, subject.complete, subject.revealed, subject.counters[0].thresholds[0].reached], [3, false, false, false], "a new subject's counter has no start value to go back to");
   assert.deepEqual([counter.value, counter.revealed, counter.thresholds[0].reached], [2, false, false]);
   assert.equal(influence(s).checks.at(-1).id, late[1].id);
 });
 
 test("a copy of a running challenge goes back to its start values; one that never started reports no change", () => {
   const s = running();
-  Run.changePoints(s, sub(s).id, 3);
+  changePts(s, 3);
   assert.notEqual(Run.resetRun(s), false);
-  assert.deepEqual([s.run.status, sub(s).points], ["inactive", 1]);
+  assert.deepEqual([s.run.status, pts(s).value], ["inactive", 1]);
   assert.equal(Run.resetRun(runSystem()), false);
 });
 
@@ -757,18 +758,18 @@ test("a DC change on chosen checks matches only those checks, on any action, and
   assert.equal(dcOf(s), 0);
 });
 
-test("a reached threshold's DC change applies while it is reached: a subject's to its own checks, a counter's to every check", () => {
+test("a reached threshold's DC change applies while it is reached: a subject counter's to its own subject's checks, a challenge counter's to every check", () => {
   const s = running();
   const other = D.addRow(s, "subjects");
   const otherCheck = other.actions[1].checks[0];
-  sub(s).thresholds[0].dc = 2;
+  pts(s).thresholds[0].dc = 2;
   s.counters[0].thresholds.push({ ...D.newThreshold(), points: 4, dc: 1 });
   assert.equal(dcOf(s), 15);
-  Run.changePoints(s, sub(s).id, 1);
+  changePts(s, 1);
   assert.deepEqual([dcOf(s), Run.currentDc(s, other, otherCheck)], [17, 15]);
   Run.changeCounter(s, s.counters[0].id, 1);
   assert.deepEqual([dcOf(s), Run.currentDc(s, other, otherCheck)], [18, 16]);
-  Run.toggleReached(s, sub(s).id, sub(s).thresholds[0].id);
+  Run.toggleReached(s, pts(s).id, pts(s).thresholds[0].id);
   assert.equal(dcOf(s), 16);
 });
 
@@ -893,7 +894,7 @@ const secretSystem = () => {
   s.gmNotes = `<p>${GM_SECRET} notes</p>`;
   const subject = sub(s);
   Object.assign(subject, { name: "Lady Vance", statLine: `${GM_SECRET} stats` });
-  subject.thresholds = [{ ...D.newThreshold(), points: 8, dc: 3, playerText: "she offers an introduction", gmText: `${GM_SECRET} threshold` }];
+  subject.counters[0].thresholds = [{ ...D.newThreshold(), points: 8, dc: 3, playerText: "she offers an introduction", gmText: `${GM_SECRET} threshold` }];
   subject.modifiers = [{ ...D.newModifier(), name: "Flattery", playerText: "likes praise", gmText: `${GM_SECRET} modifier`, effects: [{ ...D.newEffect(), note: `${GM_SECRET} effect` }] }];
   s.counters = [{ ...D.newCounter(), name: "Suspicion", value: 3, min: -111, max: 222, perRound: 1, thresholds: [{ ...D.newThreshold(), points: 5, playerText: "the guards stir", gmText: `${GM_SECRET} counter threshold` }] }];
   Run.startRun(s);
@@ -915,9 +916,8 @@ const scan = (value, found = { keys: new Set(), values: new Set() }) => {
 const revealAll = (s) => {
   for (const subject of s.subjects) {
     for (const row of [...subject.actions.flatMap((action) => action.checks), ...subject.modifiers]) row.revealed = true;
-    for (const row of subject.thresholds) row.reveal = "full";
   }
-  for (const counter of s.counters) {
+  for (const counter of D.allCounters(s)) {
     counter.revealed = true;
     for (const row of counter.thresholds) row.reveal = "full";
   }
@@ -930,17 +930,18 @@ const assertNoSecrets = (view) => {
 
 test("the copy shows only the defaults before anything is revealed", () => {
   const s = secretSystem();
-  sub(s).points = 2;
+  pts(s).value = 2;
   const view = viewOf(s);
   assert.deepEqual([view.name, view.pointsName, view.subjectLabel], ["Banquet", "SSM.Preset.influence.Points", "SSM.Preset.influence.Subject"]);
   assert.deepEqual(view.rounds, { current: 1, max: 6 });
   const [subject] = view.subjects;
-  assert.deepEqual([subject.name, subject.points, subject.tracksPoints, subject.individual, subject.complete], ["Lady Vance", 2, true, false, false]);
+  assert.deepEqual([subject.name, subject.complete], ["Lady Vance", false]);
+  assert.deepEqual(subject.counters, [{ id: pts(s).id, name: "SSM.Preset.influence.Points", value: 2, display: "bar", slots: null, perPc: false, pcs: [], scale: 8, range: null, thresholds: [] }], "a subject's counter starts shown; its hidden threshold sets only the scale");
   assert.deepEqual(subject.actions.map((action) => [action.name, action.secret, action.checks.map((row) => row.skill)]), [
     ["SSM.Preset.influence.Discover", true, ["perception"]],
     ["SSM.Preset.influence.Influence", false, ["deception", "diplomacy", "intimidation"]],
   ]);
-  assert.deepEqual([known(subject), subject.thresholds, subject.pcs, view.counters], [[], [], [], []]);
+  assert.deepEqual([known(subject), view.counters], [[], []]);
   assertNoSecrets(view);
   for (const word of ["Flattery", "Suspicion", "introduction", "guards"]) assert.ok(!JSON.stringify(view).includes(word), word);
 });
@@ -972,7 +973,7 @@ test("revealing each kind of entry adds it, and only its player fields", () => {
   const subject = sub(s);
   assert.deepEqual(view.subjects[0].actions[1].checks.at(-1), { id: society(s).id, skill: "society", lore: "", dc: 15 });
   assert.deepEqual(known(view.subjects[0]), [{ id: subject.modifiers[0].id, name: "Flattery", text: "likes praise", category: "", colour: "", duration: "ongoing", active: false, spent: false, changes: [] }]);
-  assert.deepEqual(view.subjects[0].thresholds, [{ id: subject.thresholds[0].id, points: 8, text: "she offers an introduction", textHidden: false, reached: false }]);
+  assert.deepEqual(view.subjects[0].counters[0].thresholds, [{ id: pts(s).thresholds[0].id, points: 8, text: "she offers an introduction", textHidden: false, reached: false }]);
   assert.deepEqual(view.counters, [{ id: s.counters[0].id, name: "Suspicion", value: 3, perPc: false, pcs: [], display: "bar", slots: null, scale: 222, range: null, thresholds: [{ id: s.counters[0].thresholds[0].id, points: 5, text: "the guards stir", textHidden: false, reached: false }] }]);
   assertNoSecrets(view);
   Run.toggleReveal(s, society(s).id);
@@ -983,7 +984,7 @@ test("a visible check carries its current DC for the roll, thresholds and one-ti
   const s = secretSystem();
   revealAll(s);
   sub(s).modifiers.push({ ...D.newModifier(), active: true, duration: "oneTime", effects: [effectOf("dc", -2)] });
-  sub(s).thresholds[0].reached = true;
+  pts(s).thresholds[0].reached = true;
   const view = viewOf(s);
   const found = V.findPanelRow(view, { subject: sub(s).id, act: influence(s).id, id: society(s).id });
   assert.deepEqual([found.row.dc, found.action.secret, found.subject.name], [16, false, "Lady Vance"]);
@@ -1001,7 +1002,7 @@ test("a revealed decoy can't be told from a true entry, at any depth, and a deco
     return s;
   };
   const withIds = (s) => {
-    const rows = [...s.subjects, ...sub(s).actions, ...sub(s).actions.flatMap((action) => action.checks), ...sub(s).thresholds, ...sub(s).modifiers, ...s.counters, ...s.counters.flatMap((c) => c.thresholds)];
+    const rows = [...s.subjects, ...sub(s).actions, ...sub(s).actions.flatMap((action) => action.checks), ...sub(s).modifiers, ...D.allCounters(s), ...D.allCounters(s).flatMap((c) => c.thresholds)];
     return rows.map((row) => row.id).reduce((text, id, n) => text.replaceAll(id, `ID${n}`), JSON.stringify(viewOf(s)));
   };
   assert.equal(withIds(twin(true)), withIds(twin(false)));
@@ -1079,40 +1080,45 @@ test("each category's stripe takes the next palette colour; Influence's two keep
 test("thresholds show in the order the track reaches them; points-only shows no text; a missing player text never falls back to GM text", () => {
   const s = secretSystem();
   const make = (points, reveal, playerText = "") => ({ ...D.newThreshold(), points, reveal, playerText, gmText: `${GM_SECRET} t` });
-  sub(s).thresholds = [make(8, "full", "eight"), make(2, "points", "two"), make(5, "hidden", "five"), make(4, "full")];
-  Run.changePoints(s, sub(s).id, 3);
-  assert.deepEqual(viewOf(s).subjects[0].thresholds.map((row) => [row.points, row.text, row.textHidden, row.reached]), [[2, "", true, true], [4, "", false, true], [8, "eight", false, false]]);
+  pts(s).thresholds = [make(8, "full", "eight"), make(2, "points", "two"), make(5, "hidden", "five"), make(4, "full")];
+  changePts(s, 3);
+  assert.deepEqual(viewOf(s).subjects[0].counters[0].thresholds.map((row) => [row.points, row.text, row.textHidden, row.reached]), [[2, "", true, true], [4, "", false, true], [8, "eight", false, false]]);
   assertNoSecrets(viewOf(s));
-  sub(s).direction = "down";
-  assert.deepEqual(viewOf(s).subjects[0].thresholds.map((row) => row.points), [8, 4, 2]);
+  pts(s).direction = "down";
+  assert.deepEqual(viewOf(s).subjects[0].counters[0].thresholds.map((row) => row.points), [8, 4, 2]);
 });
 
-test("a bar scales to the goal or the highest threshold, hidden or not; a track that counts down scales to its start", () => {
+test("a bar scales to the maximum or the highest threshold, hidden or not; a counter that counts down scales to its start", () => {
   const s = secretSystem();
-  assert.equal(viewOf(s).subjects[0].scale, 8);
-  sub(s).goal = 12;
-  assert.equal(viewOf(s).subjects[0].scale, 12);
-  sub(s).thresholds = [];
-  sub(s).goal = null;
-  assert.equal(viewOf(s).subjects[0].scale, 0, "no scale: the bar falls back to 10");
+  const scale = () => viewOf(s).subjects[0].counters[0].scale;
+  assert.equal(scale(), 8);
+  pts(s).max = 12;
+  assert.equal(scale(), 12);
+  pts(s).thresholds = [];
+  pts(s).max = null;
+  assert.equal(scale(), 0, "no scale: the bar falls back to 10");
   const down = runSystem();
-  Object.assign(sub(down), { direction: "down", points: 6 });
+  Object.assign(pts(down), { direction: "down", value: 6 });
   Run.startRun(down);
-  Run.changePoints(down, sub(down).id, -4);
-  assert.deepEqual([viewOf(down).subjects[0].scale, viewOf(down).subjects[0].points], [6, 2]);
+  changePts(down, -4);
+  const [counter] = viewOf(down).subjects[0].counters;
+  assert.deepEqual([counter.scale, counter.value], [6, 2]);
 });
 
-test("an individual subject shows one row per party PC, with their points and whether they are done, and no thresholds", () => {
+test("a subject shows only its revealed counters, a per-PC one as a row per party PC, and none when it has none", () => {
   const s = secretSystem();
-  Object.assign(sub(s), { individual: true, points: 0, goal: 2 });
-  sub(s).thresholds[0].reveal = "full";
-  Run.changePoints(s, sub(s).id, 2, "a1");
-  Run.changePoints(s, sub(s).id, 1, "stranger");
-  const view = viewOf(s, PARTY).subjects[0];
-  assert.deepEqual(view.pcs, [{ id: "a1", points: 2, complete: true }, { id: "a2", points: 0, complete: false }]);
-  assert.deepEqual([view.individual, view.complete, view.thresholds, view.scale], [true, false, [], 8]);
-  Run.changePoints(s, sub(s).id, 2, "a2");
-  assert.equal(viewOf(s, PARTY).subjects[0].complete, true);
+  const rapport = Object.assign(D.addRow(s, "subjects.0.counters"), { name: "Rapport", perPc: true, thresholds: [{ ...D.newThreshold(), reveal: "full", playerText: "never shown" }] });
+  Run.changeCounter(s, rapport.id, 2, "a1");
+  Run.changeCounter(s, rapport.id, 1, "stranger");
+  let view = viewOf(s, PARTY).subjects[0];
+  assert.deepEqual(view.counters.map((row) => row.name), ["SSM.Preset.influence.Points", "Rapport"]);
+  assert.deepEqual([view.counters[1].display, view.counters[1].pcs, view.counters[1].thresholds], ["perPc", [{ id: "a1", value: 2 }, { id: "a2", value: 0 }], []]);
+  Run.toggleReveal(s, pts(s).id);
+  view = viewOf(s, PARTY).subjects[0];
+  assert.deepEqual(view.counters.map((row) => row.name), ["Rapport"], "hiding a subject's counter takes it out");
+  assert.ok(!JSON.stringify(viewOf(s, PARTY)).includes(pts(s).id));
+  sub(s).counters = [];
+  assert.deepEqual(viewOf(s, PARTY).subjects[0].counters, []);
   assertNoSecrets(viewOf(s, PARTY));
 });
 
@@ -1144,7 +1150,7 @@ test("the copy is the same when nothing players see has changed", () => {
   s.gmNotes = "changed";
   Run.receiveRoll(s, rollOf(s, { actorId: "" }));
   assert.equal(JSON.stringify(viewOf(s, PARTY)), before);
-  Run.changePoints(s, sub(s).id, 1);
+  changePts(s, 1);
   assert.notEqual(JSON.stringify(viewOf(s, PARTY)), before);
 });
 
@@ -1283,17 +1289,17 @@ test("a per-PC counter shows a row per party PC on the panel, and no thresholds"
   assert.deepEqual([counter.perPc, counter.display, counter.pcs, counter.thresholds], [true, "perPc", [{ id: "a1", value: 3 }, { id: "a2", value: 1 }], []]);
 });
 
-test("a subject's points stay inside its limits, per PC too", () => {
+test("a subject's counter stays inside its limits, per PC too", () => {
   const s = running();
-  Object.assign(sub(s), { min: 0, max: 4 });
-  Run.changePoints(s, sub(s).id, 9);
-  assert.equal(sub(s).points, 4);
-  assert.equal(Run.changePoints(s, sub(s).id, 1), false);
-  Run.changePoints(s, sub(s).id, -9);
-  assert.equal(sub(s).points, 0);
-  sub(s).individual = true;
-  Run.changePoints(s, sub(s).id, -3, "a1");
-  assert.equal(Run.pointsOf(sub(s), "a1"), 0);
+  Object.assign(pts(s), { min: 0, max: 4 });
+  changePts(s, 9);
+  assert.equal(pts(s).value, 4);
+  assert.equal(changePts(s, 1), false);
+  changePts(s, -9);
+  assert.equal(pts(s).value, 0);
+  pts(s).perPc = true;
+  Run.changeCounter(s, pts(s).id, -3, "a1");
+  assert.equal(Run.counterValueOf(pts(s), "a1"), 0);
 });
 
 test("subjects move up and down the order, and not past either end", () => {
@@ -1309,33 +1315,32 @@ test("subjects move up and down the order, and not past either end", () => {
 
 const reputation = () => {
   const s = running();
-  Object.assign(sub(s), { direction: "both", min: -50, max: 50, points: 0, goal: 5 });
-  sub(s).thresholds = [-30, -5, 0, 5, 15].map((points) => ({ ...D.newThreshold(), points }));
+  Object.assign(pts(s), { direction: "both", min: -50, max: 50, value: 0 });
+  pts(s).thresholds = [-30, -5, 0, 5, 15].map((points) => ({ ...D.newThreshold(), points }));
   return s;
 };
-const reachedOf = (s) => sub(s).thresholds.filter((row) => row.reached).map((row) => row.points);
+const reachedOf = (s) => pts(s).thresholds.filter((row) => row.reached).map((row) => row.points);
 
-test("a both-ways track reaches thresholds above 0 by rising and below 0 by falling, never one at 0, and has no goal", () => {
+test("a both-ways counter reaches thresholds above 0 by rising and below 0 by falling, never one at 0", () => {
   const s = reputation();
-  Run.changePoints(s, sub(s).id, 6);
+  changePts(s, 6);
   assert.deepEqual(reachedOf(s), [5]);
-  assert.equal(sub(s).complete, false, "a both-ways track has no goal");
-  Run.changePoints(s, sub(s).id, -12);
+  changePts(s, -12);
   assert.deepEqual(reachedOf(s), [-5], "Reached follows the value: 5 clears, −5 is reached");
-  Run.changePoints(s, sub(s).id, -100);
-  assert.deepEqual([sub(s).points, reachedOf(s)], [-50, [-30, -5]]);
+  changePts(s, -100);
+  assert.deepEqual([pts(s).value, reachedOf(s)], [-50, [-30, -5]]);
   assert.equal(Run.hasReached("both", 0, 0), false);
 });
 
 test("Reached on a both-ways track can't be set by hand, follows a form edit, and its DC change lasts only while reached", () => {
   const s = reputation();
-  sub(s).thresholds[3].dc = 2;
-  assert.equal(Run.toggleReached(s, sub(s).id, sub(s).thresholds[3].id), false);
-  sub(s).points = 7;
+  pts(s).thresholds[3].dc = 2;
+  assert.equal(Run.toggleReached(s, pts(s).id, pts(s).thresholds[3].id), false);
+  pts(s).value = 7;
   Run.syncBothWays(s);
   assert.deepEqual(reachedOf(s), [5]);
   assert.equal(dcOf(s), 17);
-  Run.changePoints(s, sub(s).id, -3);
+  changePts(s, -3);
   assert.equal(dcOf(s), 15);
 });
 
@@ -1350,21 +1355,23 @@ test("a both-ways counter follows its value too, gives a notice when it reaches 
 
 test("a both-ways bar spans the limits or the furthest thresholds, with a mark at 0, filled from 0 to the value", () => {
   const s = reputation();
-  const view = () => viewOf(s).subjects[0];
+  const view = () => viewOf(s).subjects[0].counters[0];
   assert.deepEqual(view().range, { lo: -50, hi: 50 });
   assert.deepEqual(V.bothWaysBar(25, view().range), { both: true, zero: 50, left: 50, width: 25, negative: false });
   assert.deepEqual(V.bothWaysBar(-10, view().range), { both: true, zero: 50, left: 40, width: 10, negative: true });
-  Object.assign(sub(s), { min: null, max: null });
+  Object.assign(pts(s), { min: null, max: null });
   assert.deepEqual(view().range, { lo: -30, hi: 15 });
-  sub(s).thresholds = [];
+  pts(s).thresholds = [];
   assert.deepEqual(view().range, { lo: -10, hi: 10 });
-  assert.equal(viewOf(running()).subjects[0].range, null);
+  assert.equal(viewOf(running()).subjects[0].counters[0].range, null);
 });
 
 /* Infiltration and its preparation (items/infiltration-subsystem.md) */
 
 const presetSystem = (preset) => ({ ...D.newChallengeSystem(preset), premise: "", gmNotes: "", run: RUN() });
 /** No preset action has an outcome table: rolls change nothing, so the GM changes values by hand. */
+/** A subject's counters as [name, value, min, max, revealed]. */
+const countersOf = (subject) => subject.counters.map((row) => [row.name, row.value, row.min, row.max, row.revealed]);
 const assertBareAction = (action) => assert.deepEqual(Object.keys(action).sort(), ["checks", "description", "id", "name", "secret"]);
 
 test("the Infiltration preset: Awareness Points with GM Core's tiers, per-PC Edge Points, and a revealed first obstacle", () => {
@@ -1375,23 +1382,24 @@ test("the Infiltration preset: Awareness Points with GM Core's tiers, per-PC Edg
   assert.deepEqual(ap.thresholds.map((row) => [row.points, row.dc, row.reveal]), [[5, 1, "points"], [10, 0, "points"], [15, 1, "points"], [20, 0, "points"]]);
   assert.deepEqual([ep.perPc, ep.min, ep.revealed], [true, 0, true]);
   const [obstacle] = s.subjects;
-  assert.deepEqual([obstacle.revealed, obstacle.tracksPoints, obstacle.goal, obstacle.individual], [true, true, 2, false]);
+  assert.equal(obstacle.revealed, true);
+  assert.deepEqual(countersOf(obstacle), [["SSM.Preset.infiltration.Points", 0, null, 2, true]], "an obstacle's Infiltration Points run to its maximum, 2");
   assertBareAction(obstacle.actions[0]);
   assert.deepEqual(D.suggestedCategories(s), ["SSM.Preset.infiltration.Category.opportunity", "SSM.Preset.infiltration.Category.complication"]);
 });
 
-test("an infiltration offers three subject templates; later obstacles start hidden, and complications and opportunities track no points", () => {
+test("an infiltration offers three subject templates; later obstacles start hidden, and complications and opportunities have no counter", () => {
   const s = presetSystem("infiltration");
   assert.deepEqual(D.subjectTemplates(s).map((row) => [row.id, !!row.label]), [["obstacle", false], ["complication", true], ["opportunity", true]]);
   const obstacle = D.addRow(s, "subjects");
-  assert.deepEqual([obstacle.revealed, obstacle.tracksPoints], [false, true]);
+  assert.deepEqual([obstacle.revealed, obstacle.counters.length], [false, 1]);
   const complication = D.addRow(s, "subjects", "complication");
-  assert.deepEqual([complication.tracksPoints, complication.revealed], [false, false]);
+  assert.deepEqual([complication.counters, complication.revealed], [[], false]);
   assertBareAction(complication.actions[0]);
   const opportunity = D.addRow(s, "subjects", "opportunity");
-  assert.equal(opportunity.tracksPoints, false);
+  assert.deepEqual(opportunity.counters, []);
   assertBareAction(opportunity.actions[0]);
-  assert.equal(D.addRow(s, "subjects", "nonsense").tracksPoints, true, "an unknown template is the first one");
+  assert.equal(D.addRow(s, "subjects", "nonsense").counters.length, 1, "an unknown template is the first one");
   assert.deepEqual(D.subjectTemplates(system()).map((row) => row.id), ["npc"]);
 });
 
@@ -1416,7 +1424,7 @@ test("the Preparation preset: one revealed subject with GM Core's six activities
   const [ep, ap] = s.counters;
   assert.deepEqual([ep.perPc, ep.revealed, ap.perPc, ap.revealed], [true, true, false, false]);
   const [prep] = s.subjects;
-  assert.deepEqual([prep.revealed, prep.tracksPoints, s.subjects.length], [true, false, 1]);
+  assert.deepEqual([prep.revealed, prep.counters, s.subjects.length], [true, [], 1]);
   const named = (key) => prep.actions.find((action) => action.name === `SSM.Preset.preparation.${key}.Name`);
   assert.deepEqual(prep.actions.map((action) => [action.name.split(".")[3], action.secret, action.checks.map((row) => row.skill).join(" ")]), [
     ["BribeContact", true, "deception diplomacy"],
@@ -1457,7 +1465,7 @@ test("a per-PC counter's GM note: set, cleared when empty, only on a per-PC coun
 
 /* Chase (items/chase-subsystem.md, spec 14.11): data only */
 
-test("the Chase preset: Party and Quarry counters on tracks, one obstacle at a time, and obstacles whose Chase Points never drop below 0", () => {
+test("the Chase preset: Party and Quarry counters on tracks, one obstacle at a time, and obstacles whose Chase Points run from 0 to 3", () => {
   const s = presetSystem("chase");
   assert.deepEqual([s.pointsName, s.subjectLabel, s.rounds.max, s.multipleSubjects], ["SSM.Preset.chase.Points", "SSM.Preset.chase.Subject", null, false]);
   assert.deepEqual(s.counters.map((row) => [row.name, row.value, row.perRound, row.min, row.max, row.display, row.revealed]), [
@@ -1466,14 +1474,15 @@ test("the Chase preset: Party and Quarry counters on tracks, one obstacle at a t
   ]);
   assert.equal(s.chase, undefined, "no chase-only data");
   const [first] = s.subjects;
-  assert.deepEqual([first.revealed, first.goal, first.min, first.tracksPoints], [true, 3, 0, true]);
+  assert.equal(first.revealed, true);
+  assert.deepEqual(countersOf(first), [["SSM.Preset.chase.Points", 0, 0, 3, true]]);
   assertBareAction(first.actions[0]);
   assert.equal(D.addRow(s, "subjects").revealed, false, "later obstacles start hidden");
   assert.ok(D.newChallengeSystem("chase").gmNotes.includes("SSM.Preset.chase.GmNotes"));
   assert.equal(D.newChallengeSystem("influence").multipleSubjects, undefined, "other presets keep the model's default, on");
   Run.startRun(s);
-  Run.changePoints(s, first.id, -1);
-  assert.equal(first.points, 0);
+  assert.equal(Run.changeCounter(s, first.counters[0].id, -1), false);
+  assert.equal(first.counters[0].value, 0);
 });
 
 /* Allow multiple subjects (spec 14.12) */

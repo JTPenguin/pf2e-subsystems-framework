@@ -8,7 +8,7 @@ export const DURATIONS = ["oneTime", "ongoing"];
 /** What a modifier entry can do: change DCs, or hold a note. Nothing changes points or counters but the GM's own + and − (spec 14.7). */
 export const EFFECT_TYPES = ["dc", "note"];
 export const QUICK_DC_AMOUNTS = [-5, -2, 2, 5];
-/** A track counts up towards its thresholds and goal, or down towards them, or both ways from 0 (spec 14.8). */
+/** A counter counts up towards its thresholds, or down towards them, or both ways from 0 (spec 14.8). */
 export const DIRECTIONS = ["up", "down", "both"];
 export const BOTH_WAYS = "both";
 /** How much of a threshold players see: nothing, its points ("6: ???"), or its points and player text. The GM's eye button steps through them in this order. */
@@ -55,10 +55,25 @@ export const newCheck = () => ({ id: id(), skill: "society", lore: "", dc: 15, r
 export const newThreshold = () => ({ id: id(), points: 1, playerText: "", gmText: "", reveal: "hidden", reached: false, dc: 0 });
 /** A per-PC counter keeps one value per party PC in `valueBy`, starting from `value` (spec 14.8), and a GM-only note per PC in `noteBy`. */
 export const newCounter = () => ({ id: id(), name: "", value: 0, direction: "up", min: null, max: null, perRound: 0, perPc: false, valueBy: {}, noteBy: {}, thresholds: [], display: "auto", revealed: false });
+/** A subject's counter (spec 14.13): named by the challenge's points name, and shown from the start, as its subject decides whether players see it. */
+export const newSubjectCounter = (system, fields = {}) => ({ ...newCounter(), name: system?.pointsName ?? "", revealed: true, ...fields });
+
+/** Every counter: the challenge's own, then each subject's. */
+export const allCounters = (system) => [...system.counters, ...system.subjects.flatMap((subject) => subject.counters ?? [])];
+/** The counter with this id, and the subject that owns it (null for a challenge counter). Null if there is none. */
+export function findCounter(system, counterId) {
+  const counter = system.counters.find((candidate) => candidate.id === counterId);
+  if (counter) return { counter, subject: null };
+  for (const subject of system.subjects) {
+    const owned = (subject.counters ?? []).find((candidate) => candidate.id === counterId);
+    if (owned) return { counter: owned, subject };
+  }
+  return null;
+}
 
 /** Set a GM-only note for one PC on a per-PC counter, such as which Edge Points are duds. An empty note removes it. Returns false if nothing changed. */
 export function setCounterNote(system, counterId, actorId, note) {
-  const counter = system.counters.find((candidate) => candidate.id === counterId);
+  const counter = findCounter(system, counterId)?.counter;
   if (!counter?.perPc || !actorId) return false;
   const text = String(note ?? "").trim();
   const notes = { ...(counter.noteBy ?? {}) };
@@ -70,16 +85,15 @@ export function setCounterNote(system, counterId, actorId, note) {
 
 export const newAction = () => ({ id: id(), name: "", description: "", secret: false, checks: [] });
 
-const blankSubject = () => ({
-  id: id(), name: "", statLine: "", revealed: false, tracksPoints: true, individual: false,
-  points: 0, pointsBy: {}, direction: "up", min: null, max: null, goal: null, complete: false, completeBy: [],
-  thresholds: [], modifiers: [], actions: [],
-});
+/** A subject with no counters. Complete is the GM's alone (spec 14.13). */
+const blankSubject = () => ({ id: id(), name: "", statLine: "", revealed: false, complete: false, counters: [], modifiers: [], actions: [] });
+/** A subject with one counter named by the points name, as most presets make them. */
+const pointsSubject = (system, counter = {}) => ({ ...blankSubject(), counters: [newSubjectCounter(system, counter)] });
 
 /**
  * A preset is a starting template: its names, its counters, and the subjects it can add. After creation everything can be edited.
  * `names` holds language keys; they are written into the challenge as text when it is made.
- * `subjects` lists the subject templates, each { id, label, make(system) }; the sheet offers one Add button per template, the first named by the subject label.
+ * `subjects` lists the subject templates, each { id, label, make(system) }; a subject's counters take the challenge's points name; the sheet offers one Add button per template, the first named by the subject label.
  * `counters()` and `rounds` are a new challenge's counters and round maximum. `gmNotes` is a language key, or a list of them, one paragraph each.
  */
 const always = (skill) => ({ ...newCheck(), skill, always: true });
@@ -102,7 +116,7 @@ export const PRESETS = {
     icon: "fa-solid fa-trophy",
     names: { pointsName: "SSM.Preset.victory.Points", subjectLabel: "SSM.Preset.victory.Subject" },
     categories: ["SSM.Preset.victory.Category.modifier"],
-    subjects: [{ id: "subject", make: () => ({ ...blankSubject(), actions: [{ ...newAction(), name: say("SSM.Preset.victory.Check") }] }) }],
+    subjects: [{ id: "subject", make: (system) => ({ ...pointsSubject(system), actions: [{ ...newAction(), name: say("SSM.Preset.victory.Check") }] }) }],
   },
   influence: {
     id: "influence",
@@ -113,8 +127,8 @@ export const PRESETS = {
     rounds: 6,
     subjects: [{
       id: "npc",
-      make: () => ({
-        ...blankSubject(),
+      make: (system) => ({
+        ...pointsSubject(system),
         revealed: true,
         actions: [
           { ...newAction(), name: say("SSM.Preset.influence.Discover"), secret: true, checks: [always(PERCEPTION)] },
@@ -146,24 +160,24 @@ export const PRESETS = {
     subjects: [
       {
         id: "obstacle",
-        make: () => ({ ...blankSubject(), goal: 2, actions: [{ ...newAction(), name: say(`${INF}.Overcome`) }] }),
+        make: (system) => ({ ...pointsSubject(system, { max: 2 }), actions: [{ ...newAction(), name: say(`${INF}.Overcome`) }] }),
       },
       {
         id: "complication",
         label: `${INF}.AddComplication`,
-        make: () => ({ ...blankSubject(), name: say(`${INF}.Complication`), tracksPoints: false, actions: [{ ...newAction(), name: say(`${INF}.Overcome`) }] }),
+        make: () => ({ ...blankSubject(), name: say(`${INF}.Complication`), actions: [{ ...newAction(), name: say(`${INF}.Overcome`) }] }),
       },
       {
         id: "opportunity",
         label: `${INF}.AddOpportunity`,
-        make: () => ({ ...blankSubject(), name: say(`${INF}.Opportunity`), tracksPoints: false, actions: [{ ...newAction(), name: say(`${INF}.Attempt`) }] }),
+        make: () => ({ ...blankSubject(), name: say(`${INF}.Opportunity`), actions: [{ ...newAction(), name: say(`${INF}.Attempt`) }] }),
       },
     ],
     // The first obstacle starts on the panel; the GM reveals the rest in turn.
     firstSubject: { revealed: true },
   },
   /**
-   * GM Core's Chases. Obstacles are subjects in order, each with a goal in Chase Points that never drop below 0.
+   * GM Core's Chases. Obstacles are subjects in order, each with a Chase Points counter from 0 to its target.
    * The party and the other side are counters holding their obstacle numbers, drawn as tracks. The other side moves +1 each round;
    * the GM moves the party when it clears an obstacle. One obstacle shows at a time. No other chase logic (spec 14.11).
    */
@@ -179,7 +193,7 @@ export const PRESETS = {
     subjects: [{
       id: "obstacle",
       // GM Core: about one fewer CP than the party's size. The GM edits it per obstacle.
-      make: () => ({ ...blankSubject(), goal: 3, min: 0, actions: [{ ...newAction(), name: say(`${CHASE}.Overcome`) }] }),
+      make: (system) => ({ ...pointsSubject(system, { min: 0, max: 3 }), actions: [{ ...newAction(), name: say(`${CHASE}.Overcome`) }] }),
     }],
     // The first obstacle starts on the panel; the GM reveals the rest in turn.
     firstSubject: { revealed: true },
@@ -204,7 +218,7 @@ export const PRESETS = {
     subjects: [{
       id: "preparation",
       make: () => ({
-        ...blankSubject(), name: say(`${PREP}.Subject`), revealed: true, tracksPoints: false,
+        ...blankSubject(), name: say(`${PREP}.Subject`), revealed: true,
         actions: [
           preparationActivity("BribeContact", { secret: true, skills: ["deception", "diplomacy"] }),
           preparationActivity("ForgeDocuments", { secret: true, skills: ["society"] }),
@@ -302,7 +316,7 @@ const allChecks = (subject) => subject.actions.flatMap((action) => action.checks
 /** Add a new row to the list at listPath, for example "subjects.0.actions.1.checks". A new subject comes from the preset's `template`. Returns the row. */
 export function addRow(system, listPath, template) {
   const list = getPath(system, listPath);
-  const make = FACTORIES[listPath.split(".").at(-1)];
+  const make = /^subjects\.\d+\.counters$/.test(listPath) ? newSubjectCounter : FACTORIES[listPath.split(".").at(-1)];
   if (!Array.isArray(list) || !make) throw new Error(`Not a list: ${listPath}`);
   const row = make(system, template);
   list.push(row);
@@ -332,7 +346,7 @@ export function setEffectAmount(system, path, amount) {
 }
 
 /** Number fields that may be blank. A blank in any other number field keeps the old value. */
-const BLANK_ALLOWED = new Set(["counters.*.min", "counters.*.max", "rounds.max", "subjects.*.goal", "subjects.*.min", "subjects.*.max"]);
+const BLANK_ALLOWED = new Set(["counters.*.min", "counters.*.max", "rounds.max", "subjects.*.counters.*.min", "subjects.*.counters.*.max"]);
 
 const isPlainObject = (value) => value !== null && typeof value === "object" && !Array.isArray(value);
 
@@ -391,7 +405,7 @@ export function pickFields(form, names) {
   return picked;
 }
 
-/** A value kept inside a track's limits: a counter's, or a subject's points (spec 14.8). A track whose minimum is above its maximum has no working limits. */
+/** A value kept inside a counter's limits (spec 14.8). A track whose minimum is above its maximum has no working limits. */
 export function limitTrack({ min = null, max = null }, value) {
   if (min !== null && max !== null && min > max) return value;
   if (min !== null && value < min) return min;
@@ -402,16 +416,12 @@ export function limitTrack({ min = null, max = null }, value) {
 const limitsBroken = ({ min = null, max = null }) => min !== null && max !== null && min > max;
 const limitEach = (track, values) => Object.fromEntries(Object.entries(values ?? {}).map(([key, value]) => [key, limitTrack(track, value)]));
 
-/** Bring counter values and subject points inside their limits, per PC too. Returns the tracks whose minimum is above their maximum; those are left alone. */
+/** Bring every counter's values inside its limits, per PC too, a subject's counters included. Returns the counters whose minimum is above their maximum; those are left alone. */
 export function clampTracks(system) {
   const invalid = [];
-  for (const counter of system.counters) {
+  for (const counter of allCounters(system)) {
     if (limitsBroken(counter)) invalid.push(counter);
     else Object.assign(counter, { value: limitTrack(counter, counter.value), valueBy: limitEach(counter, counter.valueBy) });
-  }
-  for (const subject of system.subjects) {
-    if (limitsBroken(subject)) invalid.push(subject);
-    else Object.assign(subject, { points: limitTrack(subject, subject.points), pointsBy: limitEach(subject, subject.pointsBy) });
   }
   return invalid;
 }
@@ -420,10 +430,10 @@ export function clampTracks(system) {
 export function searchText(system) {
   const parts = [system.premise, system.gmNotes];
   const thresholds = (rows) => rows.flatMap((row) => [row.playerText, row.gmText]);
-  for (const counter of system.counters) parts.push(counter.name, ...thresholds(counter.thresholds));
+  for (const counter of allCounters(system)) parts.push(counter.name, ...thresholds(counter.thresholds));
   for (const modifier of system.modifiers ?? []) parts.push(modifier.name, modifier.category, modifier.playerText, modifier.gmText, ...modifier.effects.map((row) => row.note));
   for (const subject of system.subjects) {
-    parts.push(subject.name, subject.statLine, ...thresholds(subject.thresholds));
+    parts.push(subject.name, subject.statLine);
     for (const action of subject.actions) parts.push(action.name, action.description);
     for (const modifier of subject.modifiers) parts.push(modifier.name, modifier.category, modifier.playerText, modifier.gmText, ...modifier.effects.map((row) => row.note));
   }

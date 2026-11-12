@@ -72,7 +72,50 @@
   <button type="button" class="icon fa-solid fa-arrow-up" data-action="moveSubject" data-subject="{{id}}" data-delta="-1" aria-label="{{localize "SSM.Challenge.MoveUp"}}" data-tooltip="SSM.Challenge.MoveUp" {{#unless canMoveUp}}disabled{{/unless}}></button>
   <button type="button" class="icon fa-solid fa-arrow-down" data-action="moveSubject" data-subject="{{id}}" data-delta="1" aria-label="{{localize "SSM.Challenge.MoveDown"}}" data-tooltip="SSM.Challenge.MoveDown" {{#unless canMoveDown}}disabled{{/unless}}></button>
 </span>{{/inline}}
-{{#*inline "ssmComplete"}}<button type="button" class="ssm-tag ssm-state ssm-reached {{#unless complete}}ssm-unreached{{/unless}}" data-action="toggleComplete" data-subject="{{subjectId}}"{{#if actorId}} data-actor="{{actorId}}"{{/if}} aria-pressed="{{complete}}" data-tooltip="{{tooltip}}" {{#unless root.canChange}}disabled{{/unless}}>{{#if complete}}<i class="fa-solid fa-check" aria-hidden="true"></i> {{/if}}{{localize "SSM.Challenge.Complete"}}</button>{{/inline}}
+{{#*inline "ssmComplete"}}<button type="button" class="ssm-tag ssm-state ssm-reached {{#unless complete}}ssm-unreached{{/unless}}" data-action="toggleComplete" data-subject="{{id}}" aria-pressed="{{complete}}" data-tooltip="{{completeTooltip}}" {{#unless root.canChange}}disabled{{/unless}}>{{#if complete}}<i class="fa-solid fa-check" aria-hidden="true"></i> {{/if}}{{localize "SSM.Challenge.Complete"}}</button>{{/inline}}
+{{!-- A counter in Run mode, the challenge's or a subject's. `root` is the run context. --}}
+{{#*inline "ssmCounterRun"}}<div class="ssm-counter {{#unless revealed}}ssm-hidden{{/unless}}">
+      <div class="ssm-row ssm-entry">
+        {{> ssmEye root=root}}
+        <span class="ssm-grow">{{label}}{{#if rangeLabel}} <span class="ssm-muted">{{rangeLabel}}</span>{{/if}}{{#if perRoundLabel}} <span class="ssm-tag">{{perRoundLabel}}</span>{{/if}}{{#if perPc}} <strong class="ssm-pc-total">{{totalLabel}}</strong>{{/if}}</span>
+        {{#unless perPc}}
+        <button type="button" class="icon fa-solid fa-minus" data-action="changeCounter" data-id="{{id}}" data-delta="-1" aria-label="{{localize "SSM.Challenge.RemoveFromCounter"}}" {{#unless canRemove}}disabled{{/unless}}></button>
+        <strong class="ssm-point-total">{{value}}</strong>
+        <button type="button" class="icon fa-solid fa-plus" data-action="changeCounter" data-id="{{id}}" data-delta="1" aria-label="{{localize "SSM.Challenge.AddToCounter"}}" {{#unless canAdd}}disabled{{/unless}}></button>
+        {{/unless}}
+      </div>
+      {{#each pcs}}
+      <div class="ssm-row ssm-entry ssm-pc-row">
+        <span class="ssm-pc-name">{{name}}</span>
+        <input type="text" class="ssm-grow ssm-pc-note" value="{{note}}" data-pc-note data-counter="{{../id}}" data-actor="{{id}}" placeholder="{{localize "SSM.Challenge.PcNotePlaceholder"}}" aria-label="{{localize "SSM.Challenge.PcNote"}}" data-tooltip="SSM.Challenge.PcNoteHint">
+        <button type="button" class="icon fa-solid fa-minus" data-action="changeCounter" data-id="{{../id}}" data-actor="{{id}}" data-delta="-1" aria-label="{{localize "SSM.Challenge.RemoveFromCounter"}}" {{#unless canRemove}}disabled{{/unless}}></button>
+        <strong class="ssm-point-total">{{value}}</strong>
+        <button type="button" class="icon fa-solid fa-plus" data-action="changeCounter" data-id="{{../id}}" data-actor="{{id}}" data-delta="1" aria-label="{{localize "SSM.Challenge.AddToCounter"}}" {{#unless canAdd}}disabled{{/unless}}></button>
+      </div>
+      {{/each}}
+      {{#each thresholds}}{{> ssmThresholdRun root=../root}}{{/each}}
+      </div>{{/inline}}
+{{!-- A counter in Edit mode, the challenge's or a subject's. Only a challenge counter has a change each round. --}}
+{{#*inline "ssmCounterEdit"}}<div class="ssm-card ssm-counter-edit">
+        <div class="ssm-row">
+          <label class="grow">{{localize "SSM.Challenge.Name"}}<input type="text" name="{{path}}.name" value="{{name}}"></label>
+          <label>{{localize "SSM.Challenge.Value"}}<input type="number" step="1" name="{{path}}.value" value="{{value}}"></label>
+          <label>{{localize "SSM.Challenge.DirectionLabel"}}<select name="{{path}}.direction">{{selectOptions @root.choices.directions selected=direction}}</select></label>
+          {{#unless perPc}}<label data-tooltip="SSM.Challenge.DisplayHint">{{localize "SSM.Challenge.DisplayLabel"}}<select name="{{path}}.display">{{selectOptions @root.choices.displays selected=display}}</select></label>{{/unless}}
+          <label class="check"><input type="checkbox" name="{{path}}.revealed" {{checked revealed}}>{{localize "SSM.Challenge.Revealed"}}</label>
+          <button type="button" class="icon fa-solid fa-trash" data-action="removeRow" data-path="{{path}}" aria-label="{{localize "SSM.Challenge.Remove"}}"></button>
+        </div>
+        <div class="ssm-row">
+          <label>{{localize "SSM.Challenge.Minimum"}}<input type="number" step="1" name="{{path}}.min" value="{{min}}" placeholder="{{localize "SSM.Challenge.NoLimit"}}"></label>
+          <label>{{localize "SSM.Challenge.Maximum"}}<input type="number" step="1" name="{{path}}.max" value="{{max}}" placeholder="{{localize "SSM.Challenge.NoLimit"}}"></label>
+          {{#unless perPc}}{{#unless onSubject}}<label data-tooltip="SSM.Challenge.PerRoundHint">{{localize "SSM.Challenge.PerRound"}}<input type="number" step="1" name="{{path}}.perRound" value="{{perRound}}"></label>{{/unless}}{{/unless}}
+          <label class="check" data-tooltip="SSM.Challenge.PerPcHint"><input type="checkbox" name="{{path}}.perPc" {{checked perPc}}>{{localize "SSM.Challenge.PerPc"}}</label>
+        </div>
+        {{#unless perPc}}
+        {{#each thresholds}}{{> ssmThresholdEdit}}{{/each}}
+        <button type="button" class="ssm-add" data-action="addRow" data-list="{{path}}.thresholds"><i class="fa-solid fa-plus" inert></i> {{localize "SSM.Challenge.AddThreshold"}}</button>
+        {{/unless}}
+      </div>{{/inline}}
 <div class="ssm-layout">
   <header class="ssm-head">
     <div class="ssm-row ssm-head-row">
@@ -127,34 +170,12 @@
       <header class="ssm-block-head">
         <button type="button" class="icon fa-solid {{#if subject.collapsed}}fa-chevron-right{{else}}fa-chevron-down{{/if}} ssm-collapse" data-action="toggleCollapse" data-subject="{{subject.id}}" aria-expanded="{{#if subject.collapsed}}false{{else}}true{{/if}}" aria-label="{{localize "SSM.Challenge.Collapse"}}" data-tooltip="SSM.Challenge.Collapse"></button>
         {{> ssmEye subject root=..}}
-        <h3>{{subject.name}}{{#if subject.rangeLabel}} <span class="ssm-muted">{{subject.rangeLabel}}</span>{{/if}}</h3>
-        {{#if subject.hasComplete}}{{> ssmComplete subject subjectId=subject.id root=..}}{{/if}}
-        {{#if subject.tracksPoints}}{{#unless subject.individual}}
-        <span class="ssm-stat">
-          <span class="ssm-stat-label">{{../pointsName}}</span>
-          <button type="button" class="icon fa-solid fa-minus" data-action="changePoints" data-subject="{{subject.id}}" data-delta="-1" aria-label="{{localize "SSM.Challenge.RemovePoint"}}" data-tooltip="SSM.Challenge.RemovePoint" {{#unless ../canRun}}disabled{{/unless}}></button>
-          <strong class="ssm-point-total">{{subject.points}}</strong>
-          <button type="button" class="icon fa-solid fa-plus" data-action="changePoints" data-subject="{{subject.id}}" data-delta="1" aria-label="{{localize "SSM.Challenge.AddPoint"}}" data-tooltip="SSM.Challenge.AddPoint" {{#unless ../canRun}}disabled{{/unless}}></button>
-          {{#if subject.goalLabel}}<span class="ssm-stat-label">{{subject.goalLabel}}</span>{{/if}}
-        </span>
-        {{/unless}}{{/if}}
+        <h3>{{subject.name}}</h3>
+        {{> ssmComplete subject root=..}}
         {{> ssmOrder subject}}
       </header>
       {{#if subject.statLine}}<div class="ssm-stat-line ssm-gm-line" data-visibility="gm">{{subject.statLine}}</div>{{/if}}
-      {{#if subject.individual}}{{#if subject.tracksPoints}}
-      <div class="ssm-subject-group ssm-pcs">
-        <h4>{{../pointsName}}{{#if subject.goalLabel}} <span class="ssm-muted">{{subject.goalLabel}}</span>{{/if}}</h4>
-        {{#each subject.pcs}}
-        <div class="ssm-row ssm-entry ssm-pc-row">
-          <span class="ssm-grow">{{name}}</span>
-          {{> ssmComplete subjectId=subject.id actorId=id root=../..}}
-          <button type="button" class="icon fa-solid fa-minus" data-action="changePoints" data-subject="{{subject.id}}" data-actor="{{id}}" data-delta="-1" aria-label="{{localize "SSM.Challenge.RemovePoint"}}" {{#unless ../../canRun}}disabled{{/unless}}></button>
-          <strong class="ssm-point-total">{{points}}</strong>
-          <button type="button" class="icon fa-solid fa-plus" data-action="changePoints" data-subject="{{subject.id}}" data-actor="{{id}}" data-delta="1" aria-label="{{localize "SSM.Challenge.AddPoint"}}" {{#unless ../../canRun}}disabled{{/unless}}></button>
-        </div>
-        {{else}}<p class="ssm-muted">{{localize "SSM.Challenge.NoPCs"}}</p>{{/each}}
-      </div>
-      {{/if}}{{/if}}
+      {{#if subject.counters.length}}<div class="ssm-subject-counters">{{#each subject.counters}}{{> ssmCounterRun root=../..}}{{/each}}</div>{{/if}}
       {{#if subject.actions.length}}
       <div class="ssm-section">
         <h4 class="ssm-section-title">{{localize "SSM.Challenge.Actions"}}</h4>
@@ -170,12 +191,6 @@
         {{/each}}
       </div>
       {{/if}}
-      {{#if subject.thresholds.length}}
-      <div class="ssm-section">
-        <h4 class="ssm-section-title">{{localize "SSM.Challenge.Thresholds"}}</h4>
-        {{#each subject.thresholds}}{{> ssmThresholdRun root=../..}}{{/each}}
-      </div>
-      {{/if}}
       {{#if subject.modifierGroups.length}}
       <div class="ssm-section">
         <h4 class="ssm-section-title">{{localize "SSM.Challenge.Modifiers"}}</h4>
@@ -188,29 +203,7 @@
     {{#if counters.length}}
     <section class="ssm-block ssm-counters">
       <header class="ssm-block-head"><h3>{{localize "SSM.Challenge.Counters"}}</h3></header>
-      {{#each counters}}
-      <div class="ssm-counter {{#unless revealed}}ssm-hidden{{/unless}}">
-      <div class="ssm-row ssm-entry">
-        {{> ssmEye root=..}}
-        <span class="ssm-grow">{{label}}{{#if rangeLabel}} <span class="ssm-muted">{{rangeLabel}}</span>{{/if}}{{#if perRoundLabel}} <span class="ssm-tag">{{perRoundLabel}}</span>{{/if}}{{#if perPc}} <strong class="ssm-pc-total">{{totalLabel}}</strong>{{/if}}</span>
-        {{#unless perPc}}
-        <button type="button" class="icon fa-solid fa-minus" data-action="changeCounter" data-id="{{id}}" data-delta="-1" aria-label="{{localize "SSM.Challenge.RemoveFromCounter"}}" {{#unless canRemove}}disabled{{/unless}}></button>
-        <strong class="ssm-point-total">{{value}}</strong>
-        <button type="button" class="icon fa-solid fa-plus" data-action="changeCounter" data-id="{{id}}" data-delta="1" aria-label="{{localize "SSM.Challenge.AddToCounter"}}" {{#unless canAdd}}disabled{{/unless}}></button>
-        {{/unless}}
-      </div>
-      {{#each pcs}}
-      <div class="ssm-row ssm-entry ssm-pc-row">
-        <span class="ssm-pc-name">{{name}}</span>
-        <input type="text" class="ssm-grow ssm-pc-note" value="{{note}}" data-pc-note data-counter="{{../id}}" data-actor="{{id}}" placeholder="{{localize "SSM.Challenge.PcNotePlaceholder"}}" aria-label="{{localize "SSM.Challenge.PcNote"}}" data-tooltip="SSM.Challenge.PcNoteHint">
-        <button type="button" class="icon fa-solid fa-minus" data-action="changeCounter" data-id="{{../id}}" data-actor="{{id}}" data-delta="-1" aria-label="{{localize "SSM.Challenge.RemoveFromCounter"}}" {{#unless canRemove}}disabled{{/unless}}></button>
-        <strong class="ssm-point-total">{{value}}</strong>
-        <button type="button" class="icon fa-solid fa-plus" data-action="changeCounter" data-id="{{../id}}" data-actor="{{id}}" data-delta="1" aria-label="{{localize "SSM.Challenge.AddToCounter"}}" {{#unless canAdd}}disabled{{/unless}}></button>
-      </div>
-      {{/each}}
-      {{#each thresholds}}{{> ssmThresholdRun root=../..}}{{/each}}
-      </div>
-      {{/each}}
+      {{#each counters}}{{> ssmCounterRun root=..}}{{/each}}
     </section>
     {{/if}}
     {{/with}}
@@ -259,28 +252,7 @@
 
     <fieldset>
       <legend>{{localize "SSM.Challenge.Counters"}}</legend>
-      {{#each counters}}
-      <div class="ssm-card ssm-counter-edit">
-        <div class="ssm-row">
-          <label class="grow">{{localize "SSM.Challenge.Name"}}<input type="text" name="{{path}}.name" value="{{name}}"></label>
-          <label>{{localize "SSM.Challenge.Value"}}<input type="number" step="1" name="{{path}}.value" value="{{value}}"></label>
-          <label>{{localize "SSM.Challenge.DirectionLabel"}}<select name="{{path}}.direction">{{selectOptions @root.choices.directions selected=direction}}</select></label>
-          {{#unless perPc}}<label data-tooltip="SSM.Challenge.DisplayHint">{{localize "SSM.Challenge.DisplayLabel"}}<select name="{{path}}.display">{{selectOptions @root.choices.displays selected=display}}</select></label>{{/unless}}
-          <label class="check"><input type="checkbox" name="{{path}}.revealed" {{checked revealed}}>{{localize "SSM.Challenge.Revealed"}}</label>
-          <button type="button" class="icon fa-solid fa-trash" data-action="removeRow" data-path="{{path}}" aria-label="{{localize "SSM.Challenge.Remove"}}"></button>
-        </div>
-        <div class="ssm-row">
-          <label>{{localize "SSM.Challenge.Minimum"}}<input type="number" step="1" name="{{path}}.min" value="{{min}}"></label>
-          <label>{{localize "SSM.Challenge.Maximum"}}<input type="number" step="1" name="{{path}}.max" value="{{max}}"></label>
-          {{#unless perPc}}<label data-tooltip="SSM.Challenge.PerRoundHint">{{localize "SSM.Challenge.PerRound"}}<input type="number" step="1" name="{{path}}.perRound" value="{{perRound}}"></label>{{/unless}}
-          <label class="check" data-tooltip="SSM.Challenge.PerPcHint"><input type="checkbox" name="{{path}}.perPc" {{checked perPc}}>{{localize "SSM.Challenge.PerPc"}}</label>
-        </div>
-        {{#unless perPc}}
-        {{#each thresholds}}{{> ssmThresholdEdit}}{{/each}}
-        <button type="button" class="ssm-add" data-action="addRow" data-list="{{path}}.thresholds"><i class="fa-solid fa-plus" inert></i> {{localize "SSM.Challenge.AddThreshold"}}</button>
-        {{/unless}}
-      </div>
-      {{/each}}
+      {{#each counters}}{{> ssmCounterEdit}}{{/each}}
       <button type="button" class="ssm-add" data-action="addRow" data-list="counters"><i class="fa-solid fa-plus" inert></i> {{localize "SSM.Challenge.AddCounter"}}</button>
     </fieldset>
 
@@ -298,15 +270,12 @@
         {{> ssmOrder subject}}
         {{#if subject.canRemove}}<button type="button" class="icon fa-solid fa-trash" data-action="removeRow" data-path="{{subject.path}}" aria-label="{{@root.removeSubjectLabel}}" data-tooltip-text="{{@root.removeSubjectLabel}}"></button>{{/if}}
       </div>
-      <div class="ssm-row">
-        <label class="check" data-tooltip="SSM.Challenge.TracksPointsHint"><input type="checkbox" name="{{subject.path}}.tracksPoints" {{checked subject.tracksPoints}}>{{localize "SSM.Challenge.TracksPoints"}}</label>
-        <label class="check" data-tooltip="SSM.Challenge.IndividualHint"><input type="checkbox" name="{{subject.path}}.individual" {{checked subject.individual}}>{{localize "SSM.Challenge.Individual"}}</label>
-        <label>{{#if subject.individual}}{{localize "SSM.Challenge.StartPoints"}}{{else}}{{@root.pointsName}}{{/if}}<input type="number" step="1" name="{{subject.path}}.points" value="{{subject.points}}"></label>
-        <label>{{localize "SSM.Challenge.DirectionLabel"}}<select name="{{subject.path}}.direction">{{selectOptions @root.choices.directions selected=subject.direction}}</select></label>
-        <label>{{localize "SSM.Challenge.Minimum"}}<input type="number" step="1" name="{{subject.path}}.min" value="{{subject.min}}" placeholder="{{localize "SSM.Challenge.NoLimit"}}"></label>
-        <label>{{localize "SSM.Challenge.Maximum"}}<input type="number" step="1" name="{{subject.path}}.max" value="{{subject.max}}" placeholder="{{localize "SSM.Challenge.NoLimit"}}"></label>
-        {{#unless subject.bothWays}}<label data-tooltip="SSM.Challenge.GoalHint">{{localize "SSM.Challenge.Goal"}}<input type="number" step="1" name="{{subject.path}}.goal" value="{{subject.goal}}" placeholder="{{localize "SSM.Challenge.NoGoal"}}"></label>{{/unless}}
-      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>{{localize "SSM.Challenge.Counters"}}</legend>
+      {{#each subject.counters}}{{> ssmCounterEdit}}{{/each}}
+      <button type="button" class="ssm-add" data-action="addRow" data-list="{{subject.path}}.counters"><i class="fa-solid fa-plus" inert></i> {{localize "SSM.Challenge.AddCounter"}}</button>
     </fieldset>
 
     <h3 class="ssm-section-head">{{localize "SSM.Challenge.Actions"}}</h3>
@@ -349,14 +318,6 @@
     </div>
     {{/each}}
     <button type="button" class="ssm-add ssm-add-action" data-action="addRow" data-list="{{subject.path}}.actions"><i class="fa-solid fa-plus" inert></i> {{localize "SSM.Challenge.AddAction"}}</button>
-
-    {{#unless subject.individual}}
-    <fieldset>
-      <legend>{{localize "SSM.Challenge.Thresholds"}}</legend>
-      {{#each subject.thresholds}}{{> ssmThresholdEdit}}{{/each}}
-      <button type="button" class="ssm-add" data-action="addRow" data-list="{{subject.path}}.thresholds"><i class="fa-solid fa-plus" inert></i> {{localize "SSM.Challenge.AddThreshold"}}</button>
-    </fieldset>
-    {{/unless}}
 
     <h3 class="ssm-section-head">{{localize "SSM.Challenge.Modifiers"}}</h3>
     {{> ssmEditModGroups groups=subject.modifierGroups list=(concat subject.path ".modifiers")}}

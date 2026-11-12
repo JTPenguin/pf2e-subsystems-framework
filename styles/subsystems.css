@@ -331,6 +331,10 @@ fieldset:has(> .ssm-checks-wrap) { min-width: 0; }
 .ssm-panel-empty { margin: 0; font-size: var(--font-size-11, 0.7rem); font-style: italic; opacity: 0.55; }
 .ssm-panel-tracks { display: flex; flex-wrap: wrap; gap: 1rem; margin-top: 0.3rem; padding-top: 0.3rem; border-top: 1px solid rgba(184, 160, 106, 0.35); }
 .ssm-panel-track { flex: 1 1 12rem; min-width: 0; }
+/* A subject's counters, in its column under its name: no rule above them, and one per row, as the column is narrow. */
+.ssm-panel-subject-counters .ssm-panel-tracks { margin-top: 0.15rem; padding-top: 0; border-top: none; gap: 0.15rem 1rem; }
+.ssm-panel-subject-counters .ssm-panel-track { flex-basis: 100%; }
+.ssm-panel-subject-counters .ssm-panel-subject-name { font-weight: normal; }
 
 /* Subsystems tab: the running and on-panel marks, and the Running filter. */
 #subsystems .ssm-run-mark { flex: none; align-self: center; width: 1.1rem; margin-right: 0.3rem; text-align: center; font-size: var(--font-size-11, 0.7rem); color: var(--color-text-secondary, inherit); }

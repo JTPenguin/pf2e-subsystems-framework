@@ -48,25 +48,36 @@ const actionFields = () => ({
   checks: list({ id: rowId(), skill: text(), lore: text(), dc: int(15, { min: 0 }), revealed: flag(), decoy: flag(), always: flag() }),
 });
 
+/** One shape for the challenge's counters and a subject's (spec 14.13). */
+const counterFields = () => ({
+  id: rowId(),
+  name: text(),
+  value: int(),
+  direction: choice(DIRECTIONS, "up"),
+  min: optionalInt(),
+  max: optionalInt(),
+  // Added to the value each time the round advances. Only a challenge counter offers it.
+  perRound: int(),
+  // One value per party PC, by actor id, each starting from `value` (spec 14.8).
+  perPc: flag(),
+  valueBy: new ObjectField({ required: true, initial: {} }),
+  // A GM-only note per PC, by actor id, such as which Edge Points are duds.
+  noteBy: new ObjectField({ required: true, initial: {} }),
+  thresholds: list(thresholdFields()),
+  // How the panel draws it (spec 14.12).
+  display: choice(COUNTER_DISPLAYS, "auto"),
+  revealed: flag(),
+});
+
 const subjectFields = () => ({
   id: rowId(),
   name: text(),
   statLine: text(),
   revealed: flag(),
-  tracksPoints: flag(true),
-  individual: flag(),
-  points: int(),
-  // An individual subject's points, by actor id.
-  pointsBy: new ObjectField({ required: true, initial: {} }),
-  direction: choice(DIRECTIONS, "up"),
-  // Optional limits on the points, for each PC's points on an individual subject too.
-  min: optionalInt(),
-  max: optionalInt(),
-  goal: optionalInt(),
+  // Set and cleared by the GM only (spec 14.13).
   complete: flag(),
-  // The PCs who have reached an individual subject's goal, by actor id.
-  completeBy: ids(),
-  thresholds: list(thresholdFields()),
+  // Zero or more, each a full counter. A subject with none holds only actions.
+  counters: list(counterFields()),
   modifiers: list(modifierFields()),
   actions: list(actionFields()),
 });
@@ -88,25 +99,7 @@ export class ChallengeModel extends foundry.abstract.TypeDataModel {
       // Challenge-level modifier entries (spec 14.7).
       modifiers: list(modifierFields()),
       subjects: list(subjectFields()),
-      counters: list({
-        id: rowId(),
-        name: text(),
-        value: int(),
-        direction: choice(DIRECTIONS, "up"),
-        min: optionalInt(),
-        max: optionalInt(),
-        // Added to the value each time the round advances.
-        perRound: int(),
-        // One value per party PC, by actor id, each starting from `value` (spec 14.8).
-        perPc: flag(),
-        valueBy: new ObjectField({ required: true, initial: {} }),
-        // A GM-only note per PC, by actor id, such as which Edge Points are duds.
-        noteBy: new ObjectField({ required: true, initial: {} }),
-        thresholds: list(thresholdFields()),
-        // How the panel draws it (spec 14.12).
-        display: choice(COUNTER_DISPLAYS, "auto"),
-        revealed: flag(),
-      }),
+      counters: list(counterFields()),
       // Off: revealing a subject hides the others, so the panel shows one at a time (spec 14.12).
       multipleSubjects: flag(true),
       run: new SchemaField({

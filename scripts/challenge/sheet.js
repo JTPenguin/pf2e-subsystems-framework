@@ -4,7 +4,7 @@ import { hidePanel, panelState, takePanel } from "../panel/activation.js";
 import { partyPCs } from "../party.js";
 import { actionName, skillKeyLabel, skillLabel, subjectName } from "./skill-label.js";
 import { announceTriggers, writeChallenge } from "./state.js";
-import { advanceRound, canAdvanceRound, canUndoRound, changeCounter, changePoints, counterValueOf, currentDc, cycleThresholdReveal, endRun, isComplete, pointsOf, resetRun, restoreModifier, startRun, toggleActed, toggleComplete, toggleModifier, toggleReached, toggleReveal, undoRound } from "./run.js";
+import { advanceRound, canAdvanceRound, canUndoRound, changeCounter, counterValueOf, currentDc, cycleThresholdReveal, endRun, resetRun, restoreModifier, startRun, toggleActed, toggleComplete, toggleModifier, toggleReached, toggleReveal, undoRound } from "./run.js";
 import { LINK_ROLL_ID } from "../roll-option.js";
 import { rollCheck, rollTarget } from "./roll.js";
 import { addRow, applyForm, COUNTER_DISPLAYS, setCounterNote, subjectTemplates, BOTH_WAYS, clampTracks, DIRECTIONS, EDITABLE, groupByCategory, isAlwaysShown, isDecoyCheck, limitTrack, LORE, moveSubject, PERCEPTION, nextThresholdReveal, pickFields, removeRow, SAVES, THRESHOLD_REVEALS } from "./data.js";
@@ -61,7 +61,6 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
       resetRun: ChallengeSheet.#onResetRun,
       nextRound: ChallengeSheet.#onNextRound,
       previousRound: ChallengeSheet.#onPreviousRound,
-      changePoints: ChallengeSheet.#onChangePoints,
       changeCounter: ChallengeSheet.#onChangeCounter,
       toggleModifier: ChallengeSheet.#onToggleModifier,
       restoreModifier: ChallengeSheet.#onRestoreModifier,
@@ -221,6 +220,8 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
     this.#actionHtml = actionHtml;
     // A both-ways track's Reached follows its value, so its checkbox is left out.
     const thresholds = (rows, path, direction) => rows.map((row, i) => ({ ...row, path: `${path}.thresholds.${i}`, followsValue: direction === BOTH_WAYS }));
+    // A subject's counter has no change each round (spec 14.13).
+    const counterEdit = (counter, path, onSubject) => ({ ...counter, path, onSubject, thresholds: thresholds(counter.thresholds, path, counter.direction) });
     const subjectView = (subject, n) => {
       const path = `subjects.${n}`;
       return {
@@ -230,7 +231,7 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
         canRemove: system.subjects.length > 1,
         canMoveUp: n > 0,
         canMoveDown: n < system.subjects.length - 1,
-        bothWays: subject.direction === BOTH_WAYS,
+        counters: subject.counters.map((counter, i) => counterEdit(counter, `${path}.counters.${i}`, true)),
         actions: subject.actions.map((action, a) => ({
           ...action,
           path: `${path}.actions.${a}`,
@@ -238,7 +239,6 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
           descriptionHtml: actionHtml.get(action.id),
           checks: action.checks.map((row, i) => ({ ...row, path: `${path}.actions.${a}.checks.${i}`, isLore: row.skill === LORE })),
         })),
-        thresholds: thresholds(subject.thresholds, path, subject.direction),
         // Read-only here: each one is edited in its own window. The suggested categories show even when empty, as each holds an Add button.
         modifierGroups: modifierGroups(system, subject.modifiers.map((modifier, i) => ({ ...this.#modifierView(system, subject, modifier, false), canEdit: true, path: `${path}.modifiers.${i}` })), true),
       };
@@ -260,11 +260,7 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
       removeSubjectLabel: game.i18n.format("SSM.Challenge.RemoveSubject", { subject: subjectLabel }),
       premiseHtml: await enrich(system.premise),
       gmNotesHtml: await enrich(system.gmNotes),
-      counters: system.counters.map((counter, i) => ({
-        ...counter,
-        path: `counters.${i}`,
-        thresholds: thresholds(counter.thresholds, `counters.${i}`, counter.direction),
-      })),
+      counters: system.counters.map((counter, i) => counterEdit(counter, `counters.${i}`, false)),
       challengeModifierGroups,
       subjects,
       activeSubject: subjects.find((subject) => subject.id === this.#tab) ?? null,
@@ -317,7 +313,6 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
     const party = partyPCs();
     const partyIds = party.map((actor) => actor.id);
     const subjectLabel = system.subjectLabel || loc("SSM.Challenge.Subject");
-    const pointsName = system.pointsName || loc("SSM.Challenge.Points");
     const signed = (n) => (n > 0 ? `+${n}` : `${n}`.replace("-", "−"));
     const rollRows = (subject, action) => action.checks.map((row) => {
       const dc = currentDc(system, subject, row);
@@ -344,7 +339,24 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
       revealTooltip: game.i18n.format("SSM.Challenge.ThresholdReveal.Tooltip", { now: loc(`SSM.Challenge.ThresholdReveal.${row.reveal}`), next: loc(`SSM.Challenge.ThresholdReveal.${nextThresholdReveal(row.reveal)}`) }),
       reachedTooltip: loc(direction === BOTH_WAYS ? "SSM.Challenge.ReachedFollows" : row.reached ? "SSM.Challenge.ReachedClear" : "SSM.Challenge.ReachedSet"),
     }));
-    const completeTag = (complete) => ({ complete, tooltip: loc(complete ? "SSM.Challenge.CompleteClear" : "SSM.Challenge.CompleteSet") });
+    // A counter, the challenge's or a subject's, with its + and − and its thresholds. A per-PC counter lists each party PC, and anyone else who has a value, with the party total by its name (spec 14.8).
+    const counterRun = (counter) => {
+      const canMove = (value) => ({ canAdd: canChange && limitTrack(counter, value + 1) !== value, canRemove: canChange && limitTrack(counter, value - 1) !== value });
+      const pcs = !counter.perPc ? [] : [...new Set([...partyIds, ...Object.keys(counter.valueBy ?? {})])].map((id) => {
+        const value = counterValueOf(counter, id);
+        return { id, name: game.actors.get(id)?.name ?? id, value, note: counter.noteBy?.[id] ?? "", ...canMove(value) };
+      });
+      return {
+        ...counter,
+        label: counter.name || loc("SSM.Challenge.UnnamedCounter"),
+        rangeLabel: rangeLabel(counter),
+        perRoundLabel: counter.perRound && !counter.perPc ? game.i18n.format("SSM.Challenge.PerRoundOf", { amount: signed(counter.perRound) }) : "",
+        ...canMove(counter.value),
+        pcs,
+        totalLabel: counter.perPc ? game.i18n.format("SSM.Challenge.PartyTotal", { total: partyIds.reduce((sum, id) => sum + counterValueOf(counter, id), 0) }) : "",
+        thresholds: counter.perPc ? [] : thresholdRows(counter.thresholds, counter.id, counter.direction),
+      };
+    };
     return {
       canRun,
       canChange,
@@ -362,7 +374,6 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
         return { id, name: actor?.name ?? id, acted: system.run.acted.includes(id) };
       }),
       actors: actors.map((actor) => ({ id: actor.id, name: actor.name, selected: actor === selected })),
-      pointsName,
       // The challenge's own entries, in a box above the subjects (spec 14.7).
       challengeModifierGroups: modifierGroups(system, system.modifiers.map((row) => this.#modifierView(system, null, row, canChange))),
       subjects: system.subjects.map((subject, n) => ({
@@ -371,20 +382,12 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
         canMoveUp: n > 0,
         canMoveDown: n < system.subjects.length - 1,
         collapsed: isCollapsed(subject.id),
-        rangeLabel: rangeLabel(subject),
         statLine: subject.statLine,
         revealed: subject.revealed,
-        tracksPoints: subject.tracksPoints,
-        individual: subject.individual,
-        points: subject.points,
-        // A both-ways track has no goal.
-        goalLabel: subject.goal === null || subject.direction === BOTH_WAYS ? "" : game.i18n.format("SSM.Challenge.GoalOf", { goal: subject.goal }),
-        hasComplete: (subject.goal !== null && subject.direction !== BOTH_WAYS) || subject.complete,
-        ...completeTag(isComplete(subject, partyIds)),
-        // An individual subject lists each party PC, and anyone else who has points there.
-        pcs: !subject.individual ? [] : [...new Set([...partyIds, ...Object.keys(subject.pointsBy ?? {}), ...subject.completeBy])].map((id) => ({
-          id, name: game.actors.get(id)?.name ?? id, points: pointsOf(subject, id), ...completeTag(subject.completeBy.includes(id)),
-        })),
+        // Set and cleared by the GM only (spec 14.13).
+        complete: subject.complete,
+        completeTooltip: loc(subject.complete ? "SSM.Challenge.CompleteClear" : "SSM.Challenge.CompleteSet"),
+        counters: subject.counters.map(counterRun),
         actions: subject.actions.map((action) => ({
           id: action.id,
           label: actionName(action),
@@ -393,27 +396,9 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
           secret: action.secret,
           checks: rollRows(subject, action),
         })).filter((action) => action.checks.length),
-        thresholds: subject.individual ? [] : thresholdRows(subject.thresholds, subject.id, subject.direction),
         modifierGroups: modifierGroups(system, subject.modifiers.map((row) => this.#modifierView(system, subject, row, canChange))),
       })),
-      counters: system.counters.map((counter) => {
-        const canMove = (value) => ({ canAdd: canChange && limitTrack(counter, value + 1) !== value, canRemove: canChange && limitTrack(counter, value - 1) !== value });
-        // A per-PC counter lists each party PC, and anyone else who has a value, with the party total by its name (spec 14.8).
-        const pcs = !counter.perPc ? [] : [...new Set([...partyIds, ...Object.keys(counter.valueBy ?? {})])].map((id) => {
-          const value = counterValueOf(counter, id);
-          return { id, name: game.actors.get(id)?.name ?? id, value, note: counter.noteBy?.[id] ?? "", ...canMove(value) };
-        });
-        return {
-          ...counter,
-          label: counter.name || loc("SSM.Challenge.UnnamedCounter"),
-          rangeLabel: rangeLabel(counter),
-          perRoundLabel: counter.perRound && !counter.perPc ? game.i18n.format("SSM.Challenge.PerRoundOf", { amount: signed(counter.perRound) }) : "",
-          ...canMove(counter.value),
-          pcs,
-          totalLabel: counter.perPc ? game.i18n.format("SSM.Challenge.PartyTotal", { total: partyIds.reduce((sum, id) => sum + counterValueOf(counter, id), 0) }) : "",
-          thresholds: counter.perPc ? [] : thresholdRows(counter.thresholds, counter.id, counter.direction),
-        };
-      }),
+      counters: system.counters.map(counterRun),
     };
   }
 
@@ -610,10 +595,6 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
     return this.#run(undoRound);
   }
 
-  static #onChangePoints(event, target) {
-    return this.#run((system) => changePoints(system, target.dataset.subject, Number(target.dataset.delta), target.dataset.actor ?? ""));
-  }
-
   static #onChangeCounter(event, target) {
     return this.#run((system) => changeCounter(system, target.dataset.id, Number(target.dataset.delta), target.dataset.actor ?? ""));
   }
@@ -631,7 +612,7 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
   }
 
   static #onToggleComplete(event, target) {
-    return this.#run((system) => toggleComplete(system, target.dataset.subject, target.dataset.actor ?? ""));
+    return this.#run((system) => toggleComplete(system, target.dataset.subject));
   }
 
   static #onToggleReveal(event, target) {
@@ -681,7 +662,7 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
   }
 }
 
-/** A track's limits in words, a counter's or a subject's: "0 to 6", "up to 6", "at least 0", or "" with none. */
+/** A counter's limits in words: "0 to 6", "up to 6", "at least 0", or "" with none. */
 function rangeLabel({ min, max }) {
   if (min === null && max === null) return "";
   const key = min === null ? "RangeMax" : max === null ? "RangeMin" : "RangeBoth";
