@@ -113,9 +113,10 @@ button.ssm-reached { color: #4f9d5d; }
 
 /* The panel over the canvas. #ui-top ignores the pointer, so only the panel's own area takes clicks. */
 /* The height limit is 80% of #ui-top, which is the top half of the screen at any UI scale. The whole panel scrolls past that, so a redraw keeps the place. #ui-top is scaled but not narrowed, so the width limit divides the scale out. */
-.ssm-panel { pointer-events: auto; align-self: center; flex: none; box-sizing: border-box; width: fit-content; min-width: min(20rem, 100%); max-width: min(100%, calc(100% / var(--ui-scale, 1))); max-height: calc(80% - 0.5rem); overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; overflow-wrap: anywhere; margin-top: 0.5rem; padding: 0.4rem 0.75rem 0; background: rgba(20, 18, 16, 0.92); border: 1px solid #b8a06a; border-radius: 6px; color: #eee; font-size: var(--font-size-13, 0.8125rem); }
-/* Only the NPC columns set the panel's width. Long text elsewhere wraps instead of stretching it. */
-.ssm-panel-head, .ssm-panel-counters, .ssm-panel-run { contain: inline-size; }
+/* The scrollbar's room is always kept, so the panel doesn't widen when its content passes the height limit. */
+.ssm-panel { pointer-events: auto; align-self: center; flex: none; box-sizing: border-box; width: fit-content; min-width: min(20rem, 100%); max-width: min(100%, calc(100% / var(--ui-scale, 1))); max-height: calc(80% - 0.5rem); overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; scrollbar-gutter: stable; overflow-wrap: anywhere; margin-top: 0.5rem; padding: 0.4rem 0.75rem 0; background: rgba(20, 18, 16, 0.92); border: 1px solid #b8a06a; border-radius: 6px; color: #eee; font-size: var(--font-size-13, 0.8125rem); }
+/* Only the subject columns set the panel's width. Everything else wraps to it instead of stretching it, so revealing, hiding, expanding or collapsing never changes the width. */
+.ssm-panel > :not(.ssm-panel-subjects, .ssm-panel-resize), .ssm-panel-counters { contain: inline-size; }
 .ssm-panel[data-position="left"] { align-self: flex-start; }
 .ssm-panel[data-position="right"] { align-self: flex-end; }
 /* A dragged panel sits in the body, placed in code. It scales and sits in the stack as it would in #ui-middle, and keeps the same size limits: 60% of the screen wide (#ui-middle's width) and 40% high. max-content stops it shrinking near the screen edge. */
@@ -145,12 +146,18 @@ button.ssm-reached { color: #4f9d5d; }
 .ssm-panel button.ssm-panel-name { flex: 0 1 auto; width: auto; height: auto; min-height: 0; margin: 0; padding: 0; border: none; background: none; box-shadow: none; color: inherit; font-family: inherit; line-height: inherit; text-align: left; cursor: pointer; }
 .ssm-panel button.ssm-panel-name:hover, .ssm-panel button.ssm-panel-name:focus-visible { color: #e8cf8f; text-decoration: underline; }
 .ssm-panel.dragging button.ssm-panel-name { cursor: var(--cursor-grab-down, grabbing); }
-.ssm-panel-subjects { display: flex; gap: 0.75rem; margin-top: 0.5rem; }
+/*
+ * The subjects row is as wide as its columns: one 32rem column for zero or one subject, 17rem each for several, borders and padding included (Foundry sizes boxes border-box).
+ * Its own content doesn't size it, so only the number of revealed subjects changes the panel's width.
+ * Columns never go below 17rem: when the panel has less room, the row scrolls sideways and the rest of the panel stays put.
+ */
+.ssm-panel-subjects { --ssm-column: 32rem; display: flex; gap: 0.75rem; max-width: 100%; margin-top: 0.5rem; overflow-x: auto; overflow-y: hidden; scrollbar-width: thin; }
+.ssm-panel-subjects.several { --ssm-column: 17rem; }
+.ssm-panel:not(.sized) .ssm-panel-subjects { width: calc(var(--ssm-columns, 1) * var(--ssm-column) + (var(--ssm-columns, 1) - 1) * 0.75rem); }
 /* Each subject is a card: a gold border, with its name row as a faint gold header bar, edge to edge inside the card. */
-.ssm-panel-subject { flex: 1 1 0; min-width: 0; max-width: 32rem; padding: 0 0.5rem 0.35rem; border: 1px solid rgba(184, 160, 106, 0.6); border-radius: 4px; }
+.ssm-panel-subject { flex: 1 0 17rem; min-width: 0; max-width: var(--ssm-column); padding: 0 0.5rem 0.35rem; border: 1px solid rgba(184, 160, 106, 0.6); border-radius: 4px; }
 .ssm-panel-subject > .ssm-panel-points { margin: 0 -0.5rem 0.25rem; padding: 0.2rem 0.5rem; background: rgba(184, 160, 106, 0.16); border-bottom: 1px solid rgba(184, 160, 106, 0.35); border-radius: 3px 3px 0 0; }
-.ssm-panel-subjects.several .ssm-panel-subject { max-width: 17rem; }
-/* The caps above set a panel's natural width. Once the panel is resized, the columns, their bars and their cards fill whatever width it has. */
+/* The caps above set a panel's natural width. Once the panel is resized, the columns, their bars and their cards fill whatever width it has, down to 17rem a column. */
 .ssm-panel.sized .ssm-panel-subject { max-width: none; }
 .ssm-panel.sized .ssm-panel-subjects.several .ssm-panel-mod { flex-basis: 12rem; }
 .ssm-panel-subjects.several { font-size: var(--font-size-12, 0.75rem); }

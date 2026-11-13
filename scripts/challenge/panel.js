@@ -132,6 +132,8 @@ async function prepareView(view, state) {
     roundSegments: segments,
     ...roundButtons(page),
     several: view.subjects.length > 1,
+    // The panel's width follows the revealed subjects only: no subjects is as wide as one (spec 7).
+    columns: Math.max(1, view.subjects.length),
     // Challenge-level entries: a full-width strip above the subject columns, hidden with none revealed (spec 14.7).
     challengeMods: await Promise.all((view.modifiers ?? []).map((row) => modifierCard(state, row, "", decoys.has(`:${row.id}`)))),
     subjects: await Promise.all(view.subjects.map(async (subject, n) => ({

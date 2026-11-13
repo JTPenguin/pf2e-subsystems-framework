@@ -55,7 +55,7 @@
 </div>{{/if}}
 {{#if counterSet.any}}<div class="ssm-panel-challenge-counters">{{> ssmPanelCounters counterSet}}</div>{{/if}}
 {{#if challengeMods.length}}<div class="ssm-panel-mods ssm-panel-challenge-mods">{{#each challengeMods}}{{> ssmPanelMod}}{{/each}}</div>{{/if}}
-<div class="ssm-panel-subjects {{#if several}}several{{/if}}">
+<div class="ssm-panel-subjects {{#if several}}several{{/if}}" style="--ssm-columns: {{columns}}">
   {{#each subjects}}
   <div class="ssm-panel-subject {{#if complete}}complete{{/if}}">
     <div class="ssm-panel-points">
