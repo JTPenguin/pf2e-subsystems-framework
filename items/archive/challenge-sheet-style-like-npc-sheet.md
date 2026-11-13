@@ -1,13 +1,14 @@
 ---
-title: "Style the Challenge sheet like the NPC sheet"
+title: Style the Challenge sheet like the NPC sheet
 kind: feature
-status: ready
-waits_on: Claude
-priority: 🔽
+status: done
+waits_on: none
+priority: 🔼
 blocked_by: []
-source: "Justin's list of items, 2026-11-12; interview with Justin, 2026-11-12"
+source: Justin's list of items, 2026-11-12; interview with Justin, 2026-11-12
 added: 2026-11-12
 updated: 2026-11-12
+outcome: "Rows like NPC actions (thin line, no box or fill, bare icon controls), fields as bold-labelled smaller inputs, in the sheet and all four edit windows; hidden is fade plus italic. Checked side by side with an NPC sheet in Foundry, light and dark, and a field still saves. Spec section 6 updated."
 ---
 # Style the Challenge sheet like the NPC sheet
 

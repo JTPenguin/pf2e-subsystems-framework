@@ -4,17 +4,15 @@
 .ssm-name { font-size: var(--font-size-20, 1.25rem); height: auto; }
 .ssm-body { flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 0.5rem; padding-right: 0.25rem; }
 .ssm-body prose-mirror { min-height: 6rem; }
-.ssm-row { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 0.5rem; margin-bottom: 0.35rem; }
-.ssm-row > label { display: flex; flex-direction: column; font-size: var(--font-size-12, 0.75rem); width: 5.5rem; gap: 0.1rem; }
-.ssm-row > label.grow { flex: 1 1 10rem; width: auto; }
-.ssm-row > label:has(> select) { width: auto; }
-.ssm-row > label.check { flex-direction: row; align-items: center; width: auto; gap: 0.25rem; }
+.ssm-row { display: flex; flex-wrap: wrap; align-items: center; gap: 0.25rem 1rem; margin-bottom: 0.35rem; }
+/* A field is the NPC sheet's labeled field (.labeled-field in pf2e.css): a bold label with its input beside it, on one line. */
+.ssm-row > label { display: flex; flex-direction: row; align-items: baseline; gap: var(--space-4, 0.25rem); font-weight: 600; white-space: nowrap; }
+.ssm-row > label.grow { flex: 1 1 10rem; min-width: 0; }
+.ssm-row > label.check { align-items: center; }
 .ssm-text-row { align-items: flex-start; flex-wrap: nowrap; }
 .ssm-text-row > label.grow { flex: 1 1 0; min-width: 0; }
 textarea.ssm-autogrow { field-sizing: content; min-height: 2rem; resize: none; width: 100%; box-sizing: border-box; font: inherit; white-space: pre-wrap; }
 .ssm-row > button.icon { flex: 0 0 auto; width: 2rem; margin-left: auto; }
-.ssm-card { border: 1px solid var(--color-border, #7a7971); border-radius: 4px; padding: 0.4rem; margin-bottom: 0.4rem; }
-.ssm-effect { border-left: 2px solid var(--color-border-highlight, #b8a06a); padding-left: 0.5rem; margin-bottom: 0.35rem; }
 .ssm-quick { display: inline-flex; gap: 0.15rem; }
 .ssm-quick button { width: 2.25rem; padding: 0; }
 .ssm-add { width: auto; font-size: var(--font-size-12, 0.75rem); }
@@ -37,10 +35,8 @@ textarea.ssm-autogrow { field-sizing: content; min-height: 2rem; resize: none; w
 .ssm-dc-changed { font-weight: bold; color: var(--color-text-accent, #c9a13a); }
 button.ssm-state { background: none; color: inherit; cursor: pointer; line-height: inherit; height: auto; width: auto; margin: 0; }
 button.ssm-state:disabled { cursor: default; }
-/* The On/Off icon button sits beside the eye and looks like it; On turns it solid green. */
+/* The On/Off icon button sits beside the eye and looks like it. */
 button.ssm-toggle:disabled { cursor: default; }
-button.ssm-toggle.ssm-toggle-on { border-color: #2f7a3b; background: #2f7a3b; color: #fff; }
-button.ssm-toggle.ssm-toggle-on:disabled { opacity: 1; }
 
 /* The sheet is laid out like a statblock: small labels beside their values, no boxed fieldsets. */
 .ssm-strip { display: flex; flex-direction: column; gap: 0.25rem; padding: 0.25rem 0; border-top: 1px solid var(--color-border, #7a7971); border-bottom: 1px solid var(--color-border, #7a7971); }
@@ -69,7 +65,6 @@ button.ssm-toggle.ssm-toggle-on:disabled { opacity: 1; }
 .ssm-skill-grid .ssm-skill-name { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 .ssm-subject-group { margin-top: 0.2rem; }
 .ssm-subject-group > h4 { margin: 0 0 0.1rem; }
-.ssm-sheet .ssm-subject .ssm-entry > button.icon, .ssm-sheet .ssm-block .ssm-entry > button.icon { --button-size: 1.5rem; width: 1.5rem; height: 1.5rem; }
 
 /* A skill chip looks like PF2e's inline check. It is a wrapper, not a button: the eye, the roll and the chat link are three separate buttons inside it. */
 .ssm-skill { display: inline-flex; align-items: stretch; height: 1.6rem; border: 1px solid var(--content-link-border-color, #7a7971); border-radius: 2px; background: var(--content-link-background, rgba(0, 0, 0, 0.1)); color: var(--content-link-text-color, inherit); font-size: var(--font-size-13, 0.8125rem); white-space: nowrap; }
@@ -83,9 +78,8 @@ button.ssm-toggle.ssm-toggle-on:disabled { opacity: 1; }
 .ssm-skill-roll > i { font-size: 0.9em; color: var(--content-link-icon-color, inherit); }
 .ssm-skill-dc { opacity: 0.85; }
 .ssm-skill-dc.ssm-dc-changed { opacity: 1; }
-/* Hidden from players: faded, dashed outline and no fill. Shown (revealed or universal): the brighter reveal fill. */
-.ssm-skill.ssm-shown { background: var(--ssm-reveal-fill); }
-.ssm-skill.ssm-hidden { border-style: dashed; background: none; opacity: var(--ssm-hidden-opacity); }
+/* Hidden from players: faded, with an italic name. Shown (revealed or universal): full strength. */
+.ssm-skill.ssm-hidden { opacity: var(--ssm-hidden-opacity); }
 .ssm-skill.ssm-hidden .ssm-skill-name { font-style: italic; }
 .ssm-skill.ssm-shown:not(.ssm-universal) > button.icon { color: var(--ssm-eye-shown, #c9a13a); }
 
@@ -98,23 +92,16 @@ button.ssm-reached { color: #4f9d5d; }
 .ssm-entry.ssm-hidden > .ssm-grow, .ssm-modifier.ssm-hidden > .ssm-entry > .ssm-grow, .ssm-counter.ssm-hidden .ssm-grow { font-style: italic; }
 .ssm-entry.ssm-hidden .ssm-gm-line, .ssm-modifier.ssm-hidden .ssm-gm-line { font-style: normal; }
 :is(.ssm-entry, .ssm-modifier, .ssm-counter).ssm-hidden .ssm-muted { opacity: 1; }
-/* Fading means hidden, and nothing else. A hidden card or skill is faded with no fill; a revealed one is full strength on a brighter fill; a points-only threshold is full strength on half that fill. The fill is lighter than the background in both themes: white on parchment, the text colour on dark. */
-.ssm-sheet { --ssm-reveal-fill: color-mix(in srgb, currentColor 16%, transparent); --ssm-reveal-half: color-mix(in srgb, currentColor 8%, transparent); --ssm-hidden-opacity: 0.6; }
-.ssm-sheet.theme-light { --ssm-reveal-fill: rgba(255, 255, 255, 0.75); --ssm-reveal-half: rgba(255, 255, 255, 0.35); --ssm-eye-shown: var(--color-pf-primary, #5e0000); }
-.ssm-subject .ssm-threshold, .ssm-block > .ssm-counter, :is(.ssm-subject, .ssm-challenge-mods) .ssm-modifier { box-sizing: border-box; border: 1px solid var(--color-border, #7a7971); border-radius: 3px; background: none; padding: 0.15rem 0.3rem; margin-bottom: 0.25rem; }
-.ssm-block > .ssm-counter { display: block; }
-.ssm-subject .ssm-threshold.ssm-reveal-full, :is(.ssm-subject, .ssm-challenge-mods) .ssm-modifier:not(.ssm-hidden), .ssm-counter:not(.ssm-hidden) { background: var(--ssm-reveal-fill); }
-.ssm-subject .ssm-threshold.ssm-reveal-points { background: var(--ssm-reveal-half); }
-.ssm-subject .ssm-threshold.ssm-reveal-hidden, :is(.ssm-subject, .ssm-challenge-mods) .ssm-modifier.ssm-hidden, .ssm-block > .ssm-counter.ssm-hidden { opacity: var(--ssm-hidden-opacity); }
+/* Fading means hidden, and nothing else: a hidden row or skill is faded, with italic text; a revealed one is full strength. A points-only threshold keeps full strength with italic text. */
+.ssm-sheet { --ssm-hidden-opacity: 0.6; }
+.ssm-sheet.theme-light { --ssm-eye-shown: var(--color-pf-primary, #5e0000); }
 :is(.ssm-subject, .ssm-challenge-mods) .ssm-modifier .ssm-entry { margin-bottom: 0; }
-.ssm-subject .ssm-detail { padding-left: 2.25rem; }
 /* The window for one modifier. */
 .ssm-modifier-window .ssm-modifier-buttons { justify-content: space-between; align-items: center; margin: 0.25rem 0 0; }
 .ssm-modifier-window .ssm-modifier-buttons > button { flex: none; width: auto; }
-.ssm-modifier-window .ssm-row > label:not(.grow, .check) { width: 7rem; }
 /* The category's colour stripe shows only while a modifier is On: no stripe means Off (or Spent). The extra padding keeps the text in line either way. The colour comes from the palette in data.js, as --ssm-cat; a blank category keeps the plain gold. */
-:is(.ssm-subject, .ssm-challenge-mods) .ssm-modifier:not(.ssm-mod-on) { padding-left: calc(0.3rem + 2px); }
-:is(.ssm-subject, .ssm-challenge-mods) .ssm-modifier.ssm-mod-on { border-left: 3px solid var(--ssm-cat, var(--color-border-highlight, #b8a06a)); }
+:is(.ssm-subject, .ssm-challenge-mods) .ssm-modifier:not(.ssm-mod-on) { padding-left: calc(0.3rem + 3px); }
+:is(.ssm-subject, .ssm-challenge-mods) .ssm-modifier.ssm-mod-on { padding-left: 0.3rem; border-left: 3px solid var(--ssm-cat, var(--color-border-highlight, #b8a06a)); }
 
 /* The PF2e NPC and hazard sheet look. The values come from the system's own rules (.actor.npc.sheet and .sheet.hazard in pf2e.css): its fonts, its dark red section bars over a red-edged body, and its spacing. The variables are set on body and .app by the system, so they work here; the fallbacks are the system's values. */
 :is(.ssm-sheet, .ssm-modifier-window) .window-content { font-family: var(--sans-serif, Roboto, sans-serif); font-size: var(--font-size-13, 0.8125rem); }
@@ -130,7 +117,6 @@ button.ssm-reached { color: #4f9d5d; }
 .ssm-sheet .ssm-block-head .ssm-stat > button.icon:hover:not(:disabled) { text-shadow: 0 0 2px var(--text-light, #f7f3e8); }
 .ssm-sheet .ssm-block-head .ssm-stat > button.icon:disabled { opacity: 0.5; }
 .ssm-sheet .ssm-subject-group > h4 { margin: var(--space-4, 0.25rem) 0 var(--space-2, 0.125rem); padding-left: var(--space-2, 0.125rem); border-bottom: 1px solid var(--color-border-book, #7a7971); font-size: inherit; font-weight: 600; opacity: 1; }
-.ssm-modifier-window .ssm-effect { border-left-color: var(--color-pf-primary, #5e0000); }
 /* A changed DC uses PF2e's colours for adjusted values (as on a weak or elite creature): higher or lower than the base. */
 .ssm-sheet .ssm-skill-dc.ssm-dc-up { color: var(--color-pf-text-adjusted-higher, #009988); }
 .ssm-sheet .ssm-skill-dc.ssm-dc-down { color: var(--color-pf-text-adjusted-lower, #cc3311); }
@@ -256,9 +242,7 @@ button.ssm-reached { color: #4f9d5d; }
 .ssm-panel-pc[role="button"]:focus-visible { outline: 2px solid #c9593f; outline-offset: 1px; }
 .ssm-panel-pc.acted { opacity: 0.35; filter: grayscale(1); }
 
-/* Rules first written for the roll card's GM line. They also shape the sheet's threshold and counter cards, so they stay. */
-.ssm-card { margin-top: 0.3rem; padding-top: 0.3rem; border-top: 1px solid var(--color-border, #7a7971); font-size: var(--font-size-12, 0.75rem); }
-.ssm-card button { width: 100%; }
+/* A threshold's or counter's player and GM text, each on a line of its own. */
 .ssm-subject .ssm-grow > .ssm-player-text, .ssm-subject .ssm-grow > .ssm-gm-line { display: block; }
 .ssm-subject .ssm-gm-line { width: fit-content; max-width: 100%; line-height: 1.3; }
 
@@ -287,10 +271,7 @@ button.ssm-reached { color: #4f9d5d; }
 .ssm-sheet .ssm-subject-description > :first-child { margin-top: 0; }
 .ssm-sheet .ssm-subject-description > :last-child { margin-bottom: 0; }
 .ssm-sheet .ssm-pc-row { margin-bottom: 0.1rem; }
-.ssm-sheet .ssm-pc-row > button.icon { --button-size: 1.5rem; width: 1.5rem; height: 1.5rem; }
-.ssm-sheet .ssm-counter .ssm-threshold { box-sizing: border-box; border: 1px solid var(--color-border, #7a7971); border-radius: 3px; margin: 0.2rem 0 0 2rem; padding: 0.1rem 0.3rem; }
-.ssm-sheet .ssm-counter .ssm-threshold.ssm-reveal-full { background: var(--ssm-reveal-fill); }
-.ssm-sheet .ssm-counter .ssm-threshold.ssm-reveal-points { background: var(--ssm-reveal-half); }
+.ssm-sheet .ssm-counter .ssm-threshold { margin: 0 0 0 1.5rem; padding: var(--space-1, 1px) 0; }
 .ssm-sheet .ssm-counter .ssm-threshold.ssm-reveal-hidden { opacity: var(--ssm-hidden-opacity); }
 .ssm-sheet .ssm-counter .ssm-grow > .ssm-player-text, .ssm-sheet .ssm-counter .ssm-grow > .ssm-gm-line { display: block; }
 .ssm-sheet .ssm-action-lines { line-height: 1.4; }
@@ -359,8 +340,7 @@ button.ssm-reached { color: #4f9d5d; }
 .ssm-sheet .ssm-section-title { margin: var(--space-4, 0.25rem) 0 var(--space-4, 0.25rem); padding-left: var(--space-2, 0.125rem); border-bottom: 1px solid var(--color-border-book, #7a7971); font-size: var(--font-size-12, 0.75rem); font-weight: bold; letter-spacing: 0.04em; text-transform: uppercase; }
 /* The Challenge block keeps its full height in the scrolling body, so an open editor is not squeezed. */
 .ssm-sheet .ssm-body > .ssm-edit-block { flex: none; }
-/* An action card, styled like a modifier card. */
-.ssm-sheet .ssm-action-card { box-sizing: border-box; min-width: 0; margin-bottom: 0.25rem; padding: 0.2rem 0.3rem; border: 1px solid var(--color-border, #7a7971); border-radius: 3px; background: var(--ssm-reveal-fill); }
+.ssm-sheet .ssm-action-card { min-width: 0; }
 .ssm-sheet .ssm-action-card .ssm-skill-line { margin-bottom: 0; }
 /* A card with a description opens by its name: a plain button with a chevron, as on the panel. */
 .ssm-sheet button.ssm-action-toggle { all: unset; flex: 0 0 6.5rem; box-sizing: border-box; line-height: 1.6rem; font-weight: 600; cursor: pointer; }
@@ -398,12 +378,44 @@ button.ssm-reached { color: #4f9d5d; }
 
 /* Each entry's edit and delete buttons, at the right of its row (spec section 6). */
 .ssm-sheet .ssm-row-tools { flex: none; display: inline-flex; gap: 0.1rem; margin-left: auto; }
-.ssm-sheet .ssm-row-tools > button.icon { --button-size: 1.5rem; width: 1.5rem; height: 1.5rem; margin: 0; }
-.ssm-sheet .ssm-block-head .ssm-row-tools > button.icon { border: none; background: none; box-shadow: none; color: inherit; }
 .ssm-sheet .ssm-add-subject { flex: none; margin: 0; }
 /* The entry windows' description editors: always open, with room for the menu and a few paragraphs. */
 .ssm-modifier-window .ssm-window-editor { display: block; margin-bottom: 0.35rem; }
 .ssm-modifier-window .ssm-window-editor prose-mirror { min-height: 14rem; }
-.ssm-modifier-window .ssm-threshold-edit { margin: 0 0 0.4rem; padding: 0.3rem 0.4rem; border: 1px solid var(--color-border, #7a7971); border-radius: 3px; font-size: inherit; }
-.ssm-modifier-window .ssm-threshold-edit button { width: 2rem; }
 .ssm-modifier-window .ssm-section-title { margin: 0.25rem 0; padding-left: 0.125rem; border-bottom: 1px solid var(--color-border-book, #7a7971); font-size: var(--font-size-12, 0.75rem); font-weight: bold; letter-spacing: 0.04em; text-transform: uppercase; }
+
+/* The NPC sheet look for rows and fields (spec section 6). Items in a section are rows like the NPC sheet's actions (.actions-list li.action in pf2e.css): no box and no fill, a thin line between rows, the name at the left and plain icon controls at the right. */
+.ssm-sheet :is(.ssm-modifier, .ssm-counter, .ssm-action-card) { box-sizing: border-box; margin: 0; padding-top: var(--space-2, 0.125rem); padding-bottom: var(--space-2, 0.125rem); border-bottom: 1px solid var(--color-border-light-tertiary, #7a7971); }
+.ssm-sheet :is(.ssm-modifier, .ssm-counter, .ssm-action-card):last-child { border-bottom: none; }
+.ssm-sheet :is(.ssm-counter, .ssm-modifier).ssm-hidden { opacity: var(--ssm-hidden-opacity); }
+.ssm-sheet .ssm-row.ssm-entry { gap: 0.5rem; }
+/* A modifier's detail lines start under its name: past the eye and the On icon. */
+.ssm-sheet .ssm-modifier > .ssm-detail { padding-left: calc(2 * 1.25rem + 2 * 0.5rem); }
+.ssm-sheet :is(.ssm-modifier, .ssm-counter) > .ssm-entry > .ssm-grow, .ssm-sheet .ssm-action-card .ssm-skill-line > .ssm-stat-label, .ssm-sheet button.ssm-action-toggle { font-weight: 500; }
+/* Icon controls are bare icons, as on the NPC sheet, with the same glow on hover. */
+.ssm-sheet :is(.ssm-entry, .ssm-row-tools) > button.icon { flex: none; --button-size: 1.25rem; width: 1.25rem; height: 1.25rem; min-height: 0; margin: 0; padding: 0; border: none; border-radius: 0; background: none; box-shadow: none; color: inherit; font-size: var(--font-size-12, 0.75rem); }
+.ssm-sheet :is(.ssm-entry, .ssm-row-tools) > button.icon:hover:not(:disabled) { text-shadow: 0 0 8px var(--color-shadow-primary, #ff6400); }
+.ssm-sheet :is(.ssm-entry, .ssm-row-tools) > button.icon:focus-visible { outline: 1px solid var(--button-focus-outline-color, #ff6400); outline-offset: 0; }
+.ssm-sheet :is(.ssm-entry, .ssm-row-tools) > button.icon:disabled { opacity: 0.4; }
+/* The On toggle is a green icon while On. */
+.ssm-sheet .ssm-entry > button.ssm-toggle.ssm-toggle-on { color: #4f9d5d; }
+.ssm-sheet .ssm-entry > button.ssm-toggle.ssm-toggle-on:disabled { opacity: 1; }
+.ssm-sheet .ssm-point-total { font-size: var(--font-size-14, 0.875rem); min-width: 1.5rem; }
+
+/* Inputs, text areas and dropdowns are a little smaller than Foundry's, as on the NPC sheet. */
+:is(.ssm-sheet .ssm-body, .ssm-modifier-window .window-content) { --input-height: 1.5rem; }
+:is(.ssm-sheet .ssm-body, .ssm-modifier-window .window-content) :is(input[type="text"], input[type="number"], select, textarea) { font-size: var(--font-size-12, 0.75rem); font-weight: normal; }
+:is(.ssm-sheet .ssm-body, .ssm-modifier-window .window-content) .ssm-row > label > :is(input[type="text"], input[type="number"], select) { height: var(--input-height); }
+.ssm-row > label > input[type="number"] { flex: 0 0 4.5rem; width: 4.5rem; text-align: right; }
+.ssm-row > label > input[type="text"] { flex: 1 1 8rem; min-width: 0; }
+.ssm-row > label > select { flex: 0 1 auto; width: auto; }
+.ssm-row > label > textarea { flex: 1 1 0; min-width: 0; }
+.ssm-row > label.check > input[type="checkbox"] { margin: 0; }
+.ssm-checks th { font-weight: 600; }
+.ssm-checks td :is(input[type="text"], input[type="number"], select) { height: var(--input-height, 1.5rem); }
+.ssm-checks td button.icon { --button-size: 1.25rem; width: 1.25rem; height: 1.25rem; border: none; background: none; box-shadow: none; color: inherit; font-size: var(--font-size-12, 0.75rem); }
+/* A window's effects and thresholds are rows too: a thin line between them, no box. */
+.ssm-modifier-window :is(.ssm-effect, .ssm-threshold-edit) { margin: 0; padding: var(--space-4, 0.25rem) 0; border: none; border-bottom: 1px solid var(--color-border-light-tertiary, #7a7971); border-radius: 0; }
+.ssm-modifier-window .ssm-effect .ssm-row, .ssm-modifier-window .ssm-threshold-edit .ssm-row:last-child { margin-bottom: 0; }
+.ssm-modifier-window .ssm-threshold-edit button.icon, .ssm-modifier-window .ssm-effect button.icon { flex: none; --button-size: 1.25rem; width: 1.25rem; height: 1.25rem; margin-left: auto; border: none; background: none; box-shadow: none; color: inherit; font-size: var(--font-size-12, 0.75rem); }
+.ssm-modifier-window :is(.ssm-effect, .ssm-threshold-edit):not(:has(+ :is(.ssm-effect, .ssm-threshold-edit))) { border-bottom: none; }

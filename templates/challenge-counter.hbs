@@ -17,7 +17,7 @@
   {{#unless counter.perPc}}
   <h4 class="ssm-section-title">{{localize "SSM.Challenge.Thresholds"}}</h4>
   {{#each thresholds}}
-  <div class="ssm-card ssm-threshold-edit">
+  <div class="ssm-threshold-edit">
     <div class="ssm-row">
       <label>{{localize "SSM.Challenge.ThresholdAt"}}<input type="number" step="1" name="{{path}}.points" value="{{points}}"></label>
       <label>{{localize "SSM.Challenge.ThresholdReveal.Label"}}<select name="{{path}}.reveal">{{selectOptions @root.choices.thresholdReveals selected=reveal}}</select></label>
