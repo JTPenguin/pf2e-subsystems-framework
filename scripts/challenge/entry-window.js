@@ -41,7 +41,7 @@ class EntryWindow extends HandlebarsApplicationMixin(ApplicationV2) {
 
   static DEFAULT_OPTIONS = {
     tag: "form",
-    classes: ["ssm-modifier-window"],
+    classes: ["ssm-modifier-window", "standard-form"],
     position: { width: 640, height: "auto" },
     window: { resizable: true, icon: "fa-solid fa-sliders" },
     form: { handler: EntryWindow.#onSave, submitOnChange: true, closeOnSubmit: false },

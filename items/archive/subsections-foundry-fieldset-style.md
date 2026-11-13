@@ -1,13 +1,14 @@
 ---
 title: "Subsections styled like Foundry windows"
 kind: work
-status: ready
-waits_on: Claude
+status: done
+waits_on: none
 priority: 🔼
 blocked_by: []
 source: "Justin's UI list, 2026-11-12; details from Justin, 2026-11-12"
 added: 2026-11-12
 updated: 2026-11-12
+outcome: "Checks (Action), Thresholds (Counter) and DC change (Modifier) are fieldsets with the title, and any +, in the legend; the Counter window's Add threshold button is gone. The main fields sit in no fieldset (decided: the window is the frame). Checked in Foundry 2026-11-12, light and dark themes."
 ---
 # Subsections styled like Foundry windows
 

@@ -98,6 +98,7 @@
       "Active": "On",
       "Spent": "Spent",
       "DcChange": "DC change",
+      "DcAmount": "Amount",
       "DcChangeText": "DC {amount} ({skills})",
       "AllSkills": "All skills",
       "Counter": "Counter",

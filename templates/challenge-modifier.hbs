@@ -1,32 +1,61 @@
 <div class="ssm-layout">
   {{#with modifier}}
-  <div class="ssm-row">
-    <label class="grow">{{localize "SSM.Challenge.Name"}}<input type="text" name="name" value="{{name}}"></label>
-    <label>{{localize "SSM.Challenge.CategoryLabel"}}<input type="text" name="category" value="{{category}}" placeholder="{{localize "SSM.Challenge.CategoryPlaceholder"}}" autocomplete="off"></label>
-    <label>{{localize "SSM.Challenge.DurationLabel"}}<select name="duration">{{selectOptions @root.choices.durations selected=duration}}</select></label>
+  <div class="form-group">
+    <label>{{localize "SSM.Challenge.Name"}}</label>
+    <input type="text" name="name" value="{{name}}">
   </div>
-  <div class="ssm-row">
-    <label class="grow">{{localize "SSM.Challenge.PlayerText"}}<input type="text" name="playerText" value="{{playerText}}"></label>
-    <label class="grow">{{localize "SSM.Challenge.GMText"}}<input type="text" name="gmText" value="{{gmText}}"></label>
+  <div class="form-group">
+    <label>{{localize "SSM.Challenge.CategoryLabel"}}</label>
+    <input type="text" name="category" value="{{category}}" placeholder="{{localize "SSM.Challenge.CategoryPlaceholder"}}" autocomplete="off">
   </div>
-  <div class="ssm-row">
-    <label class="check"><input type="checkbox" name="active" {{checked active}}>{{localize "SSM.Challenge.Active"}}</label>
-    <label class="check"><input type="checkbox" name="spent" {{checked spent}}>{{localize "SSM.Challenge.Spent"}}</label>
-    <label class="check"><input type="checkbox" name="revealed" {{checked revealed}}>{{localize "SSM.Challenge.Revealed"}}</label>
-    <label class="check"><input type="checkbox" name="decoy" {{checked decoy}}>{{localize "SSM.Challenge.Decoy"}}</label>
+  <div class="form-group">
+    <label>{{localize "SSM.Challenge.DurationLabel"}}</label>
+    <select name="duration">{{selectOptions @root.choices.durations selected=duration}}</select>
+  </div>
+  <div class="form-group">
+    <label>{{localize "SSM.Challenge.PlayerText"}}</label>
+    <input type="text" name="playerText" value="{{playerText}}">
+  </div>
+  <div class="form-group">
+    <label>{{localize "SSM.Challenge.GMText"}}</label>
+    <input type="text" name="gmText" value="{{gmText}}">
+  </div>
+  <div class="form-group">
+    <label>{{localize "SSM.Challenge.Active"}}</label>
+    <input type="checkbox" name="active" {{checked active}}>
+  </div>
+  <div class="form-group">
+    <label>{{localize "SSM.Challenge.Spent"}}</label>
+    <input type="checkbox" name="spent" {{checked spent}}>
+  </div>
+  <div class="form-group">
+    <label>{{localize "SSM.Challenge.Revealed"}}</label>
+    <input type="checkbox" name="revealed" {{checked revealed}}>
+  </div>
+  <div class="form-group">
+    <label>{{localize "SSM.Challenge.Decoy"}}</label>
+    <input type="checkbox" name="decoy" {{checked decoy}}>
   </div>
   {{/with}}
-  <div class="ssm-effect">
-    <div class="ssm-row">
-      <label>{{localize "SSM.Challenge.DcChange"}}<input type="number" step="1" name="dc.amount" value="{{modifier.dc.amount}}"></label>
-      <span class="ssm-quick">{{#each quickDcAmounts}}<button type="button" data-action="quickDc" data-amount="{{amount}}">{{label}}</button>{{/each}}</span>
-      <label class="check"{{#if challengeLevel}} data-tooltip="SSM.Challenge.ChallengeSkillsHint"{{/if}}><input type="checkbox" name="dc.allSkills" data-redraw {{checked modifier.dc.allSkills}}>{{localize "SSM.Challenge.AllSkills"}}</label>
+  <fieldset>
+    <legend>{{localize "SSM.Challenge.DcChange"}}</legend>
+    <div class="form-group">
+      <label>{{localize "SSM.Challenge.DcAmount"}}</label>
+      <div class="form-fields">
+        <input type="number" step="1" name="dc.amount" value="{{modifier.dc.amount}}">
+        <span class="ssm-quick">{{#each quickDcAmounts}}<button type="button" data-action="quickDc" data-amount="{{amount}}">{{label}}</button>{{/each}}</span>
+      </div>
+    </div>
+    <div class="form-group">
+      <label{{#if challengeLevel}} data-tooltip="SSM.Challenge.ChallengeSkillsHint"{{/if}}>{{localize "SSM.Challenge.AllSkills"}}</label>
+      <input type="checkbox" name="dc.allSkills" data-redraw {{checked modifier.dc.allSkills}}>
     </div>
     {{#unless modifier.dc.allSkills}}
     <multi-checkbox name="dc.skills">{{selectOptions skillOptions selected=modifier.dc.skills}}</multi-checkbox>
     {{/unless}}
-  </div>
-  <div class="ssm-row">
-    <label class="grow">{{localize "SSM.Challenge.Note"}}<input type="text" name="note" value="{{modifier.note}}"></label>
+  </fieldset>
+  <div class="form-group">
+    <label>{{localize "SSM.Challenge.Note"}}</label>
+    <input type="text" name="note" value="{{modifier.note}}">
   </div>
 </div>

@@ -1,39 +1,42 @@
 <div class="ssm-layout">
   {{#with action}}
-  <div class="ssm-row">
-    <label class="grow">{{localize "SSM.Challenge.Name"}}<input type="text" name="name" value="{{name}}" placeholder="{{localize "SSM.Challenge.UnnamedAction"}}"></label>
-    <label class="check" data-tooltip="SSM.Challenge.SecretHint"><input type="checkbox" name="secret" {{checked secret}}>{{localize "SSM.Challenge.Secret"}}</label>
+  <div class="form-group">
+    <label>{{localize "SSM.Challenge.Name"}}</label>
+    <input type="text" name="name" value="{{name}}" placeholder="{{localize "SSM.Challenge.UnnamedAction"}}">
+  </div>
+  <div class="form-group">
+    <label data-tooltip="SSM.Challenge.SecretHint">{{localize "SSM.Challenge.Secret"}}</label>
+    <input type="checkbox" name="secret" {{checked secret}}>
   </div>
   <div class="ssm-window-editor">
     <prose-mirror name="description" toggled value="{{description}}">{{{@root.descriptionHtml}}}</prose-mirror>
   </div>
   {{/with}}
-  <h4 class="ssm-section-title ssm-subsection-head">
-    <span class="ssm-grow">{{localize "SSM.Challenge.Checks"}}</span>
-    <button type="button" class="icon fa-solid fa-plus" data-action="addRow" data-list="checks" aria-label="{{localize "SSM.Challenge.AddCheck"}}" data-tooltip-text="{{localize "SSM.Challenge.AddCheck"}}"></button>
-  </h4>
-  {{#if checks.length}}
-  <div class="ssm-checks-wrap"><table class="ssm-checks">
-    <thead><tr>
-      <th class="col-skill">{{localize "SSM.Challenge.Skill"}}</th>
-      <th class="col-lore">{{localize "SSM.Challenge.LoreName"}}</th>
-      <th class="col-dc">{{localize "SSM.Challenge.DC"}}</th>
-      <th class="col-flag">{{localize "SSM.Challenge.Revealed"}}</th>
-      <th class="col-flag">{{localize "SSM.Challenge.Decoy"}}</th>
-      <th class="col-delete"></th>
-    </tr></thead>
-    <tbody>
-    {{#each checks}}
-    <tr>
-      <td><select name="{{path}}.skill" data-redraw>{{selectOptions @root.choices.skills selected=skill}}</select></td>
-      <td>{{#if isLore}}<input type="text" name="{{path}}.lore" value="{{lore}}">{{/if}}</td>
-      <td><input type="number" min="0" step="1" name="{{path}}.dc" value="{{dc}}"></td>
-      <td class="col-flag"><input type="checkbox" name="{{path}}.revealed" {{checked revealed}}></td>
-      <td class="col-flag"><input type="checkbox" name="{{path}}.decoy" {{checked decoy}}></td>
-      <td class="col-delete"><button type="button" class="icon fa-solid fa-trash" data-action="removeRow" data-path="{{path}}" aria-label="{{localize "SSM.Challenge.Remove"}}"></button></td>
-    </tr>
-    {{/each}}
-    </tbody>
-  </table></div>
-  {{else}}<p class="ssm-muted">{{localize "SSM.Challenge.NoChecks"}}</p>{{/if}}
+  <fieldset>
+    <legend>{{localize "SSM.Challenge.Checks"}} <button type="button" class="icon fa-solid fa-plus" data-action="addRow" data-list="checks" aria-label="{{localize "SSM.Challenge.AddCheck"}}" data-tooltip-text="{{localize "SSM.Challenge.AddCheck"}}"></button></legend>
+    {{#if checks.length}}
+    <div class="ssm-checks-wrap"><table class="ssm-checks">
+      <thead><tr>
+        <th class="col-skill">{{localize "SSM.Challenge.Skill"}}</th>
+        <th class="col-lore">{{localize "SSM.Challenge.LoreName"}}</th>
+        <th class="col-dc">{{localize "SSM.Challenge.DC"}}</th>
+        <th class="col-flag">{{localize "SSM.Challenge.Revealed"}}</th>
+        <th class="col-flag">{{localize "SSM.Challenge.Decoy"}}</th>
+        <th class="col-delete"></th>
+      </tr></thead>
+      <tbody>
+      {{#each checks}}
+      <tr>
+        <td><select name="{{path}}.skill" data-redraw>{{selectOptions @root.choices.skills selected=skill}}</select></td>
+        <td>{{#if isLore}}<input type="text" name="{{path}}.lore" value="{{lore}}">{{/if}}</td>
+        <td><input type="number" min="0" step="1" name="{{path}}.dc" value="{{dc}}"></td>
+        <td class="col-flag"><input type="checkbox" name="{{path}}.revealed" {{checked revealed}}></td>
+        <td class="col-flag"><input type="checkbox" name="{{path}}.decoy" {{checked decoy}}></td>
+        <td class="col-delete"><button type="button" class="icon fa-solid fa-trash" data-action="removeRow" data-path="{{path}}" aria-label="{{localize "SSM.Challenge.Remove"}}"></button></td>
+      </tr>
+      {{/each}}
+      </tbody>
+    </table></div>
+    {{else}}<p class="ssm-muted">{{localize "SSM.Challenge.NoChecks"}}</p>{{/if}}
+  </fieldset>
 </div>

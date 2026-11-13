@@ -1,13 +1,14 @@
 ---
 title: "Edit windows: labels left, fields right"
 kind: work
-status: ready
-waits_on: Claude
+status: done
+waits_on: none
 priority: 🔼
 blocked_by: []
 source: "Justin's UI list, 2026-11-12; details from Justin, 2026-11-12"
 added: 2026-11-12
 updated: 2026-11-12
+outcome: "The Subject, Action, Counter and Modifier windows are Foundry standard-form windows: one form-group row per field, labels in a fixed left column (so checkboxes sit at the start of the field column), fields on the right. The sheet keeps its inline fields. Checked in Foundry 2026-11-12, light and dark themes."
 ---
 # Edit windows: labels left, fields right
 

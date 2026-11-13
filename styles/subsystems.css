@@ -16,7 +16,6 @@ textarea.ssm-autogrow { field-sizing: content; min-height: 2rem; resize: none; w
 .ssm-row > button.icon { flex: 0 0 auto; width: 2rem; margin-left: auto; }
 .ssm-quick { display: inline-flex; gap: 0.15rem; }
 .ssm-quick button { width: 2.25rem; padding: 0; }
-.ssm-add { width: auto; font-size: var(--font-size-12, 0.75rem); }
 .ssm-head-row { margin-bottom: 0; align-items: center; }
 .ssm-head-row .ssm-name { flex: 1 1 12rem; margin: 0; border: none; }
 .ssm-grow { flex: 1 1 auto; min-width: 0; }
@@ -97,9 +96,6 @@ button.ssm-reached { color: #4f9d5d; }
 .ssm-sheet { --ssm-hidden-opacity: 0.6; }
 .ssm-sheet.theme-light { --ssm-eye-shown: var(--color-pf-primary, #5e0000); }
 :is(.ssm-subject, .ssm-challenge-mods) .ssm-modifier .ssm-entry { margin-bottom: 0; }
-/* The window for one modifier. */
-.ssm-modifier-window .ssm-modifier-buttons { justify-content: space-between; align-items: center; margin: 0.25rem 0 0; }
-.ssm-modifier-window .ssm-modifier-buttons > button { flex: none; width: auto; }
 /* The category's colour stripe shows only while a modifier is On: no stripe means Off (or Spent). The extra padding keeps the text in line either way. The colour comes from the palette in data.js, as --ssm-cat; a blank category keeps the plain gold. */
 :is(.ssm-subject, .ssm-challenge-mods) .ssm-modifier:not(.ssm-mod-on) { padding-left: calc(0.3rem + 3px); }
 :is(.ssm-subject, .ssm-challenge-mods) .ssm-modifier.ssm-mod-on { padding-left: 0.3rem; border-left: 3px solid var(--ssm-cat, var(--color-border-highlight, #b8a06a)); }
@@ -351,8 +347,8 @@ button.ssm-reached { color: #4f9d5d; }
 .ssm-sheet .ssm-action-card .ssm-run-description { margin: 0.1rem 0 0; }
 .ssm-sheet .ssm-action-name { font-size: var(--font-size-14, 0.875rem); }
 /* A subsection's title: the section title's look, with an optional + on the right and an optional category stripe on the left. */
-.ssm-sheet .ssm-subsection-head, .ssm-modifier-window .ssm-subsection-head { display: flex; align-items: center; gap: 0.25rem; min-height: 1.5rem; }
-.ssm-sheet .ssm-subsection-head > button.icon, .ssm-modifier-window .ssm-subsection-head > button.icon { flex: none; --button-size: 1.25rem; width: 1.25rem; height: 1.25rem; margin: 0; border: none; background: none; box-shadow: none; color: inherit; font-size: var(--font-size-12, 0.75rem); }
+.ssm-sheet .ssm-subsection-head { display: flex; align-items: center; gap: 0.25rem; min-height: 1.5rem; }
+.ssm-sheet .ssm-subsection-head > button.icon { flex: none; --button-size: 1.25rem; width: 1.25rem; height: 1.25rem; margin: 0; border: none; background: none; box-shadow: none; color: inherit; font-size: var(--font-size-12, 0.75rem); }
 .ssm-sheet .ssm-subsection-head.ssm-striped { padding-left: var(--space-4, 0.25rem); border-left: 3px solid var(--ssm-cat, var(--color-border-book, #7a7971)); }
 .ssm-sheet .ssm-empty { margin: 0.1rem 0 0.25rem; }
 
@@ -390,7 +386,6 @@ button.ssm-reached { color: #4f9d5d; }
 /* The entry windows' description editors: always open, with room for the menu and a few paragraphs. */
 .ssm-modifier-window .ssm-window-editor { display: block; margin-bottom: 0.35rem; }
 .ssm-modifier-window .ssm-window-editor prose-mirror { min-height: 14rem; }
-.ssm-modifier-window .ssm-section-title { margin: 0.25rem 0; padding-left: 0.125rem; border-bottom: 1px solid var(--color-border-book, #7a7971); font-size: var(--font-size-12, 0.75rem); font-weight: bold; letter-spacing: 0.04em; text-transform: uppercase; }
 
 /* The NPC sheet look for rows and fields (spec section 6). Items in a section are rows like the NPC sheet's actions (.actions-list li.action in pf2e.css): no box and no fill, a thin line between rows, the name at the left and plain icon controls at the right. */
 .ssm-sheet :is(.ssm-modifier, .ssm-counter, .ssm-action-card) { box-sizing: border-box; margin: 0; padding-top: var(--space-2, 0.125rem); padding-bottom: var(--space-2, 0.125rem); border-bottom: 1px solid var(--color-border-light-tertiary, #7a7971); }
@@ -422,8 +417,25 @@ button.ssm-reached { color: #4f9d5d; }
 .ssm-checks th { font-weight: 600; }
 .ssm-checks td :is(input[type="text"], input[type="number"], select) { height: var(--input-height, 1.5rem); }
 .ssm-checks td button.icon { --button-size: 1.25rem; width: 1.25rem; height: 1.25rem; border: none; background: none; box-shadow: none; color: inherit; font-size: var(--font-size-12, 0.75rem); }
-/* A window's effects and thresholds are rows too: a thin line between them, no box. */
-.ssm-modifier-window :is(.ssm-effect, .ssm-threshold-edit) { margin: 0; padding: var(--space-4, 0.25rem) 0; border: none; border-bottom: 1px solid var(--color-border-light-tertiary, #7a7971); border-radius: 0; }
-.ssm-modifier-window .ssm-effect .ssm-row, .ssm-modifier-window .ssm-threshold-edit .ssm-row:last-child { margin-bottom: 0; }
-.ssm-modifier-window .ssm-threshold-edit button.icon, .ssm-modifier-window .ssm-effect button.icon { flex: none; --button-size: 1.25rem; width: 1.25rem; height: 1.25rem; margin-left: auto; border: none; background: none; box-shadow: none; color: inherit; font-size: var(--font-size-12, 0.75rem); }
-.ssm-modifier-window :is(.ssm-effect, .ssm-threshold-edit):not(:has(+ :is(.ssm-effect, .ssm-threshold-edit))) { border-bottom: none; }
+/* A window's thresholds are rows: a thin line between them, no box. */
+.ssm-modifier-window .ssm-threshold-edit { margin: 0; padding: 0 0 var(--space-4, 0.25rem); border-bottom: 1px solid var(--color-border-light-tertiary, #7a7971); }
+.ssm-modifier-window .ssm-threshold-edit .ssm-row:last-child { margin-bottom: 0; }
+.ssm-modifier-window .ssm-threshold-edit button.icon { flex: none; --button-size: 1.25rem; width: 1.25rem; height: 1.25rem; margin-left: auto; border: none; background: none; box-shadow: none; color: inherit; font-size: var(--font-size-12, 0.75rem); }
+.ssm-modifier-window .ssm-threshold-edit:not(:has(+ .ssm-threshold-edit)) { border-bottom: none; padding-bottom: 0; }
+
+/* The edit windows are Foundry forms (.standard-form in foundry2.css): one field per row, the label on the left and the field on the right, and each subsection a fieldset with its title, and any +, in the legend. The spacing is tighter than Foundry's, to fit the windows' smaller inputs. */
+/* The labels take a fixed column, so a checkbox sits at the start of the field column, under the other fields, not at the window's right edge. */
+.ssm-modifier-window .form-group > label { flex: 0 0 9rem; }
+.ssm-modifier-window .form-group > :not(label) { flex: 1 1 0; min-width: 0; }
+.ssm-modifier-window .form-group > input[type="checkbox"] { flex: none; margin: 0; }
+/* Inside a fieldset the label column is narrower by the fieldset's border and padding, so its fields line up with the fields above. */
+.ssm-modifier-window fieldset > .form-group > label { flex-basis: calc(9rem - 0.5rem - 2px); }
+.ssm-modifier-window fieldset { margin: 0; padding: 0.25rem 0.5rem 0.5rem; gap: 0.5rem; }
+/* A threshold's first row keeps its delete button on the same line at the default width. */
+.ssm-modifier-window .ssm-threshold-edit > .ssm-row { column-gap: 0.75rem; }
+.ssm-modifier-window fieldset > legend { display: flex; align-items: center; gap: 0.25rem; padding: 0 0.25rem; font-size: var(--font-size-13, 0.8125rem); }
+.ssm-modifier-window fieldset > legend > button.icon { flex: none; --button-size: 1.25rem; width: 1.25rem; height: 1.25rem; margin: 0; border: none; background: none; box-shadow: none; color: inherit; font-size: var(--font-size-12, 0.75rem); }
+.ssm-modifier-window fieldset > legend > button.icon:hover { text-shadow: 0 0 8px var(--color-shadow-primary, #ff6400); }
+.ssm-modifier-window fieldset > .ssm-muted { margin: 0; }
+.ssm-modifier-window .ssm-checks { margin: 0; }
+.ssm-modifier-window .form-fields > .ssm-quick { flex: none; }
