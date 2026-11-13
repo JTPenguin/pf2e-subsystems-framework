@@ -118,9 +118,8 @@ const CHASE = "SSM.Preset.chase";
 /** A chase's counter: an obstacle number on a track, shown. The GM sets the maximum to the number of obstacles (spec 14.11). */
 const chaseCounter = (name, value, perRound) => ({ ...newCounter(), name: say(`${CHASE}.${name}`), value, min: 0, max: 6, perRound, display: "track", revealed: true });
 const PREP = "SSM.Preset.preparation";
-const PREP_ACTIVITIES = ["BribeContact", "ForgeDocuments", "GainContact", "Gossip", "ScoutLocation", "SecureDisguises"];
 
-/** One preparation activity (GM Core, Preparation Activities). What each degree gives is in the preset's GM notes. */
+/** One preparation activity (GM Core, Preparation Activities). */
 const preparationActivity = (key, { secret = false, skills }) => ({ ...newAction(), name: say(`${PREP}.${key}.Name`), description: say(`${PREP}.${key}.Description`), secret, checks: skills.map(checkFor) });
 
 export const PRESETS = {
@@ -157,7 +156,7 @@ export const PRESETS = {
     categories: [`${INF}.Category.opportunity`, `${INF}.Category.complication`],
     // Complications and opportunities are obstacles the GM recategorises and trims (GM notes).
     subjectCategories: [`${INF}.SubjectCategory.obstacle`, `${INF}.SubjectCategory.complication`, `${INF}.SubjectCategory.opportunity`],
-    gmNotes: [`${INF}.GmNotes.Complication`, `${INF}.GmNotes.Opportunity`],
+    gmNotes: ["Obstacles", "Awareness", "Edge", "Complication", "Opportunity"].map((key) => `${INF}.GmNotes.${key}`),
     counters: () => [
       {
         ...newCounter(), name: say(`${INF}.Awareness`), min: 0, perRound: 1, revealed: true,
@@ -186,7 +185,7 @@ export const PRESETS = {
     icon: "fa-solid fa-person-running",
     names: { pointsName: `${CHASE}.Points`, subjectLabel: `${CHASE}.Subject`, subjectsLabel: `${CHASE}.Subjects`, noSubjects: `${CHASE}.NoSubjects` },
     categories: [],
-    gmNotes: `${CHASE}.GmNotes`,
+    gmNotes: ["Obstacles", "Tracks", "Running", "Variants"].map((key) => `${CHASE}.GmNotes.${key}`),
     counters: () => [chaseCounter("Party", 1, 0), chaseCounter("Quarry", 2, 1)],
     multipleSubjects: false,
     // GM Core: about one fewer CP than the party's size. The GM edits it per obstacle.
@@ -196,7 +195,7 @@ export const PRESETS = {
   },
   /**
    * GM Core's preparation for an infiltration, run first as its own challenge. Its Edge and Awareness Points are typed into the infiltration by hand.
-   * A dud or cursed Edge Point still adds to Edge, as the PC thinks it worked; the GM notes say so, and what each activity gives.
+   * A dud or cursed Edge Point still adds to Edge, as the PC thinks it worked; the GM notes say so.
    */
   preparation: {
     id: "preparation",
@@ -205,7 +204,7 @@ export const PRESETS = {
     names: { pointsName: `${INF}.Edge`, subjectLabel: `${PREP}.Subject`, subjectsLabel: `${PREP}.Subjects`, noSubjects: `${PREP}.NoSubjects` },
     // No suggestions: an empty heading would sit under the six activities on the panel.
     categories: [],
-    gmNotes: [`${PREP}.GmNotes.Intro`, ...PREP_ACTIVITIES.map((key) => `${PREP}.${key}.Outcomes`), `${PREP}.Dud`, `${PREP}.Cursed`],
+    gmNotes: ["Intro", "Points", "Notes", "Handover"].map((key) => `${PREP}.GmNotes.${key}`),
     counters: () => [
       { ...newCounter(), name: say(`${INF}.Edge`), min: 0, perPc: true, revealed: true },
       // Hidden: the bribes and rumours that reached the opposition. It carries into the infiltration.

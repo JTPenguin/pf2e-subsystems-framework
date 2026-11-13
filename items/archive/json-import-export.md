@@ -1,13 +1,14 @@
 ---
 title: "Check that JSON import and export work for challenges"
 kind: test
-status: ready
-waits_on: Claude
+status: done
+waits_on: none
 priority: 🔽
 blocked_by: []
 source: "Justin's list, 2026-11-12; cut to a test of Foundry's own export by Justin in triage, 2026-11-12"
 added: 2026-11-12
-updated: 2026-11-12
+updated: 2026-11-13
+outcome: "Foundry's own Export Data and Import Data work for challenges; checked live 2026-11-13. Import overwrites the entry and renames it to the file's name."
 ---
 # Check that JSON import and export work for challenges
 

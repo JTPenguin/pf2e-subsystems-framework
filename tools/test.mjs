@@ -1485,7 +1485,7 @@ test("an infiltration's new subjects are obstacles with a blank category, later 
   assert.deepEqual([obstacle.revealed, obstacle.counters.length, obstacle.category], [false, 1, ""]);
   assertBareAction(obstacle.actions[0]);
   assert.equal(D.addRow(system(), "subjects").category, "", "every preset's new subject has a category field");
-  assert.equal(D.newChallengeSystem("infiltration").gmNotes, "<p>SSM.Preset.infiltration.GmNotes.Complication</p><p>SSM.Preset.infiltration.GmNotes.Opportunity</p>", "the GM notes say how to set up complications and opportunities");
+  assert.equal(D.newChallengeSystem("infiltration").gmNotes, ["Obstacles", "Awareness", "Edge", "Complication", "Opportunity"].map((key) => `<p>SSM.Preset.infiltration.GmNotes.${key}</p>`).join(""), "the GM notes say how to use the module for an infiltration");
 });
 
 test("subject categories suggest the preset's, then those in use, apart from modifier categories", () => {
@@ -1629,10 +1629,9 @@ test("the Preparation preset: one revealed subject with GM Core's six activities
   assert.equal(named("ForgeDocuments").description, "SSM.Preset.preparation.ForgeDocuments.Description");
 });
 
-test("the Preparation preset's GM notes say what each activity gives, and how duds and cursed Edge Points work", () => {
-  const notes = D.newChallengeSystem("preparation").gmNotes;
-  const keys = ["GmNotes.Intro", ...["BribeContact", "ForgeDocuments", "GainContact", "Gossip", "ScoutLocation", "SecureDisguises"].map((key) => `${key}.Outcomes`), "Dud", "Cursed"];
-  assert.equal(notes, keys.map((key) => `<p>SSM.Preset.preparation.${key}</p>`).join(""));
+test("the Preparation preset's GM notes say how to use the module, and every key is in the language file", () => {
+  const keys = ["Intro", "Points", "Notes", "Handover"].map((key) => `GmNotes.${key}`);
+  assert.equal(D.newChallengeSystem("preparation").gmNotes, keys.map((key) => `<p>SSM.Preset.preparation.${key}</p>`).join(""));
   const prep = EN.SSM.Preset.preparation;
   for (const key of keys) assert.ok(key.split(".").reduce((node, part) => node?.[part], prep), key);
 });
@@ -1668,7 +1667,7 @@ test("the Chase preset: Party and Quarry counters on tracks, one obstacle at a t
   assert.deepEqual(countersOf(first), [["SSM.Preset.chase.Points", 0, 0, 3, true]]);
   assertBareAction(first.actions[0]);
   assert.equal(D.addRow(s, "subjects").revealed, false, "later obstacles start hidden");
-  assert.ok(D.newChallengeSystem("chase").gmNotes.includes("SSM.Preset.chase.GmNotes"));
+  assert.equal(D.newChallengeSystem("chase").gmNotes, ["Obstacles", "Tracks", "Running", "Variants"].map((key) => `<p>SSM.Preset.chase.GmNotes.${key}</p>`).join(""), "the GM notes say how to set up and run a chase with the module");
   assert.equal(D.newChallengeSystem("influence").multipleSubjects, undefined, "other presets keep the model's default, on");
   Run.startRun(s);
   assert.equal(Run.changeCounter(s, first.counters[0].id, -1), false);

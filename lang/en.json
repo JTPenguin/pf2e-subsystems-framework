@@ -263,6 +263,9 @@
           "opportunity": "Opportunity"
         },
         "GmNotes": {
+          "Obstacles": "Obstacles: add one obstacle per barrier between the party and its goal. Set each obstacle's Infiltration Points maximum to the points it needs, and give its Overcome action one check row per way past it, each with its DC. The first obstacle starts revealed and later ones hidden: reveal each when the party reaches it. Rolls change nothing, so after each roll use + and − on the obstacle's points, and mark it Complete when it's cleared.",
+          "Awareness": "Awareness Points: Next round adds 1. Add more by hand with + when the party's actions raise the alarm. Its thresholds mark the preset tiers and change DCs while reached; edit them to fit the site. You get a notice when one is reached.",
+          "Edge": "Edge Points: one per PC. Add them with + on each PC's row, or type in what the PCs earned in an Infiltration Preparation challenge. When a PC spends one, lower their value with −. Each PC's row has a note for anything only you should know about their points.",
           "Complication": "Complication: add an obstacle and set its Category to Complication. Remove its Infiltration Points counter, and leave it hidden until its trigger happens. When a failure adds Awareness Points, add them with the Awareness + button. A lasting penalty is a modifier you turn on.",
           "Opportunity": "Opportunity that needs a roll: add an obstacle, set its Category to Opportunity, remove its counter and rename its action Attempt. One with no roll is a one-time challenge modifier in the Opportunity category instead."
         },
@@ -290,40 +293,35 @@
         "Subject": "Preparation",
         "Subjects": "Preparations",
         "NoSubjects": "No preparations yet.",
-        "Dud": "Dud: this Edge Point secretly gives no benefit. Write it in the PC's Edge Points note.",
-        "Cursed": "Cursed: a PC who uses this Edge Point gets a critical failure, even if they spend it after rolling a failure. Write it in the PC's Edge Points note.",
         "BribeContact": {
           "Name": "Bribe Contact",
-          "Description": "Requires a contact (Gain Contact). The bribe is worth at least one-tenth of the Currency per additional PC (Table 10-9); doubling it grants a +2 circumstance bonus. DC: hard or very hard.",
-          "Outcomes": "Bribe Contact. Success or critical success: +1 Edge. Failure: +1 Edge, a dud, and +1 Awareness. Critical failure: +1 Edge, a dud, and +2 Awareness."
+          "Description": "Requires a contact (Gain Contact). The bribe is worth at least one-tenth of the Currency per additional PC (Table 10-9); doubling it grants a +2 circumstance bonus. DC: hard or very hard."
         },
         "ForgeDocuments": {
           "Name": "Forge Documents",
-          "Description": "DC: hard or very hard.",
-          "Outcomes": "Forge Documents. Success or critical success: +1 Edge, usable only when presenting paperwork. Failure: +1 Edge, a dud. Critical failure: +1 Edge, cursed."
+          "Description": "DC: hard or very hard."
         },
         "GainContact": {
           "Name": "Gain Contact",
-          "Description": "A Lore suited to the contact also works. DC: normal, hard or very hard.",
-          "Outcomes": "Gain Contact. Success or critical success: +1 Edge; contact made, so the PC can now Bribe Contact. Failure: the PC fails to make contact. Critical failure: the contact is insulted or spooked, and future attempts take a –2 circumstance penalty. Several critical failures may turn the contact against the PCs."
+          "Description": "A Lore suited to the contact also works. DC: normal, hard or very hard."
         },
         "Gossip": {
           "Name": "Gossip",
-          "Description": "DC: normal, hard or very hard.",
-          "Outcomes": "Gossip. Critical success: inside information gives a +2 circumstance bonus to future preparation checks for this infiltration, for the PC and anyone they share it with. Success: useful inside information for planning. Failure: the PC learns nothing. Critical failure: +1 Awareness, and mistaken rumours give a –2 circumstance penalty to the PC's next preparation check."
+          "Description": "DC: normal, hard or very hard."
         },
         "ScoutLocation": {
           "Name": "Scout Location",
-          "Description": "DC: normal, hard or very hard.",
-          "Outcomes": "Scout Location. Success or critical success: +1 Edge. Failure: the PC learns nothing noteworthy. Critical failure: +1 Edge, cursed."
+          "Description": "DC: normal, hard or very hard."
         },
         "SecureDisguises": {
           "Name": "Secure Disguises",
-          "Description": "DC: normal, hard or very hard.",
-          "Outcomes": "Secure Disguises. Success or critical success: +1 Edge, usable only to maintain a cover identity. Failure or critical failure: the disguise is unusable."
+          "Description": "DC: normal, hard or very hard."
         },
         "GmNotes": {
-          "Intro": "What each activity gives (GM Core). Add Edge and Awareness by hand with + on the counters. A dud or cursed Edge Point still counts, as the PC thinks it worked."
+          "Intro": "Run this challenge before the infiltration, as its own challenge with its own rounds. Each preparation activity is an action on the Preparation subject; players roll them from the panel. Add or remove activities and check rows to fit the adventure.",
+          "Points": "Rolls change nothing: after each roll, add Edge Points on that PC's row and Awareness Points with +. Awareness is hidden from players; reveal it with its eye if you want them to see it.",
+          "Notes": "A dud or cursed Edge Point still goes on the counter, as the PC thinks it worked. Write which point it is in that PC's note on the Edge Points row, along with any point that only works in one situation.",
+          "Handover": "When preparation ends, type each PC's Edge Points and the Awareness Points into the infiltration challenge."
         }
       },
       "chase": {
@@ -333,7 +331,12 @@
         "Subjects": "Obstacles",
         "NoSubjects": "No obstacles yet.",
         "Overcome": "Overcome",
-        "GmNotes": "Chase reminders (GM Core). Obstacles are cleared in order; extra Chase Points don't carry over, and PCs who haven't acted can go on to the next obstacle. A PC who passes or can't act costs the group 1 CP: use − on the obstacle's points. The Party and Quarry counters hold obstacle numbers. Set both maximums to the number of obstacles. When the party clears an obstacle, add 1 to Party and reveal the next obstacle (that hides the cleared one). The other side moves +1 each round; nudge it by hand on hard obstacles. Chase types: Chase Down: the quarry starts 1 ahead; the party catches it on reaching its obstacle, and it escapes once past the last. Run Away: rename Quarry to Pursuers and start it at 0; the party escapes past the last obstacle or 3 ahead at the end of a round, and is caught if they reach its obstacle. Beat the Clock: hide the other side and set the round maximum to the number of obstacles. Competitive: rename Quarry to Rival and start it at 1; whoever passes the last obstacle first wins, and initiative is rolled each round. If the party is stuck on one obstacle for about 3 rounds, let them find another way. Rolls never change points: after each roll, use + and − on the obstacle's points. Attack rolls and spells are yours to adjudicate.",
+        "GmNotes": {
+          "Obstacles": "Obstacles: add one obstacle per stage of the chase, in the order the party meets them. Set each obstacle's Chase Points maximum to the points it needs. Give its Overcome action one check row per way past it, each with its DC. The first obstacle starts revealed and the rest hidden; Allow multiple subjects is off, so revealing the next obstacle hides the last one.",
+          "Tracks": "Tracks: Party and Quarry hold each side's obstacle number. Set both maximums to the number of obstacles, and each value to where that side starts. Rename Quarry to fit the chase, such as Pursuers or Rival. Quarry moves +1 each round: change its amount each round, or nudge it with + and −, for a different pace. For a race against time, hide Quarry and set Maximum Rounds.",
+          "Running": "Each round: rolls change nothing, so after each roll use + and − on the obstacle's Chase Points. When the party clears an obstacle, add 1 to Party and reveal the next obstacle. Next round moves Quarry. When a side gets past the last obstacle, mark that obstacle Complete.",
+          "Variants": "Variants: for split paths, give each path's obstacles a category named for the path, and turn on Allow multiple subjects while the party chooses. If the PCs split up, set Party to Per PC, so each PC has an obstacle number, and turn on Allow multiple subjects so each PC's obstacle shows."
+        },
         "Party": "Party",
         "Quarry": "Quarry"
       }
