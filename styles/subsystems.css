@@ -112,23 +112,21 @@ button.ssm-reached { color: #4f9d5d; }
 .ssm-sheet .ssm-skill-dc.ssm-dc-down { color: var(--color-pf-text-adjusted-lower, #cc3311); }
 
 /* The panel over the canvas. #ui-top ignores the pointer, so only the panel's own area takes clicks. */
-/* The height limit is 80% of #ui-top, which is the top half of the screen at any UI scale. The whole panel scrolls past that, so a redraw keeps the place. #ui-top is scaled but not narrowed, so the width limit divides the scale out. */
-/* The scrollbar's room is always kept, so the panel doesn't widen when its content passes the height limit. */
-.ssm-panel { pointer-events: auto; align-self: center; flex: none; box-sizing: border-box; width: fit-content; min-width: min(20rem, 100%); max-width: min(100%, calc(100% / var(--ui-scale, 1))); max-height: calc(80% - 0.5rem); overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; scrollbar-gutter: stable; overflow-wrap: anywhere; margin-top: 0.5rem; padding: 0.4rem 0.75rem 0; background: rgba(20, 18, 16, 0.92); border: 1px solid #b8a06a; border-radius: 6px; color: #eee; font-size: var(--font-size-13, 0.8125rem); }
+/* The height limit is 80% of #ui-top, which is the top half of the screen at any UI scale. #ui-top is scaled but not narrowed, so the width limit divides the scale out. */
+/* The header stays put and the body under it scrolls past the height limit. */
+.ssm-panel { pointer-events: auto; position: relative; display: flex; flex-direction: column; align-self: center; flex: none; box-sizing: border-box; width: fit-content; min-width: min(20rem, 100%); max-width: min(100%, calc(100% / var(--ui-scale, 1))); max-height: calc(80% - 0.5rem); overflow: hidden; overflow-wrap: anywhere; margin-top: 0.5rem; padding: 0; background: rgba(20, 18, 16, 0.92); border: 1px solid #b8a06a; border-radius: 6px; color: #eee; font-size: var(--font-size-13, 0.8125rem); }
 /* Only the subject columns set the panel's width. Everything else wraps to it instead of stretching it, so revealing, hiding, expanding or collapsing never changes the width. */
-.ssm-panel > :not(.ssm-panel-subjects, .ssm-panel-resize), .ssm-panel-counters { contain: inline-size; }
+.ssm-panel-head, .ssm-panel-body > :not(.ssm-panel-subjects), .ssm-panel-counters { contain: inline-size; }
+/* The body's height is its content's, and it scrolls once the panel is shorter. Its bottom padding is inside the scroll, and the scrollbar's room is always kept, so the panel doesn't widen when its content passes the height limit. */
+.ssm-panel-body { flex: 1 1 auto; min-height: 0; overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; scrollbar-gutter: stable; padding: 0 0.75rem 0.4rem; }
 .ssm-panel[data-position="left"] { align-self: flex-start; }
 .ssm-panel[data-position="right"] { align-self: flex-end; }
 /* A dragged panel sits in the body, placed in code. It scales and sits in the stack as it would in #ui-middle, and keeps the same size limits: 60% of the screen wide (#ui-middle's width) and 40% high. max-content stops it shrinking near the screen edge. */
 .ssm-panel.moved { position: fixed; z-index: var(--z-index-app, 30); transform: scale(var(--ui-scale, 1)); transform-origin: top left; width: max-content; max-width: min(60vw, calc(60vw / var(--ui-scale, 1))); max-height: calc(40vh / var(--ui-scale, 1) - 0.5rem); margin: 0; }
 /* A resized panel has its size set in code, within the screen: the 60% and 40% limits give way to it, and the content wraps to its width and scrolls past its height. */
-.ssm-panel.moved.sized { display: flex; flex-direction: column; min-width: 0; max-width: none; max-height: none; }
-/* In a panel taller than its content, the handle is pushed down to the bottom. */
-.ssm-panel.sized > .ssm-panel-resize { flex: none; align-self: flex-end; margin-top: auto; }
-/* The panel's bottom padding sits on the content just above the handle, not on the panel. A bottom margin on the handle, cancelling panel padding, shrank the panel's height but not its scroll height, so a panel that fitted showed a scroll bar. */
-.ssm-panel > :nth-last-child(2) { padding-bottom: 0.4rem; }
-/* The corner handle is Foundry's window handle. As the panel's last child it sticks to the bottom-right corner while the content scrolls, and its negative margins keep it from taking up room. */
-.ssm-panel-resize { position: sticky; bottom: 0; width: 11px; height: 11px; margin: -11px -0.75rem 0 auto; translate: -1px -1px; cursor: nwse-resize; touch-action: none; background: transparent url("../../../ui/resize-handle.webp") no-repeat center / contain; filter: invert(1); opacity: 0.7; }
+.ssm-panel.moved.sized { min-width: 0; max-width: none; max-height: none; }
+/* The corner handle is Foundry's window handle, pinned to the panel's bottom-right corner over the body. */
+.ssm-panel-resize { position: absolute; right: 0; bottom: 0; z-index: 1; width: 11px; height: 11px; translate: -1px -1px; cursor: nwse-resize; touch-action: none; background: transparent url("../../../ui/resize-handle.webp") no-repeat center / contain; filter: invert(1); opacity: 0.7; }
 .ssm-panel-resize:hover, .ssm-panel.resizing .ssm-panel-resize { opacity: 1; }
 .ssm-panel.resizing { user-select: none; }
 .ssm-panel-head { cursor: var(--cursor-grab, grab); touch-action: none; user-select: none; }
@@ -138,8 +136,8 @@ button.ssm-reached { color: #4f9d5d; }
 .ssm-panel button.ssm-panel-reset:hover, .ssm-panel button.ssm-panel-reset:focus-visible { color: #fff; }
 .ssm-panel:not(.moved) .ssm-panel-reset { display: none; }
 .ssm-panel p { margin: 0.15rem 0 0; }
-/* The header is a bar in a dark tint of the PF2e red, edge to edge under the panel's border. Its negative margins cancel the panel's padding. */
-.ssm-panel-head { display: flex; align-items: center; justify-content: space-between; gap: 2rem; margin: -0.4rem -0.75rem 0; padding: 0.3rem 0.75rem; background: color-mix(in srgb, var(--color-pf-primary, #5e0000) 65%, transparent); border-bottom: 1px solid rgba(184, 160, 106, 0.35); border-radius: 5px 5px 0 0; }
+/* The header is a bar in a dark tint of the PF2e red, edge to edge under the panel's border. */
+.ssm-panel-head { flex: none; display: flex; align-items: center; justify-content: space-between; gap: 2rem; margin: 0; padding: 0.3rem 0.75rem; background: color-mix(in srgb, var(--color-pf-primary, #5e0000) 65%, transparent); border-bottom: 1px solid rgba(184, 160, 106, 0.35); border-radius: 5px 5px 0 0; }
 .ssm-panel-head .ssm-panel-round-text + .ssm-panel-reset { margin-left: -1.75rem; }
 .ssm-panel-name { font-size: var(--font-size-15, 0.9375rem); }
 /* The GM's name is a button that opens the challenge window. It looks like the players' plain name, and the header can still be dragged by it. */

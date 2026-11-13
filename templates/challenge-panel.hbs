@@ -48,6 +48,7 @@
   {{#if isGM}}<button type="button" class="ssm-panel-name" data-action="openChallenge" data-drag-click><strong>{{name}}</strong></button>{{else}}<strong class="ssm-panel-name">{{name}}</strong>{{/if}}
   {{#if rounds}}<span class="ssm-panel-round-text">{{roundLabel}}</span>{{/if}}
 </header>
+<div class="ssm-panel-body" data-keep-scroll="body">
 {{!-- The round bar, when there is a maximum, sits above the portraits. The GM's round buttons always flank the portraits, so with no maximum the portraits take the bar's place. A challenge with no rounds (maximum 0) has none of this. --}}
 {{#if rounds}}<div class="ssm-panel-run">
   {{#if roundSegments.length}}<span class="ssm-panel-segments" role="img" aria-label="{{roundLabel}}">{{#each roundSegments}}<span class="{{#if filled}}filled{{/if}}"></span>{{/each}}</span>{{/if}}
@@ -55,7 +56,7 @@
 </div>{{/if}}
 {{#if counterSet.any}}<div class="ssm-panel-challenge-counters">{{> ssmPanelCounters counterSet}}</div>{{/if}}
 {{#if challengeMods.length}}<div class="ssm-panel-mods ssm-panel-challenge-mods">{{#each challengeMods}}{{> ssmPanelMod}}{{/each}}</div>{{/if}}
-<div class="ssm-panel-subjects {{#if several}}several{{/if}}" style="--ssm-columns: {{columns}}">
+<div class="ssm-panel-subjects {{#if several}}several{{/if}}" data-keep-scroll="subjects" style="--ssm-columns: {{columns}}">
   {{#each subjects}}
   <div class="ssm-panel-subject {{#if complete}}complete{{/if}}">
     <div class="ssm-panel-points">
@@ -78,4 +79,5 @@
     </div>{{/if}}
   </div>
   {{/each}}
+</div>
 </div>

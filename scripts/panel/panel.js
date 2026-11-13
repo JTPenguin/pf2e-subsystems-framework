@@ -262,8 +262,16 @@ function setView(html) {
   if (drawn === html) return;
   // A redraw replaces the cards, so a focused card is focused again by its id.
   const focused = element.contains(document.activeElement) ? document.activeElement.dataset.id : null;
+  // A redraw replaces the scrolling parts too, so each keeps its place by its key.
+  const scrolls = [...element.querySelectorAll("[data-keep-scroll]")].map((part) => [part.dataset.keepScroll, part.scrollTop, part.scrollLeft]);
   element.innerHTML = html;
   drawn = html;
+  for (const [key, top, left] of scrolls) {
+    const part = element.querySelector(`[data-keep-scroll="${CSS.escape(key)}"]`);
+    if (!part) continue;
+    part.scrollTop = top;
+    part.scrollLeft = left;
+  }
   if (focused) element.querySelector(`[role="button"][data-id="${CSS.escape(focused)}"]`)?.focus();
   addResetButton();
   addResizeHandle();
