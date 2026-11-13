@@ -1,13 +1,14 @@
 ---
 title: "Last section runs into the window bottom; counter hover jitter"
 kind: work
-status: ready
-waits_on: Claude
+status: done
+waits_on: none
 priority: ⏫
 blocked_by: []
 source: "Justin's UI list, 2026-11-12; details from Justin, 2026-11-12"
 added: 2026-11-12
 updated: 2026-11-12
+outcome: "Added 0.5rem bottom padding to the sheet's scroll area (.ssm-body). The last section's border was flush with the scroll edge and 0.6px past it, out of scroll reach, and the hover glow on its last row spilled over that clipped edge. Checked in Foundry on 2026-11-12: the border now shows with an 8px gap at every height tried, and hovering the counter controls changes no layout."
 ---
 # Last section runs into the window bottom; counter hover jitter
 

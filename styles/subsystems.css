@@ -2,7 +2,8 @@
 .ssm-layout { display: flex; flex-direction: column; height: 100%; min-height: 0; gap: 0.5rem; padding: 0.5rem 0.75rem; }
 .ssm-head { display: flex; flex-direction: column; gap: 0.25rem; }
 .ssm-name { font-size: var(--font-size-20, 1.25rem); height: auto; }
-.ssm-body { flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 0.5rem; padding-right: 0.25rem; }
+/* Bottom padding keeps the last section's border and its controls' hover glow clear of the scroll edge. */
+.ssm-body { flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 0.5rem; padding-right: 0.25rem; padding-bottom: 0.5rem; }
 .ssm-body prose-mirror { min-height: 6rem; }
 .ssm-row { display: flex; flex-wrap: wrap; align-items: center; gap: 0.25rem 1rem; margin-bottom: 0.35rem; }
 /* A field is the NPC sheet's labeled field (.labeled-field in pf2e.css): a bold label with its input beside it, on one line. */
