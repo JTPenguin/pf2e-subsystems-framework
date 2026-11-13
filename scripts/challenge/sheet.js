@@ -49,6 +49,7 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
       editEntry: ChallengeSheet.#onEditEntry,
       toggleComplete: ChallengeSheet.#onToggleComplete,
       toggleCollapse: ChallengeSheet.#onToggleCollapse,
+      toggleCollapseAll: ChallengeSheet.#onToggleCollapseAll,
       toggleAction: ChallengeSheet.#onToggleAction,
       startRun: ChallengeSheet.#onStartRun,
       endRun: ChallengeSheet.#onEndRun,
@@ -343,6 +344,9 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
         modifierGroups: modifierGroups(system, subject.modifiers.map((row) => this.#modifierView(system, subject, row, canChange))),
       }))).map((group) => ({ key: group.key, heading: group.label, subjects: group.items })),
       counters: system.counters.map((counter) => counterRun(counter)),
+      collapseAll: !system.subjects.length ? null : system.subjects.some((subject) => !isCollapsed(subject.id))
+        ? { icon: "fa-angles-up", label: "SSM.Challenge.CollapseAll" }
+        : { icon: "fa-angles-down", label: "SSM.Challenge.ExpandAll" },
     };
   }
 
@@ -540,6 +544,14 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
   static async #onToggleCollapse(event, target) {
     const id = target.dataset.subject;
     await game.user.setFlag(MODULE, COLLAPSED_FLAG, { [id]: !isCollapsed(id) });
+    return this.render();
+  }
+
+  /** Collapse every subject when any is open, or expand them all when all are collapsed, in one update of the same flag. */
+  static async #onToggleCollapseAll() {
+    const subjects = this.#source.subjects;
+    const collapse = subjects.some((subject) => !isCollapsed(subject.id));
+    await game.user.setFlag(MODULE, COLLAPSED_FLAG, Object.fromEntries(subjects.map((subject) => [subject.id, collapse])));
     return this.render();
   }
 

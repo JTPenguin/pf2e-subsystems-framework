@@ -138,6 +138,11 @@
       {{> ssmModGroups groups=challengeModifierGroups subject="" root=this}}
     </section>
 
+    {{!-- One toggle collapses every subject when any is open, and expands them all when all are collapsed (spec 14.8). --}}
+    {{#if collapseAll}}<div class="ssm-collapse-all">
+      <button type="button" class="icon fa-solid {{collapseAll.icon}}" data-action="toggleCollapseAll" aria-label="{{localize collapseAll.label}}" data-tooltip="{{collapseAll.label}}"></button>
+    </div>{{/if}}
+
     {{!-- Subjects by category (spec 14.4): the blank category's cards first with no bar, then a red bar per category with its subjects as cards. --}}
     {{#each subjectGroups as |group|}}
     <section class="ssm-block ssm-subject-category">

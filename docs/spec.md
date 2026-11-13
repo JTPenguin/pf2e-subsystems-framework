@@ -488,7 +488,7 @@ A preset makes one kind of subject, so the sheet has one Add subject button, nam
 
 **Subject order.** The GM drags a subject by the grip on its card header to a new place in its category (Justin, 2026-11-12). A drop on another category's card is refused: a subject changes category only through its window's Category field. Only a GM can drag. The order is the challenge's subject order, so the panel's columns follow it. It is only for reference: the GM still reveals the next obstacle by hand.
 
-**Collapsible subjects.** Each subject on the sheet can collapse to its header row: name, eye and Complete. The state is each user's own, kept across reloads in a user flag, and changes neither the challenge nor the panel.
+**Collapsible subjects.** Each subject on the sheet can collapse to its header row: name, eye and Complete. The state is each user's own, kept across reloads in a user flag, and changes neither the challenge nor the panel. One toggle above the subjects collapses them all when any is open, and expands them all when all are collapsed; its icon and tooltip change to match (Justin, 2026-11-12).
 
 **Both-ways tracks.** A third direction beside Counts up and Counts down.
 

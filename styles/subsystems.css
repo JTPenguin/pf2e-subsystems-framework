@@ -327,6 +327,8 @@ button.ssm-reached { color: #4f9d5d; }
 .ssm-sheet .ssm-subject-grip:hover { opacity: 1; }
 .ssm-sheet .ssm-subject-card.ssm-drop-before { box-shadow: inset 0 3px 0 var(--color-warm-1, #ee9b3a); }
 .ssm-sheet .ssm-subject-card.ssm-drop-after { box-shadow: inset 0 -3px 0 var(--color-warm-1, #ee9b3a); }
+.ssm-sheet .ssm-collapse-all { flex: none; display: flex; justify-content: flex-end; margin-bottom: calc(-1 * var(--space-4, 0.25rem)); }
+.ssm-sheet .ssm-collapse-all > button.icon { --button-size: 1.5rem; width: 1.5rem; height: 1.5rem; margin: 0; }
 .ssm-sheet .ssm-subject.ssm-collapsed > :not(.ssm-block-head) { display: none; }
 .ssm-sheet .ssm-subject.ssm-collapsed { padding-bottom: 0; }
 .ssm-sheet .ssm-subject.ssm-collapsed > .ssm-block-head { margin-bottom: 0; }

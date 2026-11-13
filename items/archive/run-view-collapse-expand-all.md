@@ -1,13 +1,14 @@
 ---
 title: Collapse and expand all subjects in Run view
 kind: feature
-status: ready
+status: done
 waits_on: Claude
 priority: 🔽
 blocked_by: []
 source: Justin's list of items, 2026-11-12; interview with Justin, 2026-11-12
 added: 2026-11-12
 updated: 2026-11-12
+outcome: "A toggle above the subjects collapses all when any is open and expands all when all are collapsed, writing the collapsedSubjects user flag in one update. Checked live in Foundry by mouse clicks, including a reload and a subject's own chevron (2026-11-12)."
 ---
 # Collapse and expand all subjects in Run view
 

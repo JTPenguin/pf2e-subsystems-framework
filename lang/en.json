@@ -198,6 +198,8 @@
       "PartyTotal": "Party total {total}",
       "DragSubject": "Drag to reorder within its category",
       "Collapse": "Collapse or expand",
+      "CollapseAll": "Collapse all subjects",
+      "ExpandAll": "Expand all subjects",
       "PcNote": "GM note",
       "PcNotePlaceholder": "GM note",
       "PcNoteHint": "GM only. For example: 1 dud (forged papers), 1 only for paperwork.",
