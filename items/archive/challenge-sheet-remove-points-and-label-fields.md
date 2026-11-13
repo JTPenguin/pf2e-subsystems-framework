@@ -1,13 +1,14 @@
 ---
 title: "Challenge sheet: remove Points name and Subject label, group rounds fields"
 kind: feature
-status: ready
+status: done
 waits_on: Claude
 priority: 🔼
 blocked_by: []
 source: "Justin's list of items, 2026-11-12; interview with Justin, 2026-11-12"
 added: 2026-11-12
 updated: 2026-11-12
+outcome: "Fields hidden on the sheet; data, presets and EDITABLE unchanged. Rounds, Maximum and Allow multiple subjects share one unlabeled subsection. Unit tests and load check pass; not checked live in Foundry."
 ---
 # Challenge sheet: remove Points name and Subject label, group rounds fields
 

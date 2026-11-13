@@ -121,18 +121,10 @@
     <section class="ssm-block ssm-edit-block ssm-challenge-fields">
       {{> ssmSectionHead label=(localize "SSM.Challenge.Challenge")}}
       <div class="ssm-section">
-        {{> ssmSubsectionHead label=(localize "SSM.Challenge.Names")}}
-        <div class="ssm-row">
-          <label class="grow">{{localize "SSM.Challenge.PointsName"}}<input type="text" name="pointsName" value="{{@root.system.pointsName}}" placeholder="{{localize "SSM.Challenge.Points"}}"></label>
-          <label class="grow">{{localize "SSM.Challenge.SubjectLabel"}}<input type="text" name="subjectLabel" value="{{@root.system.subjectLabel}}" placeholder="{{localize "SSM.Challenge.Subject"}}"></label>
-          <label class="check" data-tooltip="SSM.Challenge.MultipleSubjectsHint"><input type="checkbox" name="multipleSubjects" {{checked @root.system.multipleSubjects}}>{{localize "SSM.Challenge.MultipleSubjects"}}</label>
-        </div>
-      </div>
-      <div class="ssm-section">
-        {{> ssmSubsectionHead label=(localize "SSM.Challenge.Rounds")}}
         <div class="ssm-row">
           <label>{{localize "SSM.Challenge.Current"}}<input type="number" min="0" step="1" name="rounds.current" value="{{@root.system.rounds.current}}" {{#if @root.runActive}}disabled{{/if}}></label>
           <label>{{localize "SSM.Challenge.Maximum"}}<input type="number" min="1" step="1" name="rounds.max" value="{{@root.system.rounds.max}}" placeholder="{{localize "SSM.Challenge.NoLimit"}}"></label>
+          <label class="check" data-tooltip="SSM.Challenge.MultipleSubjectsHint"><input type="checkbox" name="multipleSubjects" {{checked @root.system.multipleSubjects}}>{{localize "SSM.Challenge.MultipleSubjects"}}</label>
         </div>
       </div>
       <div class="ssm-section">
