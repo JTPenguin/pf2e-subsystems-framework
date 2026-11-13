@@ -1,5 +1,5 @@
 ---
-title: "Show subject points as "current / goal" in Run view"
+title: "Show subject points as \"current / goal\" in Run view"
 kind: feature
 status: dropped
 waits_on: none

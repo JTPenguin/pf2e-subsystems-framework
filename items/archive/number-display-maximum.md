@@ -1,5 +1,5 @@
 ---
-title: "Show Number counters with their maximum, for example "0/6""
+title: "Show Number counters with their maximum, for example \"0/6\""
 kind: feature
 status: dropped
 waits_on: none
