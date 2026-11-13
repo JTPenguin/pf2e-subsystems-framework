@@ -1,13 +1,14 @@
 ---
 title: "Subject cards: remove the empty area below the header"
 kind: work
-status: ready
+status: done
 waits_on: Claude
 priority: 🔽
 blocked_by: []
 source: Justin's request, 2026-11-12
 added: 2026-11-12
 updated: 2026-11-12
+outcome: "Card padding bottom set to 0; the last section of an open card keeps the space. Checked live: collapsed card shows only its header, open card has normal spacing."
 ---
 # Subject cards: remove the empty area below the header
 

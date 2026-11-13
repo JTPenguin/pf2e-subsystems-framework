@@ -1,13 +1,14 @@
 ---
 title: "Action window: skills as a subsection with a + in the header"
 kind: work
-status: ready
+status: done
 waits_on: Claude
 priority: 🔽
 blocked_by: []
 source: Justin's request, 2026-11-12
 added: 2026-11-12
 updated: 2026-11-12
+outcome: "Action window shows a Checks subsection header with a + that adds a check; Add check button and its row removed. Checked live: add, remove and save work."
 ---
 # Action window: skills as a subsection with a + in the header
 

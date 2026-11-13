@@ -349,8 +349,8 @@ button.ssm-reached { color: #4f9d5d; }
 .ssm-sheet .ssm-action-card .ssm-run-description { margin: 0.1rem 0 0; }
 .ssm-sheet .ssm-action-name { font-size: var(--font-size-14, 0.875rem); }
 /* A subsection's title: the section title's look, with an optional + on the right and an optional category stripe on the left. */
-.ssm-sheet .ssm-subsection-head { display: flex; align-items: center; gap: 0.25rem; min-height: 1.5rem; }
-.ssm-sheet .ssm-subsection-head > button.icon { flex: none; --button-size: 1.25rem; width: 1.25rem; height: 1.25rem; margin: 0; border: none; background: none; box-shadow: none; color: inherit; font-size: var(--font-size-12, 0.75rem); }
+.ssm-sheet .ssm-subsection-head, .ssm-modifier-window .ssm-subsection-head { display: flex; align-items: center; gap: 0.25rem; min-height: 1.5rem; }
+.ssm-sheet .ssm-subsection-head > button.icon, .ssm-modifier-window .ssm-subsection-head > button.icon { flex: none; --button-size: 1.25rem; width: 1.25rem; height: 1.25rem; margin: 0; border: none; background: none; box-shadow: none; color: inherit; font-size: var(--font-size-12, 0.75rem); }
 .ssm-sheet .ssm-subsection-head.ssm-striped { padding-left: var(--space-4, 0.25rem); border-left: 3px solid var(--ssm-cat, var(--color-border-book, #7a7971)); }
 .ssm-sheet .ssm-empty { margin: 0.1rem 0 0.25rem; }
 
@@ -372,7 +372,8 @@ button.ssm-reached { color: #4f9d5d; }
 /* Subjects by category in Run view (spec 14.4): a red bar per category, with each subject as a card under it. A card's header is a light tint of the bar's red, so the category bars stand out. */
 .ssm-sheet .ssm-subject-category { display: flex; flex-direction: column; gap: var(--space-4, 0.25rem); flex: none; }
 .ssm-sheet .ssm-subject-category > .ssm-block-head { margin-bottom: 0; }
-.ssm-sheet .ssm-subject.ssm-subject-card { flex: none; margin: 0; padding: 0 var(--space-4, 0.25rem) var(--space-4, 0.25rem); border: 1px solid var(--color-border, #7a7971); border-radius: 3px; }
+.ssm-sheet .ssm-subject.ssm-subject-card { flex: none; margin: 0; padding: 0 var(--space-4, 0.25rem); border: 1px solid var(--color-border, #7a7971); border-radius: 3px; }
+.ssm-sheet .ssm-subject.ssm-subject-card > .ssm-section:last-child { padding-bottom: var(--space-4, 0.25rem); }
 .ssm-sheet .ssm-subject.ssm-subject-card > .ssm-card-head { background: color-mix(in srgb, var(--color-pf-primary, #5e0000) 18%, transparent); color: inherit; line-height: 1.75em; }
 .ssm-sheet .ssm-subject.ssm-subject-card > .ssm-card-head > h3 { text-transform: none; font-size: var(--font-size-14, 0.875rem); }
 

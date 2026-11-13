@@ -8,6 +8,11 @@
     <prose-mirror name="description" toggled value="{{description}}">{{{@root.descriptionHtml}}}</prose-mirror>
   </div>
   {{/with}}
+  <h4 class="ssm-section-title ssm-subsection-head">
+    <span class="ssm-grow">{{localize "SSM.Challenge.Checks"}}</span>
+    <button type="button" class="icon fa-solid fa-plus" data-action="addRow" data-list="checks" aria-label="{{localize "SSM.Challenge.AddCheck"}}" data-tooltip-text="{{localize "SSM.Challenge.AddCheck"}}"></button>
+  </h4>
+  {{#if checks.length}}
   <div class="ssm-checks-wrap"><table class="ssm-checks">
     <thead><tr>
       <th>{{localize "SSM.Challenge.Skill"}}</th>
@@ -29,12 +34,8 @@
       <td class="check">{{#unless always}}<input type="checkbox" name="{{path}}.decoy" {{checked decoy}}>{{/unless}}</td>
       <td><button type="button" class="icon fa-solid fa-trash" data-action="removeRow" data-path="{{path}}" aria-label="{{localize "SSM.Challenge.Remove"}}"></button></td>
     </tr>
-    {{else}}
-    <tr><td colspan="7" class="ssm-muted">{{localize "SSM.Challenge.NoChecks"}}</td></tr>
     {{/each}}
     </tbody>
   </table></div>
-  <div class="ssm-row ssm-modifier-buttons">
-    <button type="button" class="ssm-add" data-action="addRow" data-list="checks"><i class="fa-solid fa-plus" inert></i> {{localize "SSM.Challenge.AddCheck"}}</button>
-  </div>
+  {{else}}<p class="ssm-muted">{{localize "SSM.Challenge.NoChecks"}}</p>{{/if}}
 </div>
