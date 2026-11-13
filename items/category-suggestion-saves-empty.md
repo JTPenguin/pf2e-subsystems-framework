@@ -1,8 +1,9 @@
 ---
 title: "Clicking a category suggestion can save an empty category"
 kind: work
-status: proposed
-waits_on: Justin
+status: ready
+waits_on: Claude
+priority: ⏫
 blocked_by: []
 source: "Found by the edit-window restyle agent, 2026-11-12"
 added: 2026-11-12
