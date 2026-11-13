@@ -1,13 +1,14 @@
 ---
 title: "Remove the Premise field"
 kind: work
-status: ready
+status: done
 waits_on: Claude
 priority: 🔼
 blocked_by: []
 added: 2026-11-12
 updated: 2026-11-12
 source: "Justin's UI list, 2026-11-12; data decision in triage interview, 2026-11-12"
+outcome: "Premise removed from the model, sheet, search, lang, tests, spec, module.json htmlFields and the influence-foundry skill (premise text now goes into GM Notes). Tests pass; checked live: no Premise on the sheet, GM Notes saves, a page created with a premise key loads without error."
 ---
 # Remove the Premise field
 

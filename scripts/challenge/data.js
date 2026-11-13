@@ -395,7 +395,7 @@ export function mergeForm(source, form, path = "") {
 }
 
 /** The parts of the data a form may edit. Run state and the preset never come from a form. */
-export const EDITABLE = ["pointsName", "subjectLabel", "premise", "gmNotes", "rounds", "modifiers", "subjects", "counters", "multipleSubjects"];
+export const EDITABLE = ["pointsName", "subjectLabel", "gmNotes", "rounds", "modifiers", "subjects", "counters", "multipleSubjects"];
 
 /**
  * Merge expanded form data into the source's editable parts. Without Allow multiple subjects, a subject the form newly reveals
@@ -420,7 +420,7 @@ export function revealOnly(system, subject) {
   for (const other of system.subjects) if (other !== subject) other.revealed = false;
 }
 
-/** Keep only the named fields of expanded form data, for example "premise" or "subjects.0.name". */
+/** Keep only the named fields of expanded form data, for example "gmNotes" or "subjects.0.name". */
 export function pickFields(form, names) {
   const picked = {};
   for (const name of names) {
@@ -460,7 +460,7 @@ export function clampTracks(system) {
 
 /** The text full-text search looks in. */
 export function searchText(system) {
-  const parts = [system.premise, system.gmNotes];
+  const parts = [system.gmNotes];
   const thresholds = (rows) => rows.flatMap((row) => [row.playerText, row.gmText]);
   for (const counter of allCounters(system)) parts.push(counter.name, ...thresholds(counter.thresholds));
   for (const modifier of system.modifiers ?? []) parts.push(modifier.name, modifier.category, modifier.playerText, modifier.gmText, modifier.note);

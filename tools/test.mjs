@@ -247,7 +247,7 @@ test("only this module's page types count as challenge types", () => {
 
 const RUN = () => ({ status: "inactive", acted: [], baseline: null, roundHistory: [] });
 /** A new challenge from a preset, with the fields the data model would add. Language keys stand in for their text. */
-const system = (preset = "influence") => ({ ...D.newChallengeSystem(preset), premise: "<p>Banquet</p>", gmNotes: "", counters: [], run: RUN() });
+const system = (preset = "influence") => ({ ...D.newChallengeSystem(preset), gmNotes: "", counters: [], run: RUN() });
 /** An Influence challenge whose NPC's counter has 1 point and thresholds at 2 and 5, a Society check on Influence, and a challenge counter at 3. */
 const runSystem = () => {
   const s = system();
@@ -369,8 +369,8 @@ test("clampTracks limits every counter's values, a subject's too, per PC too, an
 });
 
 test("pickFields keeps named fields at their nested paths", () => {
-  const form = { premise: "p", gmNotes: "", rounds: { max: 3 }, counters: { 0: { value: 2, name: "x" } } };
-  assert.deepEqual(D.pickFields(form, ["premise", "gmNotes", "counters.0.value", "missing.field"]), { premise: "p", gmNotes: "", counters: { 0: { value: 2 } } });
+  const form = { gmNotes: "", rounds: { max: 3 }, counters: { 0: { value: 2, name: "x" } } };
+  assert.deepEqual(D.pickFields(form, ["gmNotes", "counters.0.value", "missing.field"]), { gmNotes: "", counters: { 0: { value: 2 } } });
 });
 
 test("applyForm changes the editable parts and never the run state or the preset", () => {
@@ -382,6 +382,7 @@ test("applyForm changes the editable parts and never the run state or the preset
 
 test("searchText covers the challenge's text", () => {
   const s = system();
+  s.gmNotes = "<p>Banquet</p>";
   Object.assign(sub(s), { name: "Vance", description: "<p>Perception +12</p>" });
   Object.assign(D.addRow(s, "subjects.0.counters.0.thresholds"), { gmText: "secret ending" });
   Object.assign(D.addRow(s, "counters"), { name: "Suspicion", thresholds: [{ ...D.newThreshold(), gmText: "guards arrive" }] });
@@ -968,7 +969,6 @@ const GM_SECRET = "GMSECRET";
 /** A running challenge with one entry of every kind, none revealed, and GM-only text in every GM field. */
 const secretSystem = () => {
   const s = runSystem();
-  s.premise = `<p>${GM_SECRET} premise</p>`;
   s.gmNotes = `<p>${GM_SECRET} notes</p>`;
   const subject = sub(s);
   Object.assign(subject, { name: "Lady Vance", description: `<p>A noble.</p><section class="secret" id="secret-v"><p>${GM_SECRET} stats</p></section>` });
@@ -1002,7 +1002,7 @@ const revealAll = (s) => {
 };
 const assertNoSecrets = (view) => {
   const { keys } = scan(view);
-  for (const key of ["decoy", "always", "gmText", "gmNotes", "premise", "statLine", "revealed", "effects", "note", "outcomes", "maxPoints", "given", "min", "perRound", "goal", "direction", "pointsBy", "completeBy", "baseline", "run", "preset"]) assert.ok(!keys.has(key), `key ${key} must not appear`);
+  for (const key of ["decoy", "always", "gmText", "gmNotes", "statLine", "revealed", "effects", "note", "outcomes", "maxPoints", "given", "min", "perRound", "goal", "direction", "pointsBy", "completeBy", "baseline", "run", "preset"]) assert.ok(!keys.has(key), `key ${key} must not appear`);
   assert.ok(!JSON.stringify(view).includes(GM_SECRET), "GM text must not appear");
 };
 
@@ -1459,7 +1459,7 @@ test("a both-ways bar spans the limits or the furthest thresholds, with a mark a
 
 /* Infiltration and its preparation (items/infiltration-subsystem.md) */
 
-const presetSystem = (preset) => ({ ...D.newChallengeSystem(preset), premise: "", gmNotes: "", run: RUN() });
+const presetSystem = (preset) => ({ ...D.newChallengeSystem(preset), gmNotes: "", run: RUN() });
 /** No preset action has an outcome table: rolls change nothing, so the GM changes values by hand. */
 /** A subject's counters as [name, value, min, max, revealed]. */
 const countersOf = (subject) => subject.counters.map((row) => [row.name, row.value, row.min, row.max, row.revealed]);

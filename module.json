@@ -10,7 +10,7 @@
   },
   "documentTypes": {
     "JournalEntryPage": {
-      "challenge": { "htmlFields": ["premise", "gmNotes"] }
+      "challenge": { "htmlFields": ["gmNotes"] }
     }
   },
   "esmodules": ["scripts/module.js"],

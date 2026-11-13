@@ -80,7 +80,7 @@ Sidebar tab -> Challenge (journal entry + typed page, GM only) -> GM sheet
 
 | Field | Notes |
 |---|---|
-| Name, premise, GM notes | Premise and notes are rich text |
+| Name, GM notes | GM notes are rich text |
 | Rounds | Current and maximum |
 | NPCs | One or more |
 | Counters | Zero or more |
@@ -130,7 +130,7 @@ The sheet has **one view** (Justin, 2026-11-12): live play and editing together,
 |---|---|
 | Name | The challenge name, editable in place. |
 | Run strip | Always shown, even before Start. Roll buttons stay disabled until the run starts. |
-| Challenge | The challenge's own fields, edited in place: points name, subject label, Allow multiple subjects, rounds (current and maximum; current is locked while running), premise and GM notes. |
+| Challenge | The challenge's own fields, edited in place: points name, subject label, Allow multiple subjects, rounds (current and maximum; current is locked while running) and GM notes. |
 | Modifiers | The challenge's own modifiers, grouped by category (14.7). |
 | Subjects | Grouped by category (14.4), then an Add subject button. |
 | Counters | The challenge's counters. |
@@ -326,7 +326,7 @@ Every subsystem runs on one data model, one sheet and one panel: GM Core's [Vict
 
 | Field | Notes |
 |---|---|
-| Name, premise, GM notes | As today |
+| Name, GM notes | As today |
 | Preset | Which preset made it. Used only to build a new subject and to name the Add button. |
 | Points name, subject label | "Influence Points" and "NPC" for Influence; "Victory Points" and "Subject" for a blank challenge |
 | Rounds | Current and maximum. The maximum can be blank: no limit, and the panel shows "Round 3" with no bar. |

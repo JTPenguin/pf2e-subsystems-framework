@@ -125,10 +125,6 @@
         </div>
       </div>
       <div class="ssm-section">
-        {{> ssmSubsectionHead label=(localize "SSM.Challenge.Premise")}}
-        <prose-mirror name="premise" toggled value="{{@root.system.premise}}">{{{@root.premiseHtml}}}</prose-mirror>
-      </div>
-      <div class="ssm-section">
         {{> ssmSubsectionHead label=(localize "SSM.Challenge.GMNotes")}}
         <prose-mirror name="gmNotes" toggled value="{{@root.system.gmNotes}}">{{{@root.gmNotesHtml}}}</prose-mirror>
       </div>
