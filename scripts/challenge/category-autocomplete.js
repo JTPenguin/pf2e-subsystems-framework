@@ -51,6 +51,11 @@ export class CategoryAutocomplete {
       if (event.target === input || this.#autocomplete.element?.contains(event.target)) return;
       this.dismiss();
     }, { signal });
+    // Pressing on the menu keeps focus in the field. Otherwise the field's blur saves what is typed (an empty field, say), the save
+    // redraws the window and closes the menu, and the release lands on nothing, so the pick is lost.
+    input.ownerDocument.addEventListener("mousedown", (event) => {
+      if (ui.autocomplete === this.#autocomplete && this.#autocomplete.element?.contains(event.target)) event.preventDefault();
+    }, { signal, capture: true });
     // A redraw that puts focus back in the field reopens its menu.
     if (input.ownerDocument.activeElement === input) refresh();
   }

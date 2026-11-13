@@ -8,7 +8,7 @@ blocked_by: []
 source: "Found by the edit-window restyle agent, 2026-11-12"
 added: 2026-11-12
 updated: 2026-11-12
-outcome: "Fixed 2026-11-12. Confirmed cause: pressing on a suggestion blurred the field, the blur saved the cleared value, and the save redrew the window, which closed the menu before the button came up, so the click never reached the pick. Typing part of a name only seemed to work when the save landed after the release. Pressing on the menu now keeps focus in the field (mousedown preventDefault in category-autocomplete.js), so only the pick saves. Checked live in both windows: clear then click, type part then click, and arrow keys plus Enter."
+outcome: "Fixed 2026-11-12. Confirmed cause: pressing on a suggestion blurred the field, the blur saved the cleared value, and the save redrew the window, which closed the menu before the button came up, so the click never reached the pick. A fast click (release before the redraw) still worked, which is why the bug showed only sometimes; the type-part path runs the same race. Pressing on the menu now keeps focus in the field (mousedown preventDefault in category-autocomplete.js), so only the pick saves. Checked live in both windows: clear then click, type part then click, and arrow keys plus Enter."
 ---
 # Clicking a category suggestion can save an empty category
 
