@@ -1,13 +1,14 @@
 ---
 title: "Sheet: remove the Add Subject button, use the section header +"
 kind: work
-status: ready
-waits_on: Claude
+status: done
+waits_on: none
 priority: 🔼
 blocked_by: []
 source: Justin's request, 2026-11-12
 added: 2026-11-12
 updated: 2026-11-12
+outcome: "Add Subject button removed; every subjects section has a header + and an empty state (be0907c). Justin checked it, 2026-11-12."
 ---
 # Sheet: remove the Add Subject button, use the section header +
 
