@@ -65,7 +65,7 @@ button.ssm-toggle:disabled { cursor: default; }
 
 /* A skill chip looks like PF2e's inline check. It is a wrapper, not a button: the eye, the roll and the chat link are three separate buttons inside it. */
 .ssm-skill { display: inline-flex; align-items: stretch; border: 1px solid var(--content-link-border-color, #7a7971); border-radius: 2px; background: var(--content-link-background, rgba(0, 0, 0, 0.1)); color: var(--content-link-text-color, inherit); font-size: inherit; line-height: 1.15em; white-space: nowrap; }
-.ssm-sheet .ssm-skill > button { --button-size: auto; display: inline-flex; align-items: center; flex: none; width: auto; height: auto; min-height: 0; margin: 0; padding: 0 0.25rem; border: none; border-radius: 0; background: none; box-shadow: none; color: inherit; font: inherit; line-height: 1.15em; transition: none; }
+.ssm-sheet .ssm-skill > button { --button-size: auto; display: inline-flex; align-items: center; flex: none; width: auto; height: auto; min-height: 0; margin: 0; padding: 0 0.25rem; border: none; border-radius: 0; background: none; box-shadow: none; color: inherit; font-size: inherit; line-height: 1.15em; transition: none; }
 .ssm-sheet .ssm-skill > button.icon, .ssm-sheet .ssm-skill > .ssm-skill-post { font-size: 0.8em; color: var(--content-link-icon-color, inherit); }
 .ssm-sheet .ssm-skill > button + button { border-left: 1px solid var(--content-link-border-color, #7a7971); }
 .ssm-sheet .ssm-skill > button:hover:not(:disabled) { text-shadow: 0 0 8px var(--color-shadow-primary, #ff6400); }
