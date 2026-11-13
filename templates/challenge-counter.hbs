@@ -12,12 +12,6 @@
     <label>{{localize "SSM.Challenge.DirectionLabel"}}</label>
     <select name="direction" data-redraw>{{selectOptions @root.choices.directions selected=direction}}</select>
   </div>
-  {{#unless perPc}}
-  <div class="form-group">
-    <label data-tooltip="SSM.Challenge.DisplayHint">{{localize "SSM.Challenge.DisplayLabel"}}</label>
-    <select name="display">{{selectOptions @root.choices.displays selected=display}}</select>
-  </div>
-  {{/unless}}
   <div class="form-group">
     <label>{{localize "SSM.Challenge.Minimum"}}</label>
     <input type="number" step="1" name="min" value="{{min}}" placeholder="{{localize "SSM.Challenge.NoLimit"}}">
@@ -28,14 +22,6 @@
   </div>
   {{#unless perPc}}
   <div class="form-group">
-    <label data-tooltip="SSM.Challenge.ShowThresholdListHint">{{localize "SSM.Challenge.ShowThresholdList"}}</label>
-    <input type="checkbox" name="showThresholdList" {{checked showThresholdList}}>
-  </div>
-  <div class="form-group">
-    <label data-tooltip="SSM.Challenge.ShowThresholdMarksHint">{{localize "SSM.Challenge.ShowThresholdMarks"}}</label>
-    <input type="checkbox" name="showThresholdMarks" {{checked showThresholdMarks}}>
-  </div>
-  <div class="form-group">
     <label data-tooltip="SSM.Challenge.PerRoundHint">{{localize "SSM.Challenge.PerRound"}}</label>
     <input type="number" step="1" name="perRound" value="{{perRound}}">
   </div>
@@ -44,10 +30,27 @@
     <label data-tooltip="SSM.Challenge.PerPcHint">{{localize "SSM.Challenge.PerPc"}}</label>
     <input type="checkbox" name="perPc" data-redraw {{checked perPc}}>
   </div>
-  <div class="form-group">
-    <label>{{localize "SSM.Challenge.Revealed"}}</label>
-    <input type="checkbox" name="revealed" {{checked revealed}}>
-  </div>
+  <fieldset>
+    <legend>{{localize "SSM.Challenge.PanelGroup"}}</legend>
+    <div class="form-group">
+      <label>{{localize "SSM.Challenge.Revealed"}}</label>
+      <input type="checkbox" name="revealed" {{checked revealed}}>
+    </div>
+    {{#unless perPc}}
+    <div class="form-group">
+      <label data-tooltip="SSM.Challenge.DisplayHint">{{localize "SSM.Challenge.DisplayLabel"}}</label>
+      <select name="display">{{selectOptions @root.choices.displays selected=display}}</select>
+    </div>
+    <div class="form-group">
+      <label data-tooltip="SSM.Challenge.ShowThresholdListHint">{{localize "SSM.Challenge.ShowThresholdList"}}</label>
+      <input type="checkbox" name="showThresholdList" {{checked showThresholdList}}>
+    </div>
+    <div class="form-group">
+      <label data-tooltip="SSM.Challenge.ShowThresholdMarksHint">{{localize "SSM.Challenge.ShowThresholdMarks"}}</label>
+      <input type="checkbox" name="showThresholdMarks" {{checked showThresholdMarks}}>
+    </div>
+    {{/unless}}
+  </fieldset>
   {{/with}}
   {{#unless counter.perPc}}
   <fieldset>
