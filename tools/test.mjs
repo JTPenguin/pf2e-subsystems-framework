@@ -1014,7 +1014,7 @@ test("the copy shows only the defaults before anything is revealed", () => {
   assert.deepEqual(view.rounds, { current: 1, max: 6 });
   const [subject] = view.subjects;
   assert.deepEqual([subject.name, subject.complete], ["Lady Vance", false]);
-  assert.deepEqual(subject.counters, [{ id: pts(s).id, name: "SSM.Preset.influence.Points", value: 2, text: "2", display: "bar", slots: null, perPc: false, pcs: [], scale: 8, range: null, thresholds: [] }], "a subject's counter starts shown; its hidden threshold sets only the scale");
+  assert.deepEqual(subject.counters, [{ id: pts(s).id, name: "SSM.Preset.influence.Points", value: 2, text: "2", display: "bar", slots: null, perPc: false, pcs: [], scale: 8, range: null, marks: [], thresholds: [] }], "a subject's counter starts shown; its hidden threshold sets only the scale");
   assert.deepEqual(subject.actions.map((action) => [action.name, action.secret, action.checks.map((row) => row.skill)]), [
     ["SSM.Preset.influence.Discover", true, ["perception"]],
     ["SSM.Preset.influence.Influence", false, ["deception", "diplomacy", "intimidation"]],
@@ -1052,7 +1052,7 @@ test("revealing each kind of entry adds it, and only its player fields", () => {
   assert.deepEqual(view.subjects[0].actions[1].checks.at(-1), { id: society(s).id, skill: "society", lore: "", dc: 15 });
   assert.deepEqual(known(view.subjects[0]), [{ id: subject.modifiers[0].id, name: "Flattery", text: "likes praise", category: "", colour: "", duration: "ongoing", active: false, spent: false, changes: [] }]);
   assert.deepEqual(view.subjects[0].counters[0].thresholds, [{ id: pts(s).thresholds[0].id, points: 8, text: "she offers an introduction", textHidden: false, reached: false }]);
-  assert.deepEqual(view.counters, [{ id: s.counters[0].id, name: "Suspicion", value: 3, text: "3/222", perPc: false, pcs: [], display: "bar", slots: null, scale: 222, range: null, thresholds: [{ id: s.counters[0].thresholds[0].id, points: 5, text: "the guards stir", textHidden: false, reached: false }] }]);
+  assert.deepEqual(view.counters, [{ id: s.counters[0].id, name: "Suspicion", value: 3, text: "3/222", perPc: false, pcs: [], display: "bar", slots: null, scale: 222, range: null, marks: [{ points: 5, reached: false }], thresholds: [{ id: s.counters[0].thresholds[0].id, points: 5, text: "the guards stir", textHidden: false, reached: false }] }]);
   assertNoSecrets(view);
   Run.toggleReveal(s, society(s).id);
   assert.equal(viewOf(s).subjects[0].actions[1].checks.length, 3, "hiding an entry again takes it back out");
@@ -1212,7 +1212,7 @@ test("a revealed counter with no thresholds is a plain number; hidden counter th
   s.counters[0].thresholds = [];
   s.counters[0].max = null;
   [counter] = viewOf(s).counters;
-  assert.deepEqual(counter, { id: s.counters[0].id, name: "Suspicion", value: 3, text: "3", perPc: false, pcs: [], display: "number", slots: null, scale: 0, range: null, thresholds: [] });
+  assert.deepEqual(counter, { id: s.counters[0].id, name: "Suspicion", value: 3, text: "3", perPc: false, pcs: [], display: "number", slots: null, scale: 0, range: null, marks: [], thresholds: [] });
 });
 
 test("party markers show who has acted, a PC with no image gets the default icon, and an empty party is fine", () => {
@@ -1724,6 +1724,51 @@ test("Steps fill up to the value, a Track marks one slot; revealed thresholds ma
   assert.deepEqual(viewOf(s).counters[0].slots.map((slot) => [slot.number, slot.filled]), [[-2, false], [-1, true], [0, false], [1, false], [2, false]]);
   Object.assign(s.counters[0], { direction: "up", min: 0, max: 100 });
   assert.deepEqual([viewOf(s).counters[0].display, viewOf(s).counters[0].slots], ["bar", null]);
+});
+
+test("with its thresholds list off, a counter keeps its marks but sends no list or threshold text to players", () => {
+  const s = presetSystem("influence");
+  assert.equal(D.newCounter().showThresholdList, true, "the list is on by default");
+  assert.ok(D.COUNTER_FIELDS.includes("showThresholdList"), "the counter window saves it");
+  s.counters = [{ ...D.newCounter(), name: "Alarm", value: 2, max: 4, display: "steps", revealed: true, showThresholdList: false, thresholds: [
+    { ...D.newThreshold(), points: 3, reveal: "full", playerText: "guards come", reached: false },
+    { ...D.newThreshold(), points: 1, reveal: "points", reached: true },
+    { ...D.newThreshold(), points: 4, reveal: "hidden", playerText: "lockdown" },
+  ] }];
+  let [row] = viewOf(s).counters;
+  assert.deepEqual([row.thresholds, row.marks], [[], [{ points: 1, reached: true }, { points: 3, reached: false }]]);
+  assert.deepEqual(row.slots.filter((slot) => slot.threshold).map((slot) => [slot.number, slot.reached]), [[1, true], [3, false]], "the marks still show on Steps");
+  assert.doesNotMatch(JSON.stringify(viewOf(s)), /guards come|lockdown/);
+  s.counters[0].showThresholdList = true;
+  assert.deepEqual(viewOf(s).counters[0].thresholds.map((t) => [t.points, t.text]), [[1, ""], [3, "guards come"]], "on, the list is as before");
+  delete s.counters[0].showThresholdList;
+  assert.equal(viewOf(s).counters[0].thresholds.length, 2, "a counter saved before the setting shows its list");
+});
+
+test("with its display marks off, a counter keeps its list but marks nothing on its display", () => {
+  const s = presetSystem("influence");
+  assert.equal(D.newCounter().showThresholdMarks, true, "marks are on by default");
+  assert.ok(D.COUNTER_FIELDS.includes("showThresholdMarks"), "the counter window saves it");
+  s.counters = [{ ...D.newCounter(), name: "Alarm", value: 2, max: 4, display: "steps", revealed: true, showThresholdMarks: false, thresholds: [{ ...D.newThreshold(), points: 3, reveal: "full", playerText: "guards come" }] }];
+  let [row] = viewOf(s).counters;
+  assert.deepEqual([row.marks, row.slots.some((slot) => slot.threshold), row.thresholds.map((t) => t.text)], [[], false, ["guards come"]]);
+  s.counters[0].showThresholdList = false;
+  [row] = viewOf(s).counters;
+  assert.deepEqual([row.marks, row.thresholds], [[], []], "both off: nothing of the threshold reaches players");
+  assert.doesNotMatch(JSON.stringify(viewOf(s)), /guards come/);
+  delete s.counters[0].showThresholdMarks;
+  assert.equal(viewOf(s).counters[0].marks.length, 1, "a counter saved before the setting keeps its marks");
+});
+
+test("a bar's threshold ticks sit on the fill's scale, on plain and both-ways bars", () => {
+  const marks = [{ points: 5, reached: true }, { points: 10, reached: false }];
+  assert.deepEqual(V.barTicks(marks, 2, { scale: 10, range: null }).map((t) => [t.left, t.reached]), [[50, true], [100, false]]);
+  assert.deepEqual(V.barTicks(marks, 20, { scale: 10, range: null }).map((t) => t.left), [25, 50], "a value past the scale widens it, as the fill does");
+  assert.deepEqual(V.barTicks(marks, 0, { scale: 0, range: null }).map((t) => t.left), [50, 100], "no scale falls back to 10");
+  assert.deepEqual(V.barTicks([{ points: -5, reached: false }, { points: 5, reached: true }, { points: 90, reached: false }], 0, { range: { lo: -10, hi: 10 } }).map((t) => t.left), [25, 75, 100], "both ways: on the range, held at the ends");
+  const s = reputation();
+  const [row] = viewOf(s).subjects[0].counters;
+  assert.deepEqual(V.barTicks(row.marks, row.value, row).map((t) => t.left), row.marks.map((m) => V.bothWaysBar(m.points, row.range).left + (m.points > 0 ? V.bothWaysBar(m.points, row.range).width : 0)), "a tick lands where a fill to its points would end");
 });
 
 test("the Edit tab sets a counter's style and its visibility separately, and the eye button shows the style picked", () => {

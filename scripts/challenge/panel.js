@@ -2,7 +2,7 @@ import { MODULE } from "../constants.js";
 import { counterMoves, findCounter, isDecoyCheck } from "./data.js";
 import { actionName, skillLabel, subjectName } from "./skill-label.js";
 import { refreshPanel } from "../panel/panel.js";
-import { bothWaysBar, buildPanelView, cardTooltip, changeText, findPanelRow, pointsBar, roundSegments } from "./panel-view.js";
+import { barTicks, bothWaysBar, buildPanelView, cardTooltip, changeText, findPanelRow, pointsBar, roundSegments } from "./panel-view.js";
 import { rollCheck, rollTarget } from "./roll.js";
 import { advanceRound, canAdvanceRound, canUndoRound, changeCounter, counterValueOf, toggleActed, toggleModifier, undoRound } from "./run.js";
 import { ChallengeSheet } from "./sheet.js";
@@ -42,6 +42,7 @@ function counterSet(counters, pcs, page) {
     tracks: counters.filter((row) => SLOTTED.has(row.display) || row.display === "bar").map((row) => ({
       ...named(row),
       bar: row.display === "bar" ? barOf(row.value, row) : null,
+      ticks: row.display === "bar" ? barTicks(row.marks, row.value, row).map((tick) => ({ ...tick, tooltip: game.i18n.format("SSM.Panel.SlotThreshold", { number: tick.points }) })) : [],
       steps: row.display === "steps",
       slots: row.slots?.map((slot) => ({ ...slot, tooltip: slot.threshold ? game.i18n.format("SSM.Panel.SlotThreshold", { number: slot.number }) : String(slot.number) })) ?? null,
     })),

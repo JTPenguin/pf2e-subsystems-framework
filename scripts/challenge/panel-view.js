@@ -165,13 +165,19 @@ export function counterSlots(counter, value, display, thresholds) {
   });
 }
 
-/** A revealed counter, the challenge's or a subject's. One with thresholds is a full track: a bar and its visible thresholds. A per-PC counter has a value per party PC and no thresholds. */
+/**
+ * A revealed counter, the challenge's or a subject's. One with thresholds is a full track: a bar and its visible thresholds. A per-PC counter has a value per party PC and no thresholds.
+ * Revealed thresholds mark the display (`marks`: each one's points and whether it is reached, nothing else) and fill the list under it (`thresholds`).
+ * Each is empty when the counter turns it off, so what players don't see stays out of the copy.
+ */
 function counterView(system, counter, party) {
   const start = system.run.baseline?.counters?.[counter.id]?.value;
   const perPc = !!counter.perPc;
-  const thresholds = perPc ? [] : thresholdViews(counter.thresholds, counter.direction);
+  const shown = perPc ? [] : thresholdViews(counter.thresholds, counter.direction);
+  const marks = counter.showThresholdMarks === false ? [] : shown.map((row) => ({ points: row.points, reached: row.reached }));
+  const thresholds = counter.showThresholdList === false ? [] : shown;
   let display = counterDisplay(counter);
-  const slots = display === "steps" || display === "track" ? counterSlots(counter, counter.value, display, thresholds) : null;
+  const slots = display === "steps" || display === "track" ? counterSlots(counter, counter.value, display, marks) : null;
   if (!slots && (display === "steps" || display === "track")) display = "bar";
   return {
     id: counter.id,
@@ -184,6 +190,7 @@ function counterView(system, counter, party) {
     pcs: perPc ? party.map((pc) => ({ id: pc.id, value: counterValueOf(counter, pc.id), text: counterValueText(counter, counterValueOf(counter, pc.id)) })) : [],
     scale: trackScale(counter, counter.value, start),
     range: counter.direction === BOTH_WAYS ? bothWaysRange(counter) : null,
+    marks,
     thresholds,
   };
 }
@@ -234,10 +241,24 @@ export function pointsBar(points, scale) {
  * A both-ways bar (spec 14.8): it spans `lo` to `hi`, with a mark at 0 (`zero`, as a percentage from the left), filled from 0 to the value
  * (`left` and `width`, as percentages). A value past the range widens it.
  */
-export function bothWaysBar(value, { lo, hi }) {
+/** Where a point lands on a both-ways bar, as a percentage from the left: the range from `lo` to `hi`, widened to take in 0 and the value. */
+const bothWaysAt = (value, { lo, hi }) => {
   const from = Math.min(lo, 0, value);
-  const to = Math.max(hi, 0, value);
-  const span = to - from || 1;
-  const at = (n) => Math.round(((n - from) / span) * 1000) / 10;
+  const span = Math.max(hi, 0, value) - from || 1;
+  return (n) => Math.round(((Math.max(from, Math.min(from + span, n)) - from) / span) * 1000) / 10;
+};
+
+export function bothWaysBar(value, range) {
+  const at = bothWaysAt(value, range);
   return { both: true, zero: at(0), left: at(Math.min(0, value)), width: Math.round((at(Math.max(0, value)) - at(Math.min(0, value))) * 10) / 10, negative: value < 0 };
+}
+
+/**
+ * A bar's threshold ticks (spec 14.12): one per mark, at `left` percent from the bar's start, on the same scale as the fill.
+ * `track` is the counter's copy: its `range` for a both-ways bar, else its `scale`. A plain bar fills by size, so a tick sits at its points' size, held at the end.
+ */
+export function barTicks(marks, value, track) {
+  const full = Math.max(track.scale || DEFAULT_SCALE, Math.abs(value));
+  const at = track.range ? bothWaysAt(value, track.range) : (n) => Math.round(Math.min(1, Math.abs(n) / full) * 1000) / 10;
+  return marks.map((mark) => ({ points: mark.points, reached: mark.reached, left: at(mark.points) }));
 }

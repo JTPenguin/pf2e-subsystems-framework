@@ -169,6 +169,10 @@ button.ssm-reached { color: #4f9d5d; }
 .ssm-panel-bar.both { position: relative; }
 .ssm-panel-bar.both > span { position: absolute; top: 0; }
 .ssm-panel-zero { position: absolute; top: -1px; bottom: -1px; width: 2px; margin-left: -1px; background: #f7f3e8; }
+/* A revealed threshold on a bar: a thin upright tick, red, green once reached, as on a Track (spec 14.12). */
+.ssm-panel-bar:has(> .ssm-panel-tick) { position: relative; }
+.ssm-panel-tick { position: absolute; top: 0; bottom: 0; width: 2px; background: #c9593f; }
+.ssm-panel-tick.reached { background: #8fc98a; }
 .ssm-panel-label { opacity: 0.7; }
 .ssm-panel-label::after { content: ":"; }
 .ssm-panel-list > span:not(:last-child)::after { content: " "; }

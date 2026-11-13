@@ -60,6 +60,9 @@ const counterFields = () => ({
   thresholds: list(thresholdFields()),
   // How the panel draws it (spec 14.12).
   display: choice(COUNTER_DISPLAYS, "auto"),
+  // Whether the panel lists the revealed thresholds under the counter, and whether it marks them on its bar, steps or track. Each works without the other.
+  showThresholdList: flag(true),
+  showThresholdMarks: flag(true),
   revealed: flag(),
 });
 

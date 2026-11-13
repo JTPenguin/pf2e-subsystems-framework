@@ -67,7 +67,7 @@ export const newCheck = () => ({ id: id(), skill: "society", lore: "", dc: 15, r
 /** `dc` is a DC change that applies while the threshold is reached. */
 export const newThreshold = () => ({ id: id(), points: 1, playerText: "", gmText: "", reveal: "hidden", reached: false, dc: 0 });
 /** A per-PC counter keeps one value per party PC in `valueBy`, starting from `value` (spec 14.8), and a GM-only note per PC in `noteBy`. */
-export const newCounter = () => ({ id: id(), name: "", value: 0, direction: "up", min: null, max: null, perRound: 0, perPc: false, valueBy: {}, noteBy: {}, thresholds: [], display: "auto", revealed: true });
+export const newCounter = () => ({ id: id(), name: "", value: 0, direction: "up", min: null, max: null, perRound: 0, perPc: false, valueBy: {}, noteBy: {}, thresholds: [], display: "auto", showThresholdList: true, showThresholdMarks: true, revealed: true });
 /** A subject's counter (spec 14.13): named by the challenge's points name, and shown from the start, as its subject decides whether players see it. */
 export const newSubjectCounter = (system, fields = {}) => ({ ...newCounter(), name: system?.pointsName ?? "", revealed: true, ...fields });
 
@@ -549,7 +549,7 @@ export function saveModifier(system, subjectId, modifierId, changes) {
 /** The fields the subject, action and counter windows edit. */
 export const SUBJECT_FIELDS = ["name", "category", "revealed", "description"];
 export const ACTION_FIELDS = ["name", "secret", "description", "checks"];
-export const COUNTER_FIELDS = ["name", "value", "direction", "display", "min", "max", "perRound", "perPc", "revealed", "thresholds"];
+export const COUNTER_FIELDS = ["name", "value", "direction", "display", "min", "max", "perRound", "perPc", "revealed", "showThresholdList", "showThresholdMarks", "thresholds"];
 
 /** The subject with this id. The subject window passes it as both ids. */
 export const findSubject = (system, subjectId, entryId = subjectId) => subjectById(system, entryId);

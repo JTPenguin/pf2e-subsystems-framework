@@ -28,6 +28,14 @@
   </div>
   {{#unless perPc}}
   <div class="form-group">
+    <label data-tooltip="SSM.Challenge.ShowThresholdListHint">{{localize "SSM.Challenge.ShowThresholdList"}}</label>
+    <input type="checkbox" name="showThresholdList" {{checked showThresholdList}}>
+  </div>
+  <div class="form-group">
+    <label data-tooltip="SSM.Challenge.ShowThresholdMarksHint">{{localize "SSM.Challenge.ShowThresholdMarks"}}</label>
+    <input type="checkbox" name="showThresholdMarks" {{checked showThresholdMarks}}>
+  </div>
+  <div class="form-group">
     <label data-tooltip="SSM.Challenge.PerRoundHint">{{localize "SSM.Challenge.PerRound"}}</label>
     <input type="number" step="1" name="perRound" value="{{perRound}}">
   </div>

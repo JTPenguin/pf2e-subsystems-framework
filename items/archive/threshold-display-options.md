@@ -1,8 +1,9 @@
 ---
 title: "Control how thresholds show, separately from the thresholds section"
 kind: feature
-status: ready
-waits_on: Claude
+status: done
+waits_on: none
+outcome: "Built 2026-11-12: two checkboxes per counter, Show thresholds list on panel and Show thresholds on counter display (Justin asked for the second the same day), and threshold ticks on Bar displays. Checked by tests and live in Foundry as GM and as Test Player 1."
 priority: 🔼
 blocked_by: []
 source: "Justin's list, 2026-11-12; design picked by Justin in triage, 2026-11-12"
@@ -25,6 +26,7 @@ Justin wants thresholds to mark the counter's display on the panel even when the
 | Question | Answer |
 |---|---|
 | How to split marks from the list | A per-counter setting, **Show thresholds list on panel**, on by default. Off: revealed thresholds still mark the display, but the list is gone. The per-threshold eye is unchanged. |
+| Marks on the display | A second per-counter checkbox, **Show thresholds on counter display**, on by default. Off: no marks on the bar, steps or track, whatever the list does (Justin, later on 2026-11-12). |
 | Bars | Yes: revealed thresholds draw a tick on Bar displays too, so the setting means the same on every display. Both-ways bars included. |
 | GM-only (Nothing) thresholds | Stay hidden everywhere for players, as today. |
 

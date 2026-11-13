@@ -565,7 +565,14 @@ Chase is a preset and nothing more: no code checks for it. The GM does by eye wh
 | Track | A thin line with a tick per value from the minimum to the maximum, and a small rounded square on the value. A revealed threshold's tick is taller and red, green once reached (Justin, 2026-11-12). |
 
 - Steps and Track count from the minimum (0 when unset; −maximum for a both-ways counter) to the maximum. Without a maximum, or with more than 40 slots, they draw as a bar. Steps on a both-ways counter draws as a bar.
-- A revealed threshold marks its slot (on a Track, its tick); a reached one in another colour. Hidden thresholds leave no mark.
+- A revealed threshold marks its slot (on a Track, its tick; on a Bar, a thin tick on the fill's scale, both-ways bars included); a reached one in another colour. Hidden thresholds leave no mark.
+- **Two checkboxes per counter** in its window, both on by default; not on per-PC counters (Justin, 2026-11-12). The per-threshold eye is unchanged, and each checkbox works without the other.
+
+| Checkbox | Off |
+|---|---|
+| Show thresholds list on panel | The panel lists no thresholds under the counter. The copy sent to players holds no threshold text. |
+| Show thresholds on counter display | Revealed thresholds leave no mark on the bar, steps or track. The copy holds no marks. |
+
 - A per-PC counter has no Display list, only Revealed: it keeps its per-PC rows.
 
 ### 14.13 Subjects own counters
