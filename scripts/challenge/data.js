@@ -63,11 +63,11 @@ export function migrateModifier(modifier) {
   delete modifier.effects;
   return modifier;
 }
-export const newCheck = () => ({ id: id(), skill: "society", lore: "", dc: 15, revealed: false, decoy: false });
+export const newCheck = () => ({ id: id(), skill: "society", lore: "", dc: 15, revealed: true, decoy: false });
 /** `dc` is a DC change that applies while the threshold is reached. */
 export const newThreshold = () => ({ id: id(), points: 1, playerText: "", gmText: "", reveal: "hidden", reached: false, dc: 0 });
 /** A per-PC counter keeps one value per party PC in `valueBy`, starting from `value` (spec 14.8), and a GM-only note per PC in `noteBy`. */
-export const newCounter = () => ({ id: id(), name: "", value: 0, direction: "up", min: null, max: null, perRound: 0, perPc: false, valueBy: {}, noteBy: {}, thresholds: [], display: "auto", revealed: false });
+export const newCounter = () => ({ id: id(), name: "", value: 0, direction: "up", min: null, max: null, perRound: 0, perPc: false, valueBy: {}, noteBy: {}, thresholds: [], display: "auto", revealed: true });
 /** A subject's counter (spec 14.13): named by the challenge's points name, and shown from the start, as its subject decides whether players see it. */
 export const newSubjectCounter = (system, fields = {}) => ({ ...newCounter(), name: system?.pointsName ?? "", revealed: true, ...fields });
 
@@ -109,8 +109,8 @@ const pointsSubject = (system, counter = {}) => ({ ...blankSubject(), counters: 
  * `subject(system)` makes a new subject; its counters take the challenge's points name. `categories` and `subjectCategories` are language keys for the suggested modifier and subject categories.
  * `counters()` and `rounds` are a new challenge's counters and round maximum. `gmNotes` is a language key, or a list of them, one paragraph each.
  */
-/** A preset check starts revealed. */
-const revealedCheck = (skill) => ({ ...newCheck(), skill, revealed: true });
+/** A new check with its skill set. */
+const checkFor = (skill) => ({ ...newCheck(), skill });
 const threshold = (points, key, { dc = 0, reveal = "points" } = {}) => ({ ...newThreshold(), points, dc, reveal, playerText: say(`${key}.Player`), gmText: say(`${key}.Gm`) });
 
 const INF = "SSM.Preset.infiltration";
@@ -121,7 +121,7 @@ const PREP = "SSM.Preset.preparation";
 const PREP_ACTIVITIES = ["BribeContact", "ForgeDocuments", "GainContact", "Gossip", "ScoutLocation", "SecureDisguises"];
 
 /** One preparation activity (GM Core, Preparation Activities). What each degree gives is in the preset's GM notes. */
-const preparationActivity = (key, { secret = false, skills }) => ({ ...newAction(), name: say(`${PREP}.${key}.Name`), description: say(`${PREP}.${key}.Description`), secret, checks: skills.map(revealedCheck) });
+const preparationActivity = (key, { secret = false, skills }) => ({ ...newAction(), name: say(`${PREP}.${key}.Name`), description: say(`${PREP}.${key}.Description`), secret, checks: skills.map(checkFor) });
 
 export const PRESETS = {
   victory: {
@@ -143,8 +143,8 @@ export const PRESETS = {
       ...pointsSubject(system),
       revealed: true,
       actions: [
-        { ...newAction(), name: say("SSM.Preset.influence.Discover"), secret: true, checks: [revealedCheck(PERCEPTION)] },
-        { ...newAction(), name: say("SSM.Preset.influence.Influence"), checks: ["deception", "diplomacy", "intimidation"].map(revealedCheck) },
+        { ...newAction(), name: say("SSM.Preset.influence.Discover"), secret: true, checks: [checkFor(PERCEPTION)] },
+        { ...newAction(), name: say("SSM.Preset.influence.Influence"), checks: ["deception", "diplomacy", "intimidation"].map(checkFor) },
       ],
     }),
   },
@@ -209,7 +209,7 @@ export const PRESETS = {
     counters: () => [
       { ...newCounter(), name: say(`${INF}.Edge`), min: 0, perPc: true, revealed: true },
       // Hidden: the bribes and rumours that reached the opposition. It carries into the infiltration.
-      { ...newCounter(), name: say(`${INF}.Awareness`), min: 0 },
+      { ...newCounter(), name: say(`${INF}.Awareness`), min: 0, revealed: false },
     ],
     subject: () => ({
       ...blankSubject(), name: say(`${PREP}.Subject`), revealed: true,

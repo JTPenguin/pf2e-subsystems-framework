@@ -253,9 +253,9 @@ const runSystem = () => {
   const s = system();
   const subject = s.subjects[0];
   subject.counters[0].value = 1;
-  subject.actions[1].checks.push(D.newCheck());
+  subject.actions[1].checks.push({ ...D.newCheck(), revealed: false });
   subject.counters[0].thresholds.push({ ...D.newThreshold(), points: 2 }, { ...D.newThreshold(), points: 5 });
-  s.counters.push({ ...D.newCounter(), name: "Suspicion", value: 3 });
+  s.counters.push({ ...D.newCounter(), revealed: false, name: "Suspicion", value: 3 });
   return s;
 };
 const running = () => {
@@ -295,7 +295,7 @@ test("a preset fills in the names, the rounds and the first subject", () => {
 
 test("addRow picks the right row for each list, and a new subject follows the preset", () => {
   const s = system();
-  assert.deepEqual([D.addRow(s, "subjects.0.actions.1.checks").revealed, "always" in D.addRow(s, "subjects.0.actions.1.checks")], [false, false], "a new check starts hidden");
+  assert.deepEqual([D.addRow(s, "subjects.0.actions.1.checks").revealed, "always" in D.addRow(s, "subjects.0.actions.1.checks")], [true, false], "a new check starts revealed");
   assert.ok("reached" in D.addRow(s, "subjects.0.counters.0.thresholds"));
   const own = D.addRow(s, "subjects.0.counters");
   assert.deepEqual([own.name, own.revealed, own.perRound, own.thresholds], ["SSM.Preset.influence.Points", true, 0, []], "a subject's new counter takes the points name and starts shown");
@@ -785,6 +785,7 @@ test("rows, subjects and counters added during a run go back to hidden and unrea
   subject.counters[0].thresholds.push({ ...D.newThreshold(), reached: true });
   const counter = D.addRow(s, "counters");
   counter.value = 2;
+  counter.revealed = false;
   counter.thresholds.push({ ...D.newThreshold(), points: 4 });
   Run.changeCounter(s, counter.id, 3);
   Run.toggleReveal(s, counter.id);
@@ -973,7 +974,7 @@ const secretSystem = () => {
   Object.assign(subject, { name: "Lady Vance", description: `<p>A noble.</p><section class="secret" id="secret-v"><p>${GM_SECRET} stats</p></section>` });
   subject.counters[0].thresholds = [{ ...D.newThreshold(), points: 8, dc: 3, playerText: "she offers an introduction", gmText: `${GM_SECRET} threshold` }];
   subject.modifiers = [{ ...D.newModifier(), name: "Flattery", playerText: "likes praise", gmText: `${GM_SECRET} modifier`, note: `${GM_SECRET} effect` }];
-  s.counters = [{ ...D.newCounter(), name: "Suspicion", value: 3, min: -111, max: 222, perRound: 1, thresholds: [{ ...D.newThreshold(), points: 5, playerText: "the guards stir", gmText: `${GM_SECRET} counter threshold` }] }];
+  s.counters = [{ ...D.newCounter(), revealed: false, name: "Suspicion", value: 3, min: -111, max: 222, perRound: 1, thresholds: [{ ...D.newThreshold(), points: 5, playerText: "the guards stir", gmText: `${GM_SECRET} counter threshold` }] }];
   Run.startRun(s);
   return s;
 };
@@ -1038,7 +1039,7 @@ test("hidden checks put no id or DC in the copy, and an action with none visible
   society(s).dc = 987;
   const secretAction = D.addRow(s, "subjects.0.actions");
   secretAction.name = "Bribe";
-  secretAction.checks.push({ ...D.newCheck(), dc: 654 });
+  secretAction.checks.push({ ...D.newCheck(), revealed: false, dc: 654 });
   const text = JSON.stringify(viewOf(s));
   for (const part of ["987", "654", society(s).id, "Bribe", secretAction.id]) assert.ok(!text.includes(part), part);
 });
@@ -1092,7 +1093,7 @@ test("a revealed decoy can't be told from a true entry, at any depth, and a deco
 
 test("an unrevealed decoy is left out, and a preset check is revealed from the start with its DC", () => {
   const s = secretSystem();
-  const planted = { ...D.newCheck(), skill: "occultism", decoy: true, dc: 654 };
+  const planted = { ...D.newCheck(), revealed: false, skill: "occultism", decoy: true, dc: 654 };
   discover(s).checks.push(planted);
   sub(s).modifiers[0].decoy = true;
   let view = viewOf(s);
@@ -1106,7 +1107,7 @@ test("an unrevealed decoy is left out, and a preset check is revealed from the s
 
 test("the copy gives a revealed Lore check its name, and a hidden one nothing", () => {
   const s = secretSystem();
-  const lore = { ...D.newCheck(), skill: "lore", lore: "Warfare Lore" };
+  const lore = { ...D.newCheck(), revealed: false, skill: "lore", lore: "Warfare Lore" };
   influence(s).checks.push(lore);
   assert.ok(!JSON.stringify(viewOf(s)).includes("Warfare"));
   lore.revealed = true;
@@ -1280,7 +1281,7 @@ const challengeMod = (s, over = {}, fields = {}) => {
 /** A second subject with a Diplomacy check and a Warfare Lore check. */
 const addSecondSubject = (s) => {
   const other = D.addRow(s, "subjects");
-  other.actions[1].checks.push({ ...D.newCheck(), skill: "lore", lore: "Warfare Lore", dc: 20 });
+  other.actions[1].checks.push({ ...D.newCheck(), revealed: false, skill: "lore", lore: "Warfare Lore", dc: 20 });
   return other;
 };
 
@@ -1557,7 +1558,7 @@ test("Awareness Points rise each round and by hand, and their tiers raise every 
   const s = presetSystem("infiltration");
   const [ap] = s.counters;
   const obstacle = s.subjects[0];
-  obstacle.actions[0].checks.push({ ...D.newCheck(), skill: "stealth", dc: 20 });
+  obstacle.actions[0].checks.push({ ...D.newCheck(), revealed: false, skill: "stealth", dc: 20 });
   Run.startRun(s);
   ap.value = 4;
   Run.advanceRound(s);

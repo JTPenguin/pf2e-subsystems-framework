@@ -23,7 +23,7 @@ The first version covers **Influence only**. The data and panel code are built s
 | Applying points | Nothing applies points automatically. The GM changes every value by hand with + and − on the sheet. A roll only marks the PC as acted and spends the one-time DC entries it used. | Justin, 2026-11-12 |
 | NPCs | One challenge holds one or more NPCs and one shared round clock | Justin |
 | Hidden by default | Everything except the NPC name, Influence Points, rounds remaining and the checks the GM has revealed (a preset starts its Perception, Deception, Diplomacy and Intimidation checks revealed) | Justin |
-| Universal skills | Dropped. No check is always shown: every check has a reveal eye and a decoy flag. Preset checks start revealed, and the GM can hide or delete them. | Justin |
+| Universal skills | Dropped. No check is always shown: every check has a reveal eye and a decoy flag. Every new check starts revealed, whether a preset makes it or the GM adds it, and the GM can hide or delete it. | Justin |
 | DCs | Always hidden from players: not on the panel, not on the chat card. If a world turns on PF2e's `metagame_showDC` setting, DCs show as on any other roll, with no warning to the GM. | Justin |
 | Several NPCs on the panel | One column per NPC, each with its own skills. No separate NPC picker. | Justin |
 | Portraits | Not on the panel. Tokens or VN Stage handle those. | Justin |
@@ -362,7 +362,7 @@ Every subsystem runs on one data model, one sheet and one panel: GM Core's [Vict
 | Name | "Influence", "Discover", "Overcome" |
 | Secret | The check gets PF2e's `secret` trait, as Discover has today |
 | Description | Plain text everyone sees: what the action is and how players use it |
-| Checks | Rows as today: skill, Perception, Lore or a saving throw (14.8); DC; revealed; decoy. Every row has an eye and a decoy flag; there is no always-shown flag (a stored `always` is dropped, with no conversion, 14.9). Preset checks start revealed. This replaces the fixed universal-skill lists. |
+| Checks | Rows as today: skill, Perception, Lore or a saving throw (14.8); DC; revealed; decoy. Every row has an eye and a decoy flag; there is no always-shown flag (a stored `always` is dropped, with no conversion, 14.9). Every new check starts revealed (Justin, 2026-11-12). This replaces the fixed universal-skill lists. |
 
 An action has no outcome table and no maximum points (Justin, 2026-11-12).
 
@@ -375,7 +375,7 @@ An action has no outcome table and no maximum points (Justin, 2026-11-12).
 
 Reached is set when the counter reaches the threshold in its direction. Only the GM clears it, as today. The GM gets a notice when any counter's threshold is reached.
 
-**Counter.** Name, value, direction, optional minimum and maximum, thresholds, revealed, and an optional **change each round**. Next round adds that amount; Previous round takes it back. A counter can be **per PC** (14.8).
+**Counter.** Name, value, direction, optional minimum and maximum, thresholds, revealed (a new counter starts revealed), and an optional **change each round**. Next round adds that amount; Previous round takes it back. A counter can be **per PC** (14.8).
 
 ### 14.3 Rolls
 

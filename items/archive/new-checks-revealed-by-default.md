@@ -1,12 +1,13 @@
 ---
 title: "New checks and challenge counters start as revealed"
 kind: feature
-status: ready
+status: done
 waits_on: Claude
 priority: ⏫
 blocked_by: []
 added: 2026-11-12
 updated: 2026-11-12
+outcome: "New checks and challenge counters start revealed; saved rows keep their value. Tests and live module load checked."
 source: "Justin's UI list, 2026-11-12; counters added in triage interview, 2026-11-12"
 ---
 # New checks and challenge counters start as revealed
