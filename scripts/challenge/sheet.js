@@ -367,18 +367,18 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
       stateTooltip: loc(`SSM.Challenge.StateClick.${state}`),
       stateLabel: loc(`SSM.Challenge.State.${state}`),
       canChange,
-      effectsText: row.effects.map((effect) => this.#effectText(system, subject, effect)).join("; "),
+      effectsText: [row.dc?.amount ? this.#dcText(system, subject, row.dc) : "", row.note].filter(Boolean).join("; "),
     };
   }
 
-  /** One effect of a modifier, as the GM reads it. A challenge-level entry (no subject) names skills by key. */
-  #effectText(system, subject, effect) {
-    const amount = effect.amount > 0 ? `+${effect.amount}` : `${effect.amount}`.replace("-", "−");
+  /** A modifier's DC change, as the GM reads it. A challenge-level entry (no subject) names skills by key. */
+  #dcText(system, subject, dc) {
+    const amount = dc.amount > 0 ? `+${dc.amount}` : `${dc.amount}`.replace("-", "−");
     const named = subject
-      ? subject.actions.flatMap((action) => action.checks).filter((row) => effect.skills.includes(row.id)).map(skillLabel)
-      : effect.skills.map((key) => skillKeyLabel(system, key));
-    const skills = effect.allSkills ? loc("SSM.Challenge.AllSkills") : named.join(", ");
-    return game.i18n.format(`SSM.Challenge.EffectText.${effect.type}`, { amount, skills, note: effect.note });
+      ? subject.actions.flatMap((action) => action.checks).filter((row) => dc.skills.includes(row.id)).map(skillLabel)
+      : dc.skills.map((key) => skillKeyLabel(system, key));
+    const skills = dc.allSkills ? loc("SSM.Challenge.AllSkills") : named.join(", ");
+    return game.i18n.format("SSM.Challenge.DcChangeText", { amount, skills });
   }
 
   /* -------------------------------------------- */

@@ -18,19 +18,19 @@ const allVisibleChecks = (system) => system.subjects.filter(isVisible).flatMap(v
 const skillName = (row) => ({ skill: row.skill, lore: row.lore });
 
 /**
- * What one effect does, in terms players may see, or null if it shows nothing. A DC change shows as a DC change ("−2 to DCs vs Diplomacy"),
+ * What a modifier's DC change does, in terms players may see, or null if it shows nothing. A DC change shows as a DC change ("−2 to DCs vs Diplomacy"),
  * with the amount only, so no DC number appears. A check players can't see is left out without a trace,
  * and a change that covers only hidden checks shows nothing. Notes are the GM's words, so they never show.
  */
-function changeView(system, subject, effect) {
-  if (effect.type !== "dc" || !effect.amount) return null;
-  if (effect.allSkills) return { type: "dc", amount: effect.amount, all: true, skills: [] };
+function changeView(system, subject, dc) {
+  if (!dc?.amount) return null;
+  if (dc.allSkills) return { type: "dc", amount: dc.amount, all: true, skills: [] };
   // A challenge-level entry (no subject) names skills, so it shows the skills of any check players can see (spec 14.7).
-  const rows = subject ? visibleChecks(subject).filter((row) => effect.skills.includes(row.id)) : allVisibleChecks(system).filter((row) => effect.skills.includes(skillKey(row)));
+  const rows = subject ? visibleChecks(subject).filter((row) => dc.skills.includes(row.id)) : allVisibleChecks(system).filter((row) => dc.skills.includes(skillKey(row)));
   if (!rows.length) return null;
   // Two actions can share a skill: name it once.
   const shown = [...new Map(rows.map((row) => [`${row.skill}:${row.lore}`, skillName(row)])).values()];
-  return { type: "dc", amount: effect.amount, all: false, skills: shown };
+  return { type: "dc", amount: dc.amount, all: false, skills: shown };
 }
 
 /** A revealed modifier entry, as a card on the panel. `group` is its category: the label and the stripe colour. `subject` is null for a challenge-level entry. */
@@ -43,7 +43,7 @@ const modifierView = (system, subject, row, group) => ({
   duration: row.duration,
   active: !!row.active,
   spent: !!row.spent,
-  changes: row.effects.map((effect) => changeView(system, subject, effect)).filter(Boolean),
+  changes: [changeView(system, subject, row.dc)].filter(Boolean),
 });
 
 /**

@@ -1,4 +1,4 @@
-import { COUNTER_DISPLAYS, DEFAULT_PRESET, DIRECTIONS, DURATIONS, EFFECT_TYPES, PRESETS, STATUSES, THRESHOLD_REVEALS } from "./data.js";
+import { COUNTER_DISPLAYS, DEFAULT_PRESET, DIRECTIONS, DURATIONS, migrateModifier, PRESETS, STATUSES, THRESHOLD_REVEALS } from "./data.js";
 
 const { ArrayField, BooleanField, HTMLField, NumberField, ObjectField, SchemaField, StringField } = foundry.data.fields;
 
@@ -11,15 +11,8 @@ const list = (fields) => new ArrayField(new SchemaField(fields), { required: tru
 const choice = (choices, initial) => new StringField({ required: true, blank: false, choices, initial });
 const ids = () => new ArrayField(new StringField({ blank: false }), { required: true, initial: [] });
 
-/** A modifier's effect: a DC change or a note (spec 14.7). */
-const effectFields = () => ({
-  id: rowId(),
-  type: choice(EFFECT_TYPES, "note"),
-  amount: int(),
-  allSkills: flag(true),
-  skills: ids(),
-  note: text(),
-});
+/** A modifier's DC change (spec 14.7). An amount of 0 means none. */
+const modifierDcFields = () => ({ amount: int(), allSkills: flag(true), skills: ids() });
 
 const modifierFields = () => ({
   id: rowId(),
@@ -33,7 +26,8 @@ const modifierFields = () => ({
   spent: flag(),
   revealed: flag(),
   decoy: flag(),
-  effects: list(effectFields()),
+  dc: new SchemaField(modifierDcFields()),
+  note: text(),
 });
 
 /** One shape for a subject's thresholds and a counter's. `dc` is a DC change that applies while the threshold is reached. */
@@ -116,8 +110,9 @@ export class ChallengeModel extends foundry.abstract.TypeDataModel {
     };
   }
 
-  /** A subject saved with the old GM-only stat line keeps its text as the description. */
+  /** A subject saved with the old GM-only stat line keeps its text as the description. A modifier saved with a list of effects gets its DC change and note. */
   static migrateData(source) {
+    for (const modifier of [...(source.modifiers ?? []), ...(source.subjects ?? []).flatMap((subject) => subject.modifiers ?? [])]) migrateModifier(modifier);
     for (const subject of source.subjects ?? []) {
       if (typeof subject.statLine !== "string") continue;
       if (subject.statLine && !subject.description) subject.description = `<p>${foundry.utils.escapeHTML(subject.statLine)}</p>`;

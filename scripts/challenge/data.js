@@ -5,8 +5,6 @@
 
 export const STATUSES = ["inactive", "active", "finished"];
 export const DURATIONS = ["oneTime", "ongoing"];
-/** What a modifier entry can do: change DCs, or hold a note. Nothing changes points or counters but the GM's own + and − (spec 14.7). */
-export const EFFECT_TYPES = ["dc", "note"];
 export const QUICK_DC_AMOUNTS = [-5, -2, 2, 5];
 /** A counter counts up towards its thresholds, or down towards them, or both ways from 0 (spec 14.8). */
 export const DIRECTIONS = ["up", "down", "both"];
@@ -45,11 +43,28 @@ const id = () => foundry.utils.randomID();
 /** A language key's text. Outside Foundry, as in tools/test.mjs, the key itself. */
 const say = (key) => globalThis.game?.i18n?.localize(key) ?? key;
 
-export const newEffect = () => ({ id: id(), type: "note", amount: 0, allSkills: true, skills: [], note: "" });
+/**
+ * A modifier entry does two things, each optional: one DC change (`dc`, amount 0 for none) and a note.
+ * Nothing changes points or counters but the GM's own + and − (spec 14.7).
+ */
+export const newModifierDc = () => ({ amount: 0, allSkills: true, skills: [] });
 export const newModifier = () => ({
   id: id(), name: "", playerText: "", gmText: "", category: "", duration: "ongoing",
-  active: false, spent: false, revealed: false, decoy: false, effects: [newEffect()],
+  active: false, spent: false, revealed: false, decoy: false, dc: newModifierDc(), note: "",
 });
+
+/**
+ * A modifier saved with the old list of effects: its first DC row becomes its DC change, and its notes join with "; ".
+ * Later DC rows are dropped. Changes the modifier in place.
+ */
+export function migrateModifier(modifier) {
+  if (!Array.isArray(modifier?.effects)) return modifier;
+  const dcRow = modifier.effects.find((row) => row.type === "dc");
+  if (!modifier.dc) modifier.dc = dcRow ? { amount: dcRow.amount ?? 0, allSkills: dcRow.allSkills ?? true, skills: [...(dcRow.skills ?? [])] } : newModifierDc();
+  if (modifier.note === undefined) modifier.note = modifier.effects.filter((row) => row.type === "note").map((row) => (row.note ?? "").trim()).filter(Boolean).join("; ");
+  delete modifier.effects;
+  return modifier;
+}
 export const newCheck = () => ({ id: id(), skill: "society", lore: "", dc: 15, revealed: false, decoy: false, always: false });
 /** `dc` is a DC change that applies while the threshold is reached. */
 export const newThreshold = () => ({ id: id(), points: 1, playerText: "", gmText: "", reveal: "hidden", reached: false, dc: 0 });
@@ -301,11 +316,11 @@ export function newChallengeSystem(presetId = DEFAULT_PRESET) {
 /** New rows by the name of the list they go in. */
 const FACTORIES = {
   subjects: newSubject, actions: newAction, checks: newCheck, thresholds: newThreshold,
-  modifiers: newModifier, effects: newEffect, counters: newCounter,
+  modifiers: newModifier, counters: newCounter,
 };
 
 /** Lists that must keep at least one row. */
-const KEEP_ONE = new Set(["subjects", "effects"]);
+const KEEP_ONE = new Set(["subjects"]);
 
 const getPath = (object, path) => path.split(".").reduce((value, key) => value?.[key], object);
 
@@ -333,14 +348,15 @@ export function removeRow(system, path) {
   const gone = listName === "checks" ? [removed.id] : listName === "actions" ? removed.checks.map((check) => check.id) : [];
   if (gone.length) {
     const subject = getPath(system, keys.slice(0, 2).join("."));
-    for (const modifier of subject?.modifiers ?? []) for (const row of modifier.effects) row.skills = row.skills.filter((skill) => !gone.includes(skill));
+    for (const modifier of subject?.modifiers ?? []) modifier.dc.skills = modifier.dc.skills.filter((skill) => !gone.includes(skill));
   }
   return true;
 }
 
-export function setEffectAmount(system, path, amount) {
-  const row = getPath(system, path);
-  if (row) row.amount = amount;
+/** Set the DC change's amount on the modifier at path ("" for the modifier itself, as the modifier window passes). */
+export function setDcAmount(modifier, path, amount) {
+  const row = path ? getPath(modifier, path) : modifier;
+  if (row?.dc) row.dc.amount = amount;
 }
 
 /** Number fields that may be blank. A blank in any other number field keeps the old value. */
@@ -437,11 +453,11 @@ export function searchText(system) {
   const parts = [system.premise, system.gmNotes];
   const thresholds = (rows) => rows.flatMap((row) => [row.playerText, row.gmText]);
   for (const counter of allCounters(system)) parts.push(counter.name, ...thresholds(counter.thresholds));
-  for (const modifier of system.modifiers ?? []) parts.push(modifier.name, modifier.category, modifier.playerText, modifier.gmText, ...modifier.effects.map((row) => row.note));
+  for (const modifier of system.modifiers ?? []) parts.push(modifier.name, modifier.category, modifier.playerText, modifier.gmText, modifier.note);
   for (const subject of system.subjects) {
     parts.push(subject.name, subject.description);
     for (const action of subject.actions) parts.push(action.name, action.description);
-    for (const modifier of subject.modifiers) parts.push(modifier.name, modifier.category, modifier.playerText, modifier.gmText, ...modifier.effects.map((row) => row.note));
+    for (const modifier of subject.modifiers) parts.push(modifier.name, modifier.category, modifier.playerText, modifier.gmText, modifier.note);
   }
   return parts.filter(Boolean).join(" ");
 }
@@ -452,7 +468,7 @@ export function searchText(system) {
  */
 
 /** The fields each window edits. The id never changes. */
-export const MODIFIER_FIELDS = ["name", "category", "duration", "playerText", "gmText", "active", "spent", "revealed", "decoy", "effects"];
+export const MODIFIER_FIELDS = ["name", "category", "duration", "playerText", "gmText", "active", "spent", "revealed", "decoy", "dc", "note"];
 
 const subjectById = (system, subjectId) => system.subjects.find((subject) => subject.id === subjectId);
 /** The modifier list a subject id names. An empty id names the challenge's own list (spec 14.7). */
@@ -476,7 +492,7 @@ export const rebaseEntry = (latest, changes) => ({ ...structuredClone(latest), .
 export const challengeSkillKeys = (system) => [...new Set(system.subjects.flatMap(allChecks).map(skillKey))];
 
 /**
- * Save the window's changes onto a modifier. Effects drop links to checks that no longer exist.
+ * Save the window's changes onto a modifier. Its DC change drops links to checks that no longer exist.
  * A challenge-level entry names skills, not checks (spec 14.7). Returns false if the modifier is gone.
  */
 export function saveModifier(system, subjectId, modifierId, changes) {
@@ -486,7 +502,7 @@ export function saveModifier(system, subjectId, modifierId, changes) {
   modifier.category = String(modifier.category ?? "").trim();
   const subject = subjectId ? subjectById(system, subjectId) : null;
   const checks = new Set(subject ? allChecks(subject).map((check) => check.id) : challengeSkillKeys(system));
-  for (const row of modifier.effects) row.skills = row.skills.filter((skill) => checks.has(skill));
+  modifier.dc.skills = modifier.dc.skills.filter((skill) => checks.has(skill));
   return true;
 }
 
@@ -529,7 +545,7 @@ export function saveAction(system, subjectId, actionId, changes) {
   copyFields(action, changes, ACTION_FIELDS);
   const subject = subjectById(system, subjectId);
   const checks = new Set(allChecks(subject).map((check) => check.id));
-  for (const modifier of subject.modifiers) for (const row of modifier.effects) row.skills = row.skills.filter((skill) => checks.has(skill));
+  for (const modifier of subject.modifiers) modifier.dc.skills = modifier.dc.skills.filter((skill) => checks.has(skill));
   return true;
 }
 

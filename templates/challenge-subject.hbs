@@ -6,11 +6,7 @@
     <label class="check"><input type="checkbox" name="revealed" {{checked revealed}}>{{localize "SSM.Challenge.Revealed"}}</label>
   </div>
   <div class="ssm-window-editor">
-    <prose-mirror name="description" value="{{description}}"></prose-mirror>
+    <prose-mirror name="description" toggled value="{{description}}">{{{@root.descriptionHtml}}}</prose-mirror>
   </div>
   {{/with}}
-  <div class="ssm-row ssm-modifier-buttons">
-    <span></span>
-    <button type="submit" class="ssm-save"><i class="fa-solid fa-floppy-disk" inert></i> {{localize "SSM.Challenge.SaveModifier"}}</button>
-  </div>
 </div>

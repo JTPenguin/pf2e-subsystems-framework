@@ -7,12 +7,12 @@ import { allCounters, BOTH_WAYS, clampTracks, findCounter, limitTrack, modifierL
 
 const isOneTime = (modifier) => modifier.duration === "oneTime";
 /** A subject's entry names its checks by id; a challenge-level entry names skills, so it matches that skill on any subject (spec 14.7). */
-const effectMatches = (effect, check, challengeLevel) => effect.type === "dc" && effect.amount !== 0 && (effect.allSkills || effect.skills.includes(challengeLevel ? skillKey(check) : check.id));
+const dcMatches = ({ dc }, check, challengeLevel) => !!dc && dc.amount !== 0 && (dc.allSkills || dc.skills.includes(challengeLevel ? skillKey(check) : check.id));
 
 /** The entries changing this check's DC for the next roll: on and unspent, on the check's subject and on the challenge. Each is { modifier, challengeLevel }. */
 function liveDcModifiers(system, subject, check) {
   const live = (list, challengeLevel) => list
-    .filter((modifier) => modifier.active && !modifier.spent && modifier.effects.some((effect) => effectMatches(effect, check, challengeLevel)))
+    .filter((modifier) => modifier.active && !modifier.spent && dcMatches(modifier, check, challengeLevel))
     .map((modifier) => ({ modifier, challengeLevel }));
   return [...live(subject.modifiers, false), ...live(system.modifiers ?? [], true)];
 }
@@ -25,9 +25,7 @@ const thresholdDc = (thresholds) => thresholds.reduce((sum, threshold) => sum + 
  * the reached thresholds of the subject's own counters, and of every challenge counter.
  */
 export function currentDc(system, subject, check) {
-  const modifiers = liveDcModifiers(system, subject, check)
-    .flatMap(({ modifier, challengeLevel }) => modifier.effects.filter((effect) => effectMatches(effect, check, challengeLevel)))
-    .reduce((sum, effect) => sum + effect.amount, 0);
+  const modifiers = liveDcModifiers(system, subject, check).reduce((sum, { modifier }) => sum + modifier.dc.amount, 0);
   const counters = [...system.counters, ...(subject.counters ?? [])].reduce((sum, counter) => sum + thresholdDc(counter.thresholds), 0);
   return Math.max(0, check.dc + modifiers + counters);
 }

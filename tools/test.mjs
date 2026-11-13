@@ -135,8 +135,27 @@ test("every change type has an English string", () => {
   assert.deepEqual(texts, ["−2 to DCs vs Diplomacy", "+2 to all DCs"]);
 });
 
-test("a modifier effect is a DC change or a note, and nothing else", () => {
-  assert.deepEqual(D.EFFECT_TYPES, ["dc", "note"]);
+test("a modifier has one DC change and a note, both empty to start", () => {
+  const m = D.newModifier();
+  assert.deepEqual([m.dc, m.note, "effects" in m], [{ amount: 0, allSkills: true, skills: [] }, "", false]);
+});
+
+test("a modifier saved with a list of effects keeps its first DC change and joins its notes", () => {
+  const old = { ...D.newModifier(), effects: [
+    { type: "note", note: "she softens", amount: 0, allSkills: true, skills: [] },
+    { type: "dc", amount: -2, allSkills: false, skills: ["a"], note: "" },
+    { type: "dc", amount: 5, allSkills: true, skills: [], note: "" },
+    { type: "note", note: " ends the talk ", amount: 0, allSkills: true, skills: [] },
+  ] };
+  delete old.dc;
+  delete old.note;
+  D.migrateModifier(old);
+  assert.deepEqual([old.dc, old.note, "effects" in old], [{ amount: -2, allSkills: false, skills: ["a"] }, "she softens; ends the talk", false]);
+  const noDc = { name: "x", effects: [{ type: "note", note: "" }] };
+  D.migrateModifier(noDc);
+  assert.deepEqual([noDc.dc, noDc.note], [{ amount: 0, allSkills: true, skills: [] }, ""]);
+  const current = D.newModifier();
+  assert.deepEqual(D.migrateModifier(structuredClone(current)), current, "a modifier in the new shape is left alone");
 });
 
 test("a dragged panel stays wholly on screen", () => {
@@ -254,7 +273,8 @@ const influence = (s) => sub(s).actions[1];
 const society = (s) => influence(s).checks.at(-1);
 const rollOf = (s, over = {}) => ({ rollId: "r1", challengeId: "c1", subjectId: sub(s).id, actionId: influence(s).id, checkId: society(s).id, messageId: "m1", actorId: "a1", dc: null, isReroll: false, ...over });
 const discoverRoll = (s, over = {}) => rollOf(s, { actionId: discover(s).id, checkId: discover(s).checks[0].id, ...over });
-const effectOf = (type, amount, over = {}) => ({ ...D.newEffect(), type, amount, ...over });
+/** A modifier's DC change, as fields to spread onto it. */
+const withDc = (amount, over = {}) => ({ dc: { ...D.newModifierDc(), amount, ...over } });
 
 test("a preset fills in the names, the rounds and the first subject", () => {
   const blank = D.newChallengeSystem();
@@ -279,25 +299,22 @@ test("addRow picks the right row for each list, and a new subject follows the pr
   assert.ok("reached" in D.addRow(s, "subjects.0.counters.0.thresholds"));
   const own = D.addRow(s, "subjects.0.counters");
   assert.deepEqual([own.name, own.revealed, own.perRound, own.thresholds], ["SSM.Preset.influence.Points", true, 0, []], "a subject's new counter takes the points name and starts shown");
-  assert.equal(D.addRow(s, "subjects.0.modifiers").effects.length, 1, "a new modifier starts with one effect");
+  assert.deepEqual(D.addRow(s, "subjects.0.modifiers").dc.amount, 0, "a new modifier starts with no DC change");
   assert.equal(D.addRow(s, "subjects.0.modifiers", { category: "Leverage" }).category, "Leverage", "a category's + starts the modifier in that category");
   assert.equal(D.addRow(s, "modifiers").category, "", "the section's + leaves the category blank");
-  assert.equal(D.addRow(s, "subjects.0.modifiers.0.effects").type, "note");
   assert.deepEqual(D.addRow(s, "subjects.0.actions").checks, []);
   assert.deepEqual(D.addRow(s, "counters").thresholds, []);
   assert.ok("dc" in D.addRow(s, "counters.0.thresholds"));
   assert.equal(D.addRow(s, "subjects").actions.length, 2, "an Influence challenge's new subject has Discover and Influence");
   assert.equal(D.addRow(system("victory"), "subjects").actions.length, 1);
   assert.throws(() => D.addRow(s, "rounds"));
-  const ids = [D.newSubject(s).id, D.newEffect().id, D.newCounter().id, D.newAction().id];
+  const ids = [D.newSubject(s).id, D.newModifier().id, D.newCounter().id, D.newAction().id];
   assert.equal(new Set(ids).size, ids.length);
 });
 
-test("the last subject and the last effect can't be removed", () => {
+test("the last subject can't be removed", () => {
   const s = system();
   assert.equal(D.removeRow(s, "subjects.0"), false);
-  D.addRow(s, "subjects.0.modifiers");
-  assert.equal(D.removeRow(s, "subjects.0.modifiers.0.effects.0"), false);
   D.addRow(s, "subjects");
   assert.equal(D.removeRow(s, "subjects.1"), true);
   assert.equal(s.subjects.length, 1);
@@ -308,21 +325,21 @@ test("removing a check or an action clears the links to it", () => {
   const kept = D.addRow(s, "subjects.0.actions.0.checks");
   const gone = D.addRow(s, "subjects.0.actions.1.checks");
   const m = D.addRow(s, "subjects.0.modifiers");
-  m.effects[0].skills = [kept.id, gone.id, influence(s).checks[0].id];
+  m.dc.skills = [kept.id, gone.id, influence(s).checks[0].id];
   D.removeRow(s, `subjects.0.actions.1.checks.${influence(s).checks.length - 1}`);
-  assert.deepEqual(m.effects[0].skills, [kept.id, influence(s).checks[0].id]);
+  assert.deepEqual(m.dc.skills, [kept.id, influence(s).checks[0].id]);
   D.removeRow(s, "subjects.0.actions.1");
-  assert.deepEqual(m.effects[0].skills, [kept.id], "an action takes its checks' links with it");
+  assert.deepEqual(m.dc.skills, [kept.id], "an action takes its checks' links with it");
 });
 
 test("mergeForm: numbered form rows merge into lists, and absent fields survive", () => {
   const s = system();
   const m = D.addRow(s, "subjects.0.modifiers");
-  Object.assign(m.effects[0], { type: "dc", note: "kept", skills: ["a"] });
-  const merged = D.mergeForm(s, { subjects: { 0: { name: "Vance", modifiers: { 0: { name: "Art", effects: { 0: { amount: -2, skills: ["b", "c"] } } } } } } });
+  Object.assign(m, { note: "kept", dc: { amount: 0, allSkills: false, skills: ["a"] } });
+  const merged = D.mergeForm(s, { subjects: { 0: { name: "Vance", modifiers: { 0: { name: "Art", dc: { amount: -2, skills: ["b", "c"] } } } } } });
   assert.equal(merged.subjects[0].name, "Vance");
-  assert.deepEqual([merged.subjects[0].modifiers[0].effects[0].amount, merged.subjects[0].modifiers[0].effects[0].note], [-2, "kept"]);
-  assert.deepEqual(merged.subjects[0].modifiers[0].effects[0].skills, ["b", "c"]);
+  assert.deepEqual([merged.subjects[0].modifiers[0].dc.amount, merged.subjects[0].modifiers[0].dc.allSkills, merged.subjects[0].modifiers[0].note], [-2, false, "kept"]);
+  assert.deepEqual(merged.subjects[0].modifiers[0].dc.skills, ["b", "c"]);
   assert.equal(Array.isArray(merged.subjects), true);
   assert.equal(merged.subjects[0].actions[1].checks[0].always, true, "a form with no Always shown field keeps the old value");
 });
@@ -386,8 +403,9 @@ test("a window saves only the fields the GM changed, and keeps them over an upda
   const { modifier } = modifierSystem();
   const draft = structuredClone(modifier);
   draft.name = "Praise";
-  draft.effects[0].note = "He softens";
-  assert.deepEqual(Object.keys(D.entryChanges(modifier, draft, D.MODIFIER_FIELDS)).sort(), ["effects", "name"]);
+  draft.note = "He softens";
+  draft.dc.amount = 2;
+  assert.deepEqual(Object.keys(D.entryChanges(modifier, draft, D.MODIFIER_FIELDS)).sort(), ["dc", "name", "note"]);
   assert.deepEqual(D.entryChanges(modifier, structuredClone(modifier), D.MODIFIER_FIELDS), {});
   const latest = { ...structuredClone(modifier), active: true, playerText: "Changed elsewhere" };
   const rebased = D.rebaseEntry(latest, D.entryChanges(modifier, { ...structuredClone(modifier), name: "Praise" }, D.MODIFIER_FIELDS));
@@ -398,11 +416,10 @@ test("saving a modifier writes its changes, leaves run changes alone, and drops 
   const { s, subject, modifier } = modifierSystem();
   modifier.active = true;
   const kept = influence(s).checks[0].id;
-  const effects = [effectOf("dc", 2, { allSkills: false, skills: [kept, "gone"] }), effectOf("note", 0, { note: "softens" })];
-  assert.equal(D.saveModifier(s, subject.id, modifier.id, { name: "Praise", effects }), true);
+  assert.equal(D.saveModifier(s, subject.id, modifier.id, { name: "Praise", ...withDc(2, { allSkills: false, skills: [kept, "gone"] }), note: "softens" }), true);
   const saved = D.findModifier(s, subject.id, modifier.id);
   assert.deepEqual([saved.name, saved.active, saved.playerText], ["Praise", true, "He likes praise"]);
-  assert.deepEqual([saved.effects[0].skills, saved.effects[1].note], [[kept], "softens"]);
+  assert.deepEqual([saved.dc.amount, saved.dc.skills, saved.note], [2, [kept], "softens"]);
   D.removeRow(s, "subjects.0.modifiers.0");
   assert.equal(D.saveModifier(s, subject.id, modifier.id, { name: "x" }), false);
 });
@@ -425,10 +442,10 @@ test("the action window saves its checks and drops links to checks it removed", 
   const { s, subject, modifier } = modifierSystem();
   const action = influence(s);
   const [kept, gone] = action.checks;
-  modifier.effects = [effectOf("dc", 2, { allSkills: false, skills: [kept.id, gone.id] })];
+  Object.assign(modifier, withDc(2, { allSkills: false, skills: [kept.id, gone.id] }));
   assert.equal(D.saveAction(s, subject.id, action.id, { name: "Sway", secret: true, checks: [kept] }), true);
   assert.deepEqual([action.name, action.secret, action.checks.length], ["Sway", true, 1]);
-  assert.deepEqual(modifier.effects[0].skills, [kept.id]);
+  assert.deepEqual(modifier.dc.skills, [kept.id]);
   assert.equal(D.saveAction(s, subject.id, "nope", { name: "x" }), false);
 });
 
@@ -456,12 +473,9 @@ test("the sheet's delete buttons remove an entry by its id, wherever it now sits
 test("the windows' rows use the shared row edits on the entry alone", () => {
   const { modifier } = modifierSystem();
   const draft = structuredClone(modifier);
-  D.addRow(draft, "effects");
-  D.setEffectAmount(draft, "effects.1", 5);
-  assert.equal(D.removeRow(draft, "effects.0"), true);
-  assert.equal(D.removeRow(draft, "effects.0"), false, "a modifier keeps one effect");
-  const merged = D.mergeForm(draft, { name: "Praise", effects: { 0: { amount: null, note: "x" } } });
-  assert.deepEqual([merged.name, merged.effects[0].amount, merged.effects[0].note], ["Praise", 5, "x"]);
+  D.setDcAmount(draft, "", 5);
+  const merged = D.mergeForm(draft, { name: "Praise", dc: { amount: null }, note: "x" });
+  assert.deepEqual([merged.name, merged.dc.amount, merged.note], ["Praise", 5, "x"], "a blank amount keeps the old one");
   const action = D.newAction();
   assert.equal(action.description, "", "a new action has an empty description");
 });
@@ -793,21 +807,20 @@ test("a copy of a running challenge goes back to its start values; one that neve
 
 /* DCs and modifier entries */
 
-const addModifier = (s, over = {}, effects = [{}]) => {
-  const m = { ...D.newModifier(), active: true, name: "Entry", ...over };
-  m.effects = effects.map((row) => ({ ...D.newEffect(), ...row }));
+const addModifier = (s, over = {}, fields = {}) => {
+  const m = { ...D.newModifier(), active: true, name: "Entry", ...over, ...fields };
   sub(s).modifiers.push(m);
   return m;
 };
 const dcOf = (s, row = society(s)) => Run.currentDc(s, sub(s), row);
-const dcEffect = (amount, over = {}) => ({ type: "dc", amount, ...over });
+const dcEffect = withDc;
 const rollAt = (s, rollId, dc, over = {}) => rollOf(s, { rollId, dc, ...over });
 
 test("current DC adds what's on, and ignores what's off or spent", () => {
   const s = running();
-  const on = addModifier(s, {}, [dcEffect(-2)]);
-  addModifier(s, { active: false }, [dcEffect(5)]);
-  addModifier(s, { spent: true }, [dcEffect(5)]);
+  const on = addModifier(s, {}, dcEffect(-2));
+  addModifier(s, { active: false }, dcEffect(5));
+  addModifier(s, { spent: true }, dcEffect(5));
   assert.equal(dcOf(s), 13);
   on.active = false;
   assert.equal(dcOf(s), 15);
@@ -816,9 +829,9 @@ test("current DC adds what's on, and ignores what's off or spent", () => {
 test("a DC change on chosen checks matches only those checks, on any action, and the DC can't go below 0", () => {
   const s = running();
   const perception = discover(s).checks[0];
-  addModifier(s, {}, [dcEffect(5, { allSkills: false, skills: [perception.id] })]);
+  addModifier(s, {}, dcEffect(5, { allSkills: false, skills: [perception.id] }));
   assert.deepEqual([dcOf(s), dcOf(s, perception)], [15, 20]);
-  addModifier(s, {}, [dcEffect(-99)]);
+  addModifier(s, {}, dcEffect(-99));
   assert.equal(dcOf(s), 0);
 });
 
@@ -839,15 +852,15 @@ test("a reached threshold's DC change applies while it is reached: a subject cou
 
 test("a one-time DC change is spent when its roll arrives, and leaves a newer entry alone", () => {
   const s = running();
-  const m = addModifier(s, { duration: "oneTime" }, [dcEffect(-2)]);
-  const other = addModifier(s, { duration: "oneTime", active: false }, [dcEffect(-2)]);
+  const m = addModifier(s, { duration: "oneTime" }, dcEffect(-2));
+  const other = addModifier(s, { duration: "oneTime", active: false }, dcEffect(-2));
   Run.receiveRoll(s, rollAt(s, "r1", 13));
   assert.deepEqual([m.spent, other.spent, dcOf(s)], [true, false, 15]);
 });
 
 test("two arriving rolls at a one-time DC: the first spends it, and the next check is at the normal DC", () => {
   const s = running();
-  const m = addModifier(s, { duration: "oneTime" }, [dcEffect(-2)]);
+  const m = addModifier(s, { duration: "oneTime" }, dcEffect(-2));
   Run.receiveRoll(s, rollAt(s, "r1", dcOf(s)));
   assert.deepEqual([m.spent, dcOf(s)], [true, 15]);
   Run.receiveRoll(s, rollAt(s, "r2", dcOf(s), { actorId: "a2" }));
@@ -856,14 +869,14 @@ test("two arriving rolls at a one-time DC: the first spends it, and the next che
 
 test("an ongoing DC change is never spent by an arriving roll", () => {
   const s = running();
-  const m = addModifier(s, {}, [dcEffect(-2)]);
+  const m = addModifier(s, {}, dcEffect(-2));
   Run.receiveRoll(s, rollAt(s, "r1", 13));
   assert.deepEqual([m.spent, dcOf(s)], [false, 13]);
 });
 
 test("a reroll spends nothing, so a restored entry stays usable", () => {
   const s = running();
-  const m = addModifier(s, { duration: "oneTime" }, [dcEffect(-2)]);
+  const m = addModifier(s, { duration: "oneTime" }, dcEffect(-2));
   Run.receiveRoll(s, rollAt(s, "r1", 13));
   assert.equal(m.spent, true);
   Run.restoreModifier(s, sub(s).id, m.id);
@@ -873,7 +886,7 @@ test("a reroll spends nothing, so a restored entry stays usable", () => {
 
 test("a roll at another DC, or with the entry off, leaves one-time entries alone", () => {
   const s = running();
-  const m = addModifier(s, { duration: "oneTime" }, [dcEffect(-2)]);
+  const m = addModifier(s, { duration: "oneTime" }, dcEffect(-2));
   Run.receiveRoll(s, rollAt(s, "r1", 15));
   assert.equal(m.spent, false);
   Run.toggleModifier(s, sub(s).id, m.id);
@@ -886,7 +899,7 @@ test("a roll at another DC, or with the entry off, leaves one-time entries alone
 test("a secret check spends a matching one-time entry when it arrives", () => {
   const s = running();
   const row = discover(s).checks[0];
-  const m = addModifier(s, { duration: "oneTime" }, [dcEffect(2, { allSkills: false, skills: [row.id] })]);
+  const m = addModifier(s, { duration: "oneTime" }, dcEffect(2, { allSkills: false, skills: [row.id] }));
   Run.receiveRoll(s, discoverRoll(s, { rollId: "r1", dc: 15 }));
   assert.equal(m.spent, false, "this roll's DC didn't include it");
   Run.receiveRoll(s, discoverRoll(s, { rollId: "r2", dc: 17, isReroll: true }));
@@ -897,7 +910,7 @@ test("a secret check spends a matching one-time entry when it arrives", () => {
 
 test("an entry toggles only while the run is active, and a spent entry needs Restore", () => {
   const s = running();
-  const m = addModifier(s, { duration: "oneTime" }, [dcEffect(-2)]);
+  const m = addModifier(s, { duration: "oneTime" }, dcEffect(-2));
   Run.receiveRoll(s, rollAt(s, "r1", 13));
   assert.equal(Run.toggleModifier(s, sub(s).id, m.id), false, "a spent entry needs Restore");
   Run.restoreModifier(s, sub(s).id, m.id);
@@ -936,8 +949,8 @@ test("a counter threshold gives a notice when the counter reaches or passes it i
 test("a counter change and modifier state go back on reset, and a hand edit of the maximum survives", () => {
   const s = runSystem();
   const c = s.counters[0];
-  const wasOn = addModifier(s, { duration: "oneTime" }, [dcEffect(-2)]);
-  const wasOff = addModifier(s, { active: false }, [dcEffect(2)]);
+  const wasOn = addModifier(s, { duration: "oneTime" }, dcEffect(-2));
+  const wasOff = addModifier(s, { active: false }, dcEffect(2));
   Run.startRun(s);
   Run.receiveRoll(s, rollAt(s, "r1", 15));
   Run.toggleModifier(s, sub(s).id, wasOff.id);
@@ -959,7 +972,7 @@ const secretSystem = () => {
   const subject = sub(s);
   Object.assign(subject, { name: "Lady Vance", description: `<p>A noble.</p><section class="secret" id="secret-v"><p>${GM_SECRET} stats</p></section>` });
   subject.counters[0].thresholds = [{ ...D.newThreshold(), points: 8, dc: 3, playerText: "she offers an introduction", gmText: `${GM_SECRET} threshold` }];
-  subject.modifiers = [{ ...D.newModifier(), name: "Flattery", playerText: "likes praise", gmText: `${GM_SECRET} modifier`, effects: [{ ...D.newEffect(), note: `${GM_SECRET} effect` }] }];
+  subject.modifiers = [{ ...D.newModifier(), name: "Flattery", playerText: "likes praise", gmText: `${GM_SECRET} modifier`, note: `${GM_SECRET} effect` }];
   s.counters = [{ ...D.newCounter(), name: "Suspicion", value: 3, min: -111, max: 222, perRound: 1, thresholds: [{ ...D.newThreshold(), points: 5, playerText: "the guards stir", gmText: `${GM_SECRET} counter threshold` }] }];
   Run.startRun(s);
   return s;
@@ -988,7 +1001,7 @@ const revealAll = (s) => {
 };
 const assertNoSecrets = (view) => {
   const { keys } = scan(view);
-  for (const key of ["decoy", "always", "gmText", "gmNotes", "premise", "statLine", "revealed", "effects", "outcomes", "maxPoints", "given", "min", "perRound", "goal", "direction", "pointsBy", "completeBy", "baseline", "run", "preset"]) assert.ok(!keys.has(key), `key ${key} must not appear`);
+  for (const key of ["decoy", "always", "gmText", "gmNotes", "premise", "statLine", "revealed", "effects", "note", "outcomes", "maxPoints", "given", "min", "perRound", "goal", "direction", "pointsBy", "completeBy", "baseline", "run", "preset"]) assert.ok(!keys.has(key), `key ${key} must not appear`);
   assert.ok(!JSON.stringify(view).includes(GM_SECRET), "GM text must not appear");
 };
 
@@ -1047,7 +1060,7 @@ test("revealing each kind of entry adds it, and only its player fields", () => {
 test("a visible check carries its current DC for the roll, thresholds and one-time entries included", () => {
   const s = secretSystem();
   revealAll(s);
-  sub(s).modifiers.push({ ...D.newModifier(), active: true, duration: "oneTime", effects: [effectOf("dc", -2)] });
+  sub(s).modifiers.push({ ...D.newModifier(), active: true, duration: "oneTime", ...withDc(-2) });
   pts(s).thresholds[0].reached = true;
   const view = viewOf(s);
   const found = V.findPanelRow(view, { subject: sub(s).id, act: influence(s).id, id: society(s).id });
@@ -1220,37 +1233,34 @@ test("the copy is the same when nothing players see has changed", () => {
 
 /* Modifier cards on the panel */
 
-/** A revealed modifier on the secret system's subject, with these effects. Returns the system and the card's texts. */
-const cardOf = (effects, over = {}) => {
+/** A revealed modifier on the secret system's subject, with these fields (its DC change and note). Returns the system and the card's texts. */
+const cardOf = (fields, over = {}) => {
   const s = secretSystem();
   s.pointsName = "Influence Points";
-  sub(s).modifiers = [{ ...D.newModifier(), name: "Flattery", revealed: true, ...over, effects: effects(s).map((row) => ({ ...D.newEffect(), ...row })) }];
+  sub(s).modifiers = [{ ...D.newModifier(), name: "Flattery", revealed: true, ...over, ...fields(s) }];
   const [card] = known(viewOf(s).subjects[0]);
   return { s, card, texts: card.changes.map((change) => V.changeText(change, enText)) };
 };
 
 test("a card's DC change reads as a DC change, with no DC number, and lists the visible checks it names once each", () => {
-  assert.deepEqual(cardOf(() => [dcEffect(-2)]).texts, ["−2 to all DCs"]);
+  assert.deepEqual(cardOf(() => dcEffect(-2)).texts, ["−2 to all DCs"]);
   const chosen = cardOf((s) => {
     discover(s).checks.push({ ...D.newCheck(), skill: "diplomacy", revealed: true });
-    return [dcEffect(2, { allSkills: false, skills: [influence(s).checks[1].id, discover(s).checks[1].id, influence(s).checks[0].id, society(s).id] })];
+    return dcEffect(2, { allSkills: false, skills: [influence(s).checks[1].id, discover(s).checks[1].id, influence(s).checks[0].id, society(s).id] });
   });
   assert.deepEqual(chosen.texts, ["+2 to DCs vs Diplomacy and Deception"]);
   assert.ok(!JSON.stringify(chosen.card).includes("15"));
 });
 
 test("a card leaves out a hidden check, a note, a zero change and a removed check", () => {
-  const { card } = cardOf((s) => [
-    dcEffect(2, { allSkills: false, skills: [society(s).id, "gone"] }),
-    { type: "note", note: `${GM_SECRET} note` },
-    dcEffect(0),
-  ]);
+  const { card } = cardOf((s) => ({ ...dcEffect(2, { allSkills: false, skills: [society(s).id, "gone"] }), note: `${GM_SECRET} note` }));
   assert.deepEqual(card.changes, []);
   assertNoSecrets(card);
+  assert.deepEqual(cardOf(() => dcEffect(0)).card.changes, []);
 });
 
 test("a card carries category, colour, duration and state, its player text and no GM text", () => {
-  const { s, card } = cardOf(() => [dcEffect(-2)], { category: R_, duration: "oneTime", active: true, decoy: true, playerText: "likes praise", gmText: `${GM_SECRET} gm` });
+  const { s, card } = cardOf(() => dcEffect(-2), { category: R_, duration: "oneTime", active: true, decoy: true, playerText: "likes praise", gmText: `${GM_SECRET} gm` });
   assert.deepEqual([card.category, card.colour, card.duration, card.active, card.spent, card.text], [R_, "#c0523f", "oneTime", true, false, "likes praise"]);
   assertNoSecrets(card);
   Run.receiveRoll(s, rollAt(s, "r1", 13));
@@ -1259,8 +1269,8 @@ test("a card carries category, colour, duration and state, its player text and n
 
 /* Challenge-level modifiers (spec 14.7) */
 
-const challengeMod = (s, over = {}, effects = [{}]) => {
-  const row = { ...D.newModifier(), name: "Over Here!", active: true, ...over, effects: effects.map((effect) => ({ ...D.newEffect(), ...effect })) };
+const challengeMod = (s, over = {}, fields = {}) => {
+  const row = { ...D.newModifier(), name: "Over Here!", active: true, ...over, ...fields };
   s.modifiers.push(row);
   return row;
 };
@@ -1276,9 +1286,9 @@ test("a challenge-level DC change hits every check in the challenge, filtered by
   const other = addSecondSubject(s);
   const lore = other.actions[1].checks.at(-1);
   const diplomacy = (subject) => subject.actions[1].checks.find((row) => row.skill === "diplomacy");
-  challengeMod(s, {}, [dcEffect(-2)]);
+  challengeMod(s, {}, dcEffect(-2));
   assert.deepEqual([dcOf(s), Run.currentDc(s, other, lore)], [13, 18], "All skills reaches both subjects");
-  s.modifiers[0].effects[0] = { ...D.newEffect(), ...dcEffect(-2, { allSkills: false, skills: ["diplomacy", "lore:warfare lore"] }) };
+  Object.assign(s.modifiers[0], dcEffect(-2, { allSkills: false, skills: ["diplomacy", "lore:warfare lore"] }));
   assert.deepEqual([Run.currentDc(s, sub(s), diplomacy(sub(s))), Run.currentDc(s, other, diplomacy(other)), Run.currentDc(s, other, lore), dcOf(s)], [13, 13, 18, 15]);
   assert.deepEqual(D.challengeSkillKeys(s).sort(), ["deception", "diplomacy", "intimidation", "lore:warfare lore", "perception", "society"]);
 });
@@ -1286,7 +1296,7 @@ test("a challenge-level DC change hits every check in the challenge, filtered by
 test("a one-time challenge-level DC change is spent by the next matching check anywhere", () => {
   const s = running();
   const other = addSecondSubject(s);
-  const row = challengeMod(s, { duration: "oneTime" }, [dcEffect(2, { allSkills: false, skills: ["diplomacy"] })]);
+  const row = challengeMod(s, { duration: "oneTime" }, dcEffect(2, { allSkills: false, skills: ["diplomacy"] }));
   Run.receiveRoll(s, rollAt(s, "r1", 15));
   assert.equal(row.spent, false, "a Society roll doesn't match");
   const check = other.actions[1].checks.find((c) => c.skill === "diplomacy");
@@ -1297,7 +1307,7 @@ test("a one-time challenge-level DC change is spent by the next matching check a
 
 test("a challenge-level entry toggles, reveals, restores and resets like a subject's", () => {
   const s = running();
-  const row = challengeMod(s, { duration: "oneTime" }, [dcEffect(-2)]);
+  const row = challengeMod(s, { duration: "oneTime" }, dcEffect(-2));
   Run.receiveRoll(s, rollAt(s, "r1", 13));
   assert.equal(row.spent, true);
   Run.restoreModifier(s, "", row.id);
@@ -1312,15 +1322,15 @@ test("a challenge-level entry toggles, reveals, restores and resets like a subje
 test("saving a challenge-level entry keeps skill names that exist", () => {
   const s = system();
   const row = challengeMod(s);
-  D.saveModifier(s, "", row.id, { category: "  Opportunity ", effects: [{ ...D.newEffect(), type: "note", note: "x" }, { ...D.newEffect(), type: "dc", allSkills: false, skills: ["diplomacy", "athletics"] }] });
-  assert.deepEqual([row.category, row.effects[0].type, row.effects[1].skills], ["Opportunity", "note", ["diplomacy"]]);
+  D.saveModifier(s, "", row.id, { category: "  Opportunity ", note: "x", ...dcEffect(0, { allSkills: false, skills: ["diplomacy", "athletics"] }) });
+  assert.deepEqual([row.category, row.note, row.dc.skills], ["Opportunity", "x", ["diplomacy"]]);
   assert.equal(D.findModifier(s, "", row.id), row);
   assert.ok(D.searchText(s).includes("Opportunity"));
 });
 
 test("the panel shows revealed challenge-level entries in their own list, by category, with skill names and no hidden checks or GM text", () => {
   const s = secretSystem();
-  challengeMod(s, { category: "Opportunity", gmText: `${GM_SECRET} challenge`, playerText: "a distraction" }, [dcEffect(-2, { allSkills: false, skills: ["society", "diplomacy"] }), { type: "note", note: "x" }]);
+  challengeMod(s, { category: "Opportunity", gmText: `${GM_SECRET} challenge`, playerText: "a distraction" }, { ...dcEffect(-2, { allSkills: false, skills: ["society", "diplomacy"] }), note: "x" });
   assert.deepEqual(viewOf(s).modifiers, [], "hidden until revealed");
   s.modifiers[0].revealed = true;
   const [card] = viewOf(s).modifiers;

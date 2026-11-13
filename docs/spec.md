@@ -107,12 +107,8 @@ Sidebar tab -> Challenge (journal entry + typed page, GM only) -> GM sheet
 | Kind | Resistance, weakness or Other. Other holds anything that is not a resistance or weakness. On the panel its cards say Other, as the others say Resistance or Weakness. An entry saved as a penalty or an adjustment loads as Other. |
 | Duration | **One-time** (spent once used) or **ongoing** (active until the GM turns it off) |
 | State | Active or off; spent; revealed; decoy |
-| Effects | One or more, listed below |
-
-| Effect | What it does |
-|---|---|
-| DC change | Signed amount, on all skills or chosen skills. Sheet offers quick −5, −2, +2 and +5. |
-| Note only | A consequence with no number, such as "she ends the conversation" |
+| DC change | One signed amount, on all skills or chosen skills. The window offers quick −5, −2, +2 and +5. An amount of 0 means no DC change. A split such as +2 to Diplomacy and −2 to Deception is two entries (Justin, 2026-11-12). |
+| Note | A consequence with no number, such as "she ends the conversation". May be empty. |
 
 Points, counter and rounds effects were removed (Justin, 2026-11-12): the GM makes those changes by hand.
 
@@ -155,7 +151,7 @@ The sheet has **one view** (Justin, 2026-11-12): live play and editing together,
 | Counter | Name, value, direction, display, minimum, maximum, change each round, per PC and Revealed, then its thresholds, which can be added, changed and removed. Each threshold has its points, reveal, DC change and Reached on one row (no Reached on a both-ways track), and its player and GM text side by side below, as text areas that grow with their text. |
 | Modifier | See below. |
 
-Every window takes the sheet's theme. There is one window per entry: opening it again brings it to the front. Save writes only the fields the GM changed onto the latest data, through the same write queue as every other change, so the sheet and the panel update and a run change made meanwhile is kept. An update from elsewhere redraws the window and keeps unsaved edits; deleting the entry closes it. Picking a theme in Configure Sheet keeps the challenge sheet, since that dialog can't list it and would otherwise switch the entry to a core journal sheet. When the GM loads the world, any challenge that lost its sheet gets it back. A changed DC uses PF2e's colours for adjusted values: one for higher than the base, one for lower.
+Every window takes the sheet's theme. There is one window per entry: opening it again brings it to the front. Every change saves at once, as on a Foundry sheet, and there is no Save button: closing the window just closes it. A description saves from its editor's own button (Justin, 2026-11-12). A save writes only the fields the GM changed onto the latest data, through the same write queue as every other change, so the sheet and the panel update and a run change made meanwhile is kept. An update from elsewhere redraws the window and keeps unsaved edits; deleting the entry closes it. Picking a theme in Configure Sheet keeps the challenge sheet, since that dialog can't list it and would otherwise switch the entry to a core journal sheet. When the GM loads the world, any challenge that lost its sheet gets it back. A changed DC uses PF2e's colours for adjusted values: one for higher than the base, one for lower.
 
 **Live play is laid out like a statblock:** small labels beside their values. It shows:
 
@@ -164,12 +160,12 @@ Every window takes the sheet's theme. There is one window per entry: opening it 
 - Each skill as a chip styled like a PF2e inline check, in a grid of two or three columns by window width, with the Discovery and Influence labels beside their grids. The chip shows the skill name (the Lore name for a Lore) and the current DC, colored green (higher) or red (lower) when it differs from the base DC. Its tooltip gives the base DC and says if the skill is a decoy. Clicking the chip rolls for the chosen PC; a chat icon on it posts a chat link. A revealed chip is full strength, and a universal chip looks the same; a hidden chip is faded, with its name in italics. On the light theme a revealed chip's eye is dark red, so it reads on parchment. While the challenge isn't running, the roll and chat link are disabled.
 - An eye toggle to reveal or hide each entry, on the chip for skills. Universal skills have no eye: they are always shown. A threshold's eye steps through hidden, points only, and points and text, then back to hidden.
 - Actions, modifiers and counters are each a row, like the actions on a PF2e NPC sheet: no box and no fill, a thin line between rows, the name at the left and plain icon controls at the right. Thresholds sit as indented rows under their counter. Fading means hidden, and nothing else: a hidden row is faded with italic text, and a revealed row is full strength. A points-only threshold is full strength with italic text. The eye icon also shows the state. The GM line keeps upright text inside a faded row, so it stays readable.
-- Fields in the sheet and every edit window look like the NPC sheet's labeled fields: a bold label with a slightly smaller input or dropdown beside it. A window's effects and thresholds are rows too, split by a thin line.
+- Fields in the sheet and every edit window look like the NPC sheet's labeled fields: a bold label with a slightly smaller input or dropdown beside it. A window's DC change and thresholds are rows too, split by a thin line.
 - Thresholds under their counter, each with its point value, its player text, and its GM text under it with no label, in PF2e's GM highlight. The Reached tag is a button (aria-pressed, GM only): click to mark a threshold reached by hand, click again to clear it. Dropping points never clears it; only this tag or the counter window does.
-- Modifier entries as rows, in three sections, in order: Resistances, Weaknesses, Other. An empty section is hidden. In the GM window, no row carries a kind label, since its section heading says the kind. Each row shows the effects, the player text and the GM text (no label, in PF2e's GM highlight), with on, off and apply controls, and edit and delete buttons. The kind's colour stripe shows only while the entry is On: no stripe means Off or Spent. Off is not dimmed. The On button is a green icon.
+- Modifier entries as rows, in three sections, in order: Resistances, Weaknesses, Other. An empty section is hidden. In the GM window, no row carries a kind label, since its section heading says the kind. Each row shows the DC change and note, the player text and the GM text (no label, in PF2e's GM highlight), with on, off and apply controls, and edit and delete buttons. The kind's colour stripe shows only while the entry is On: no stripe means Off or Spent. Off is not dimmed. The On button is a green icon.
 - Counters.
 
-**The modifier window** holds the name, category, duration, player and GM text, the On, Spent, Revealed and Decoy boxes, and the effects, which can be added, removed and changed there.
+**The modifier window** holds the name, category, duration, player and GM text, the On, Spent, Revealed and Decoy boxes, the DC change (amount, quick buttons, All skills and the skills list) and the Note. Either can be left empty.
 
 **Reveal is one click and can be undone.** The panel updates at once.
 
@@ -355,7 +351,7 @@ Every subsystem runs on one data model, one sheet and one panel: GM Core's [Vict
 | Revealed | Off: not on the panel at all |
 | Counters | Zero or more, each a full counter (14.13). A subject with none holds only actions, such as an Infiltration opportunity. |
 | Complete | Set and cleared by the GM only |
-| Modifiers | As in section 5, with a category in place of the kind (14.7). Their effects are DC changes and notes. |
+| Modifiers | As in section 5, with a category in place of the kind (14.7). Each has one DC change and a note. |
 | Actions | One or more |
 
 **Action**
@@ -444,7 +440,7 @@ A preset makes one kind of subject, so the sheet has one Add subject button, nam
 
 | Rule | Detail |
 |---|---|
-| Shape | The same entry as a subject's: name, category, duration, texts, state, effects. |
+| Shape | The same entry as a subject's: name, category, duration, texts, state, DC change and note. |
 | DC change | Applies to every check in the challenge, still filtered by chosen skills. The skills are named, not picked by check: the choices are the skills used by checks in the challenge (a Lore by its name), and each matches that skill on any subject (Justin, 2026-11-11). A one-time one is spent by the next matching check anywhere. A change meant for one subject goes on that subject. |
 | Sheet | A Modifiers box above the subjects, with its rows grouped by category, as a subject's are, and a + on its bar. |
 | Panel | Revealed ones show in a full-width strip above the subject columns, grouped by category with no section headings, in the same card style (with the category label) and with the same GM click. Hidden if none are revealed. |

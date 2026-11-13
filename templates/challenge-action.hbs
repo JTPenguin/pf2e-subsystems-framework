@@ -5,7 +5,7 @@
     <label class="check" data-tooltip="SSM.Challenge.SecretHint"><input type="checkbox" name="secret" {{checked secret}}>{{localize "SSM.Challenge.Secret"}}</label>
   </div>
   <div class="ssm-window-editor">
-    <prose-mirror name="description" value="{{description}}"></prose-mirror>
+    <prose-mirror name="description" toggled value="{{description}}">{{{@root.descriptionHtml}}}</prose-mirror>
   </div>
   {{/with}}
   <div class="ssm-checks-wrap"><table class="ssm-checks">
@@ -36,6 +36,5 @@
   </table></div>
   <div class="ssm-row ssm-modifier-buttons">
     <button type="button" class="ssm-add" data-action="addRow" data-list="checks"><i class="fa-solid fa-plus" inert></i> {{localize "SSM.Challenge.AddCheck"}}</button>
-    <button type="submit" class="ssm-save"><i class="fa-solid fa-floppy-disk" inert></i> {{localize "SSM.Challenge.SaveModifier"}}</button>
   </div>
 </div>

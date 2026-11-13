@@ -2,15 +2,15 @@ import { MODULE } from "../constants.js";
 import { actionName, skillKeyLabel, skillLabel } from "./skill-label.js";
 import { writeChallenge } from "./state.js";
 import { CategoryAutocomplete } from "./category-autocomplete.js";
-import { ACTION_FIELDS, addRow, BOTH_WAYS, categoryOrder, challengeSkillKeys, COUNTER_DISPLAYS, COUNTER_FIELDS, DIRECTIONS, DURATIONS, EFFECT_TYPES, entryChanges, findAction, findCounterEntry, findModifier, findSubject, LORE, mergeForm, MODIFIER_FIELDS, PERCEPTION, QUICK_DC_AMOUNTS, rebaseEntry, removeRow, SAVES, saveAction, saveCounter, saveModifier, saveSubject, setEffectAmount, SUBJECT_FIELDS, subjectCategoryOrder, THRESHOLD_REVEALS } from "./data.js";
+import { ACTION_FIELDS, addRow, BOTH_WAYS, categoryOrder, challengeSkillKeys, COUNTER_DISPLAYS, COUNTER_FIELDS, DIRECTIONS, DURATIONS, entryChanges, findAction, findCounterEntry, findModifier, findSubject, LORE, mergeForm, MODIFIER_FIELDS, PERCEPTION, QUICK_DC_AMOUNTS, rebaseEntry, removeRow, SAVES, saveAction, saveCounter, saveModifier, saveSubject, setDcAmount, SUBJECT_FIELDS, subjectCategoryOrder, THRESHOLD_REVEALS } from "./data.js";
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
 const loc = (key) => game.i18n.localize(key);
 const labels = (values, prefix) => Object.fromEntries(values.map((value) => [value, loc(`SSM.Challenge.${prefix}.${value}`)]));
 
-/** What an effect row shows, by its type: a DC change or a note. */
-const effectView = (effect, path, canRemove) => ({ ...effect, path, canRemove, isDc: effect.type === "dc", isNote: effect.type === "note" });
+/** A description as a toggled editor shows it until it opens: enriched, secret blocks and all, since only the GM edits. */
+const enrichDescription = (html, page) => foundry.applications.ux.TextEditor.implementation.enrichHTML(html, { relativeTo: page, secrets: true });
 
 /** The skills a check can roll: Perception, the saves (spec 14.8), the skills, then Lore. */
 function checkSkillChoices() {
@@ -22,8 +22,9 @@ function checkSkillChoices() {
 /**
  * A window for one entry of a challenge: a modifier, subject, action or counter (spec sections 6, 14.4 and 14.7).
  * A challenge-level modifier or counter has an empty subject id; a subject's window passes the subject's id as both ids. It edits a copy and saves it through
- * the page's write queue, so the sheet and the panel redraw as for any other change. It sits in the page's apps: an update from
- * elsewhere redraws it, keeping the GM's unsaved edits, and deleting the entry closes it.
+ * the page's write queue, so the sheet and the panel redraw as for any other change. Every change saves at once, as on a Foundry sheet;
+ * a description saves from its editor's own button. It sits in the page's apps: an update from elsewhere redraws it, keeping the
+ * GM's unsaved edits, and deleting the entry closes it.
  * A subclass sets ENTRY: { key, find, fields, save, titleKey, unnamed, goneKey }, and gives its template's context in _entryContext.
  */
 class EntryWindow extends HandlebarsApplicationMixin(ApplicationV2) {
@@ -43,7 +44,7 @@ class EntryWindow extends HandlebarsApplicationMixin(ApplicationV2) {
     classes: ["ssm-modifier-window"],
     position: { width: 640, height: "auto" },
     window: { resizable: true, icon: "fa-solid fa-sliders" },
-    form: { handler: EntryWindow.#onSave, submitOnChange: false, closeOnSubmit: true },
+    form: { handler: EntryWindow.#onSave, submitOnChange: true, closeOnSubmit: false },
     actions: {
       addRow: EntryWindow.#onAddRow,
       removeRow: EntryWindow.#onRemoveRow,
@@ -117,6 +118,8 @@ class EntryWindow extends HandlebarsApplicationMixin(ApplicationV2) {
 
   async _onRender(context, options) {
     await super._onRender(context, options);
+    // A saved name stays in the window, so its title follows.
+    if (this.window?.title) this.window.title.innerText = this.title;
     const focus = this.#focus;
     const field = focus && this.form.querySelector(`[name="${CSS.escape(focus.name)}"]`);
     if (!field) return;
@@ -136,7 +139,7 @@ class EntryWindow extends HandlebarsApplicationMixin(ApplicationV2) {
       }
     }
     const subject = system.subjects.find((candidate) => candidate.id === this.subjectId);
-    return Object.assign(context, this._entryContext(system, subject, this.#draft));
+    return Object.assign(context, await this._entryContext(system, subject, this.#draft));
   }
 
   /** A field marked data-redraw changes which fields the window shows. */
@@ -152,16 +155,23 @@ class EntryWindow extends HandlebarsApplicationMixin(ApplicationV2) {
     return this.render();
   }
 
+  /** Change the draft and save it. The saved update redraws the window. */
+  async #editAndSave(change) {
+    this.#readForm();
+    change(this.#draft);
+    if (!(await this.#save())) this.render();
+  }
+
   static #onAddRow(event, target) {
-    return this.#edit((draft) => addRow(draft, target.dataset.list));
+    return this.#editAndSave((draft) => addRow(draft, target.dataset.list));
   }
 
   static #onRemoveRow(event, target) {
-    return this.#edit((draft) => removeRow(draft, target.dataset.path));
+    return this.#editAndSave((draft) => removeRow(draft, target.dataset.path));
   }
 
   static #onQuickDc(event, target) {
-    return this.#edit((draft) => setEffectAmount(draft, target.dataset.path, Number(target.dataset.amount)));
+    return this.#editAndSave((draft) => setDcAmount(draft, "", Number(target.dataset.amount)));
   }
 
   /** A language key to warn with on save, or null. */
@@ -171,12 +181,18 @@ class EntryWindow extends HandlebarsApplicationMixin(ApplicationV2) {
 
   static async #onSave() {
     this.#readForm();
+    await this.#save();
+  }
+
+  /** Save what differs from the entry as loaded. Returns false if nothing was written. */
+  async #save() {
     const warning = this._saveWarning(this.#draft);
     if (warning) ui.notifications.warn(warning, { localize: true });
     const changes = entryChanges(this.#base, this.#draft, this.#entry.fields);
-    if (!Object.keys(changes).length) return;
+    if (!Object.keys(changes).length) return false;
     const saved = await writeChallenge(this.page, (system) => this.#entry.save(system, this.subjectId, this.entryId, changes));
     if (saved === false) ui.notifications.warn(this.#entry.goneKey, { localize: true });
+    return saved !== false;
   }
 }
 
@@ -212,10 +228,9 @@ export class ModifierWindow extends EntryWindow {
     return {
       modifier,
       challengeLevel: !subject,
-      // The preset's suggestions and every category in use, offered as the GM types.
-      effects: modifier.effects.map((effect, e) => ({ ...effectView(effect, `effects.${e}`, modifier.effects.length > 1), skillOptions })),
+      skillOptions,
       quickDcAmounts: QUICK_DC_AMOUNTS.map((amount) => ({ amount, label: amount > 0 ? `+${amount}` : `${amount}`.replace("-", "−") })),
-      choices: { durations: labels(DURATIONS, "Duration"), effects: labels(EFFECT_TYPES, "Effect") },
+      choices: { durations: labels(DURATIONS, "Duration") },
     };
   }
 }
@@ -245,8 +260,8 @@ export class SubjectWindow extends EntryWindow {
     super._onClose(options);
   }
 
-  _entryContext(system, subject, draft) {
-    return { subject: draft };
+  async _entryContext(system, subject, draft) {
+    return { subject: draft, descriptionHtml: await enrichDescription(draft.description, this.page) };
   }
 }
 
@@ -258,9 +273,10 @@ export class ActionWindow extends EntryWindow {
 
   static PARTS = { form: { template: `modules/${MODULE}/templates/challenge-action.hbs` } };
 
-  _entryContext(system, subject, action) {
+  async _entryContext(system, subject, action) {
     return {
       action,
+      descriptionHtml: await enrichDescription(action.description, this.page),
       checks: action.checks.map((row, i) => ({ ...row, path: `checks.${i}`, isLore: row.skill === LORE })),
       choices: { skills: checkSkillChoices() },
     };

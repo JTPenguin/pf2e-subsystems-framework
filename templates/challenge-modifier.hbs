@@ -16,25 +16,17 @@
     <label class="check"><input type="checkbox" name="decoy" {{checked decoy}}>{{localize "SSM.Challenge.Decoy"}}</label>
   </div>
   {{/with}}
-  {{#each effects}}
   <div class="ssm-effect">
     <div class="ssm-row">
-      <label>{{localize "SSM.Challenge.EffectLabel"}}<select name="{{path}}.type" data-redraw>{{selectOptions @root.choices.effects selected=type}}</select></label>
-      {{#if isDc}}
-      <label>{{localize "SSM.Challenge.Amount"}}<input type="number" step="1" name="{{path}}.amount" value="{{amount}}"></label>
-      <span class="ssm-quick">{{#each @root.quickDcAmounts}}<button type="button" data-action="quickDc" data-path="{{../path}}" data-amount="{{amount}}">{{label}}</button>{{/each}}</span>
-      <label class="check"{{#if @root.challengeLevel}} data-tooltip="SSM.Challenge.ChallengeSkillsHint"{{/if}}><input type="checkbox" name="{{path}}.allSkills" data-redraw {{checked allSkills}}>{{localize "SSM.Challenge.AllSkills"}}</label>
-      {{/if}}
-      {{#if isNote}}<label class="grow">{{localize "SSM.Challenge.Note"}}<input type="text" name="{{path}}.note" value="{{note}}"></label>{{/if}}
-      {{#if canRemove}}<button type="button" class="icon fa-solid fa-trash" data-action="removeRow" data-path="{{path}}" aria-label="{{localize "SSM.Challenge.Remove"}}"></button>{{/if}}
+      <label>{{localize "SSM.Challenge.DcChange"}}<input type="number" step="1" name="dc.amount" value="{{modifier.dc.amount}}"></label>
+      <span class="ssm-quick">{{#each quickDcAmounts}}<button type="button" data-action="quickDc" data-amount="{{amount}}">{{label}}</button>{{/each}}</span>
+      <label class="check"{{#if challengeLevel}} data-tooltip="SSM.Challenge.ChallengeSkillsHint"{{/if}}><input type="checkbox" name="dc.allSkills" data-redraw {{checked modifier.dc.allSkills}}>{{localize "SSM.Challenge.AllSkills"}}</label>
     </div>
-    {{#if isDc}}{{#unless allSkills}}
-    <multi-checkbox name="{{path}}.skills">{{selectOptions skillOptions selected=skills}}</multi-checkbox>
-    {{/unless}}{{/if}}
+    {{#unless modifier.dc.allSkills}}
+    <multi-checkbox name="dc.skills">{{selectOptions skillOptions selected=modifier.dc.skills}}</multi-checkbox>
+    {{/unless}}
   </div>
-  {{/each}}
-  <div class="ssm-row ssm-modifier-buttons">
-    <button type="button" class="ssm-add" data-action="addRow" data-list="effects"><i class="fa-solid fa-plus" inert></i> {{localize "SSM.Challenge.AddEffect"}}</button>
-    <button type="submit" class="ssm-save"><i class="fa-solid fa-floppy-disk" inert></i> {{localize "SSM.Challenge.SaveModifier"}}</button>
+  <div class="ssm-row">
+    <label class="grow">{{localize "SSM.Challenge.Note"}}<input type="text" name="note" value="{{modifier.note}}"></label>
   </div>
 </div>
