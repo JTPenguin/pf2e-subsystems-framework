@@ -15,9 +15,9 @@ priority: ⏫
 
 ## Where it stands (2026-11-13)
 
-**Done:** id, title, page type, language keys, build script and docs renamed; tests pass; the zip builds as `pf2e-subsystems-framework-0.1.0.zip`. Justin renamed the module symlink and re-enabled the module. `tools/migrate-old-id.macro.js` moved his test challenges to the new id, and he confirmed it worked.
+**Done:** id, title, page type, language keys, build script and docs renamed; tests pass; the zip builds as `pf2e-subsystems-framework-0.1.0.zip`. Justin renamed the module symlink and re-enabled the module. A one-off macro (`tools/migrate-old-id.macro.js`, deleted after use; in git at d9ab7e2) moved his test challenges to the new id, and he confirmed it worked.
 
-**Kept on purpose:** the `ssm-` CSS and temp-folder prefixes (internal only), and the old id in `docs/phase-0-results.md` (a record of past findings) and in the migration macro.
+**Kept on purpose:** the `ssm-` CSS and temp-folder prefixes (internal only), and the old id in `docs/phase-0-results.md` (a record of past findings).
 
 **Left:** rename the project folder `~/Projects/PF2e Subsystem Manager`. Do it with no Claude session open in it, then re-point the Foundry symlink at the new path, and move `~/.claude/projects/-home-justin-Projects-PF2e-Subsystem-Manager/memory/` to the folder named after the new path.
 
