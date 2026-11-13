@@ -887,6 +887,16 @@ test("two arriving rolls at a one-time DC: the first spends it, and the next che
   assert.deepEqual([m.spent, dcOf(s)], [true, 15]);
 });
 
+test("a multi-use DC change turns Off when its roll arrives, is never spent, and works again once turned On", () => {
+  const s = running();
+  const m = addModifier(s, { duration: "multiUse" }, dcEffect(-2));
+  Run.receiveRoll(s, rollAt(s, "r1", 13));
+  assert.deepEqual([m.active, m.spent, dcOf(s)], [false, false, 15]);
+  m.active = true;
+  Run.receiveRoll(s, rollAt(s, "r2", 13, { actorId: "a2" }));
+  assert.deepEqual([m.active, m.spent, dcOf(s)], [false, false, 15]);
+});
+
 test("an ongoing DC change is never spent by an arriving roll", () => {
   const s = running();
   const m = addModifier(s, {}, dcEffect(-2));

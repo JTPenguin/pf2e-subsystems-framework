@@ -6,6 +6,7 @@
 import { allCounters, BOTH_WAYS, clampTracks, findCounter, limitTrack, modifierList, nextThresholdReveal, revealOnly, skillKey } from "./data.js";
 
 const isOneTime = (modifier) => modifier.duration === "oneTime";
+const isMultiUse = (modifier) => modifier.duration === "multiUse";
 /** A subject's entry names its checks by id; a challenge-level entry names skills, so it matches that skill on any subject (spec 14.7). */
 const dcMatches = ({ dc }, check, challengeLevel) => !!dc && dc.amount !== 0 && (dc.allSkills || dc.skills.includes(challengeLevel ? skillKey(check) : check.id));
 
@@ -318,11 +319,14 @@ function rollTargetOf(system, roll) {
   return check ? { subject, check } : null;
 }
 
-/** Spend the one-time entries that changed this roll's DC. Only a roll at the current DC used them: a roll at any other DC, such as an old chat link, leaves them for the next check. */
+/** Spend the one-time entries that changed this roll's DC, and turn the multi-use ones Off for the GM to turn on again. Only a roll at the current DC used them: a roll at any other DC, such as an old chat link, leaves them for the next check. */
 function spendDcEntries(system, subject, check, dc) {
   if (dc === null || dc === undefined || dc !== currentDc(system, subject, check)) return;
   // A one-time challenge-level entry is spent by the next matching check anywhere (spec 14.7).
-  for (const { modifier } of liveDcModifiers(system, subject, check)) if (isOneTime(modifier)) modifier.spent = true;
+  for (const { modifier } of liveDcModifiers(system, subject, check)) {
+    if (isOneTime(modifier)) modifier.spent = true;
+    else if (isMultiUse(modifier)) modifier.active = false;
+  }
 }
 
 /**

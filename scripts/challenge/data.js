@@ -4,7 +4,7 @@
  */
 
 export const STATUSES = ["inactive", "active", "finished"];
-export const DURATIONS = ["oneTime", "ongoing"];
+export const DURATIONS = ["oneTime", "multiUse", "ongoing"];
 export const QUICK_DC_AMOUNTS = [-5, -2, 2, 5];
 /** A counter counts up towards its thresholds, or down towards them, or both ways from 0 (spec 14.8). */
 export const DIRECTIONS = ["up", "down", "both"];

@@ -94,6 +94,7 @@
       "DurationLabel": "Duration",
       "Duration": {
         "oneTime": "One-time",
+        "multiUse": "Multi-use",
         "ongoing": "Ongoing"
       },
       "Active": "On",
