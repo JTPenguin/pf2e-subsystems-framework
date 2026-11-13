@@ -60,10 +60,10 @@
       {{#if open}}<div class="ssm-panel-action-description">{{{descriptionHtml}}}</div>{{/if}}
     </div>{{/each}}
     </div>{{/if}}
-    {{!-- Modifiers by category: the blank one first with no heading, then each labelled one, empty or not. --}}
+    {{!-- Modifiers by category: the blank one first with no heading, then each labelled one. Only categories with a revealed entry come through. --}}
     {{#each modifierGroups}}<div class="ssm-panel-mod-group"{{#if stripe}} style="{{stripe}}"{{/if}}>
       {{#if heading}}<div class="ssm-panel-cat-head">{{heading}}</div>{{/if}}
-      <div class="ssm-panel-mods">{{#each cards}}{{> ssmPanelMod}}{{else}}<p class="ssm-panel-empty">{{localize "SSM.Panel.NoneRevealed"}}</p>{{/each}}</div>
+      <div class="ssm-panel-mods">{{#each cards}}{{> ssmPanelMod}}{{/each}}</div>
     </div>{{/each}}
   </div>
   {{/each}}

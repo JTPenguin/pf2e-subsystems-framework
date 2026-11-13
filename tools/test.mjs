@@ -1127,16 +1127,19 @@ test("the panel groups cards by category: the blank one first, then the preset's
   assert.deepEqual(cards.map((card) => card.category), ["", R_, R_, W_, W_, "Opportunity", "Opportunity", O_, "Complication"]);
 });
 
-test("the panel shows every labelled category, empty when nothing in it is revealed; the blank one only when one of its entries is", () => {
+test("the panel shows a category, blank or labelled, only when one of its entries is revealed", () => {
   const s = secretSystem();
   const base = sub(s).modifiers[0];
   const make = (category, name, revealed) => ({ ...structuredClone(base), id: name, category, name, revealed });
   sub(s).modifiers = [make("", "b1", false), make(W_, "w1", true), make("Opportunity", "op1", false)];
   const groups = () => viewOf(s).subjects[0].modifierGroups.map((group) => [group.label, group.cards.map((card) => card.name)]);
-  assert.deepEqual(groups(), [[R_, []], [W_, ["w1"]], ["Opportunity", []]]);
+  assert.deepEqual(groups(), [[W_, ["w1"]]], "neither the preset's suggestions nor a category with only hidden entries shows");
   sub(s).modifiers[0].revealed = true;
   assert.deepEqual(groups()[0], ["", ["b1"]]);
-  assert.ok(!JSON.stringify(viewOf(s)).includes("op1"), "a hidden entry's name stays out; only its category's label shows");
+  assert.ok(!JSON.stringify(viewOf(s).subjects[0].modifierGroups).includes("Opportunity"), "a category with nothing revealed leaves no label in the copy");
+  assert.ok(!JSON.stringify(viewOf(s)).includes("op1"), "a hidden entry's name stays out");
+  sub(s).modifiers[2].revealed = true;
+  assert.deepEqual(groups(), [["", ["b1"]], [W_, ["w1"]], ["Opportunity", ["op1"]]], "revealing an entry brings its category back");
 });
 
 test("each category's stripe takes the next palette colour; Influence's two keep today's colours; a blank category has none", () => {

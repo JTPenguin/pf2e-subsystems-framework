@@ -1,12 +1,13 @@
 ---
 title: "Panel: hide modifier categories with none revealed"
 kind: work
-status: ready
-waits_on: Claude
+status: done
+waits_on: none
 blocked_by: []
 source: Justin's request, 2026-11-12
 added: 2026-11-12
 updated: 2026-11-12
+outcome: "The panel shows a modifier category, blank or labelled, only when one of its entries is revealed; the preset's suggestions no longer show empty, and \"None revealed\" is gone. Checked by test and live in Foundry, 2026-11-12."
 priority: 🔽
 ---
 # Panel: hide modifier categories with none revealed

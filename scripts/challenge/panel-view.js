@@ -82,11 +82,10 @@ function thresholdViews(rows, direction) {
 const cards = (system, subject, rows) => groupByCategory(system, rows.filter(isVisible)).flatMap((group) => group.rows.map((row) => modifierView(system, subject, row, group)));
 
 /**
- * A subject's modifiers as the panel's sections (spec 14.7): the blank category first, with no heading, shown only when one of its entries is revealed;
- * then every labelled category the subject has, plus the preset's suggestions, each with its revealed cards, empty when none are.
- * A category's label shows even when all its entries are hidden.
+ * A subject's modifiers as the panel's sections (spec 14.7): the blank category first, with no heading, then each labelled category.
+ * A category shows only when one of its entries is revealed, so a hidden entry's category label stays out of the copy.
  */
-const cardGroups = (system, subject) => groupByCategory(system, subject.modifiers.filter(isVisible), { withSuggestions: true, keep: subject.modifiers.map((row) => row.category) })
+const cardGroups = (system, subject) => groupByCategory(system, subject.modifiers.filter(isVisible))
   .map((group) => ({ label: group.label, colour: group.colour, cards: group.rows.map((row) => modifierView(system, subject, row, group)) }));
 
 /**
