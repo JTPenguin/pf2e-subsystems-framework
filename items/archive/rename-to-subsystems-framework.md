@@ -1,12 +1,13 @@
 ---
 title: Rename the module to PF2e Subsystems Framework
 kind: work
-status: in-progress
-waits_on: Justin
+status: done
+waits_on: none
 blocked_by: []
 source: "Justin, 2026-11-12: 'Subsystem Manager' is clunky; keep 'Subsystems' (the rules' own word) and use 'Framework', since the module is the scaffolding a GM builds each challenge on"
 added: 2026-11-12
 updated: 2026-11-13
+outcome: "Renamed to PF2e Subsystems Framework (id pf2e-subsystems-framework), old challenges migrated, project folder moved to ~/Projects/PF2e Subsystems Framework. Tests pass; Justin checked it in Foundry on 2026-11-13."
 priority: ⏫
 ---
 # Rename the module to PF2e Subsystems Framework
@@ -19,7 +20,7 @@ priority: ⏫
 
 **Kept on purpose:** the `ssm-` CSS and temp-folder prefixes (internal only), and the old id in `docs/phase-0-results.md` (a record of past findings).
 
-**Left:** rename the project folder `~/Projects/PF2e Subsystem Manager`. Do it with no Claude session open in it, then re-point the Foundry symlink at the new path, and move `~/.claude/projects/-home-justin-Projects-PF2e-Subsystem-Manager/memory/` to the folder named after the new path.
+**Folder:** moved to `~/Projects/PF2e Subsystems Framework`, with the Foundry symlink, the memory folder and the app preset updated (2026-11-13).
 
 ## Names
 
