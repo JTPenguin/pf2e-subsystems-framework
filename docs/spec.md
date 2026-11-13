@@ -389,8 +389,8 @@ The sheet's one view (section 6):
 - Each action is a labelled grid of chips, in the GM's order, with edit and delete buttons. An action with no checks still shows, so it can be edited.
 - A subject's card has Counters, Actions and Modifiers subsections, each title with a + (section 6). Its counters each have + and −, as the challenge's do (14.13).
 - A counter with thresholds shows them as rows under it, like a subject's.
-- Subjects can be moved up and down, and collapsed (14.8). A per-PC counter lists each party PC, with the party total (14.8).
-- **Subjects group by category** (Justin, 2026-11-12). Each subject is a collapsible card, with edit and delete buttons in its header. Uncategorised cards come first with no heading; then each category in use has a red section bar with its subjects' cards under it, in subject category order (14.6), and a + that adds a subject in that category. A category bar doesn't collapse. A subject moves up and down only within its category.
+- Subjects can be reordered by drag, and collapsed (14.8). A per-PC counter lists each party PC, with the party total (14.8).
+- **Subjects group by category** (Justin, 2026-11-12). Each subject is a collapsible card, with edit and delete buttons in its header. Uncategorised cards come first with no heading; then each category in use has a red section bar with its subjects' cards under it, in subject category order (14.6), and a + that adds a subject in that category. A category bar doesn't collapse. A subject can be dragged only within its category.
 - The stored subject list keeps this grouped order, so the panel's columns follow it. A subject whose category changes moves to the end of its new group.
 - The challenge has the points name, subject label and an optional round maximum, edited in place.
 - Each action's window holds its name, Secret and description, then its checks as a table. The description is rich text, like an item's, so it can hold the action's degrees of success. Its secret blocks are the GM's alone.
@@ -486,7 +486,7 @@ A preset makes one kind of subject, so the sheet has one Add subject button, nam
 
 **Limits.** Every counter, a subject's included, has an optional minimum and maximum. On a per-PC counter they apply to each PC's value. Chase Points use 0 to 3; Reputation uses −50 and +50.
 
-**Subject order.** In both modes of the sheet, each subject has move up and move down buttons. The order is the challenge's subject order, so the panel's columns follow it. It is only for reference: the GM still reveals the next obstacle by hand.
+**Subject order.** The GM drags a subject by the grip on its card header to a new place in its category (Justin, 2026-11-12). A drop on another category's card is refused: a subject changes category only through its window's Category field. Only a GM can drag. The order is the challenge's subject order, so the panel's columns follow it. It is only for reference: the GM still reveals the next obstacle by hand.
 
 **Collapsible subjects.** Each subject on the sheet can collapse to its header row: name, eye and Complete. The state is each user's own, kept across reloads in a user flag, and changes neither the challenge nor the panel.
 

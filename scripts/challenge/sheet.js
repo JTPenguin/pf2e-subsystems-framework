@@ -26,12 +26,6 @@ const WINDOWS = { subjects: SubjectWindow, actions: ActionWindow, counters: Coun
 /** The action cards this user has opened on the sheet, as "pageId:actionId". Each user's own, kept until the page reloads, as on the panel. */
 const openActions = new Set();
 
-/** Whether the subject at index `n` can move up or down: only past a neighbour in the same category (spec 14.4). */
-function canMove(system, n) {
-  const key = (i) => categoryKey(system.subjects[i]?.category);
-  return { canMoveUp: n > 0 && key(n - 1) === key(n), canMoveDown: n < system.subjects.length - 1 && key(n + 1) === key(n) };
-}
-
 /**
  * Modifier views as the GM window's sections, by category (spec 14.7): the blank category first, with no heading,
  * then the preset's suggestions, then other labels in order of first use. Each has a key, a heading, its stripe colour and its rows.
@@ -54,7 +48,6 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
       removeEntry: ChallengeSheet.#onRemoveEntry,
       editEntry: ChallengeSheet.#onEditEntry,
       toggleComplete: ChallengeSheet.#onToggleComplete,
-      moveSubject: ChallengeSheet.#onMoveSubject,
       toggleCollapse: ChallengeSheet.#onToggleCollapse,
       toggleAction: ChallengeSheet.#onToggleAction,
       startRun: ChallengeSheet.#onStartRun,
@@ -223,6 +216,7 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
       premiseHtml: await enrich(system.premise),
       gmNotesHtml: await enrich(system.gmNotes),
       runActive: system.run.status === "active",
+      isGM: game.user.isGM,
     });
   }
 
@@ -329,7 +323,6 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
       subjectGroups: subjectGroups(system, system.subjects.map((subject, n) => ({
         id: subject.id,
         name: subjectName(subject, n, subjectLabel),
-        ...canMove(system, n),
         collapsed: isCollapsed(subject.id),
         noDelete: system.subjects.length < 2,
         descriptionHtml: this.#subjectHtml.get(subject.id) ?? "",
@@ -348,7 +341,7 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
           checks: rollRows(subject, action),
         })),
         modifierGroups: modifierGroups(system, subject.modifiers.map((row) => this.#modifierView(system, subject, row, canChange))),
-      }))).map((group) => ({ heading: group.label, subjects: group.items })),
+      }))).map((group) => ({ key: group.key, heading: group.label, subjects: group.items })),
       counters: system.counters.map((counter) => counterRun(counter)),
     };
   }
@@ -469,10 +462,78 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
     return WINDOWS[kind]?.open(this.page, kind === "subjects" ? id : subjectId, id);
   }
 
-  /** Move a subject up or down the challenge's order (spec 14.8). It is challenge data, so any GM can. */
-  static async #onMoveSubject(event, target) {
-    if (!game.user.isGM) return;
-    await this.#whileSaving(() => writeChallenge(this.page, (system) => moveSubject(system, target.dataset.subject, Number(target.dataset.delta))));
+  /* -------------------------------------------- */
+
+  /** Subject cards drag by the grip on their header, and drop on another card in the same category (spec 14.8). Only a GM can drag. */
+  #dragDrop = new foundry.applications.ux.DragDrop({
+    dragSelector: ".ssm-subject-grip",
+    dropSelector: ".ssm-subject-card",
+    permissions: { dragstart: () => game.user.isGM, drop: () => game.user.isGM },
+    callbacks: {
+      dragstart: this.#onDragStart.bind(this),
+      dragover: this.#onDragOver.bind(this),
+      dragleave: (event) => this.#clearDropMark(event.currentTarget),
+      dragend: () => this.#endDrag(),
+      drop: this.#onDrop.bind(this),
+    },
+  });
+
+  /** The subject being dragged on this sheet: its id and category key. */
+  #dragging = null;
+
+  async _onRender(context, options) {
+    await super._onRender(context, options);
+    this.#dragDrop.bind(this.element);
+  }
+
+  #onDragStart(event) {
+    const card = event.currentTarget.closest(".ssm-subject-card");
+    const subject = this.#source.subjects.find((row) => row.id === card.dataset.subject);
+    if (!subject) return;
+    this.#dragging = { id: subject.id, key: categoryKey(subject.category) };
+    event.dataTransfer.setData("text/plain", JSON.stringify({ type: "ssmSubject", pageId: this.page.id, subjectId: subject.id }));
+    event.dataTransfer.effectAllowed = "move";
+    event.dataTransfer.setDragImage(card, 16, 12);
+  }
+
+  /** Where a drop on this card would put the dragged subject: before or after it, by the pointer's half. Null if it can't go there. */
+  #dropPlace(event) {
+    const card = event.currentTarget;
+    if (!this.#dragging || card.dataset.subject === this.#dragging.id || card.dataset.category !== this.#dragging.key) return null;
+    const box = card.getBoundingClientRect();
+    return event.clientY > box.top + box.height / 2 ? "after" : "before";
+  }
+
+  /** Mark where the subject would go, or refuse the drop: another category's card, or the subject's own. */
+  #onDragOver(event) {
+    const card = event.currentTarget;
+    const place = this.#dropPlace(event);
+    event.dataTransfer.dropEffect = place ? "move" : "none";
+    card.classList.toggle("ssm-drop-before", place === "before");
+    card.classList.toggle("ssm-drop-after", place === "after");
+  }
+
+  #clearDropMark(card) {
+    card?.classList.remove("ssm-drop-before", "ssm-drop-after");
+  }
+
+  #endDrag() {
+    this.#dragging = null;
+    for (const card of this.element?.querySelectorAll(".ssm-drop-before, .ssm-drop-after") ?? []) this.#clearDropMark(card);
+  }
+
+  /** Write the new subject order. It is challenge data, so any GM can. */
+  async #onDrop(event) {
+    const card = event.currentTarget;
+    const place = this.#dropPlace(event);
+    const { id } = this.#dragging ?? {};
+    this.#endDrag();
+    if (!place || !game.user.isGM) return;
+    const ids = this.#source.subjects.map((row) => row.id);
+    const from = ids.indexOf(id);
+    let index = ids.indexOf(card.dataset.subject) + (place === "after" ? 1 : 0);
+    if (from < index) index--;
+    await this.#whileSaving(() => writeChallenge(this.page, (system) => moveSubject(system, id, index)));
   }
 
   /** Collapse a subject to its header row, or open it. The state is this user's own, kept in a user flag (spec 14.8). */

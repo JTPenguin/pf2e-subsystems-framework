@@ -1386,13 +1386,19 @@ test("a subject's counter stays inside its limits, per PC too", () => {
   assert.equal(Run.counterValueOf(pts(s), "a1"), 0);
 });
 
-test("subjects move up and down the order, and not past either end", () => {
+test("a subject moves to an index in the order, and not past either end", () => {
   const s = system();
-  const [a, b] = [sub(s), D.addRow(s, "subjects")];
-  assert.equal(D.moveSubject(s, a.id, -1), false);
+  const [a, b, c] = [sub(s), D.addRow(s, "subjects"), D.addRow(s, "subjects")];
+  assert.equal(D.moveSubject(s, a.id, 0), false, "already there");
+  assert.equal(D.moveSubject(s, a.id, 3), false, "past the end");
+  assert.equal(D.moveSubject(s, a.id, -1), false, "before the start");
+  assert.equal(D.moveSubject(s, "nobody", 0), false);
+  D.moveSubject(s, a.id, 2);
+  assert.deepEqual(s.subjects.map((row) => row.id), [b.id, c.id, a.id], "down to the end");
   D.moveSubject(s, a.id, 1);
-  assert.deepEqual(s.subjects.map((row) => row.id), [b.id, a.id]);
-  assert.equal(D.moveSubject(s, a.id, 1), false);
+  assert.deepEqual(s.subjects.map((row) => row.id), [b.id, a.id, c.id], "up one");
+  D.moveSubject(s, c.id, 0);
+  assert.deepEqual(s.subjects.map((row) => row.id), [c.id, b.id, a.id], "up to the start");
 });
 
 /* Both-ways tracks (spec 14.8) */
@@ -1524,15 +1530,18 @@ test("a subject whose category changes moves to the end of its new group", () =>
   assert.deepEqual(s.subjects.map((row) => row.id), [a.id, first.id], "other edits keep the order");
 });
 
-test("subjects move up and down only within their category", () => {
+test("a subject moves only within its category", () => {
   const s = system();
   const [a] = s.subjects;
   const b = D.addRow(s, "subjects", { category: "Hard" });
   const c = D.addRow(s, "subjects", { category: "Hard" });
-  assert.equal(D.moveSubject(s, a.id, 1), false, "can't move past the end of the blank group");
-  assert.equal(D.moveSubject(s, b.id, -1), false, "can't move into another category");
+  const d = D.addRow(s, "subjects", { category: "Hard" });
+  assert.equal(D.moveSubject(s, a.id, 1), false, "can't move into the next category");
+  assert.equal(D.moveSubject(s, b.id, 0), false, "can't move into the blank category");
+  D.moveSubject(s, b.id, 3);
+  assert.deepEqual(s.subjects.map((row) => row.id), [a.id, c.id, d.id, b.id], "to the end of its own group");
   D.moveSubject(s, b.id, 1);
-  assert.deepEqual(s.subjects.map((row) => row.id), [a.id, c.id, b.id]);
+  assert.deepEqual(s.subjects.map((row) => row.id), [a.id, b.id, c.id, d.id], "to the start of its own group");
 });
 
 test("Awareness Points rise each round and by hand, and their tiers raise every DC by 1, then 2 in total", () => {

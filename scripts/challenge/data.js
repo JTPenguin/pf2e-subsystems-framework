@@ -282,15 +282,18 @@ export function sortSubjects(system) {
   system.subjects = subjectGroups(system).flatMap((group) => group.items);
 }
 
-/** Move a subject one place up (−1) or down (+1) in the challenge's order (spec 14.8), within its category. Returns false at either end of its group. */
-export function moveSubject(system, subjectId, delta) {
+/**
+ * Move a subject to `index` in the challenge's order (spec 14.8), as a drag on the sheet drops it.
+ * The index counts the subjects with this one still in place. A subject stays within its category:
+ * returns false for an index outside its group, or when it would not move.
+ */
+export function moveSubject(system, subjectId, index) {
   sortSubjects(system);
   const from = system.subjects.findIndex((subject) => subject.id === subjectId);
-  const to = from + delta;
-  if (from < 0 || to < 0 || to >= system.subjects.length) return false;
-  if (categoryKey(system.subjects[to].category) !== categoryKey(system.subjects[from].category)) return false;
+  if (from < 0 || index === from || !(index >= 0 && index < system.subjects.length)) return false;
+  if (categoryKey(system.subjects[index].category) !== categoryKey(system.subjects[from].category)) return false;
   const [subject] = system.subjects.splice(from, 1);
-  system.subjects.splice(to, 0, subject);
+  system.subjects.splice(index, 0, subject);
 }
 
 /** A new subject as the challenge's preset makes it. */

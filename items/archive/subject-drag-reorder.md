@@ -1,13 +1,14 @@
 ---
 title: Drag and drop to reorder subjects, replacing the arrows
 kind: feature
-status: ready
+status: done
 waits_on: Claude
 priority: 🔽
 blocked_by: []
 source: Justin's list of items, 2026-11-12; interview with Justin, 2026-11-12
 added: 2026-11-12
 updated: 2026-11-12
+outcome: "GM drags a subject by a grip on its card header; a drop on another category's card is refused. moveSubject is now a move-to-index, the arrows and their strings are gone, and the panel follows the saved order. Checked live in Foundry with scripted drag events (2026-11-12)."
 ---
 # Drag and drop to reorder subjects, replacing the arrows
 

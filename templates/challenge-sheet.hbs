@@ -50,11 +50,6 @@
         <span class="ssm-grow">{{label}}</span>
         {{#if kind}}{{> ssmAdd}}{{/if}}
       </h4>{{/inline}}
-{{!-- A subject's order buttons. --}}
-{{#*inline "ssmOrder"}}<span class="ssm-order">
-  <button type="button" class="icon fa-solid fa-arrow-up" data-action="moveSubject" data-subject="{{id}}" data-delta="-1" aria-label="{{localize "SSM.Challenge.MoveUp"}}" data-tooltip="SSM.Challenge.MoveUp" {{#unless canMoveUp}}disabled{{/unless}}></button>
-  <button type="button" class="icon fa-solid fa-arrow-down" data-action="moveSubject" data-subject="{{id}}" data-delta="1" aria-label="{{localize "SSM.Challenge.MoveDown"}}" data-tooltip="SSM.Challenge.MoveDown" {{#unless canMoveDown}}disabled{{/unless}}></button>
-</span>{{/inline}}
 {{#*inline "ssmComplete"}}<button type="button" class="ssm-tag ssm-state ssm-reached {{#unless complete}}ssm-unreached{{/unless}}" data-action="toggleComplete" data-subject="{{id}}" aria-pressed="{{complete}}" data-tooltip="{{completeTooltip}}" {{#unless root.canChange}}disabled{{/unless}}>{{#if complete}}<i class="fa-solid fa-check" aria-hidden="true"></i> {{/if}}{{localize "SSM.Challenge.Complete"}}</button>{{/inline}}
 {{!-- A counter, the challenge's or a subject's. `root` is the run context. --}}
 {{#*inline "ssmCounterRun"}}<div class="ssm-counter {{#unless revealed}}ssm-hidden{{/unless}}">
@@ -149,13 +144,13 @@
       {{#if group.heading}}{{> ssmSectionHead label=group.heading kind="subjects" subject="" category=group.heading addLabel=@root.addSubjectLabel}}
       {{else}}{{> ssmSectionHead label=@root.subjectsLabel kind="subjects" subject="" addLabel=@root.addSubjectLabel}}{{/if}}
     {{#each group.subjects as |subject|}}
-    <section class="ssm-subject ssm-subject-card {{#unless subject.revealed}}ssm-subject-hidden{{/unless}} {{#if subject.collapsed}}ssm-collapsed{{/if}}">
+    <section class="ssm-subject ssm-subject-card {{#unless subject.revealed}}ssm-subject-hidden{{/unless}} {{#if subject.collapsed}}ssm-collapsed{{/if}}" data-subject="{{subject.id}}" data-category="{{group.key}}">
       <header class="ssm-block-head ssm-card-head">
+        {{#if @root.isGM}}<span class="ssm-subject-grip fa-solid fa-grip-vertical" aria-label="{{localize "SSM.Challenge.DragSubject"}}" data-tooltip="SSM.Challenge.DragSubject"></span>{{/if}}
         <button type="button" class="icon fa-solid {{#if subject.collapsed}}fa-chevron-right{{else}}fa-chevron-down{{/if}} ssm-collapse" data-action="toggleCollapse" data-subject="{{subject.id}}" aria-expanded="{{#if subject.collapsed}}false{{else}}true{{/if}}" aria-label="{{localize "SSM.Challenge.Collapse"}}" data-tooltip="SSM.Challenge.Collapse"></button>
         {{> ssmEye subject root=../..}}
         <h3>{{subject.name}}</h3>
         {{> ssmComplete subject root=../..}}
-        {{> ssmOrder subject}}
         {{> ssmRowTools kind="subjects" subject=subject.id id=subject.id name=subject.name noDelete=subject.noDelete}}
       </header>
       {{#if subject.descriptionHtml}}<div class="ssm-subject-description">{{{subject.descriptionHtml}}}</div>{{/if}}
