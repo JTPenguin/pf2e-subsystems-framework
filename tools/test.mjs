@@ -1457,7 +1457,7 @@ test("a both-ways bar spans the limits or the furthest thresholds, with a mark a
   assert.equal(viewOf(running()).subjects[0].counters[0].range, null);
 });
 
-/* Infiltration and its preparation (items/infiltration-subsystem.md) */
+/* Infiltration and its preparation (items/archive/infiltration-subsystem.md) */
 
 const presetSystem = (preset) => ({ ...D.newChallengeSystem(preset), gmNotes: "", run: RUN() });
 /** No preset action has an outcome table: rolls change nothing, so the GM changes values by hand. */

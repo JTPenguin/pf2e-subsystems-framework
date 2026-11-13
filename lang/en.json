@@ -263,16 +263,16 @@
           "opportunity": "Opportunity"
         },
         "GmNotes": {
-          "Obstacles": "Obstacles: add one obstacle per barrier between the party and its goal. Set each obstacle's Infiltration Points maximum to the points it needs, and give its Overcome action one check row per way past it, each with its DC. The first obstacle starts revealed and later ones hidden: reveal each when the party reaches it. Rolls change nothing, so after each roll use + and − on the obstacle's points, and mark it Complete when it's cleared.",
+          "Obstacles": "Obstacles: add one obstacle per barrier between the party and its goal. Set each obstacle's Infiltration Points maximum to the points it needs, and give its Overcome action one check row per way past it, each with its DC. For an individual obstacle, which each PC overcomes alone, turn on Per PC on its counter. For several objectives in sequence, give each objective's obstacles their own category, such as Objective 2, and reveal the next objective's obstacles when the first PC moves on. The first obstacle starts revealed and later ones hidden: reveal each when the party reaches it. Rolls change nothing, so after each roll use + and − on the obstacle's points, and mark it Complete when it's cleared.",
           "Awareness": "Awareness Points: Next round adds 1. Add more by hand with + when the party's actions raise the alarm. Its thresholds mark the preset tiers and change DCs while reached; edit them to fit the site. You get a notice when one is reached.",
-          "Edge": "Edge Points: one per PC. Add them with + on each PC's row, or type in what the PCs earned in an Infiltration Preparation challenge. When a PC spends one, lower their value with −. Each PC's row has a note for anything only you should know about their points.",
+          "Edge": "Edge Points: one per PC. Add them with + on each PC's row, or type in what the PCs earned in an Infiltration Preparation challenge. When a PC spends one on a failed check, lower their value with − and give the points a success would. Each PC's row has a note for anything only you should know about their points.",
           "Complication": "Complication: add an obstacle and set its Category to Complication. Remove its Infiltration Points counter, and leave it hidden until its trigger happens. When a failure adds Awareness Points, add them with the Awareness + button. A lasting penalty is a modifier you turn on.",
           "Opportunity": "Opportunity that needs a roll: add an obstacle, set its Category to Opportunity, remove its counter and rename its action Attempt. One with no roll is a one-time challenge modifier in the Opportunity category instead."
         },
         "Threshold": {
           "5": {
             "Player": "Suspicions are raised.",
-            "Gm": "Obstacle DCs +1."
+            "Gm": "Obstacle DCs +1. The first time the PCs reach this tier, a complication occurs: reveal one."
           },
           "10": {
             "Player": "Something goes wrong.",
@@ -280,7 +280,7 @@
           },
           "15": {
             "Player": "The opposition is on alert.",
-            "Gm": "With the 5 AP tier, obstacle DCs are +2 in total."
+            "Gm": "With the 5 AP tier, obstacle DCs are +2 in total. The first time the PCs reach this tier, a complication occurs: reveal one."
           },
           "20": {
             "Player": "The infiltration fails.",
