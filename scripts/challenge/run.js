@@ -219,12 +219,12 @@ function adjustCounter(system, counter, delta, out, actorId = "") {
 function noteReached(counter, thresholds, out) {
   const name = counter.name || say("SSM.Challenge.UnnamedCounter");
   for (const threshold of thresholds) {
-    out.triggers.push({ counter: name, value: threshold.points, note: threshold.gmText });
+    out.triggers.push({ counter: name, value: threshold.points, note: threshold.name });
     out.reached.push(threshold.id);
   }
 }
 
-/** The language key for a reached counter threshold's notice, which depends on whether it has GM text. */
+/** The language key for a reached counter threshold's notice, which depends on whether it has a name. */
 export const triggerKey = (trigger) => (trigger.note ? "SSM.Challenge.TriggerNotice" : "SSM.Challenge.TriggerNoticeBare");
 
 /** Add to or remove from a counter, the challenge's or a subject's, from the sheet; on a per-PC counter, from `actorId`'s value. Returns the thresholds reached, as notices. */

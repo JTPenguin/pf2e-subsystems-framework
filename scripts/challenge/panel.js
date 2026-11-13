@@ -2,7 +2,7 @@ import { MODULE } from "../constants.js";
 import { counterMoves, findCounter, isDecoyCheck } from "./data.js";
 import { actionName, skillLabel, subjectName } from "./skill-label.js";
 import { refreshPanel } from "../panel/panel.js";
-import { barTicks, bothWaysBar, buildPanelView, cardTooltip, changeText, findPanelRow, pointsBar, roundSegments } from "./panel-view.js";
+import { barTicks, bothWaysBar, buildPanelView, changeText, findPanelRow, pointsBar, roundSegments } from "./panel-view.js";
 import { rollCheck, rollTarget } from "./roll.js";
 import { advanceRound, canAdvanceRound, canUndoRound, changeCounter, counterValueOf, toggleActed, toggleModifier, undoRound } from "./run.js";
 import { ChallengeSheet } from "./sheet.js";
@@ -31,23 +31,43 @@ function moves(page, counterId, actorId = "") {
   return counter ? counterMoves(counter, counterValueOf(counter, actorId)) : { canAdd: false, canRemove: false };
 }
 
+/** The action cards, threshold rows and modifier cards this user has opened on the panel, as "challengeId:ownerId:rowId". Each user's own, kept until the page reloads. */
+const openRows = new Set();
+const rowKey = (challengeId, ownerId, rowId) => `${challengeId}:${ownerId}:${rowId}`;
+
+/** A click on a row's caret or name opens its description on the panel, or closes it. `data-subject` is the owner: a subject, a counter, or empty for the challenge. */
+function toggleRow(state, button) {
+  const key = rowKey(state.id, button.dataset.subject, button.dataset.id);
+  if (!openRows.delete(key)) openRows.add(key);
+  return refreshPanel();
+}
+
+/** A subject's, action's, threshold's or modifier's description as HTML. The copy holds no secret blocks, and inline rolls and links work as on an item. */
+const enrichDescription = (html) => (html ? foundry.applications.ux.TextEditor.implementation.enrichHTML(html, { secrets: false }) : "");
+
+/** A counter's listed thresholds, each with its description as HTML and whether this user has it open. */
+const thresholdRows = (state, counter) => Promise.all(counter.thresholds.map(async (row) => ({
+  ...row, counterId: counter.id, descriptionHtml: await enrichDescription(row.description), open: openRows.has(rowKey(state.id, counter.id, row.id)),
+})));
+
 /**
  * Counters as the panel draws them, the challenge's below the columns or a subject's in its column (spec 14.12, 14.13):
  * a bar, steps or a track gets its own row and threshold card; per-PC counters a row per party PC; numbers share one line,
  * except a number with thresholds in its list, which gets its own row (name and value, no bar) so its threshold card has a place.
  * On a GM's client each value carries whether its + and − work.
  */
-function counterSet(counters, pcs, page) {
+async function counterSet(state, counters, pcs, page) {
   const named = (row) => ({ ...row, name: row.name || loc("SSM.Challenge.UnnamedCounter"), counterId: row.id, ...moves(page, row.id) });
   const ownRow = (row) => SLOTTED.has(row.display) || row.display === "bar" || (row.display === "number" && row.thresholds.length > 0);
   return {
-    tracks: counters.filter(ownRow).map((row) => ({
+    tracks: await Promise.all(counters.filter(ownRow).map(async (row) => ({
       ...named(row),
+      thresholds: await thresholdRows(state, row),
       bar: row.display === "bar" ? barOf(row.value, row) : null,
       ticks: row.display === "bar" ? barTicks(row.marks, row.value, row).map((tick) => ({ ...tick, tooltip: game.i18n.format("SSM.Panel.SlotThreshold", { number: tick.points }) })) : [],
       steps: row.display === "steps",
       slots: row.slots?.map((slot) => ({ ...slot, tooltip: slot.threshold ? game.i18n.format("SSM.Panel.SlotThreshold", { number: slot.number }) : String(slot.number) })) ?? null,
-    })),
+    }))),
     pcCounters: counters.filter((row) => row.perPc).map((row) => ({
       ...named(row),
       pcs: row.pcs.map((pc) => ({ ...pc, counterId: row.id, actor: pc.id, name: pcs.get(pc.id)?.name ?? "", img: pcs.get(pc.id)?.img ?? "", ...moves(page, row.id, pc.id) })),
@@ -59,9 +79,9 @@ function counterSet(counters, pcs, page) {
 
 /**
  * A modifier card's context: its category, duration and state as labels, each change as text, marked done once it has happened,
- * and the hover text. `gmText` and `decoy` are read from the challenge on a GM's client only; players pass nothing.
+ * and its description, which opens below it like an action's. `decoy` is read from the challenge on a GM's client only; players pass nothing.
  */
-function modifierCard(row, subjectId, gmText, decoy) {
+async function modifierCard(state, row, subjectId, decoy) {
   const text = { format: (key, data) => game.i18n.format(key, data), list: (items) => game.i18n.getListFormatter().format(items), label: skillLabel };
   return {
     ...row,
@@ -75,16 +95,9 @@ function modifierCard(row, subjectId, gmText, decoy) {
     // Struck once a one-time entry is spent.
     changes: row.changes.map((change) => ({ text: changeText(change, text), done: row.spent })),
     inactive: !row.active && !row.spent,
-    tooltip: cardTooltip({ playerText: row.text, gmText, isGM: game.user.isGM }, { escape: foundry.utils.escapeHTML, gmLabel: loc("SSM.Panel.TipGM") }),
+    descriptionHtml: await enrichDescription(row.description),
+    open: openRows.has(rowKey(state.id, subjectId, row.id)),
   };
-}
-
-/** The GM text of each modifier on the panel, keyed "subjectId:modifierId" (":modifierId" for a challenge-level one), read from the challenge itself. Empty for players, who never get GM text. */
-function gmTexts(page) {
-  const texts = new Map();
-  for (const row of page?.system.modifiers ?? []) texts.set(`:${row.id}`, row.gmText);
-  for (const subject of page?.system.subjects ?? []) for (const row of subject.modifiers) texts.set(`${subject.id}:${row.id}`, row.gmText);
-  return texts;
 }
 
 /** The checks and modifiers the GM flagged as decoys, as "subjectId:rowId" keys, read from the challenge itself. Empty for players, so a decoy flag never reaches their client. */
@@ -104,24 +117,9 @@ function roundButtons(page) {
   return { canPreviousRound: run && canUndoRound(page.system), canNextRound: run && canAdvanceRound(page.system) };
 }
 
-/** The action cards this user has opened on the panel, as "challengeId:subjectId:actionId". Each user's own, kept until the page reloads. */
-const openActions = new Set();
-const actionKey = (challengeId, subjectId, actionId) => `${challengeId}:${subjectId}:${actionId}`;
-
-/** A click on an action's name opens its description on the panel, or closes it. */
-function toggleAction(state, button) {
-  const key = actionKey(state.id, button.dataset.subject, button.dataset.id);
-  if (!openActions.delete(key)) openActions.add(key);
-  return refreshPanel();
-}
-
-/** A subject's or an action's description as HTML. The copy holds no secret blocks, and inline rolls and links work as on an item. */
-const enrichDescription = (html) => (html ? foundry.applications.ux.TextEditor.implementation.enrichHTML(html, { secrets: false }) : "");
-
-/** The panel's context, drawn only from the filtered copy. On a GM's client, the round buttons, the decoy tags and the cards' GM text also read the challenge. */
+/** The panel's context, drawn only from the filtered copy. On a GM's client, the round buttons and the decoy tags also read the challenge. */
 async function prepareView(view, state) {
   const page = gmPage(state);
-  const gm = gmTexts(page);
   const decoys = gmDecoys(page);
   const pcs = new Map(view.party.map((pc) => [pc.id, pc]));
   const segments = roundSegments(view.rounds.current, view.rounds.max);
@@ -135,13 +133,13 @@ async function prepareView(view, state) {
     ...roundButtons(page),
     several: view.subjects.length > 1,
     // Challenge-level entries: a full-width strip above the subject columns, hidden with none revealed (spec 14.7).
-    challengeMods: (view.modifiers ?? []).map((row) => modifierCard(row, "", gm.get(`:${row.id}`), decoys.has(`:${row.id}`))),
+    challengeMods: await Promise.all((view.modifiers ?? []).map((row) => modifierCard(state, row, "", decoys.has(`:${row.id}`)))),
     subjects: await Promise.all(view.subjects.map(async (subject, n) => ({
       ...subject,
       name: subjectName(subject, subject.index ?? n, view.subjectLabel),
       descriptionHtml: await enrichDescription(subject.description),
       // A copy built before subjects had counters has none (spec 14.9): draw the subject without them.
-      counterSet: counterSet(subject.counters ?? [], pcs, page),
+      counterSet: await counterSet(state, subject.counters ?? [], pcs, page),
       // Only ids go in the HTML. A click looks the DC up in the copy.
       // A card with a description opens and closes by its name.
       actions: await Promise.all(subject.actions.map(async (action) => ({
@@ -150,17 +148,17 @@ async function prepareView(view, state) {
         name: actionName(action),
         secret: action.secret,
         descriptionHtml: await enrichDescription(action.description),
-        open: openActions.has(actionKey(state.id, subject.id, action.id)),
+        open: openRows.has(rowKey(state.id, subject.id, action.id)),
         checks: action.checks.map((row) => ({ id: row.id, subjectId: subject.id, actionId: action.id, label: skillLabel(row), decoy: decoys.has(`${subject.id}:${row.id}`) })),
       }))),
       // One section per category; the heading names the category, so the cards leave out its label (spec 14.7).
-      modifierGroups: subject.modifierGroups.map((group) => ({
+      modifierGroups: await Promise.all(subject.modifierGroups.map(async (group) => ({
         heading: group.label,
         stripe: group.colour ? `--ssm-cat: ${group.colour}` : "",
-        cards: group.cards.map((row) => ({ ...modifierCard(row, subject.id, gm.get(`${subject.id}:${row.id}`), decoys.has(`${subject.id}:${row.id}`)), categoryLabel: "" })),
-      })),
+        cards: await Promise.all(group.cards.map(async (row) => ({ ...(await modifierCard(state, row, subject.id, decoys.has(`${subject.id}:${row.id}`))), categoryLabel: "" }))),
+      }))),
     }))),
-    counterSet: counterSet(view.counters, pcs, page),
+    counterSet: await counterSet(state, view.counters, pcs, page),
     party: view.party.map((pc) => ({ ...pc, label: game.i18n.format(pc.acted ? "SSM.Panel.ActedLabel" : "SSM.Panel.NotActedLabel", { name: pc.name }) })),
   };
 }
@@ -235,5 +233,5 @@ export const challengePanel = {
   isRunning: (system) => system.run.status === "active",
   buildView: buildPanelView,
   prepareView,
-  viewActions: { rollSkill: rollFromPanel, previousRound: moveRound, nextRound: moveRound, toggleModifier: flipModifier, toggleActed: flipActed, toggleAction, changeCounter: stepCounter },
+  viewActions: { rollSkill: rollFromPanel, previousRound: moveRound, nextRound: moveRound, toggleModifier: flipModifier, toggleActed: flipActed, toggleAction: toggleRow, changeCounter: stepCounter },
 };

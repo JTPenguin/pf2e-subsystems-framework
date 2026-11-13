@@ -52,24 +52,4 @@
     {{/unless}}
   </fieldset>
   {{/with}}
-  {{#unless counter.perPc}}
-  <fieldset>
-    <legend>{{localize "SSM.Challenge.Thresholds"}} <button type="button" class="icon fa-solid fa-plus" data-action="addRow" data-list="thresholds" aria-label="{{localize "SSM.Challenge.AddThreshold"}}" data-tooltip-text="{{localize "SSM.Challenge.AddThreshold"}}"></button></legend>
-    {{#each thresholds}}
-    <div class="ssm-threshold-edit">
-      <div class="ssm-row">
-        <label>{{localize "SSM.Challenge.ThresholdAt"}}<input type="number" step="1" name="{{path}}.points" value="{{points}}"></label>
-        <label>{{localize "SSM.Challenge.ThresholdReveal.Label"}}<select name="{{path}}.reveal">{{selectOptions @root.choices.thresholdReveals selected=reveal}}</select></label>
-        <label data-tooltip="SSM.Challenge.ThresholdDcHint">{{localize "SSM.Challenge.ThresholdDcLabel"}}<input type="number" step="1" name="{{path}}.dc" value="{{dc}}"></label>
-        {{#unless followsValue}}<label class="check"><input type="checkbox" name="{{path}}.reached" {{checked reached}}>{{localize "SSM.Challenge.Reached"}}</label>{{/unless}}
-        <button type="button" class="icon fa-solid fa-trash" data-action="removeRow" data-path="{{path}}" aria-label="{{localize "SSM.Challenge.Remove"}}"></button>
-      </div>
-      <div class="ssm-row ssm-text-row">
-        <label class="grow">{{localize "SSM.Challenge.PlayerText"}}<textarea class="ssm-autogrow" rows="1" name="{{path}}.playerText">{{playerText}}</textarea></label>
-        <label class="grow">{{localize "SSM.Challenge.GMText"}}<textarea class="ssm-autogrow" rows="1" name="{{path}}.gmText">{{gmText}}</textarea></label>
-      </div>
-    </div>
-    {{else}}<p class="ssm-muted">{{localize "SSM.Challenge.NoThresholds"}}</p>{{/each}}
-  </fieldset>
-  {{/unless}}
 </div>

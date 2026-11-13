@@ -43,7 +43,6 @@
         "dcAll": "{amount} to all DCs"
       },
       "Thresholds": "Thresholds",
-      "TipGM": "GM Only",
       "HiddenText": "???",
       "ActedLabel": "{name}: has acted this round",
       "NotActedLabel": "{name}: has not acted this round",
@@ -75,9 +74,6 @@
       "Decoy": "Decoy",
       "AddThreshold": "Add threshold",
       "Thresholds": "Thresholds",
-      "NoThresholds": "This counter has no thresholds.",
-      "PlayerText": "Player text",
-      "GMText": "GM text",
       "Reached": "Reached",
       "AddModifier": "Add entry",
       "EditModifierTitle": "Edit entry: {name}",
@@ -88,6 +84,7 @@
       "EditSubjectTitle": "Edit subject: {name}",
       "EditActionTitle": "Edit action: {name}",
       "EditCounterTitle": "Edit counter: {name}",
+      "EditThresholdTitle": "Edit threshold: {name}",
       "EntryGone": "That was deleted, so the changes were not saved.",
       "NoChecks": "No checks",
       "ModifierGone": "That entry was deleted, so the changes were not saved.",
@@ -105,6 +102,7 @@
       "AllSkills": "All skills",
       "Counter": "Counter",
       "UnnamedCounter": "Unnamed counter",
+      "UnnamedThreshold": "Unnamed threshold",
       "Note": "Note",
       "Counters": "Counters",
       "AddCounter": "Add counter",
@@ -136,7 +134,7 @@
         "Label": "Players see",
         "hidden": "Nothing",
         "points": "Points only",
-        "full": "Points and text",
+        "full": "Points, name and description",
         "Tooltip": "Players see: {now}. Click for: {next}."
       },
       "ReachedShort": "Reached",
@@ -276,20 +274,20 @@
         },
         "Threshold": {
           "5": {
-            "Player": "Suspicions are raised.",
-            "Gm": "Obstacle DCs +1. The first time the PCs reach this tier, a complication occurs: reveal one."
+            "Name": "Suspicions are raised",
+            "Description": "Obstacle DCs +1. The first time the PCs reach this tier, a complication occurs: reveal one."
           },
           "10": {
-            "Player": "Something goes wrong.",
-            "Gm": "The first time the PCs reach this tier, a complication occurs: reveal one."
+            "Name": "Something goes wrong",
+            "Description": "The first time the PCs reach this tier, a complication occurs: reveal one."
           },
           "15": {
-            "Player": "The opposition is on alert.",
-            "Gm": "With the 5 AP tier, obstacle DCs are +2 in total. The first time the PCs reach this tier, a complication occurs: reveal one."
+            "Name": "The opposition is on alert",
+            "Description": "With the 5 AP tier, obstacle DCs are +2 in total. The first time the PCs reach this tier, a complication occurs: reveal one."
           },
           "20": {
-            "Player": "The infiltration fails.",
-            "Gm": "End the challenge."
+            "Name": "The infiltration fails",
+            "Description": "End the challenge."
           }
         }
       },
@@ -358,28 +356,28 @@
         },
         "Threshold": {
           "30": {
-            "Player": "Revered",
-            "Gm": "Only major favors add points. Only moderate and major disservices take points away."
+            "Name": "Revered",
+            "Description": "Only major favors add points. Only moderate and major disservices take points away."
           },
           "15": {
-            "Player": "Admired",
-            "Gm": "Only major favors add points. Any disservice takes points away."
+            "Name": "Admired",
+            "Description": "Only major favors add points. Any disservice takes points away."
           },
           "5": {
-            "Player": "Liked",
-            "Gm": "Only moderate and major favors add points. Any disservice takes points away."
+            "Name": "Liked",
+            "Description": "Only moderate and major favors add points. Any disservice takes points away."
           },
           "-5": {
-            "Player": "Disliked",
-            "Gm": "Any favor adds points. Only moderate and major disservices take points away."
+            "Name": "Disliked",
+            "Description": "Any favor adds points. Only moderate and major disservices take points away."
           },
           "-15": {
-            "Player": "Hated",
-            "Gm": "Any favor adds points. Only major disservices take points away."
+            "Name": "Hated",
+            "Description": "Any favor adds points. Only major disservices take points away."
           },
           "-30": {
-            "Player": "Hunted",
-            "Gm": "Only moderate and major favors add points. Only major disservices take points away."
+            "Name": "Hunted",
+            "Description": "Only moderate and major favors add points. Only major disservices take points away."
           }
         }
       },

@@ -9,7 +9,7 @@ export const QUICK_DC_AMOUNTS = [-5, -2, 2, 5];
 /** A counter counts up towards its thresholds, or down towards them, or both ways from 0 (spec 14.8). */
 export const DIRECTIONS = ["up", "down", "both"];
 export const BOTH_WAYS = "both";
-/** How much of a threshold players see: nothing, its points ("6: ???"), or its points and player text. The GM's eye button steps through them in this order. */
+/** How much of a threshold players see: nothing, its points ("6: ???"), or its points, name and description. The GM's eye button steps through them in this order. */
 export const THRESHOLD_REVEALS = ["hidden", "points", "full"];
 /**
  * How the panel draws a counter (spec 14.12). Auto: a bar with thresholds or a both-ways range, else a number.
@@ -47,9 +47,29 @@ const say = (key) => globalThis.game?.i18n?.localize(key) ?? key;
  */
 export const newModifierDc = () => ({ amount: 0, allSkills: true, skills: [] });
 export const newModifier = () => ({
-  id: id(), name: "", playerText: "", gmText: "", category: "", duration: "ongoing",
+  id: id(), name: "", description: "", category: "", duration: "ongoing",
   active: false, spent: false, revealed: false, decoy: false, dc: newModifierDc(), note: "",
 });
+
+/** Text as HTML, escaped, so tools/test.mjs can run it without Foundry. */
+const escapeHtml = (text) => String(text).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+/** Plain text as a description paragraph, or "" for none. */
+export const paragraph = (text) => (String(text ?? "").trim() ? `<p>${escapeHtml(String(text).trim())}</p>` : "");
+/** Plain text as a secret block, which only the GM sees, in the shape Foundry's editor makes. "" for none. */
+export const secretBlock = (text) => (String(text ?? "").trim() ? `<section class="secret" id="secret-${id()}">${paragraph(text)}</section>` : "");
+
+/**
+ * A threshold or modifier saved with player and GM text. A threshold's player text becomes its name; a modifier keeps its name and its
+ * player text opens the description. The GM text follows as a secret block. Changes the row in place.
+ */
+export function migrateTexts(row, { playerIsName = false } = {}) {
+  if (!row || (row.playerText === undefined && row.gmText === undefined)) return row;
+  if (playerIsName && !row.name) row.name = String(row.playerText ?? "").trim();
+  if (!row.description) row.description = (playerIsName ? "" : paragraph(row.playerText)) + secretBlock(row.gmText);
+  delete row.playerText;
+  delete row.gmText;
+  return row;
+}
 
 /**
  * A modifier saved with the old list of effects: its first DC row becomes its DC change, and its notes join with "; ".
@@ -63,9 +83,17 @@ export function migrateModifier(modifier) {
   delete modifier.effects;
   return modifier;
 }
+
+/** Bring every saved threshold and modifier to the name and description shape (migrateTexts). Changes the challenge's source in place. */
+export function migrateChallengeTexts(source) {
+  const subjects = source?.subjects ?? [];
+  for (const modifier of [...(source?.modifiers ?? []), ...subjects.flatMap((subject) => subject.modifiers ?? [])]) migrateTexts(modifier);
+  for (const counter of [...(source?.counters ?? []), ...subjects.flatMap((subject) => subject.counters ?? [])]) for (const row of counter.thresholds ?? []) migrateTexts(row, { playerIsName: true });
+  return source;
+}
 export const newCheck = () => ({ id: id(), skill: "society", lore: "", dc: 15, revealed: true, decoy: false });
 /** `dc` is a DC change that applies while the threshold is reached. */
-export const newThreshold = () => ({ id: id(), points: 1, playerText: "", gmText: "", reveal: "hidden", reached: false, dc: 0 });
+export const newThreshold = () => ({ id: id(), points: 1, name: "", description: "", reveal: "hidden", reached: false, dc: 0 });
 /** A per-PC counter keeps one value per party PC in `valueBy`, starting from `value` (spec 14.8), and a GM-only note per PC in `noteBy`. */
 export const newCounter = () => ({ id: id(), name: "", value: 0, direction: "up", min: null, max: null, perRound: 0, perPc: false, valueBy: {}, noteBy: {}, thresholds: [], display: "auto", showThresholdList: true, showThresholdMarks: true, revealed: true });
 /** A subject's counter (spec 14.13): named by the challenge's points name, and shown from the start, as its subject decides whether players see it. */
@@ -111,7 +139,8 @@ const pointsSubject = (system, counter = {}) => ({ ...blankSubject(), counters: 
  */
 /** A new check with its skill set. */
 const checkFor = (skill) => ({ ...newCheck(), skill });
-const threshold = (points, key, { dc = 0, reveal = "points" } = {}) => ({ ...newThreshold(), points, dc, reveal, playerText: say(`${key}.Player`), gmText: say(`${key}.Gm`) });
+/** A preset threshold: its name from `key`.Name, and its GM guidance from `key`.Description as a secret block. */
+const threshold = (points, key, { dc = 0, reveal = "points" } = {}) => ({ ...newThreshold(), points, dc, reveal, name: say(`${key}.Name`), description: secretBlock(say(`${key}.Description`)) });
 
 const INF = "SSM.Preset.infiltration";
 const CHASE = "SSM.Preset.chase";
@@ -541,13 +570,13 @@ export function clampTracks(system) {
 /** The text full-text search looks in. */
 export function searchText(system) {
   const parts = [system.gmNotes];
-  const thresholds = (rows) => rows.flatMap((row) => [row.playerText, row.gmText]);
+  const thresholds = (rows) => rows.flatMap((row) => [row.name, row.description]);
   for (const counter of allCounters(system)) parts.push(counter.name, ...thresholds(counter.thresholds));
-  for (const modifier of system.modifiers ?? []) parts.push(modifier.name, modifier.category, modifier.playerText, modifier.gmText, modifier.note);
+  for (const modifier of system.modifiers ?? []) parts.push(modifier.name, modifier.category, modifier.description, modifier.note);
   for (const subject of system.subjects) {
     parts.push(subject.name, subject.description);
     for (const action of subject.actions) parts.push(action.name, action.description);
-    for (const modifier of subject.modifiers) parts.push(modifier.name, modifier.category, modifier.playerText, modifier.gmText, modifier.note);
+    for (const modifier of subject.modifiers) parts.push(modifier.name, modifier.category, modifier.description, modifier.note);
   }
   return parts.filter(Boolean).join(" ");
 }
@@ -558,7 +587,7 @@ export function searchText(system) {
  */
 
 /** The fields each window edits. The id never changes. */
-export const MODIFIER_FIELDS = ["name", "category", "duration", "playerText", "gmText", "active", "spent", "revealed", "decoy", "dc", "note"];
+export const MODIFIER_FIELDS = ["name", "category", "duration", "description", "active", "spent", "revealed", "decoy", "dc", "note"];
 
 const subjectById = (system, subjectId) => system.subjects.find((subject) => subject.id === subjectId);
 /** The modifier list a subject id names. An empty id names the challenge's own list (spec 14.7). */
@@ -599,7 +628,8 @@ export function saveModifier(system, subjectId, modifierId, changes) {
 /** The fields the subject, action and counter windows edit. */
 export const SUBJECT_FIELDS = ["name", "category", "revealed", "description"];
 export const ACTION_FIELDS = ["name", "secret", "description", "checks"];
-export const COUNTER_FIELDS = ["name", "value", "direction", "display", "min", "max", "perRound", "perPc", "revealed", "showThresholdList", "showThresholdMarks", "thresholds"];
+export const COUNTER_FIELDS = ["name", "value", "direction", "display", "min", "max", "perRound", "perPc", "revealed", "showThresholdList", "showThresholdMarks"];
+export const THRESHOLD_FIELDS = ["name", "points", "reveal", "dc", "reached", "description"];
 
 /** The subject with this id. The subject window passes it as both ids. */
 export const findSubject = (system, subjectId, entryId = subjectId) => subjectById(system, entryId);
@@ -639,6 +669,18 @@ export function saveAction(system, subjectId, actionId, changes) {
   return true;
 }
 
+/** A threshold by its counter's id and its own: threshold ids can repeat across counters, as when a subject is copied. */
+export const findThreshold = (system, counterId, thresholdId) => findCounter(system, counterId)?.counter.thresholds.find((row) => row.id === thresholdId);
+
+/** Save the threshold window's changes. On a both-ways track Reached follows the value, which the write queue settles. Returns false if the threshold is gone. */
+export function saveThreshold(system, counterId, thresholdId, changes) {
+  const row = findThreshold(system, counterId, thresholdId);
+  if (!row) return false;
+  copyFields(row, changes, THRESHOLD_FIELDS);
+  row.name = String(row.name ?? "").trim();
+  return true;
+}
+
 /** Save the counter window's changes, then keep its values inside its limits. Returns false if the counter is gone. */
 export function saveCounter(system, subjectId, counterId, changes) {
   const counter = findCounterEntry(system, subjectId, counterId);
@@ -648,9 +690,18 @@ export function saveCounter(system, subjectId, counterId, changes) {
   return true;
 }
 
-/** The path of a list of entries: "subjects", or a kind ("counters", "actions", "modifiers") on a subject, or on the challenge for an empty subject id. Null if there is none. */
+/**
+ * The path of a list of entries: "subjects", or a kind ("counters", "actions", "modifiers") on a subject, or on the challenge for an empty subject id.
+ * For "thresholds" the id is the owning counter's, the challenge's or a subject's. Null if there is none.
+ */
 export function entryListPath(system, kind, subjectId) {
   if (kind === "subjects") return "subjects";
+  if (kind === "thresholds") {
+    const found = findCounter(system, subjectId);
+    if (!found || found.counter.perPc) return null;
+    const owner = found.subject ? `subjects.${system.subjects.indexOf(found.subject)}.` : "";
+    return `${owner}counters.${(found.subject?.counters ?? system.counters).indexOf(found.counter)}.thresholds`;
+  }
   if (!subjectId) return kind === "counters" || kind === "modifiers" ? kind : null;
   const n = system.subjects.findIndex((subject) => subject.id === subjectId);
   return n < 0 ? null : `subjects.${n}.${kind}`;

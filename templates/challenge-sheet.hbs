@@ -15,15 +15,19 @@
 {{!-- A + that adds an entry and opens its window. `category` starts a new modifier or subject in that category. --}}
 {{#*inline "ssmAdd"}}<button type="button" class="icon fa-solid fa-plus" data-action="addEntry" data-kind="{{kind}}" data-subject="{{subject}}"{{#if category}} data-category="{{category}}"{{/if}} aria-label="{{addLabel}}" data-tooltip-text="{{addLabel}}"></button>{{/inline}}
 {{#*inline "ssmModifierDetails"}}{{#if effectsText}}<div class="ssm-muted ssm-detail">{{effectsText}}</div>{{/if}}
-{{#if playerText}}<div class="ssm-detail ssm-player-text">{{playerText}}</div>{{/if}}
-{{#if gmText}}<div class="ssm-detail ssm-gm-line" data-visibility="gm">{{gmText}}</div>{{/if}}{{/inline}}
-{{!-- A threshold under its counter. --}}
-{{#*inline "ssmThresholdRun"}}<div class="ssm-row ssm-entry ssm-threshold ssm-reveal-{{reveal}} {{#if reached}}ssm-reached-row{{/if}} {{#unless textShown}}ssm-hidden{{/unless}}">
+{{#if descriptionHtml}}<div class="ssm-detail ssm-run-description">{{{descriptionHtml}}}</div>{{/if}}{{/inline}}
+{{!-- A threshold under its counter: caret, eye, points, name, DC change, Reached, then edit and delete. Open, its description shows under it. --}}
+{{#*inline "ssmThresholdRun"}}<div class="ssm-threshold ssm-reveal-{{reveal}} {{#if reached}}ssm-reached-row{{/if}} {{#unless textShown}}ssm-hidden{{/unless}}">
+  <div class="ssm-row ssm-entry">
+  {{> ssmCaret action=(ifThen descriptionHtml "toggleModifierDetails" "") open=open id=openKey}}
   <button type="button" class="icon fa-solid {{revealIcon}}" data-action="cycleThresholdReveal" data-owner="{{ownerId}}" data-id="{{id}}" aria-label="{{revealTooltip}}" aria-pressed="{{revealPressed}}" data-tooltip="{{revealTooltip}}" {{#unless root.canRun}}disabled{{/unless}}></button>
   <span class="ssm-threshold-points">{{points}}</span>
-  <span class="ssm-grow">{{#if playerText}}<span class="ssm-player-text">{{playerText}}</span>{{/if}}{{#if gmText}}<span class="ssm-gm-line" data-visibility="gm">{{gmText}}</span>{{/if}}</span>
+  <span class="ssm-grow">{{name}}</span>
   {{#if dcLabel}}<span class="ssm-tag">{{dcLabel}}</span>{{/if}}
   <button type="button" class="ssm-tag ssm-state ssm-reached {{#unless reached}}ssm-unreached{{/unless}}" data-action="toggleReached" data-owner="{{ownerId}}" data-id="{{id}}" aria-pressed="{{reached}}" data-tooltip="{{reachedTooltip}}" {{#unless canChange}}disabled{{/unless}}>{{#if reached}}<i class="fa-solid fa-check" aria-hidden="true"></i> {{/if}}{{localize "SSM.Challenge.ReachedShort"}}</button>
+  {{> ssmRowTools kind="thresholds" subject=ownerId name=(ifThen name name points)}}
+  </div>
+  {{#if open}}<div class="ssm-detail ssm-run-description">{{{descriptionHtml}}}</div>{{/if}}
 </div>{{/inline}}
 {{!-- A subject's or the challenge's modifier entries, by category. `subject` is the subject's id, empty for the challenge's own. --}}
 {{#*inline "ssmModGroups"}}{{#each groups}}
@@ -66,6 +70,7 @@
         <strong class="ssm-point-total">{{valueText}}</strong>
         <button type="button" class="icon fa-solid fa-plus" data-action="changeCounter" data-id="{{id}}" data-delta="1" aria-label="{{localize "SSM.Challenge.AddToCounter"}}" {{#unless canAdd}}disabled{{/unless}}></button>
         {{/unless}}
+        {{#unless perPc}}{{> ssmAdd kind="thresholds" subject=id addLabel=(localize "SSM.Challenge.AddThreshold")}}{{/unless}}
         {{> ssmRowTools kind="counters" subject=subjectId name=label}}
       </div>
       {{#each pcs}}

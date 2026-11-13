@@ -1,0 +1,29 @@
+<div class="ssm-layout">
+  {{#with threshold}}
+  <div class="form-group">
+    <label>{{localize "SSM.Challenge.Name"}}</label>
+    <input type="text" name="name" value="{{name}}" placeholder="{{localize "SSM.Challenge.UnnamedThreshold"}}">
+  </div>
+  <div class="form-group">
+    <label>{{localize "SSM.Challenge.ThresholdAt"}}</label>
+    <input type="number" step="1" name="points" value="{{points}}">
+  </div>
+  <div class="form-group">
+    <label>{{localize "SSM.Challenge.ThresholdReveal.Label"}}</label>
+    <select name="reveal">{{selectOptions @root.choices.thresholdReveals selected=reveal}}</select>
+  </div>
+  <div class="form-group">
+    <label data-tooltip="SSM.Challenge.ThresholdDcHint">{{localize "SSM.Challenge.ThresholdDcLabel"}}</label>
+    <input type="number" step="1" name="dc" value="{{dc}}">
+  </div>
+  {{#unless @root.followsValue}}
+  <div class="form-group">
+    <label>{{localize "SSM.Challenge.Reached"}}</label>
+    <input type="checkbox" name="reached" {{checked reached}}>
+  </div>
+  {{/unless}}
+  <div class="ssm-window-editor">
+    <prose-mirror name="description" toggled value="{{description}}">{{{@root.descriptionHtml}}}</prose-mirror>
+  </div>
+  {{/with}}
+</div>

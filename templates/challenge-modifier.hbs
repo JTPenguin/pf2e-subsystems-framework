@@ -13,14 +13,6 @@
     <select name="duration">{{selectOptions @root.choices.durations selected=duration}}</select>
   </div>
   <div class="form-group">
-    <label>{{localize "SSM.Challenge.PlayerText"}}</label>
-    <input type="text" name="playerText" value="{{playerText}}">
-  </div>
-  <div class="form-group">
-    <label>{{localize "SSM.Challenge.GMText"}}</label>
-    <input type="text" name="gmText" value="{{gmText}}">
-  </div>
-  <div class="form-group">
     <label>{{localize "SSM.Challenge.Active"}}</label>
     <input type="checkbox" name="active" {{checked active}}>
   </div>
@@ -35,6 +27,9 @@
   <div class="form-group">
     <label>{{localize "SSM.Challenge.Decoy"}}</label>
     <input type="checkbox" name="decoy" {{checked decoy}}>
+  </div>
+  <div class="ssm-window-editor">
+    <prose-mirror name="description" toggled value="{{description}}">{{{@root.descriptionHtml}}}</prose-mirror>
   </div>
   {{/with}}
   <fieldset>

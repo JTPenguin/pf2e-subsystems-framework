@@ -7,8 +7,8 @@ import { announceTriggers, writeChallenge } from "./state.js";
 import { advanceRound, canAdvanceRound, hasRounds, canUndoRound, changeCounter, counterValueOf, currentDc, cycleThresholdReveal, endRun, resetRun, restoreModifier, startRun, toggleActed, toggleComplete, toggleModifier, toggleReached, toggleReveal, undoRound } from "./run.js";
 import { LINK_ROLL_ID } from "../roll-option.js";
 import { rollCheck, rollTarget } from "./roll.js";
-import { addRow, applyForm, BOTH_WAYS, categoryKey, clampTracks, collapseAllAction, counterMoves, counterValueText, EDITABLE, entryListPath, groupByCategory, isDecoyCheck, moveCounter, moveModifier, moveSubject, nextThresholdReveal, pickFields, removeEntry, setCounterNote, subjectGroups } from "./data.js";
-import { ActionWindow, CounterWindow, ModifierWindow, SubjectWindow } from "./entry-window.js";
+import { addRow, allCounters, applyForm, BOTH_WAYS, categoryKey, clampTracks, collapseAllAction, counterMoves, counterValueText, EDITABLE, entryListPath, groupByCategory, isDecoyCheck, moveCounter, moveModifier, moveSubject, nextThresholdReveal, pickFields, removeEntry, setCounterNote, subjectGroups } from "./data.js";
+import { ActionWindow, CounterWindow, ModifierWindow, SubjectWindow, ThresholdWindow } from "./entry-window.js";
 import { markDescriptionFields } from "./description-field.js";
 
 const { DocumentSheetV2, HandlebarsApplicationMixin } = foundry.applications.api;
@@ -31,9 +31,9 @@ const collapseAllView = (action) => !action ? null
   : { icon: "fa-angles-down", label: "SSM.Challenge.ExpandAll" };
 
 /** Each kind of entry's window. */
-const WINDOWS = { subjects: SubjectWindow, actions: ActionWindow, counters: CounterWindow, modifiers: ModifierWindow };
+const WINDOWS = { subjects: SubjectWindow, actions: ActionWindow, counters: CounterWindow, modifiers: ModifierWindow, thresholds: ThresholdWindow };
 
-/** The action cards and modifier rows this user has opened on the sheet, as "pageId:entryId". Each user's own, kept until the page reloads, as on the panel. */
+/** The action cards, modifier rows and threshold rows this user has opened on the sheet, as "pageId:entryId" ("pageId:counterId:thresholdId" for a threshold). Each user's own, kept until the page reloads, as on the panel. */
 const openActions = new Set();
 
 /**
@@ -91,6 +91,9 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
 
   /** Each subject's enriched description, by subject id, from the last context. */
   #subjectHtml = new Map();
+
+  /** Each threshold's and modifier's enriched description, by "ownerId:rowId" (a counter's id, or a subject's, empty for the challenge's own modifiers). */
+  #rowHtml = new Map();
 
   /** The id of the actor chosen to roll, or null for the default. */
   #rollAs = null;
@@ -219,6 +222,13 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
     for (const action of system.subjects.flatMap((subject) => subject.actions)) this.#actionHtml.set(action.id, action.description ? await enrich(action.description) : "");
     this.#subjectHtml = new Map();
     for (const subject of system.subjects) this.#subjectHtml.set(subject.id, subject.description ? await enrich(subject.description) : "");
+    this.#rowHtml = new Map();
+    const rowOwners = [
+      ...allCounters(system).map((counter) => [counter.id, counter.thresholds]),
+      ["", system.modifiers],
+      ...system.subjects.map((subject) => [subject.id, subject.modifiers]),
+    ];
+    for (const [owner, rows] of rowOwners) for (const row of rows) this.#rowHtml.set(`${owner}:${row.id}`, row.description ? await enrich(row.description) : "");
     return Object.assign(context, {
       run: this.#runContext(system),
       name: this.document.name,
@@ -280,9 +290,13 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
       };
     });
     // On a both-ways track Reached follows the value, so the GM can't click it (spec 14.8).
+    // A threshold opens to show its description, secret blocks included. With no name it shows just its points.
     const thresholdRows = (rows, ownerId, direction) => rows.map((row) => ({
       ...row, ownerId, canChange: canChange && direction !== BOTH_WAYS,
       textShown: row.reveal === "full",
+      descriptionHtml: this.#rowHtml.get(`${ownerId}:${row.id}`) ?? "",
+      openKey: `${ownerId}:${row.id}`,
+      open: openActions.has(`${this.page.id}:${ownerId}:${row.id}`),
       dcLabel: row.dc ? game.i18n.format("SSM.Challenge.ThresholdDc", { amount: signed(row.dc) }) : "",
       revealIcon: THRESHOLD_EYE[row.reveal]?.icon ?? THRESHOLD_EYE.hidden.icon,
       revealPressed: THRESHOLD_EYE[row.reveal]?.pressed ?? "false",
@@ -366,7 +380,8 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
     const state = row.spent ? "spent" : row.active ? "on" : "off";
     const label = row.name || loc("SSM.Challenge.UnnamedEntry");
     const effectsText = [row.dc?.amount ? this.#dcText(system, subject, row.dc) : "", row.note].filter(Boolean).join("; ");
-    const hasDetails = !!(effectsText || row.playerText || row.gmText);
+    const descriptionHtml = this.#rowHtml.get(`${subject?.id ?? ""}:${row.id}`) ?? "";
+    const hasDetails = !!(effectsText || descriptionHtml);
     return {
       ...row,
       label,
@@ -379,6 +394,7 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
       stateLabel: loc(`SSM.Challenge.State.${state}`),
       canChange,
       effectsText,
+      descriptionHtml,
       hasDetails,
       open: hasDetails && openActions.has(`${this.page.id}:${row.id}`),
     };
@@ -458,6 +474,8 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
       added = addRow(system, list, category ? { category } : {});
     });
     if (!added) return;
+    // A new threshold shows under its counter, so the counter opens.
+    if (kind === "thresholds" && isCounterCollapsed(subjectId)) await game.user.setFlag(MODULE, COLLAPSED_COUNTERS_FLAG, { [subjectId]: false });
     const owner = kind === "subjects" ? added.id : subjectId;
     return WINDOWS[kind]?.open(this.page, owner, added.id);
   }
@@ -518,7 +536,7 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
   }
 
   /** The lines that open and close on a click outside their controls: a subject's header, an action's line, a modifier's row and a counter's top row. */
-  static HEADERS = ".ssm-card-head, .ssm-skill-line, .ssm-modifier > .ssm-entry, .ssm-counter > .ssm-entry:first-child";
+  static HEADERS = ".ssm-card-head, .ssm-skill-line, .ssm-modifier > .ssm-entry, .ssm-counter > .ssm-entry:first-child, .ssm-threshold > .ssm-entry";
 
   /** What a header click or drag must leave alone: controls, skill chips and the row tools. */
   static HEADER_CONTROLS = "button, input, select, textarea, a, .ssm-skill, .ssm-row-tools, prose-mirror";
@@ -623,7 +641,7 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
     return this.render();
   }
 
-  /** Open an action's description or a modifier's details, or close them. */
+  /** Open an action's description, a modifier's details or a threshold's description, or close them. A threshold's id is "counterId:thresholdId". */
   static #onToggleAction(event, target) {
     const key = `${this.page.id}:${target.dataset.id}`;
     if (!openActions.delete(key)) openActions.add(key);

@@ -191,24 +191,35 @@ test("only a size with two numbers counts as saved", () => {
   for (const value of [undefined, null, { left: 1, top: 2 }, { width: 300 }, { width: "300", height: 200 }, { width: 300, height: Infinity }]) assert.equal(Spot.readSize(value), null);
 });
 
-test("a player's hover holds the player text only, even if GM text is passed in", () => {
-  assert.equal(V.cardTooltip({ playerText: "likes praise", gmText: GM_SECRET, isGM: false }, tipText), '<p class="ssm-panel-tip-line">likes praise</p>');
-  assert.equal(V.cardTooltip({ playerText: "", gmText: GM_SECRET, isGM: false }, tipText), "");
-  assert.equal(V.cardTooltip({ playerText: "  ", isGM: false }, tipText), "");
+test("a threshold saved with player and GM text gets its player text as its name and its GM text as a secret block", () => {
+  const row = D.migrateTexts({ id: "t", points: 5, playerText: " Suspicions raised ", gmText: "DCs +1 & a <complication>" }, { playerIsName: true });
+  assert.equal(row.name, "Suspicions raised");
+  assert.match(row.description, /^<section class="secret" id="secret-[^"]+"><p>DCs \+1 &amp; a &lt;complication&gt;<\/p><\/section>$/);
+  assert.ok(!("playerText" in row) && !("gmText" in row), "the old fields go");
+  assert.deepEqual(D.migrateTexts({ playerText: "", gmText: "" }, { playerIsName: true }), { name: "", description: "" });
+  const current = { name: "Kept", description: "<p>kept</p>" };
+  assert.deepEqual(D.migrateTexts(structuredClone(current), { playerIsName: true }), current, "a row in the new shape is left alone");
+  assert.deepEqual(D.migrateTexts({ name: "Named", description: "", playerText: "old", gmText: "" }, { playerIsName: true }).name, "Named", "a name already set stays");
 });
 
-test("a GM's hover has the player text unlabelled, then GM Only over the GM text, and is empty with neither", () => {
-  const gmLine = '<p class="ssm-panel-tip-line"><strong class="ssm-panel-tip-label">GM Only</strong>she is lying</p>';
-  assert.equal(V.cardTooltip({ playerText: "likes praise", gmText: "she is lying", isGM: true }, tipText), '<p class="ssm-panel-tip-line">likes praise</p>' + gmLine);
-  assert.equal(V.cardTooltip({ playerText: "", gmText: "she is lying", isGM: true }, tipText), gmLine);
-  assert.equal(V.cardTooltip({ playerText: "likes praise", gmText: undefined, isGM: true }, tipText), '<p class="ssm-panel-tip-line">likes praise</p>');
-  assert.equal(V.cardTooltip({ playerText: "", gmText: "", isGM: true }, tipText), "");
+test("a modifier saved with player and GM text keeps its name, and its description is the player text then a secret block", () => {
+  const row = D.migrateTexts({ name: "Flattery", playerText: "likes praise", gmText: "she is lying" });
+  assert.equal(row.name, "Flattery");
+  assert.match(row.description, /^<p>likes praise<\/p><section class="secret" id="secret-[^"]+"><p>she is lying<\/p><\/section>$/);
+  assert.equal(D.migrateTexts({ playerText: "only this", gmText: "" }).description, "<p>only this</p>");
+  assert.equal(V.withoutSecrets(row.description), "<p>likes praise</p>", "players see the player text only");
 });
 
-test("a hover escapes its text, so it can't add markup", () => {
-  const tip = V.cardTooltip({ playerText: '<img src=x onerror="alert(1)">', gmText: "<b>bold</b> & co", isGM: true }, tipText);
-  assert.ok(!tip.includes("<img") && !tip.includes("<b>"), tip);
-  assert.ok(tip.includes("&lt;img src=x onerror=&quot;alert(1)&quot;&gt;") && tip.includes("&lt;b&gt;bold&lt;/b&gt; &amp; co"), tip);
+test("a whole challenge's thresholds and modifiers move to the new shape, the challenge's and every subject's", () => {
+  const source = {
+    modifiers: [{ name: "A", playerText: "a", gmText: "" }],
+    counters: [{ thresholds: [{ points: 1, playerText: "One", gmText: "" }] }],
+    subjects: [{ modifiers: [{ name: "B", playerText: "", gmText: "b" }], counters: [{ thresholds: [{ points: 2, playerText: "Two", gmText: "two" }] }] }],
+  };
+  D.migrateChallengeTexts(source);
+  assert.deepEqual([source.modifiers[0].description, source.counters[0].thresholds[0].name, source.subjects[0].counters[0].thresholds[0].name], ["<p>a</p>", "One", "Two"]);
+  assert.match(source.subjects[0].modifiers[0].description, /^<section class="secret"/);
+  assert.ok(!JSON.stringify(source).includes("playerText") && !JSON.stringify(source).includes("gmText"));
 });
 
 test("a challenge's update drops a sheet change away from its sheet and keeps the rest", () => {
@@ -227,8 +238,6 @@ test("a challenge's update drops a sheet change away from its sheet and keeps th
 
 /* Shared stand-ins */
 
-const escapeHTML = (value) => String(value).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#x27;" })[c]);
-const tipText = { escape: escapeHTML, gmLabel: "GM Only" };
 /** Stand-ins for Foundry's localisation, using the English strings. */
 const EN = JSON.parse(fs.readFileSync(path.join(here, "..", "lang", "en.json"), "utf8"));
 const enText = {
@@ -384,11 +393,11 @@ test("searchText covers the challenge's text", () => {
   const s = system();
   s.gmNotes = "<p>Banquet</p>";
   Object.assign(sub(s), { name: "Vance", description: "<p>Perception +12</p>" });
-  Object.assign(D.addRow(s, "subjects.0.counters.0.thresholds"), { gmText: "secret ending" });
-  Object.assign(D.addRow(s, "counters"), { name: "Suspicion", thresholds: [{ ...D.newThreshold(), gmText: "guards arrive" }] });
+  Object.assign(D.addRow(s, "subjects.0.counters.0.thresholds"), { name: "Ending", description: "<p>secret ending</p>" });
+  Object.assign(D.addRow(s, "counters"), { name: "Suspicion", thresholds: [{ ...D.newThreshold(), name: "guards arrive" }] });
   influence(s).name = "Sway";
   const text = D.searchText(s);
-  for (const word of ["Banquet", "Vance", "Perception +12", "secret ending", "Suspicion", "guards arrive", "Sway"]) assert.ok(text.includes(word), word);
+  for (const word of ["Banquet", "Vance", "Perception +12", "Ending", "secret ending", "Suspicion", "guards arrive", "Sway"]) assert.ok(text.includes(word), word);
 });
 
 /* The modifier and action windows */
@@ -396,7 +405,7 @@ test("searchText covers the challenge's text", () => {
 const modifierSystem = () => {
   const s = system();
   const modifier = D.addRow(s, "subjects.0.modifiers");
-  Object.assign(modifier, { name: "Flattery", playerText: "He likes praise" });
+  Object.assign(modifier, { name: "Flattery", description: "<p>He likes praise</p>" });
   return { s, subject: sub(s), modifier };
 };
 
@@ -408,9 +417,9 @@ test("a window saves only the fields the GM changed, and keeps them over an upda
   draft.dc.amount = 2;
   assert.deepEqual(Object.keys(D.entryChanges(modifier, draft, D.MODIFIER_FIELDS)).sort(), ["dc", "name", "note"]);
   assert.deepEqual(D.entryChanges(modifier, structuredClone(modifier), D.MODIFIER_FIELDS), {});
-  const latest = { ...structuredClone(modifier), active: true, playerText: "Changed elsewhere" };
+  const latest = { ...structuredClone(modifier), active: true, description: "Changed elsewhere" };
   const rebased = D.rebaseEntry(latest, D.entryChanges(modifier, { ...structuredClone(modifier), name: "Praise" }, D.MODIFIER_FIELDS));
-  assert.deepEqual([rebased.name, rebased.active, rebased.playerText, rebased.id], ["Praise", true, "Changed elsewhere", modifier.id]);
+  assert.deepEqual([rebased.name, rebased.active, rebased.description, rebased.id], ["Praise", true, "Changed elsewhere", modifier.id]);
 });
 
 test("saving a modifier writes its changes, leaves run changes alone, and drops dead links", () => {
@@ -419,7 +428,7 @@ test("saving a modifier writes its changes, leaves run changes alone, and drops 
   const kept = influence(s).checks[0].id;
   assert.equal(D.saveModifier(s, subject.id, modifier.id, { name: "Praise", ...withDc(2, { allSkills: false, skills: [kept, "gone"] }), note: "softens" }), true);
   const saved = D.findModifier(s, subject.id, modifier.id);
-  assert.deepEqual([saved.name, saved.active, saved.playerText], ["Praise", true, "He likes praise"]);
+  assert.deepEqual([saved.name, saved.active, saved.description], ["Praise", true, "<p>He likes praise</p>"]);
   assert.deepEqual([saved.dc.amount, saved.dc.skills, saved.note], [2, [kept], "softens"]);
   D.removeRow(s, "subjects.0.modifiers.0");
   assert.equal(D.saveModifier(s, subject.id, modifier.id, { name: "x" }), false);
@@ -450,10 +459,34 @@ test("the action window saves its checks and drops links to checks it removed", 
   assert.equal(D.saveAction(s, subject.id, "nope", { name: "x" }), false);
 });
 
+test("a threshold is added to and removed from its counter by the counter's id, the challenge's or a subject's, and never on a per-PC counter", () => {
+  const s = runSystem();
+  assert.equal(D.entryListPath(s, "thresholds", s.counters[0].id), "counters.0.thresholds");
+  assert.equal(D.entryListPath(s, "thresholds", pts(s).id), "subjects.0.counters.0.thresholds");
+  assert.equal(D.entryListPath(s, "thresholds", "gone"), null);
+  const row = D.addRow(s, D.entryListPath(s, "thresholds", pts(s).id));
+  assert.deepEqual([row.name, row.description, row.reveal], ["", "", "hidden"]);
+  assert.equal(D.findThreshold(s, pts(s).id, row.id), row);
+  assert.equal(D.findThreshold(s, s.counters[0].id, row.id), undefined, "found only under its own counter");
+  assert.equal(D.removeEntry(s, "thresholds", pts(s).id, row.id), true);
+  assert.ok(!pts(s).thresholds.includes(row));
+  s.counters[0].perPc = true;
+  assert.equal(D.entryListPath(s, "thresholds", s.counters[0].id), null, "a per-PC counter has no thresholds");
+});
+
+test("the threshold window saves its fields onto the threshold, trimming the name, and reports a threshold that is gone", () => {
+  const s = runSystem();
+  const row = D.addRow(s, "counters.0.thresholds");
+  const changes = { name: "  Guards arrive ", points: 4, reveal: "full", dc: 1, reached: true, description: "<p>They come</p>", id: "not saved" };
+  assert.equal(D.saveThreshold(s, s.counters[0].id, row.id, changes), true);
+  assert.deepEqual([row.name, row.points, row.reveal, row.dc, row.reached, row.description, row.id !== "not saved"], ["Guards arrive", 4, "full", 1, true, "<p>They come</p>", true]);
+  assert.equal(D.saveThreshold(s, s.counters[0].id, "gone", { name: "x" }), false);
+});
+
 test("the counter window saves a challenge or subject counter and keeps its value in its limits", () => {
   const s = runSystem();
   assert.equal(D.saveCounter(s, "", s.counters[0].id, { max: 2, thresholds: [D.newThreshold()] }), true);
-  assert.deepEqual([s.counters[0].value, s.counters[0].thresholds.length], [2, 1]);
+  assert.deepEqual([s.counters[0].value, s.counters[0].thresholds.length], [2, 0], "thresholds have their own window, so the counter window never saves them");
   assert.equal(D.saveCounter(s, sub(s).id, pts(s).id, { name: "Trust", min: null }), true);
   assert.equal(pts(s).name, "Trust");
   assert.deepEqual(D.mergeForm({ min: 0, max: 5 }, { min: null, max: null }), { min: null, max: null }, "the window can blank a limit");
@@ -712,7 +745,7 @@ test("a round maximum of 0 means no rounds: Start leaves the round at 0 and Next
 test("a counter's change each round is added on Next round, and Previous round takes it and its thresholds back", () => {
   const s = running();
   const counter = s.counters[0];
-  Object.assign(counter, { perRound: 1, thresholds: [{ ...D.newThreshold(), points: 4, gmText: "Guards", dc: 1 }] });
+  Object.assign(counter, { perRound: 1, thresholds: [{ ...D.newThreshold(), points: 4, name: "Guards", dc: 1 }] });
   assert.deepEqual(Run.advanceRound(s).triggers, [{ counter: "Suspicion", value: 4, note: "Guards" }]);
   assert.deepEqual([counter.value, counter.thresholds[0].reached, Run.currentDc(s, sub(s), society(s))], [4, true, 16]);
   Run.advanceRound(s);
@@ -964,7 +997,7 @@ test("counters stop at their limits, and a counter at its limit does not move", 
 test("a counter threshold gives a notice when the counter reaches or passes it in its direction, once", () => {
   const s = running();
   const c = s.counters[0];
-  Object.assign(c, { value: 0, thresholds: [{ ...D.newThreshold(), points: 2, gmText: "Guards" }, { ...D.newThreshold(), points: 4 }] });
+  Object.assign(c, { value: 0, thresholds: [{ ...D.newThreshold(), points: 2, name: "Guards", description: "<p>not in the notice</p>" }, { ...D.newThreshold(), points: 4 }] });
   assert.deepEqual(Run.changeCounter(s, c.id, 1).triggers, []);
   assert.deepEqual(Run.changeCounter(s, c.id, 1).triggers, [{ counter: "Suspicion", value: 2, note: "Guards" }]);
   assert.deepEqual(Run.changeCounter(s, c.id, 3).triggers, [{ counter: "Suspicion", value: 4, note: "" }]);
@@ -1000,9 +1033,9 @@ const secretSystem = () => {
   s.gmNotes = `<p>${GM_SECRET} notes</p>`;
   const subject = sub(s);
   Object.assign(subject, { name: "Lady Vance", description: `<p>A noble.</p><section class="secret" id="secret-v"><p>${GM_SECRET} stats</p></section>` });
-  subject.counters[0].thresholds = [{ ...D.newThreshold(), points: 8, dc: 3, playerText: "she offers an introduction", gmText: `${GM_SECRET} threshold` }];
-  subject.modifiers = [{ ...D.newModifier(), name: "Flattery", playerText: "likes praise", gmText: `${GM_SECRET} modifier`, note: `${GM_SECRET} effect` }];
-  s.counters = [{ ...D.newCounter(), revealed: false, name: "Suspicion", value: 3, min: -111, max: 222, perRound: 1, thresholds: [{ ...D.newThreshold(), points: 5, playerText: "the guards stir", gmText: `${GM_SECRET} counter threshold` }] }];
+  subject.counters[0].thresholds = [{ ...D.newThreshold(), points: 8, dc: 3, name: "Introduction", description: `<p>she offers an introduction</p><section class="secret" id="secret-a"><p>${GM_SECRET} threshold</p></section>` }];
+  subject.modifiers = [{ ...D.newModifier(), name: "Flattery", description: `<p>likes praise</p><section class="secret" id="secret-b"><p>${GM_SECRET} modifier</p></section>`, note: `${GM_SECRET} effect` }];
+  s.counters = [{ ...D.newCounter(), revealed: false, name: "Suspicion", value: 3, min: -111, max: 222, perRound: 1, thresholds: [{ ...D.newThreshold(), points: 5, name: "the guards stir", description: `<section class="secret" id="secret-c"><p>${GM_SECRET} counter threshold</p></section>` }] }];
   Run.startRun(s);
   return s;
 };
@@ -1078,9 +1111,9 @@ test("revealing each kind of entry adds it, and only its player fields", () => {
   const view = viewOf(s);
   const subject = sub(s);
   assert.deepEqual(view.subjects[0].actions[1].checks.at(-1), { id: society(s).id, skill: "society", lore: "", dc: 15 });
-  assert.deepEqual(known(view.subjects[0]), [{ id: subject.modifiers[0].id, name: "Flattery", text: "likes praise", category: "", colour: "", duration: "ongoing", active: false, spent: false, changes: [] }]);
-  assert.deepEqual(view.subjects[0].counters[0].thresholds, [{ id: pts(s).thresholds[0].id, points: 8, label: "8", text: "she offers an introduction", textHidden: false, reached: false }]);
-  assert.deepEqual(view.counters, [{ id: s.counters[0].id, name: "Suspicion", value: 3, text: "3/222", perPc: false, pcs: [], display: "bar", slots: null, scale: 222, range: null, marks: [{ points: 5, reached: false }], thresholds: [{ id: s.counters[0].thresholds[0].id, points: 5, label: "5", text: "the guards stir", textHidden: false, reached: false }] }]);
+  assert.deepEqual(known(view.subjects[0]), [{ id: subject.modifiers[0].id, name: "Flattery", description: "<p>likes praise</p>", category: "", colour: "", duration: "ongoing", active: false, spent: false, changes: [] }]);
+  assert.deepEqual(view.subjects[0].counters[0].thresholds, [{ id: pts(s).thresholds[0].id, points: 8, label: "8", name: "Introduction", description: "<p>she offers an introduction</p>", textHidden: false, reached: false }]);
+  assert.deepEqual(view.counters, [{ id: s.counters[0].id, name: "Suspicion", value: 3, text: "3/222", perPc: false, pcs: [], display: "bar", slots: null, scale: 222, range: null, marks: [{ points: 5, reached: false }], thresholds: [{ id: s.counters[0].thresholds[0].id, points: 5, label: "5", name: "the guards stir", description: "", textHidden: false, reached: false }] }]);
   assertNoSecrets(view);
   Run.toggleReveal(s, society(s).id);
   assert.equal(viewOf(s).subjects[0].actions[1].checks.length, 3, "hiding an entry again takes it back out");
@@ -1186,12 +1219,12 @@ test("each category's stripe takes the next palette colour; Influence's two keep
   assert.deepEqual(D.groupByCategory(s, sub(s).modifiers).map((group) => group.label), ["", W_, "Opportunity"], "the blank category groups first");
 });
 
-test("thresholds show in the order the track reaches them; points-only shows no text; a missing player text never falls back to GM text", () => {
+test("thresholds show in the order the track reaches them; points-only shows no name or description; a secret block never reaches players", () => {
   const s = secretSystem();
-  const make = (points, reveal, playerText = "") => ({ ...D.newThreshold(), points, reveal, playerText, gmText: `${GM_SECRET} t` });
+  const make = (points, reveal, name = "") => ({ ...D.newThreshold(), points, reveal, name, description: `<p>${name}</p><section class="secret" id="secret-t"><p>${GM_SECRET} t</p></section>` });
   pts(s).thresholds = [make(8, "full", "eight"), make(2, "points", "two"), make(5, "hidden", "five"), make(4, "full")];
   changePts(s, 3);
-  assert.deepEqual(viewOf(s).subjects[0].counters[0].thresholds.map((row) => [row.points, row.text, row.textHidden, row.reached]), [[2, "", true, true], [4, "", false, true], [8, "eight", false, false]]);
+  assert.deepEqual(viewOf(s).subjects[0].counters[0].thresholds.map((row) => [row.points, row.name, row.description, row.textHidden, row.reached]), [[2, "", "", true, true], [4, "", "<p></p>", false, true], [8, "eight", "<p>eight</p>", false, false]]);
   assertNoSecrets(viewOf(s));
   pts(s).direction = "down";
   assert.deepEqual(viewOf(s).subjects[0].counters[0].thresholds.map((row) => row.points), [8, 4, 2]);
@@ -1216,7 +1249,7 @@ test("a bar scales to the maximum or the highest threshold, hidden or not; a cou
 
 test("a subject shows only its revealed counters, a per-PC one as a row per party PC, and none when it has none", () => {
   const s = secretSystem();
-  const rapport = Object.assign(D.addRow(s, "subjects.0.counters"), { name: "Rapport", perPc: true, thresholds: [{ ...D.newThreshold(), reveal: "full", playerText: "never shown" }] });
+  const rapport = Object.assign(D.addRow(s, "subjects.0.counters"), { name: "Rapport", perPc: true, thresholds: [{ ...D.newThreshold(), reveal: "full", name: "never shown" }] });
   Run.changeCounter(s, rapport.id, 2, "a1");
   Run.changeCounter(s, rapport.id, 1, "stranger");
   let view = viewOf(s, PARTY).subjects[0];
@@ -1253,7 +1286,7 @@ test("party markers show who has acted, a PC with no image gets the default icon
 test("the copy is the same when nothing players see has changed", () => {
   const s = secretSystem();
   const before = JSON.stringify(viewOf(s, PARTY));
-  sub(s).modifiers[0].gmText = "new GM text";
+  sub(s).modifiers[0].description += '<section class="secret" id="secret-n"><p>new GM text</p></section>';
   sub(s).statLine = "new stats";
   society(s).dc = 30;
   s.gmNotes = "changed";
@@ -1291,9 +1324,9 @@ test("a card leaves out a hidden check, a note, a zero change and a removed chec
   assert.deepEqual(cardOf(() => dcEffect(0)).card.changes, []);
 });
 
-test("a card carries category, colour, duration and state, its player text and no GM text", () => {
-  const { s, card } = cardOf(() => dcEffect(-2), { category: R_, duration: "oneTime", active: true, decoy: true, playerText: "likes praise", gmText: `${GM_SECRET} gm` });
-  assert.deepEqual([card.category, card.colour, card.duration, card.active, card.spent, card.text], [R_, "#c0523f", "oneTime", true, false, "likes praise"]);
+test("a card carries category, colour, duration and state, its description and no secret block", () => {
+  const { s, card } = cardOf(() => dcEffect(-2), { category: R_, duration: "oneTime", active: true, decoy: true, description: `<p>likes praise</p><section class="secret" id="secret-g"><p>${GM_SECRET} gm</p></section>` });
+  assert.deepEqual([card.category, card.colour, card.duration, card.active, card.spent, card.description], [R_, "#c0523f", "oneTime", true, false, "<p>likes praise</p>"]);
   assertNoSecrets(card);
   Run.receiveRoll(s, rollAt(s, "r1", 13));
   assert.equal(known(viewOf(s).subjects[0])[0].spent, true);
@@ -1362,11 +1395,11 @@ test("saving a challenge-level entry keeps skill names that exist", () => {
 
 test("the panel shows revealed challenge-level entries in their own list, by category, with skill names and no hidden checks or GM text", () => {
   const s = secretSystem();
-  challengeMod(s, { category: "Opportunity", gmText: `${GM_SECRET} challenge`, playerText: "a distraction" }, { ...dcEffect(-2, { allSkills: false, skills: ["society", "diplomacy"] }), note: "x" });
+  challengeMod(s, { category: "Opportunity", description: `<p>a distraction</p><section class="secret" id="secret-h"><p>${GM_SECRET} challenge</p></section>` }, { ...dcEffect(-2, { allSkills: false, skills: ["society", "diplomacy"] }), note: "x" });
   assert.deepEqual(viewOf(s).modifiers, [], "hidden until revealed");
   s.modifiers[0].revealed = true;
   const [card] = viewOf(s).modifiers;
-  assert.deepEqual([card.name, card.category, card.text], ["Over Here!", "Opportunity", "a distraction"]);
+  assert.deepEqual([card.name, card.category, card.description], ["Over Here!", "Opportunity", "<p>a distraction</p>"]);
   assert.deepEqual(card.changes.map((change) => V.changeText(change, enText)), ["−2 to DCs vs Diplomacy"], "Society is hidden, and a note shows nothing");
   assertNoSecrets(viewOf(s));
 });
@@ -1717,10 +1750,11 @@ test("the Reputation preset: revealed factions with no actions, each with a both
   }
   const counter = first.counters[0];
   assert.equal(counter.direction, "both");
-  assert.deepEqual(counter.thresholds.map((row) => [row.points, row.reveal, row.dc, row.playerText, row.gmText]), [30, 15, 5, -5, -15, -30].map((points) => [points, "full", 0, `SSM.Preset.reputation.Threshold.${points}.Player`, `SSM.Preset.reputation.Threshold.${points}.Gm`]));
+  assert.deepEqual(counter.thresholds.map((row) => [row.points, row.reveal, row.dc, row.name, V.withoutSecrets(row.description)]), [30, 15, 5, -5, -15, -30].map((points) => [points, "full", 0, `SSM.Preset.reputation.Threshold.${points}.Name`, ""]), "the GM guidance is a secret block");
+  assert.ok(counter.thresholds.every((row, i) => row.description.includes(`SSM.Preset.reputation.Threshold.${[30, 15, 5, -5, -15, -30][i]}.Description`)));
   assert.equal(D.newChallengeSystem("reputation").gmNotes, ["Factions", "Changing", "Running"].map((key) => `<p>SSM.Preset.reputation.GmNotes.${key}</p>`).join(""));
   const rep = EN.SSM.Preset.reputation;
-  for (const points of [30, 15, 5, -5, -15, -30]) assert.ok(rep.Threshold[points].Player && rep.Threshold[points].Gm, `tier ${points} has its texts`);
+  for (const points of [30, 15, 5, -5, -15, -30]) assert.ok(rep.Threshold[points].Name && rep.Threshold[points].Description, `tier ${points} has its texts`);
   for (const key of ["Factions", "Changing", "Running"]) assert.ok(rep.GmNotes[key], `GM note ${key}`);
 
   Run.startRun(s);
@@ -1779,7 +1813,7 @@ test("the Research preset: a Research Points pool, Days at 1 going up each round
 test("Start marks the thresholds a counter's starting value already meets, with their notices; Reset clears them", () => {
   const s = presetSystem("research");
   const [rp, days] = s.counters;
-  const dayOne = D.addRow(s, "counters.1.thresholds", { points: 1, gmText: "Agents confront the party" });
+  const dayOne = D.addRow(s, "counters.1.thresholds", { points: 1, name: "Agents confront the party" });
   const dayThree = D.addRow(s, "counters.1.thresholds", { points: 3 });
   const rpFive = D.addRow(s, "counters.0.thresholds", { points: 5 });
   const area = s.subjects[0].counters[0];
@@ -1855,16 +1889,16 @@ test("with its thresholds list off, a counter keeps its marks but sends no list 
   assert.equal(D.newCounter().showThresholdList, true, "the list is on by default");
   assert.ok(D.COUNTER_FIELDS.includes("showThresholdList"), "the counter window saves it");
   s.counters = [{ ...D.newCounter(), name: "Alarm", value: 2, max: 4, display: "steps", revealed: true, showThresholdList: false, thresholds: [
-    { ...D.newThreshold(), points: 3, reveal: "full", playerText: "guards come", reached: false },
+    { ...D.newThreshold(), points: 3, reveal: "full", name: "guards come", reached: false },
     { ...D.newThreshold(), points: 1, reveal: "points", reached: true },
-    { ...D.newThreshold(), points: 4, reveal: "hidden", playerText: "lockdown" },
+    { ...D.newThreshold(), points: 4, reveal: "hidden", name: "lockdown" },
   ] }];
   let [row] = viewOf(s).counters;
   assert.deepEqual([row.thresholds, row.marks], [[], [{ points: 1, reached: true }, { points: 3, reached: false }]]);
   assert.deepEqual(row.slots.filter((slot) => slot.threshold).map((slot) => [slot.number, slot.reached]), [[1, true], [3, false]], "the marks still show on Steps");
   assert.doesNotMatch(JSON.stringify(viewOf(s)), /guards come|lockdown/);
   s.counters[0].showThresholdList = true;
-  assert.deepEqual(viewOf(s).counters[0].thresholds.map((t) => [t.points, t.text]), [[1, ""], [3, "guards come"]], "on, the list is as before");
+  assert.deepEqual(viewOf(s).counters[0].thresholds.map((t) => [t.points, t.name]), [[1, ""], [3, "guards come"]], "on, the list is as before");
   delete s.counters[0].showThresholdList;
   assert.equal(viewOf(s).counters[0].thresholds.length, 2, "a counter saved before the setting shows its list");
 });
@@ -1873,9 +1907,9 @@ test("with its display marks off, a counter keeps its list but marks nothing on 
   const s = presetSystem("influence");
   assert.equal(D.newCounter().showThresholdMarks, true, "marks are on by default");
   assert.ok(D.COUNTER_FIELDS.includes("showThresholdMarks"), "the counter window saves it");
-  s.counters = [{ ...D.newCounter(), name: "Alarm", value: 2, max: 4, display: "steps", revealed: true, showThresholdMarks: false, thresholds: [{ ...D.newThreshold(), points: 3, reveal: "full", playerText: "guards come" }] }];
+  s.counters = [{ ...D.newCounter(), name: "Alarm", value: 2, max: 4, display: "steps", revealed: true, showThresholdMarks: false, thresholds: [{ ...D.newThreshold(), points: 3, reveal: "full", name: "guards come" }] }];
   let [row] = viewOf(s).counters;
-  assert.deepEqual([row.marks, row.slots.some((slot) => slot.threshold), row.thresholds.map((t) => t.text)], [[], false, ["guards come"]]);
+  assert.deepEqual([row.marks, row.slots.some((slot) => slot.threshold), row.thresholds.map((t) => t.name)], [[], false, ["guards come"]]);
   s.counters[0].showThresholdList = false;
   [row] = viewOf(s).counters;
   assert.deepEqual([row.marks, row.thresholds], [[], []], "both off: nothing of the threshold reaches players");

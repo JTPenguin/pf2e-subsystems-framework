@@ -10,9 +10,6 @@
 .ssm-row > label { display: flex; flex-direction: row; align-items: baseline; gap: var(--space-4, 0.25rem); font-weight: 600; white-space: nowrap; }
 .ssm-row > label.grow { flex: 1 1 10rem; min-width: 0; }
 .ssm-row > label.check { align-items: center; }
-.ssm-text-row { align-items: flex-start; flex-wrap: nowrap; }
-.ssm-text-row > label.grow { flex: 1 1 0; min-width: 0; }
-textarea.ssm-autogrow { field-sizing: content; min-height: 2rem; resize: none; width: 100%; box-sizing: border-box; font: inherit; white-space: pre-wrap; }
 .ssm-row > button.icon { flex: 0 0 auto; width: 2rem; margin-left: auto; }
 .ssm-quick { display: inline-flex; gap: 0.15rem; }
 .ssm-quick button { width: 2.25rem; padding: 0; }
@@ -85,9 +82,8 @@ button.ssm-toggle:disabled { cursor: default; }
 .ssm-reached { border-color: #4f9d5d; color: #4f9d5d; }
 button.ssm-reached { color: #4f9d5d; }
 .ssm-reached.ssm-unreached { opacity: 0.45; }
-/* Hidden text is italic as well as faded. The GM line (PF2e's GM highlight) keeps upright text inside a faded card. */
-.ssm-entry.ssm-hidden > .ssm-grow, .ssm-modifier.ssm-hidden > .ssm-entry > .ssm-grow, .ssm-counter.ssm-hidden .ssm-grow { font-style: italic; }
-.ssm-entry.ssm-hidden .ssm-gm-line, .ssm-modifier.ssm-hidden .ssm-gm-line { font-style: normal; }
+/* Hidden text is italic as well as faded. */
+.ssm-entry.ssm-hidden > .ssm-grow, :is(.ssm-modifier, .ssm-threshold).ssm-hidden > .ssm-entry > .ssm-grow, .ssm-counter.ssm-hidden .ssm-grow { font-style: italic; }
 :is(.ssm-entry, .ssm-modifier, .ssm-counter).ssm-hidden .ssm-muted { opacity: 1; }
 /* Fading means hidden, and nothing else: a hidden row or skill is faded, with italic text; a revealed one is full strength. A points-only threshold keeps full strength with italic text. */
 .ssm-sheet { --ssm-hidden-opacity: 0.6; }
@@ -203,11 +199,6 @@ button.ssm-reached { color: #4f9d5d; }
 .ssm-panel-mod-kind .ssm-decoy { text-transform: none; }
 /* A faded card (Off or Spent) is 40% as a whole. Its inner dimming is lifted so the opacities don't compound. */
 .ssm-panel-mod:is(.inactive, .spent) :is(.ssm-panel-mod-kind, .ssm-panel-mod-duration, .ssm-panel-mod-changes > span.done) { opacity: 1; }
-/* A card's hover: its player text, and for a GM its GM text too, in Foundry's tooltip. */
-#tooltip.ssm-panel-tip .ssm-panel-tip-line { margin: 0; white-space: pre-line; }
-#tooltip.ssm-panel-tip .ssm-panel-tip-line + .ssm-panel-tip-line { margin-top: 0.35rem; }
-/* "GM Only" sits on a line of its own, above the GM text. */
-#tooltip.ssm-panel-tip .ssm-panel-tip-label { display: block; }
 .ssm-panel-mod-changes { color: #e8cf8f; }
 .ssm-panel-mod-changes > span:not(:last-child)::after { content: "; "; }
 .ssm-panel-thresholds { margin-top: 0.25rem; padding: 0.1rem 0.35rem; border: 1px solid rgba(184, 160, 106, 0.35); border-left: 3px solid #b8a06a; border-radius: 3px; background: rgba(255, 255, 255, 0.04); line-height: 1.25; }
@@ -246,8 +237,6 @@ button.ssm-reached { color: #4f9d5d; }
 .ssm-panel-pc.acted { opacity: 0.35; filter: grayscale(1); }
 
 /* A threshold's or counter's player and GM text, each on a line of its own. */
-.ssm-subject .ssm-grow > .ssm-player-text, .ssm-subject .ssm-grow > .ssm-gm-line { display: block; }
-.ssm-subject .ssm-gm-line { width: fit-content; max-width: 100%; line-height: 1.3; }
 
 /* An action window's skill checks: one compact table, field names in the header. Foundry's own table rules (header background and border, row stripes, margin, cell padding) are cleared here. Column widths are set by class, so adding or removing a column doesn't shift them. */
 .ssm-checks-wrap { overflow-x: auto; }
@@ -276,8 +265,10 @@ button.ssm-reached { color: #4f9d5d; }
 .ssm-sheet .ssm-subject-description > :last-child { margin-bottom: 0; }
 .ssm-sheet .ssm-pc-row { margin-bottom: 0.1rem; }
 .ssm-sheet .ssm-counter .ssm-threshold { margin: 0 0 0 1.75rem; padding: var(--space-1, 1px) 0; }
+/* A threshold's description starts under its name: past the caret, the eye and the points. */
+.ssm-sheet .ssm-threshold > .ssm-detail { padding-left: calc(2 * 1.25rem + 1.75rem + 3 * 0.5rem); }
+.ssm-sheet .ssm-threshold > .ssm-detail > :first-child { margin-top: 0; }
 .ssm-sheet .ssm-counter .ssm-threshold.ssm-reveal-hidden { opacity: var(--ssm-hidden-opacity); }
-.ssm-sheet .ssm-counter .ssm-grow > .ssm-player-text, .ssm-sheet .ssm-counter .ssm-grow > .ssm-gm-line { display: block; }
 .ssm-sheet .ssm-action-lines { line-height: 1.4; }
 
 /* The panel: a complete subject, per-PC rows, and counters that are tracks. */
@@ -346,7 +337,7 @@ button.ssm-reached { color: #4f9d5d; }
 .ssm-sheet .ssm-subject.ssm-collapsed > :not(.ssm-block-head) { display: none; }
 .ssm-sheet .ssm-subject.ssm-collapsed { padding-bottom: 0; }
 .ssm-sheet .ssm-subject.ssm-collapsed > .ssm-block-head { margin-bottom: 0; }
-.ssm-sheet :is(.ssm-card-head, .ssm-skill-line, .ssm-modifier > .ssm-entry, .ssm-counter > .ssm-entry:first-child):has(> button.ssm-caret) { cursor: pointer; }
+.ssm-sheet :is(.ssm-card-head, .ssm-skill-line, .ssm-modifier > .ssm-entry, .ssm-counter > .ssm-entry:first-child, .ssm-threshold > .ssm-entry):has(> button.ssm-caret) { cursor: pointer; }
 .ssm-sheet .ssm-pc-total { margin-left: 0.5rem; }
 /* A collapsible row's caret comes first (Justin, 2026-11-13): caret, eye, other toggles, then the name. A row with nothing to open keeps an empty slot the same width, so names line up. */
 .ssm-sheet .ssm-caret { flex: none; width: 1.25rem; height: 1.25rem; }
@@ -414,6 +405,12 @@ button.ssm-reached { color: #4f9d5d; }
 .ssm-sheet :is(.ssm-modifier, .ssm-counter, .ssm-action-card):last-child { border-bottom: none; }
 .ssm-sheet :is(.ssm-counter, .ssm-modifier).ssm-hidden { opacity: var(--ssm-hidden-opacity); }
 .ssm-sheet .ssm-row.ssm-entry { gap: 0.5rem; }
+/* Header rows keep their controls on one line, as an ability on the NPC sheet does: a long name wraps in its own space and makes the row taller, and the tags and buttons stay level with its first line. */
+.ssm-sheet :is(.ssm-row.ssm-entry, .ssm-card-head, .ssm-skill-line) { flex-wrap: nowrap; align-items: baseline; }
+.ssm-sheet :is(.ssm-row.ssm-entry > .ssm-grow, .ssm-card-head > h3, .ssm-skill-line > .ssm-stat-label) { flex: 1 1 0; min-width: 0; overflow-wrap: anywhere; }
+/* A wrapped action or subject name keeps normal line spacing; padding keeps a one-line row as tall as before. */
+.ssm-sheet .ssm-skill-line > .ssm-stat-label { line-height: 1.3; padding: 0.2rem 0; }
+.ssm-sheet .ssm-subject.ssm-subject-card > .ssm-card-head > h3 { line-height: 1.3; padding: 0.2em 0; }
 /* A modifier's detail lines start under its name: past the caret, the eye and the On icon. */
 .ssm-sheet .ssm-modifier > .ssm-detail { padding-left: calc(3 * 1.25rem + 3 * 0.5rem); }
 .ssm-sheet :is(.ssm-modifier, .ssm-counter) > .ssm-entry > .ssm-grow, .ssm-sheet .ssm-action-card .ssm-skill-line > .ssm-stat-label { font-weight: 500; }
@@ -441,10 +438,6 @@ button.ssm-reached { color: #4f9d5d; }
 .ssm-checks td :is(input[type="text"], input[type="number"], select) { height: var(--input-height, 1.5rem); }
 .ssm-checks td button.icon { --button-size: 1.25rem; width: 1.25rem; height: 1.25rem; border: none; background: none; box-shadow: none; color: inherit; font-size: var(--font-size-12, 0.75rem); }
 /* A window's thresholds are rows: a thin line between them, no box. */
-.ssm-modifier-window .ssm-threshold-edit { margin: 0; padding: 0 0 var(--space-4, 0.25rem); border-bottom: 1px solid var(--color-border-light-tertiary, #7a7971); }
-.ssm-modifier-window .ssm-threshold-edit .ssm-row:last-child { margin-bottom: 0; }
-.ssm-modifier-window .ssm-threshold-edit button.icon { flex: none; --button-size: 1.25rem; width: 1.25rem; height: 1.25rem; margin-left: auto; border: none; background: none; box-shadow: none; color: inherit; font-size: var(--font-size-12, 0.75rem); }
-.ssm-modifier-window .ssm-threshold-edit:not(:has(+ .ssm-threshold-edit)) { border-bottom: none; padding-bottom: 0; }
 
 /* The edit windows are Foundry forms (.standard-form in foundry2.css): one field per row, the label on the left and the field on the right, and each subsection a fieldset with its title, and any +, in the legend. The spacing is tighter than Foundry's, to fit the windows' smaller inputs. */
 /* The labels take a fixed column, so a checkbox sits at the start of the field column, under the other fields, not at the window's right edge. */
@@ -455,7 +448,6 @@ button.ssm-reached { color: #4f9d5d; }
 .ssm-modifier-window fieldset > .form-group > label { flex-basis: calc(9rem - 0.5rem - 2px); }
 .ssm-modifier-window fieldset { margin: 0; padding: 0.25rem 0.5rem 0.5rem; gap: 0.5rem; }
 /* A threshold's first row keeps its delete button on the same line at the default width. */
-.ssm-modifier-window .ssm-threshold-edit > .ssm-row { column-gap: 0.75rem; }
 .ssm-modifier-window fieldset > legend { display: flex; align-items: center; gap: 0.25rem; padding: 0 0.25rem; font-size: var(--font-size-13, 0.8125rem); }
 .ssm-modifier-window fieldset > legend > button.icon { flex: none; --button-size: 1.25rem; width: 1.25rem; height: 1.25rem; margin: 0; border: none; background: none; box-shadow: none; color: inherit; font-size: var(--font-size-12, 0.75rem); }
 .ssm-modifier-window fieldset > legend > button.icon:hover { text-shadow: 0 0 8px var(--color-shadow-primary, #ff6400); }
@@ -475,3 +467,8 @@ prose-mirror.ssm-description-empty.inactive > button.toggle { display: none; }
 /* Foundry centres a button's icon with flex, but its toggle rules show the button as a block, which drops the icon to the top left. Ours show as flex. */
 prose-mirror.ssm-description-field:not(.ssm-description-empty):hover > button.toggle:enabled { display: flex; }
 prose-mirror.ssm-description-field > button.toggle { right: 1rem; }
+/* A panel threshold or modifier card that opens: its name is the toggle, and its description shows below it. */
+.ssm-panel-threshold > .ssm-panel-action-toggle { flex: 1 1 auto; min-width: 0; }
+.ssm-panel-threshold-description { margin: 0.1rem 0 0.2rem calc(1.25em + 2.2em + 0.7rem); }
+.ssm-panel-mod > .ssm-panel-action-toggle.ssm-panel-mod-name { display: block; width: auto; }
+.ssm-panel-mod-description { grid-column: 1 / -1; }

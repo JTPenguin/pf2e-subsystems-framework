@@ -37,7 +37,8 @@ function changeView(system, subject, dc) {
 const modifierView = (system, subject, row, group) => ({
   id: row.id,
   name: row.name,
-  text: row.playerText,
+  // Everyone sees the description but its secret blocks.
+  description: withoutSecrets(row.description),
   category: group.label,
   colour: group.colour,
   duration: row.duration,
@@ -56,31 +57,19 @@ export function changeText(change, { format, list, label }) {
   return format("SSM.Panel.Change.dc", { amount, skills: list(change.skills.map(label)) });
 }
 
-/**
- * A panel card's hover text as HTML, or "" when there is none, so the card shows no hover.
- * Players get the player text alone. A GM gets the player text, unlabelled, then the GM text under a heading of its own (`gmLabel`).
- * The GM text is never in the shared copy: a GM's client passes it in from the challenge itself, and it is ignored unless `isGM`.
- * `escape` is Foundry's HTML escape, so neither text can add markup.
- */
-export function cardTooltip({ playerText, gmText, isGM }, { escape, gmLabel }) {
-  const line = (text, label) => `<p class="ssm-panel-tip-line">${label ? `<strong class="ssm-panel-tip-label">${escape(label)}</strong>` : ""}${escape(text)}</p>`;
-  const player = String(playerText ?? "").trim();
-  if (!isGM) return player ? line(player) : "";
-  const gm = String(gmText ?? "").trim();
-  return (player ? line(player) : "") + (gm ? line(gm, gmLabel) : "");
-}
-
 /** A threshold's points as the panel prints them: a real minus sign, and on a both-ways track a + on positives, so −30 and +30 line up. */
 const pointsLabel = (points, direction) => (points < 0 ? `−${-points}` : direction === BOTH_WAYS && points > 0 ? `+${points}` : String(points));
 
 /**
  * The thresholds players may see. An up counter lists them in the order it reaches them; a down counter and a both-ways track list them highest first,
- * so a both-ways list reads from the best tier down (Justin, 2026-11-13). A points-only threshold shows as "6: ???": its text stays out of the copy.
+ * so a both-ways list reads from the best tier down (Justin, 2026-11-13). A points-only threshold shows as "6: ???": its name and description stay out of the copy.
+ * A fully revealed one has its name and its description without secret blocks.
  */
 function thresholdViews(rows, direction) {
   const order = direction === "down" || direction === BOTH_WAYS ? (a, b) => b.points - a.points : (a, b) => a.points - b.points;
   return rows.filter((row) => row.reveal === "points" || row.reveal === "full").sort(order).map((row) => ({
-    id: row.id, points: row.points, label: pointsLabel(row.points, direction), text: row.reveal === "full" ? row.playerText : "", textHidden: row.reveal === "points", reached: !!row.reached,
+    id: row.id, points: row.points, label: pointsLabel(row.points, direction),
+    name: row.reveal === "full" ? row.name : "", description: row.reveal === "full" ? withoutSecrets(row.description) : "", textHidden: row.reveal === "points", reached: !!row.reached,
   }));
 }
 

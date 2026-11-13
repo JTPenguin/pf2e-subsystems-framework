@@ -3,7 +3,7 @@ import { actionName, skillKeyLabel, skillLabel } from "./skill-label.js";
 import { writeChallenge } from "./state.js";
 import { CategoryAutocomplete } from "./category-autocomplete.js";
 import { markDescriptionFields } from "./description-field.js";
-import { ACTION_FIELDS, addRow, BOTH_WAYS, categoryOrder, challengeSkillKeys, COUNTER_DISPLAYS, COUNTER_FIELDS, DIRECTIONS, DURATIONS, entryChanges, findAction, findCounterEntry, findModifier, findSubject, LORE, mergeForm, MODIFIER_FIELDS, PERCEPTION, QUICK_DC_AMOUNTS, rebaseEntry, removeRow, SAVES, saveAction, saveCounter, saveModifier, saveSubject, setDcAmount, SUBJECT_FIELDS, subjectCategoryOrder, THRESHOLD_REVEALS } from "./data.js";
+import { ACTION_FIELDS, addRow, BOTH_WAYS, categoryOrder, challengeSkillKeys, COUNTER_DISPLAYS, COUNTER_FIELDS, DIRECTIONS, DURATIONS, entryChanges, findAction, findCounter, findCounterEntry, findModifier, findSubject, findThreshold, LORE, mergeForm, MODIFIER_FIELDS, PERCEPTION, QUICK_DC_AMOUNTS, rebaseEntry, removeRow, SAVES, saveAction, saveCounter, saveModifier, saveSubject, saveThreshold, setDcAmount, SUBJECT_FIELDS, subjectCategoryOrder, THRESHOLD_FIELDS, THRESHOLD_REVEALS } from "./data.js";
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
@@ -21,8 +21,8 @@ function checkSkillChoices() {
 }
 
 /**
- * A window for one entry of a challenge: a modifier, subject, action or counter (spec sections 6, 14.4 and 14.7).
- * A challenge-level modifier or counter has an empty subject id; a subject's window passes the subject's id as both ids. It edits a copy and saves it through
+ * A window for one entry of a challenge: a modifier, subject, action, counter or threshold (spec sections 6, 14.4 and 14.7).
+ * A challenge-level modifier or counter has an empty subject id; a subject's window passes the subject's id as both ids; a threshold's passes its counter's id. It edits a copy and saves it through
  * the page's write queue, so the sheet and the panel redraw as for any other change. Every change saves at once, as on a Foundry sheet;
  * a description saves from its editor's own button. It sits in the page's apps: an update from elsewhere redraws it, keeping the
  * GM's unsaved edits, and deleting the entry closes it.
@@ -221,7 +221,7 @@ export class ModifierWindow extends EntryWindow {
     super._onClose(options);
   }
 
-  _entryContext(system, subject, modifier) {
+  async _entryContext(system, subject, modifier) {
     // A subject's entry picks its checks: a check's name alone can repeat across actions, so each is listed with its action.
     // A challenge-level entry (no subject) picks skills, matching that skill on any subject (spec 14.7).
     const skillOptions = subject
@@ -229,6 +229,7 @@ export class ModifierWindow extends EntryWindow {
       : Object.fromEntries(challengeSkillKeys(system).map((key) => [key, skillKeyLabel(system, key)]));
     return {
       modifier,
+      descriptionHtml: await enrichDescription(modifier.description, this.page),
       challengeLevel: !subject,
       skillOptions,
       quickDcAmounts: QUICK_DC_AMOUNTS.map((amount) => ({ amount, label: amount > 0 ? `+${amount}` : `${amount}`.replace("-", "−") })),
@@ -285,7 +286,7 @@ export class ActionWindow extends EntryWindow {
   }
 }
 
-/** The window for one counter, the challenge's or a subject's: its fields and its thresholds. */
+/** The window for one counter, the challenge's or a subject's. Its thresholds have windows of their own. */
 export class CounterWindow extends EntryWindow {
   static ENTRY = { key: "counter", find: findCounterEntry, fields: COUNTER_FIELDS, save: saveCounter, titleKey: "SSM.Challenge.EditCounterTitle", unnamed: "SSM.Challenge.UnnamedCounter", goneKey: "SSM.Challenge.EntryGone" };
 
@@ -298,17 +299,40 @@ export class CounterWindow extends EntryWindow {
   }
 
   _entryContext(system, subject, counter) {
-    // A both-ways track's Reached follows its value, so its checkbox is left out.
-    const followsValue = counter.direction === BOTH_WAYS;
     return {
       counter,
-      thresholds: counter.thresholds.map((row, i) => ({ ...row, path: `thresholds.${i}`, followsValue })),
       choices: {
-        thresholdReveals: labels(THRESHOLD_REVEALS, "ThresholdReveal"),
         // Display styles only (spec 14.12); the Revealed checkbox beside the list controls visibility.
         displays: labels(COUNTER_DISPLAYS, "Display"),
         directions: labels(DIRECTIONS, "Direction"),
       },
+    };
+  }
+}
+
+/** The window for one threshold: its name, points, reveal, DC change, Reached and description. Its "subject" id is its counter's. */
+export class ThresholdWindow extends EntryWindow {
+  static ENTRY = { key: "threshold", find: findThreshold, fields: THRESHOLD_FIELDS, save: saveThreshold, titleKey: "SSM.Challenge.EditThresholdTitle", unnamed: "SSM.Challenge.UnnamedThreshold", goneKey: "SSM.Challenge.EntryGone" };
+
+  static DEFAULT_OPTIONS = { position: { width: 520 }, window: { icon: "fa-solid fa-flag-checkered" } };
+
+  static PARTS = { form: { template: `modules/${MODULE}/templates/challenge-threshold.hbs`, scrollable: [""] } };
+
+  /** A threshold with no name yet, as a new one, opens with the cursor in its name. */
+  async _onFirstRender(context, options) {
+    await super._onFirstRender(context, options);
+    const name = this.form?.querySelector('input[name="name"]');
+    if (name && !name.value) name.focus();
+  }
+
+  async _entryContext(system, subject, threshold) {
+    // A both-ways track's Reached follows its value, so its checkbox is left out.
+    const counter = findCounter(system, this.subjectId)?.counter;
+    return {
+      threshold,
+      followsValue: counter?.direction === BOTH_WAYS,
+      descriptionHtml: await enrichDescription(threshold.description, this.page),
+      choices: { thresholdReveals: labels(THRESHOLD_REVEALS, "ThresholdReveal") },
     };
   }
 }
