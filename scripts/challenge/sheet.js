@@ -217,6 +217,8 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
       run: this.#runContext(system),
       name: this.document.name,
       system,
+      subjectsLabel: system.subjectsLabel || loc("SSM.Challenge.Subjects"),
+      noSubjects: system.noSubjects || loc("SSM.Challenge.NoSubjects"),
       addSubjectLabel: game.i18n.format("SSM.Challenge.AddSubject", { subject: subjectLabel }),
       premiseHtml: await enrich(system.premise),
       gmNotesHtml: await enrich(system.gmNotes),

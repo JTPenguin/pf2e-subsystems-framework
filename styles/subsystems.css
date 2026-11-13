@@ -378,7 +378,6 @@ button.ssm-reached { color: #4f9d5d; }
 
 /* Each entry's edit and delete buttons, at the right of its row (spec section 6). */
 .ssm-sheet .ssm-row-tools { flex: none; display: inline-flex; gap: 0.1rem; margin-left: auto; }
-.ssm-sheet .ssm-add-subject { flex: none; margin: 0; }
 /* The entry windows' description editors: always open, with room for the menu and a few paragraphs. */
 .ssm-modifier-window .ssm-window-editor { display: block; margin-bottom: 0.35rem; }
 .ssm-modifier-window .ssm-window-editor prose-mirror { min-height: 14rem; }

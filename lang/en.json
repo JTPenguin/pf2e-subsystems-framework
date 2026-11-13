@@ -158,6 +158,8 @@
       "TriggerNoticeBare": "{counter} reached {value}",
       "Subject": "Subject",
       "AddSubject": "Add {subject}",
+      "Subjects": "Subjects",
+      "NoSubjects": "No subjects yet.",
       "NoLimit": "No limit",
       "RoundOpen": "Round {current}",
       "DirectionLabel": "Direction",
@@ -220,6 +222,8 @@
         "Label": "Victory Points",
         "Points": "Victory Points",
         "Subject": "Subject",
+        "Subjects": "Subjects",
+        "NoSubjects": "No subjects yet.",
         "Check": "Check",
         "Category": {
           "modifier": "Modifier"
@@ -229,6 +233,8 @@
         "Label": "Influence",
         "Points": "Influence Points",
         "Subject": "NPC",
+        "Subjects": "NPCs",
+        "NoSubjects": "No NPCs yet.",
         "Discover": "Discover",
         "Influence": "Influence",
         "Category": {
@@ -240,6 +246,8 @@
         "Label": "Infiltration",
         "Points": "Infiltration Points",
         "Subject": "Obstacle",
+        "Subjects": "Obstacles",
+        "NoSubjects": "No obstacles yet.",
         "Awareness": "Awareness Points",
         "Edge": "Edge Points",
         "Overcome": "Overcome",
@@ -278,6 +286,8 @@
       "preparation": {
         "Label": "Infiltration Preparation",
         "Subject": "Preparation",
+        "Subjects": "Preparations",
+        "NoSubjects": "No preparations yet.",
         "Dud": "Dud: this Edge Point secretly gives no benefit. Write it in the PC's Edge Points note.",
         "Cursed": "Cursed: a PC who uses this Edge Point gets a critical failure, even if they spend it after rolling a failure. Write it in the PC's Edge Points note.",
         "BribeContact": {
@@ -318,6 +328,8 @@
         "Label": "Chase",
         "Points": "Chase Points",
         "Subject": "Obstacle",
+        "Subjects": "Obstacles",
+        "NoSubjects": "No obstacles yet.",
         "Overcome": "Overcome",
         "GmNotes": "Chase reminders (GM Core). Obstacles are cleared in order; extra Chase Points don't carry over, and PCs who haven't acted can go on to the next obstacle. A PC who passes or can't act costs the group 1 CP: use − on the obstacle's points. The Party and Quarry counters hold obstacle numbers. Set both maximums to the number of obstacles. When the party clears an obstacle, add 1 to Party and reveal the next obstacle (that hides the cleared one). The other side moves +1 each round; nudge it by hand on hard obstacles. Chase types: Chase Down: the quarry starts 1 ahead; the party catches it on reaching its obstacle, and it escapes once past the last. Run Away: rename Quarry to Pursuers and start it at 0; the party escapes past the last obstacle or 3 ahead at the end of a round, and is caught if they reach its obstacle. Beat the Clock: hide the other side and set the round maximum to the number of obstacles. Competitive: rename Quarry to Rival and start it at 1; whoever passes the last obstacle first wins, and initiative is rolled each round. If the party is stuck on one obstacle for about 3 rounds, let them find another way. Rolls never change points: after each roll, use + and − on the obstacle's points. Attack rolls and spells are yours to adjudicate.",
         "Party": "Party",

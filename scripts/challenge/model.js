@@ -86,6 +86,8 @@ export class ChallengeModel extends foundry.abstract.TypeDataModel {
       preset: choice(Object.keys(PRESETS), DEFAULT_PRESET),
       pointsName: text(),
       subjectLabel: text(),
+      subjectsLabel: text(),
+      noSubjects: text(),
       premise: new HTMLField({ required: true, blank: true, initial: "" }),
       gmNotes: new HTMLField({ required: true, blank: true, initial: "" }),
       rounds: new SchemaField({

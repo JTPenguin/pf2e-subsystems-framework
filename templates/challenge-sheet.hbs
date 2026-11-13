@@ -145,9 +145,9 @@
 
     {{!-- Subjects by category (spec 14.4): the blank category's cards first with no bar, then a red bar per category with its subjects as cards. --}}
     {{#each subjectGroups as |group|}}
-    {{#if group.heading}}<section class="ssm-block ssm-subject-category">
-      {{> ssmSectionHead label=group.heading kind="subjects" subject="" category=group.heading addLabel=@root.addSubjectLabel}}
-    {{/if}}
+    <section class="ssm-block ssm-subject-category">
+      {{#if group.heading}}{{> ssmSectionHead label=group.heading kind="subjects" subject="" category=group.heading addLabel=@root.addSubjectLabel}}
+      {{else}}{{> ssmSectionHead label=@root.subjectsLabel kind="subjects" subject="" addLabel=@root.addSubjectLabel}}{{/if}}
     {{#each group.subjects as |subject|}}
     <section class="ssm-subject ssm-subject-card {{#unless subject.revealed}}ssm-subject-hidden{{/unless}} {{#if subject.collapsed}}ssm-collapsed{{/if}}">
       <header class="ssm-block-head ssm-card-head">
@@ -183,11 +183,13 @@
       </div>
     </section>
     {{/each}}
-    {{#if group.heading}}</section>{{/if}}
+    </section>
+    {{else}}
+    <section class="ssm-block ssm-subject-category">
+      {{> ssmSectionHead label=@root.subjectsLabel kind="subjects" subject="" addLabel=@root.addSubjectLabel}}
+      <p class="ssm-muted ssm-empty">{{@root.noSubjects}}</p>
+    </section>
     {{/each}}
-    <div class="ssm-row ssm-add-subject">
-      <button type="button" class="ssm-add" data-action="addEntry" data-kind="subjects" data-subject=""><i class="fa-solid fa-plus" inert></i> {{@root.addSubjectLabel}}</button>
-    </div>
 
     <section class="ssm-block ssm-counters">
       {{> ssmSectionHead label=(localize "SSM.Challenge.Counters") kind="counters" subject="" addLabel=(localize "SSM.Challenge.AddCounter")}}
