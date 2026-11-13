@@ -422,7 +422,8 @@ button.ssm-reached { color: #4f9d5d; }
 .ssm-row > label > input[type="text"] { flex: 1 1 8rem; min-width: 0; }
 .ssm-row > label > select { flex: 0 1 auto; width: auto; }
 .ssm-row > label > textarea { flex: 1 1 0; min-width: 0; }
-.ssm-row > label.check > input[type="checkbox"] { margin: 0; }
+/* The label's bold weight would otherwise reach the box: Foundry draws an unticked box as an outline in regular weight and a solid square in bold. */
+.ssm-row > label.check > input[type="checkbox"] { margin: 0; font-weight: var(--checkbox-font-weight, normal); }
 .ssm-checks th { font-weight: 600; }
 .ssm-checks td :is(input[type="text"], input[type="number"], select) { height: var(--input-height, 1.5rem); }
 .ssm-checks td button.icon { --button-size: 1.25rem; width: 1.25rem; height: 1.25rem; border: none; background: none; box-shadow: none; color: inherit; font-size: var(--font-size-12, 0.75rem); }

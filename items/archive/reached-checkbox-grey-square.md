@@ -1,13 +1,14 @@
 ---
 title: "Unticked Reached checkbox shows a filled grey square"
 kind: work
-status: ready
-waits_on: Claude
+status: done
+waits_on: none
 priority: 🔽
 blocked_by: []
 source: "Found by the edit-window restyle agent, 2026-11-12"
 added: 2026-11-12
 updated: 2026-11-12
+outcome: "Fixed: the bold label gave the checkbox a bold weight, which Foundry's light theme draws as a solid square. The checkbox now takes Foundry's own weight."
 ---
 # Unticked Reached checkbox shows a filled grey square
 
@@ -20,3 +21,7 @@ The first guess was the bold `label` around it (`.ssm-row > label`, `font-weight
 ## Next step
 
 In the browser pane, compare the Reached checkbox with a plain Foundry checkbox, for example one in Foundry's own settings window. If they match, this is Foundry's style: close it, or restyle all the module's checkboxes only if Justin wants that. If they differ, find the rule that differs, and check the sheet's Allow multiple subjects checkbox too.
+
+## Result
+
+The module's checkbox differed from Foundry's. In the light theme Foundry sets `--checkbox-font-weight: unset`, so the box inherits its weight: regular (outline square) in Foundry's windows, but 600 (solid square) inside `.ssm-row > label` (`font-weight: 600`). In the dark theme Foundry sets bold itself, so dark was already the same. Fix: `font-weight: var(--checkbox-font-weight, normal)` on `.ssm-row > label.check > input[type=checkbox]` in `styles/subsystems.css`. Checked live: the Reached box and Allow multiple subjects both compute weight 400 in light and 700 in dark, like Foundry's own.
