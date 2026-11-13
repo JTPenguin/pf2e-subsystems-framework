@@ -7,7 +7,7 @@ import { announceTriggers, writeChallenge } from "./state.js";
 import { advanceRound, canAdvanceRound, canUndoRound, changeCounter, counterValueOf, currentDc, cycleThresholdReveal, endRun, resetRun, restoreModifier, startRun, toggleActed, toggleComplete, toggleModifier, toggleReached, toggleReveal, undoRound } from "./run.js";
 import { LINK_ROLL_ID } from "../roll-option.js";
 import { rollCheck, rollTarget } from "./roll.js";
-import { addRow, applyForm, BOTH_WAYS, categoryKey, clampTracks, collapseAllAction, counterMoves, counterValueText, EDITABLE, entryListPath, groupByCategory, isDecoyCheck, moveSubject, nextThresholdReveal, pickFields, removeEntry, setCounterNote, subjectGroups } from "./data.js";
+import { addRow, applyForm, BOTH_WAYS, categoryKey, clampTracks, collapseAllAction, counterMoves, counterValueText, EDITABLE, entryListPath, groupByCategory, isDecoyCheck, moveCounter, moveModifier, moveSubject, nextThresholdReveal, pickFields, removeEntry, setCounterNote, subjectGroups } from "./data.js";
 import { ActionWindow, CounterWindow, ModifierWindow, SubjectWindow } from "./entry-window.js";
 import { markDescriptionFields } from "./description-field.js";
 
@@ -473,10 +473,14 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
 
   /* -------------------------------------------- */
 
-  /** Subject cards drag by the grip on their header, and drop on another card in the same category (spec 14.8). Only a GM can drag. */
+  /**
+   * A subject, modifier or counter drags by its header, and drops beside another of its own group (spec 14.8): a subject or modifier
+   * within its category, a counter within its list. Each draggable entry carries data-drag (its kind), data-id, data-group and,
+   * for a modifier or counter, data-owner (the owning subject's id, empty for the challenge's own). Only a GM can drag.
+   */
   #dragDrop = new foundry.applications.ux.DragDrop({
-    dragSelector: ".ssm-subject-grip",
-    dropSelector: ".ssm-subject-card",
+    dragSelector: ".ssm-subject-card > .ssm-card-head, .ssm-modifier > .ssm-entry, .ssm-counter > .ssm-entry:first-child",
+    dropSelector: "[data-drag]",
     permissions: { dragstart: () => game.user.isGM, drop: () => game.user.isGM },
     callbacks: {
       dragstart: this.#onDragStart.bind(this),
@@ -487,8 +491,11 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
     },
   });
 
-  /** The subject being dragged on this sheet: its id and category key. */
+  /** The entry being dragged on this sheet: its kind, id and group. */
   #dragging = null;
+
+  /** The element the last press landed on. A drag starts from the header, so this tells whether it began on a control. */
+  #pressed = null;
 
   async _onRender(context, options) {
     await super._onRender(context, options);
@@ -497,14 +504,15 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
     if (!this.element.dataset.ssmHeaderClicks) {
       this.element.dataset.ssmHeaderClicks = "1";
       this.element.addEventListener("click", (event) => this.#onHeaderClick(event));
+      this.element.addEventListener("pointerdown", (event) => { this.#pressed = event.target; }, { capture: true });
     }
   }
 
   /** The lines that open and close on a click outside their controls: a subject's header, an action's line and a modifier's row. */
   static HEADERS = ".ssm-card-head, .ssm-skill-line, .ssm-modifier > .ssm-entry";
 
-  /** What a header click must leave alone: controls, skill chips, the row tools and the grip. */
-  static HEADER_CONTROLS = "button, input, select, textarea, a, .ssm-skill, .ssm-row-tools, .ssm-subject-grip, prose-mirror";
+  /** What a header click or drag must leave alone: controls, skill chips and the row tools. */
+  static HEADER_CONTROLS = "button, input, select, textarea, a, .ssm-skill, .ssm-row-tools, prose-mirror";
 
   /** A click on a header's empty part presses its own toggle, if it has one: an action or modifier with no details stays still. */
   #onHeaderClick(event) {
@@ -513,52 +521,72 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
     header.querySelector("button.ssm-collapse, button.ssm-action-toggle, button.ssm-mod-chevron")?.click();
   }
 
+  /** Start dragging the header's entry, unless the press began on one of its controls. */
   #onDragStart(event) {
-    const card = event.currentTarget.closest(".ssm-subject-card");
-    const subject = this.#source.subjects.find((row) => row.id === card.dataset.subject);
-    if (!subject) return;
-    this.#dragging = { id: subject.id, key: categoryKey(subject.category) };
-    event.dataTransfer.setData("text/plain", JSON.stringify({ type: "ssmSubject", pageId: this.page.id, subjectId: subject.id }));
+    const entry = event.currentTarget.closest("[data-drag]");
+    if (!entry || this.#pressed?.closest?.(ChallengeSheet.HEADER_CONTROLS)) return event.preventDefault();
+    const { drag: kind, id, group } = entry.dataset;
+    this.#dragging = { kind, id, group };
+    event.dataTransfer.setData("text/plain", JSON.stringify({ type: "ssmEntry", kind, pageId: this.page.id, id }));
     event.dataTransfer.effectAllowed = "move";
-    event.dataTransfer.setDragImage(card, 16, 12);
+    event.dataTransfer.setDragImage(entry, 16, 12);
   }
 
-  /** Where a drop on this card would put the dragged subject: before or after it, by the pointer's half. Null if it can't go there. */
+  /** Is this drop target the dragged entry's kind? Entries nest (a subject's card holds its counters and modifiers), so only that kind's target answers. */
+  #isDragKind(target) {
+    return !!this.#dragging && target.dataset.drag === this.#dragging.kind;
+  }
+
+  /** Where a drop on this entry would put the dragged one: before or after it, by the pointer's half. Null if it can't go there. */
   #dropPlace(event) {
-    const card = event.currentTarget;
-    if (!this.#dragging || card.dataset.subject === this.#dragging.id || card.dataset.category !== this.#dragging.key) return null;
-    const box = card.getBoundingClientRect();
+    const target = event.currentTarget;
+    if (!this.#isDragKind(target) || target.dataset.id === this.#dragging.id || target.dataset.group !== this.#dragging.group) return null;
+    const box = target.getBoundingClientRect();
     return event.clientY > box.top + box.height / 2 ? "after" : "before";
   }
 
-  /** Mark where the subject would go, or refuse the drop: another category's card, or the subject's own. */
+  /**
+   * Mark where the entry would go, or refuse the drop: another group's entry, or its own. The event bubbles from the innermost entry
+   * outwards, so the dragged kind's target stops it there; another kind's target refuses, and an outer target of the right kind may still take it.
+   */
   #onDragOver(event) {
-    const card = event.currentTarget;
+    const target = event.currentTarget;
+    if (!this.#isDragKind(target)) {
+      event.dataTransfer.dropEffect = "none";
+      return;
+    }
+    event.stopPropagation();
     const place = this.#dropPlace(event);
     event.dataTransfer.dropEffect = place ? "move" : "none";
-    card.classList.toggle("ssm-drop-before", place === "before");
-    card.classList.toggle("ssm-drop-after", place === "after");
+    target.classList.toggle("ssm-drop-before", place === "before");
+    target.classList.toggle("ssm-drop-after", place === "after");
   }
 
-  #clearDropMark(card) {
-    card?.classList.remove("ssm-drop-before", "ssm-drop-after");
+  #clearDropMark(target) {
+    target?.classList.remove("ssm-drop-before", "ssm-drop-after");
   }
 
   #endDrag() {
     this.#dragging = null;
-    for (const card of this.element?.querySelectorAll(".ssm-drop-before, .ssm-drop-after") ?? []) this.#clearDropMark(card);
+    for (const target of this.element?.querySelectorAll(".ssm-drop-before, .ssm-drop-after") ?? []) this.#clearDropMark(target);
   }
 
-  /** Write the new subject order. It is challenge data, so any GM can. */
+  /** Write the new order. It is challenge data, so any GM can. Another kind's target lets the drop bubble on to its own kind's. */
   async #onDrop(event) {
-    const card = event.currentTarget;
+    const target = event.currentTarget;
+    if (!this.#isDragKind(target)) return;
+    event.stopPropagation();
     const place = this.#dropPlace(event);
-    const { id } = this.#dragging ?? {};
+    const { kind, id } = this.#dragging;
     this.#endDrag();
     if (!place || !game.user.isGM) return;
+    const after = place === "after";
+    const { id: targetId, owner = "" } = target.dataset;
+    if (kind === "modifiers") return this.#whileSaving(() => writeChallenge(this.page, (system) => moveModifier(system, owner, id, targetId, after)));
+    if (kind === "counters") return this.#whileSaving(() => writeChallenge(this.page, (system) => moveCounter(system, owner, id, targetId, after)));
     const ids = this.#source.subjects.map((row) => row.id);
     const from = ids.indexOf(id);
-    let index = ids.indexOf(card.dataset.subject) + (place === "after" ? 1 : 0);
+    let index = ids.indexOf(targetId) + (after ? 1 : 0);
     if (from < index) index--;
     await this.#whileSaving(() => writeChallenge(this.page, (system) => moveSubject(system, id, index)));
   }

@@ -1554,6 +1554,45 @@ test("a subject moves only within its category", () => {
   assert.deepEqual(s.subjects.map((row) => row.id), [a.id, b.id, c.id, d.id], "to the start of its own group");
 });
 
+test("a modifier moves beside another in its category, never into another category or list, and the categories keep their order", () => {
+  const s = system();
+  const [a, x, b, c] = ["Hard", "Easy", "Hard", "Hard"].map((category) => D.addRow(s, "modifiers", { category }));
+  const ids = () => s.modifiers.map((row) => row.id);
+  const order = () => D.categoryOrder(s).map((category) => category.key);
+  const before = order();
+  assert.equal(D.moveModifier(s, "", a.id, x.id), false, "another category");
+  assert.equal(D.moveModifier(s, "", a.id, a.id, true), false, "onto itself");
+  assert.equal(D.moveModifier(s, "", a.id, "nobody"), false);
+  D.moveModifier(s, "", c.id, a.id);
+  assert.deepEqual(ids(), [c.id, a.id, b.id, x.id], "up to the start of its group, the list put in grouped order");
+  assert.equal(D.moveModifier(s, "", a.id, b.id), false, "already just before it");
+  D.moveModifier(s, "", c.id, b.id, true);
+  assert.deepEqual(ids(), [a.id, b.id, c.id, x.id], "down to the end of its group");
+  assert.deepEqual(order(), before, "Hard, used first, stays before Easy");
+  const own = D.addRow(s, "subjects.0.modifiers", { category: "Hard" });
+  assert.equal(D.moveModifier(s, sub(s).id, own.id, a.id), false, "not into the challenge's list");
+  assert.equal(D.moveModifier(s, "", a.id, own.id), false, "not into a subject's list");
+});
+
+test("a counter moves beside another in its own list only", () => {
+  const s = system();
+  const [a, b, c] = [1, 2, 3].map(() => D.addRow(s, "counters"));
+  const ids = () => s.counters.map((row) => row.id);
+  assert.equal(D.moveCounter(s, "", b.id, a.id, true), false, "already just after it");
+  D.moveCounter(s, "", a.id, c.id, true);
+  assert.deepEqual(ids(), [b.id, c.id, a.id]);
+  D.moveCounter(s, "", a.id, b.id);
+  assert.deepEqual(ids(), [a.id, b.id, c.id]);
+  const subject = sub(s);
+  const [p, q] = [1, 2].map(() => D.addRow(s, "subjects.0.counters"));
+  const own = () => subject.counters.map((row) => row.id);
+  const before = own();
+  assert.equal(D.moveCounter(s, subject.id, p.id, a.id), false, "not into the challenge's list");
+  assert.equal(D.moveCounter(s, "", a.id, p.id), false, "not into a subject's list");
+  D.moveCounter(s, subject.id, q.id, p.id);
+  assert.deepEqual(own(), [...before.slice(0, -2), q.id, p.id], "within the subject's list");
+});
+
 test("Awareness Points rise each round and by hand, and their tiers raise every DC by 1, then 2 in total", () => {
   const s = presetSystem("infiltration");
   const [ap] = s.counters;

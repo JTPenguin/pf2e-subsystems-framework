@@ -195,7 +195,6 @@
       "PerPc": "Per PC",
       "PerPcHint": "One value for each party PC. A roll changes the roller's value; a modifier changes everyone's. No thresholds or change each round.",
       "PartyTotal": "Party total {total}",
-      "DragSubject": "Drag to reorder within its category",
       "Collapse": "Collapse or expand",
       "CollapseAll": "Collapse all",
       "ExpandAll": "Expand all",

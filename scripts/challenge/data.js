@@ -301,6 +301,36 @@ export function moveSubject(system, subjectId, index) {
   system.subjects.splice(index, 0, subject);
 }
 
+/** Move the entry `id` in `list` to just before `targetId`, or just after it. Returns false if either is missing or it would not move. */
+function moveBeside(list, id, targetId, after) {
+  const from = list?.findIndex((row) => row.id === id) ?? -1;
+  const to = list?.findIndex((row) => row.id === targetId) ?? -1;
+  if (from < 0 || to < 0 || from === to) return false;
+  const index = to - (from < to ? 1 : 0) + (after ? 1 : 0);
+  if (index === from) return false;
+  const [row] = list.splice(from, 1);
+  list.splice(index, 0, row);
+}
+
+/**
+ * Move a modifier next to another of the same list, as a drag on the sheet drops it. `subjectId` is the owning subject's, empty for the challenge's own.
+ * A modifier stays within its category: returns false for another category's. The list is put in grouped order first, so the categories
+ * keep their order: it follows first use, and a modifier moving past another category's would change it.
+ */
+export function moveModifier(system, subjectId, modifierId, targetId, after = false) {
+  const list = modifierList(system, subjectId);
+  const [modifier, target] = [modifierId, targetId].map((id) => list?.find((row) => row.id === id));
+  if (!modifier || !target || categoryKey(modifier.category) !== categoryKey(target.category)) return false;
+  list.splice(0, list.length, ...groupByCategory(system, list).flatMap((group) => group.rows));
+  return moveBeside(list, modifierId, targetId, after);
+}
+
+/** Move a counter next to another in the same list: the challenge's (`subjectId` empty) or one subject's. Returns false if it would not move. */
+export function moveCounter(system, subjectId, counterId, targetId, after = false) {
+  const list = subjectId ? subjectById(system, subjectId)?.counters : system.counters;
+  return moveBeside(list, counterId, targetId, after);
+}
+
 /** A new subject as the challenge's preset makes it. */
 export const newSubject = (system) => presetOf(system).subject(system);
 

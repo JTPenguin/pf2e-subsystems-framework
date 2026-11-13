@@ -28,7 +28,7 @@
       <div class="ssm-subject-group ssm-cat-group"{{#if stripe}} style="{{stripe}}"{{/if}}>
         {{#if heading}}{{> ssmSubsectionHead label=heading stripe=stripe kind="modifiers" subject=../subject category=label addLabel=(localize "SSM.Challenge.AddModifier")}}{{/if}}
         {{#each rows}}
-        <div class="ssm-modifier ssm-mod-{{stateClass}} {{#unless revealed}}ssm-hidden{{/unless}}"{{#if ../stripe}} style="{{../stripe}}"{{/if}}>
+        <div class="ssm-modifier ssm-mod-{{stateClass}} {{#unless revealed}}ssm-hidden{{/unless}}" data-drag="modifiers" data-id="{{id}}" data-owner="{{subjectId}}" data-group="{{subjectId}}/{{../key}}"{{#if ../stripe}} style="{{../stripe}}"{{/if}}>
           <div class="ssm-row ssm-entry">
             {{> ssmEye root=../../root}}
             <button type="button" class="icon fa-solid {{#if spent}}fa-rotate-left{{else}}fa-check{{/if}} ssm-toggle ssm-toggle-{{stateClass}}" data-action="{{#if spent}}restoreModifier{{else}}toggleModifier{{/if}}" data-subject="{{subjectId}}" data-id="{{id}}" aria-label="{{stateLabel}}" aria-pressed="{{pressed}}" data-tooltip="{{stateTooltip}}" {{#unless canChange}}disabled{{/unless}}></button>
@@ -54,7 +54,7 @@
       </h4>{{/inline}}
 {{#*inline "ssmComplete"}}<button type="button" class="ssm-tag ssm-state ssm-reached {{#unless complete}}ssm-unreached{{/unless}}" data-action="toggleComplete" data-subject="{{id}}" aria-pressed="{{complete}}" data-tooltip="{{completeTooltip}}" {{#unless root.canChange}}disabled{{/unless}}>{{#if complete}}<i class="fa-solid fa-check" aria-hidden="true"></i> {{/if}}{{localize "SSM.Challenge.Complete"}}</button>{{/inline}}
 {{!-- A counter, the challenge's or a subject's. `root` is the run context. --}}
-{{#*inline "ssmCounterRun"}}<div class="ssm-counter {{#unless revealed}}ssm-hidden{{/unless}}">
+{{#*inline "ssmCounterRun"}}<div class="ssm-counter {{#unless revealed}}ssm-hidden{{/unless}}" data-drag="counters" data-id="{{id}}" data-owner="{{subjectId}}" data-group="{{subjectId}}">
       <div class="ssm-row ssm-entry">
         {{> ssmEye root=root}}
         <span class="ssm-grow">{{label}}{{#if perRoundLabel}} <span class="ssm-tag">{{perRoundLabel}}</span>{{/if}}{{#if perPc}} <strong class="ssm-pc-total">{{totalLabel}}</strong>{{/if}}</span>
@@ -147,9 +147,8 @@
       {{#if group.heading}}{{> ssmSectionHead label=group.heading kind="subjects" subject="" category=group.heading addLabel=@root.addSubjectLabel collapseAll=group.collapseAll collapseKey=group.key}}
       {{else}}{{> ssmSectionHead label=@root.subjectsLabel kind="subjects" subject="" addLabel=@root.addSubjectLabel collapseAll=group.collapseAll collapseKey=group.key}}{{/if}}
     {{#each group.subjects as |subject|}}
-    <section class="ssm-subject ssm-subject-card {{#unless subject.revealed}}ssm-subject-hidden{{/unless}} {{#if subject.collapsed}}ssm-collapsed{{/if}}" data-subject="{{subject.id}}" data-category="{{group.key}}">
+    <section class="ssm-subject ssm-subject-card {{#unless subject.revealed}}ssm-subject-hidden{{/unless}} {{#if subject.collapsed}}ssm-collapsed{{/if}}" data-subject="{{subject.id}}" data-category="{{group.key}}" data-drag="subjects" data-id="{{subject.id}}" data-group="{{group.key}}">
       <header class="ssm-block-head ssm-card-head">
-        {{#if @root.isGM}}<span class="ssm-subject-grip fa-solid fa-grip-vertical" aria-label="{{localize "SSM.Challenge.DragSubject"}}" data-tooltip="SSM.Challenge.DragSubject"></span>{{/if}}
         <button type="button" class="icon fa-solid {{#if subject.collapsed}}fa-chevron-right{{else}}fa-chevron-down{{/if}} ssm-collapse" data-action="toggleCollapse" data-subject="{{subject.id}}" aria-expanded="{{#if subject.collapsed}}false{{else}}true{{/if}}" aria-label="{{localize "SSM.Challenge.Collapse"}}" data-tooltip="SSM.Challenge.Collapse"></button>
         {{> ssmEye subject root=../..}}
         <h3>{{subject.name}}</h3>

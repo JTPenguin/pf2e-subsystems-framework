@@ -1,12 +1,13 @@
 ---
 title: "Reorder Modifiers, Subjects and Counters by dragging their header"
 kind: feature
-status: ready
-waits_on: Claude
+status: done
+waits_on: none
 priority: 🔽
 blocked_by: []
 added: 2026-11-12
 updated: 2026-11-12
+outcome: "Subjects, modifiers and counters drag by their header within their own group on the sheet (GM only); grip removed; moveModifier() and moveCounter() added with tests. Checked live with dispatched drag events."
 source: "Justin's UI list, 2026-11-12; scope set in triage interview, 2026-11-12"
 ---
 # Reorder Modifiers, Subjects and Counters by dragging their header
