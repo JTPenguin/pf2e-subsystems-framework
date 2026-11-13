@@ -1,13 +1,14 @@
 ---
 title: "Drop marker appears between subjects"
 kind: work
-status: ready
-waits_on: Claude
+status: done
+waits_on: none
 priority: 🔽
 blocked_by: []
 source: "Justin's UI list, 2026-11-12; details from Justin, 2026-11-12"
 added: 2026-11-12
 updated: 2026-11-12
+outcome: "The subject drag marker is a line in the gap between cards (a pseudo-element outside the card), so after A and before B draw the same line; gap widened from 0.25rem to 0.5rem. Checked in Foundry 2026-11-12 with synthetic drag events."
 ---
 # Drop marker appears between subjects
 

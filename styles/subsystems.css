@@ -323,8 +323,10 @@ button.ssm-reached { color: #4f9d5d; }
 /* Subject order and collapse on the sheet. A subject drags by the grip on its header; a line marks where it would drop. A collapsed subject shows only its header row. */
 .ssm-sheet .ssm-subject-grip { flex: none; width: 1rem; text-align: center; cursor: grab; opacity: 0.6; }
 .ssm-sheet .ssm-subject-grip:hover { opacity: 1; }
-.ssm-sheet .ssm-subject-card.ssm-drop-before { box-shadow: inset 0 3px 0 var(--color-warm-1, #ee9b3a); }
-.ssm-sheet .ssm-subject-card.ssm-drop-after { box-shadow: inset 0 -3px 0 var(--color-warm-1, #ee9b3a); }
+.ssm-sheet .ssm-subject-card.ssm-drop-before::before, .ssm-sheet .ssm-subject-card.ssm-drop-after::after { content: ""; position: absolute; left: -1px; right: -1px; height: 3px; border-radius: 2px; background: var(--color-warm-1, #ee9b3a); pointer-events: none; }
+/* The line sits in the gap between cards, so "after A" and "before B" draw the same one. */
+.ssm-sheet .ssm-subject-card.ssm-drop-before::before { top: calc(-1px - var(--ssm-card-gap) / 2 - 1.5px); }
+.ssm-sheet .ssm-subject-card.ssm-drop-after::after { bottom: calc(-1px - var(--ssm-card-gap) / 2 - 1.5px); }
 .ssm-sheet .ssm-subject.ssm-collapsed > :not(.ssm-block-head) { display: none; }
 .ssm-sheet .ssm-subject.ssm-collapsed { padding-bottom: 0; }
 .ssm-sheet .ssm-subject.ssm-collapsed > .ssm-block-head { margin-bottom: 0; }
@@ -374,9 +376,9 @@ button.ssm-reached { color: #4f9d5d; }
 .ssm-panel-slots.track > li.filled::after { content: ""; position: absolute; left: 50%; top: 50%; width: var(--ssm-track-mark); height: var(--ssm-track-mark); transform: translate(-50%, -50%); border-radius: 2px; background: #e8cf8f; box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.5); z-index: 1; }
 
 /* Subjects by category in Run view (spec 14.4): a red bar per category, with each subject as a card under it. A card's header is a light tint of the bar's red, so the category bars stand out. */
-.ssm-sheet .ssm-subject-category { display: flex; flex-direction: column; gap: var(--space-4, 0.25rem); flex: none; }
+.ssm-sheet .ssm-subject-category { --ssm-card-gap: 0.5rem; display: flex; flex-direction: column; gap: var(--ssm-card-gap); flex: none; }
 .ssm-sheet .ssm-subject-category > .ssm-block-head { margin-bottom: 0; }
-.ssm-sheet .ssm-subject.ssm-subject-card { flex: none; margin: 0; padding: 0 var(--space-4, 0.25rem); border: 1px solid var(--color-border, #7a7971); border-radius: 3px; }
+.ssm-sheet .ssm-subject.ssm-subject-card { position: relative; flex: none; margin: 0; padding: 0 var(--space-4, 0.25rem); border: 1px solid var(--color-border, #7a7971); border-radius: 3px; }
 .ssm-sheet .ssm-subject.ssm-subject-card > .ssm-section:last-child { padding-bottom: var(--space-4, 0.25rem); }
 .ssm-sheet .ssm-subject.ssm-subject-card > .ssm-card-head { background: color-mix(in srgb, var(--color-pf-primary, #5e0000) 18%, transparent); color: inherit; line-height: 1.75em; }
 .ssm-sheet .ssm-subject.ssm-subject-card > .ssm-card-head > h3 { text-transform: none; font-size: var(--font-size-14, 0.875rem); }
