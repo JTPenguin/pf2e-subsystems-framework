@@ -1,13 +1,14 @@
 ---
 title: "Compact checks table in the Edit action window"
 kind: work
-status: ready
-waits_on: Claude
+status: done
+waits_on: none
 priority: 🔼
 blocked_by: [remove-always-shown-checks]
 source: "Justin's UI list, 2026-11-12; details from Justin, 2026-11-12"
 added: 2026-11-12
 updated: 2026-11-12
+outcome: "Cleared Foundry's header border and background, row stripes and margin for .ssm-checks, tightened the cells, and gave the delete column a fixed width at the right edge. Column widths are set by class. Checked in Foundry 2026-11-12 at 640px: no horizontal scroll."
 ---
 # Compact checks table in the Edit action window
 

@@ -15,12 +15,12 @@
   {{#if checks.length}}
   <div class="ssm-checks-wrap"><table class="ssm-checks">
     <thead><tr>
-      <th>{{localize "SSM.Challenge.Skill"}}</th>
-      <th>{{localize "SSM.Challenge.LoreName"}}</th>
-      <th>{{localize "SSM.Challenge.DC"}}</th>
-      <th>{{localize "SSM.Challenge.Revealed"}}</th>
-      <th>{{localize "SSM.Challenge.Decoy"}}</th>
-      <th></th>
+      <th class="col-skill">{{localize "SSM.Challenge.Skill"}}</th>
+      <th class="col-lore">{{localize "SSM.Challenge.LoreName"}}</th>
+      <th class="col-dc">{{localize "SSM.Challenge.DC"}}</th>
+      <th class="col-flag">{{localize "SSM.Challenge.Revealed"}}</th>
+      <th class="col-flag">{{localize "SSM.Challenge.Decoy"}}</th>
+      <th class="col-delete"></th>
     </tr></thead>
     <tbody>
     {{#each checks}}
@@ -28,9 +28,9 @@
       <td><select name="{{path}}.skill" data-redraw>{{selectOptions @root.choices.skills selected=skill}}</select></td>
       <td>{{#if isLore}}<input type="text" name="{{path}}.lore" value="{{lore}}">{{/if}}</td>
       <td><input type="number" min="0" step="1" name="{{path}}.dc" value="{{dc}}"></td>
-      <td class="check"><input type="checkbox" name="{{path}}.revealed" {{checked revealed}}></td>
-      <td class="check"><input type="checkbox" name="{{path}}.decoy" {{checked decoy}}></td>
-      <td><button type="button" class="icon fa-solid fa-trash" data-action="removeRow" data-path="{{path}}" aria-label="{{localize "SSM.Challenge.Remove"}}"></button></td>
+      <td class="col-flag"><input type="checkbox" name="{{path}}.revealed" {{checked revealed}}></td>
+      <td class="col-flag"><input type="checkbox" name="{{path}}.decoy" {{checked decoy}}></td>
+      <td class="col-delete"><button type="button" class="icon fa-solid fa-trash" data-action="removeRow" data-path="{{path}}" aria-label="{{localize "SSM.Challenge.Remove"}}"></button></td>
     </tr>
     {{/each}}
     </tbody>
