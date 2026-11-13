@@ -1,70 +1,47 @@
 ---
-title: "Add the Chase preset"
-kind: feature
-status: in-progress
-waits_on: Justin
+title: "Audit the Chase preset against the rules"
+kind: test
+status: ready
+waits_on: Claude
 priority: ⏬
 blocked_by: []
-source: "Justin's list of items, 2026-11-11; scope answers from Justin, 2026-11-11"
+source: "Built 2026-11-11 (Justin's list); cut to data only 2026-11-12; turned into an audit by Justin, 2026-11-12"
 added: 2026-11-11
 updated: 2026-11-12
 ---
-# Add the Chase preset
+# Audit the Chase preset against the rules
 
-Chase as a preset of the generic challenge from [[generic-subsystem-shared-mechanics]]. Rules: GM Core, [Chases](https://2e.aonprd.com/Rules.aspx?ID=3049) and its subpages.
+The Chase preset is built, data only, on the generic framework (spec 14.6, 14.11, 14.12; first full build in commit 9388006). This item checks that a GM can run every chase use case in GM Core's [Chases](https://2e.aonprd.com/Rules.aspx?ID=3049) with it, and records how.
 
-## In the first version
+## Use cases to check
 
-| Part | Rules | Decision |
+Mark each **Covered** (say how), **GM's call** (the GM notes say what to do), or **Gap** (file a new item).
+
+| Use case | Rules | Expected coverage |
 |---|---|---|
-| **Obstacles** | In order. Each needs a number of Chase Points (CP), and has two or more approaches (skill, Perception, sometimes a save or attack) with DCs | Subjects with a goal, in the GM's order on the sheet; the GM reveals the next by hand. Saves are check rows. Attacks are left to the GM. |
-| **Checks** | Crit success 2 CP, success 1 CP, failure 0, crit failure −1 CP. CP never drop below 0. Extra CP don't carry over; PCs who haven't acted can go on to the next obstacle | The outcome table; subject minimum 0 |
-| **Passing** | A PC who passes or can't act costs the group 1 CP | A GM control |
-| **The other side** | Moves at a set pace: usually one obstacle a round, slower on hard ones | Proposed after the framework mapping: a counter that changes by +1 each round, nudged by hand. Earlier plan: each obstacle has an NPC pace and Next round moves them (Justin). Settle at the spec step. |
-| **Chase types** | Chase Down, Run Away, Beat the Clock, Competitive | Starting positions and end checks |
-| **Ending** | Pursuers reach the quarry's obstacle; the quarry clears the last obstacle; or the quarry gets about three obstacles ahead | A notice to the GM |
-| **Panel** | | Only the current obstacle and its approaches, plus a progress track showing both sides (Justin) |
+| Obstacles in order | Short 6, medium 8, long 10 | Subjects in sheet order; Allow multiple subjects off |
+| Chase Points per obstacle | Party size −1 or −2, minimum 1; harder ones more | The obstacle's Chase Points counter; a new one is 0 to 3 |
+| Approaches | Skill, Perception, save, attack or spell, with DCs; at least one easy | Check rows on the obstacle's action; attacks and spells are the GM's call |
+| Degrees of success | +2, +1, 0, −1; never below 0 | GM changes the counter by hand; minimum 0 |
+| Automatic help | +1, or +2 if very helpful | Hand change |
+| Points don't carry over | Unacted PCs go on to the next obstacle | GM's call |
+| Passing | Costs the group 1 CP | Hand change |
+| Turn order | Pursued act first | GM's call |
+| The other side's pace | One obstacle a round, slower on hard ones | Quarry counter +1 each round, nudged by hand |
+| Tracking positions | Tokens, cards or a map for each side | Party and Quarry Track counters on the panel |
+| Chase Down / Run Away | Start one obstacle behind or ahead | Starting counter values; GM notes |
+| Beat the Clock | Obstacles equal the round limit | Maximum Rounds |
+| Competitive | Initiative each round | GM's call |
+| Endings | Caught; escape after the last obstacle; three ahead; round limit | GM compares the two tracks; round limit from Maximum Rounds |
+| Stuck about 3 rounds | Offer another way or a costly helper | GM's call |
+| Revealing DCs | Tell players the DCs, or the difficulty | Check rows' Revealed |
+| Split paths and shortcuts | Paths split and rejoin | Not built: check whether categories or hidden subjects cover it |
+| Solo chases | Each PC advances alone; crit gives +2 next | Not built: check whether per-PC counters cover it |
 
-## Not in the first version
+## Also check
 
-- Split paths and shortcuts.
-- Solo chase rules (each PC advances alone).
+- The defaults: both tracks start at maximum 6, and a new obstacle's goal is 3. Is that the right start?
+- A **player login** sees the current obstacle, its approaches and both tracks, and can roll from the panel. This was never checked.
+- Delete the test challenges "SSM Chase check" (old build) and "SSM Chase v2 check" when done.
 
-## Settled (Justin, 2026-11-11)
-
-| Question | Answer |
-|---|---|
-| The other side's pace | A counter, +1 each round, nudged by hand |
-| The panel | Only the current obstacle: the first revealed one that isn't Complete |
-| Progress track | Yes: a row of slots, hidden obstacles as "?", with party and other-side markers |
-| Chase types | One Chase preset, with a type field in the Edit tab |
-| Competitive initiative; being stuck | Notices to the GM, as proposed |
-
-The full design is spec 14.11.
-
-## Notes kept from the spec step
-
-- Preparation (*Punks in a Powderkeg*'s Scout a Route) is a separate challenge, as for Infiltration; Preparation Points are a per-PC counter the GM spends by hand (the roll card's degree buttons were removed on 2026-11-12).
-
-
-**Done when:** a GM can run a chase from a sheet, and players can take its actions from the panel. Check it in Foundry with a live test chase and a player login.
-
-## Cut back to data only (Justin, 2026-11-12)
-
-The first build had chase-only logic: a type field, end and reminder notices, a current-obstacle panel view, a progress track and a Chase line on the sheet. It was cut, so every subsystem runs on the generic framework with no preset-specific code. The first build is in commit 9388006.
-
-| Was automated | Now |
-|---|---|
-| Chase type field | GM notes say how to set up each type |
-| End, lead, stuck, initiative and last-round notices | The GM's call; GM notes list the rules |
-| Panel shows only the current obstacle | Allow multiple subjects is off: revealing the next obstacle hides the cleared one (spec 14.12) |
-| Progress track with both markers | Party and Quarry counters, each drawn as a Track (spec 14.12). The GM adds 1 to Party when an obstacle clears. |
-| Chase line on the sheet | Gone: the sheet shows the obstacles and counters |
-
-## Where it stands (2026-11-12)
-
-- **Built:** the data-only Chase preset, Allow multiple subjects, and counter displays (Hidden, Auto, Number, Bar, Steps, Track). Spec 14.6, 14.11 and 14.12 are updated.
-- **Checked:** `tools/test.mjs` (136 pass), `tools/check-load.mjs`. Live in the test world as GM: a new chase has Party and Quarry on tracks and Allow multiple subjects off; Display set to Hidden in the Edit tab hid Quarry, and Track brought it back; revealing Rooftops in Run mode hid Crowded market, and the panel showed only Rooftops with both tracks; Steps and a threshold mark drew correctly. Not checked with a player login.
-- **Your calls:** both counters start with maximum 6; set them to the number of obstacles. A new obstacle's goal is 3.
-- **Not built:** split paths, shortcuts, solo chases.
-- **Test challenges** "SSM Chase check" (old build, still running, off the panel) and "SSM Chase v2 check" (on the panel) are in the test world. Delete them when done.
+**Done when:** every row above is marked, each gap has its own item, the player login check has run, and the test challenges are gone.

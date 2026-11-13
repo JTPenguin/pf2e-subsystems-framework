@@ -5,7 +5,7 @@ status: ready
 waits_on: Claude
 priority: ⏬
 blocked_by: []
-source: "Justin's list of items, 2026-11-11"
+source: "Justin's list of items, 2026-11-11; plan refreshed 2026-11-12"
 added: 2026-11-11
 updated: 2026-11-12
 ---
@@ -24,11 +24,15 @@ Research as a preset of the generic challenge from [[generic-subsystem-shared-me
 | **Timed events** | Triggered by time, not RP | A "Days" counter that changes by +1 each round, with thresholds (checked against *Ruins of the Radiant Siege*, 2026-11-11) |
 | **Round length** | 10 minutes to a day, set by the GM | The GM's notes (round length was removed) |
 
-## Open questions for the spec step
+## Plan on today's framework (proposed, 2026-11-12)
 
-- Should Apply stop at a check's Maximum RP on its own? Proposed: yes, and the card says so.
-- RP is party-wide in the rules, but a library has several areas. Proposed: points live on the challenge, and each area tracks only how much it has given towards its maximum.
+Outcome tables and maximum points are gone, and subjects now own counters (spec 14.13). So:
+
+- **Research Points:** a challenge counter, shown to players, with the RP thresholds.
+- **Library areas:** subjects, each with one action holding its skills and DCs, and an "RP given" counter whose maximum is the area's Maximum RP. The GM adds to both counters by hand.
+- **Days:** a challenge counter, +1 each round, with the timed events as thresholds.
+- **False discoveries:** the GM writes them in the area's GM text.
+
+Open question for the build: is two hand changes per roll (the pool and the area) acceptable, or does the area's maximum belong in its GM text only?
 
 **Done when:** a GM can run a research challenge, and players can roll its checks from the panel. Check it in Foundry with a live test challenge and a player login.
-
-**Note (2026-11-12):** outcome tables and an action's maximum points are being removed (remove-roll-card-point-automation), so the plan above no longer works as written. The GM tracks each area's Maximum RP by eye, or with a counter's maximum once subjects own counters (counter-points-as-generic-counter). Revisit when Research is built.
