@@ -1,6 +1,6 @@
 {{#*inline "ssmEye"}}<button type="button" class="icon fa-solid {{#if revealed}}fa-eye{{else}}fa-eye-slash{{/if}}" data-action="toggleReveal" data-id="{{id}}" aria-label="{{localize "SSM.Challenge.RevealToggle"}}" aria-pressed="{{revealed}}" data-tooltip="{{localize "SSM.Challenge.RevealToggle"}}" {{#unless root.canRun}}disabled{{/unless}}></button>{{/inline}}
-{{#*inline "ssmSkillChip"}}<span class="ssm-skill {{#if shown}}ssm-shown{{else}}ssm-hidden{{/if}}{{#if always}} ssm-universal{{/if}}">
-  {{#unless always}}{{> ssmEye root=root}}{{/unless}}
+{{#*inline "ssmSkillChip"}}<span class="ssm-skill {{#if shown}}ssm-shown{{else}}ssm-hidden{{/if}}">
+  {{> ssmEye root=root}}
   <button type="button" class="ssm-skill-roll" data-action="rollSkill" data-subject="{{subjectId}}" data-act="{{actionId}}" data-id="{{id}}" aria-label="{{rollLabel}}" data-tooltip-text="{{tooltip}}" {{#unless root.rollable}}disabled{{/unless}}><i class="fa-solid fa-dice-d20" aria-hidden="true"></i><span class="ssm-skill-name">{{label}}</span><span class="ssm-skill-dc{{#if dcChanged}} ssm-dc-changed {{#if dcUp}}ssm-dc-up{{else}}ssm-dc-down{{/if}}{{/if}}">{{localize "SSM.Challenge.DC"}} {{currentDc}}</span></button>
   <button type="button" class="ssm-skill-post" data-action="postLink" data-subject="{{subjectId}}" data-act="{{actionId}}" data-id="{{id}}" aria-label="{{postLabel}}" data-tooltip="SSM.Challenge.PostLink" {{#unless root.rollable}}disabled{{/unless}}><i class="fa-solid fa-comment" aria-hidden="true"></i></button>
 </span>{{/inline}}

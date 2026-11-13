@@ -269,7 +269,7 @@ const pts = (s) => sub(s).counters[0];
 const changePts = (s, delta) => Run.changeCounter(s, pts(s).id, delta);
 const discover = (s) => sub(s).actions[0];
 const influence = (s) => sub(s).actions[1];
-/** The Society check on Influence: the one check that isn't always shown. */
+/** The last check on Influence. */
 const society = (s) => influence(s).checks.at(-1);
 const rollOf = (s, over = {}) => ({ rollId: "r1", challengeId: "c1", subjectId: sub(s).id, actionId: influence(s).id, checkId: society(s).id, messageId: "m1", actorId: "a1", dc: null, isReroll: false, ...over });
 const discoverRoll = (s, over = {}) => rollOf(s, { actionId: discover(s).id, checkId: discover(s).checks[0].id, ...over });
@@ -288,14 +288,14 @@ test("a preset fills in the names, the rounds and the first subject", () => {
   assert.deepEqual(sub(s).counters.map((row) => [row.name, row.value, row.min, row.max, row.revealed, row.thresholds.length]), [["SSM.Preset.influence.Points", 0, null, null, true, 0]], "an NPC has one Influence Points counter");
   assert.deepEqual(blank.subjects[0].counters.map((row) => row.name), ["SSM.Preset.victory.Points"]);
   assert.deepEqual([discover(s).secret, influence(s).secret], [true, false]);
-  assert.deepEqual(discover(s).checks.map((row) => [row.skill, row.always]), [["perception", true]]);
-  assert.deepEqual(influence(s).checks.map((row) => [row.skill, row.always, row.dc]), [["deception", true, 15], ["diplomacy", true, 15], ["intimidation", true, 15]]);
+  assert.deepEqual(discover(s).checks.map((row) => [row.skill, row.revealed]), [["perception", true]]);
+  assert.deepEqual(influence(s).checks.map((row) => [row.skill, row.revealed, row.dc]), [["deception", true, 15], ["diplomacy", true, 15], ["intimidation", true, 15]]);
   assert.equal(D.newChallengeSystem("nonsense").preset, "victory");
 });
 
 test("addRow picks the right row for each list, and a new subject follows the preset", () => {
   const s = system();
-  assert.ok("always" in D.addRow(s, "subjects.0.actions.1.checks"));
+  assert.deepEqual([D.addRow(s, "subjects.0.actions.1.checks").revealed, "always" in D.addRow(s, "subjects.0.actions.1.checks")], [false, false], "a new check starts hidden");
   assert.ok("reached" in D.addRow(s, "subjects.0.counters.0.thresholds"));
   const own = D.addRow(s, "subjects.0.counters");
   assert.deepEqual([own.name, own.revealed, own.perRound, own.thresholds], ["SSM.Preset.influence.Points", true, 0, []], "a subject's new counter takes the points name and starts shown");
@@ -341,7 +341,7 @@ test("mergeForm: numbered form rows merge into lists, and absent fields survive"
   assert.deepEqual([merged.subjects[0].modifiers[0].dc.amount, merged.subjects[0].modifiers[0].dc.allSkills, merged.subjects[0].modifiers[0].note], [-2, false, "kept"]);
   assert.deepEqual(merged.subjects[0].modifiers[0].dc.skills, ["b", "c"]);
   assert.equal(Array.isArray(merged.subjects), true);
-  assert.equal(merged.subjects[0].actions[1].checks[0].always, true, "a form with no Always shown field keeps the old value");
+  assert.equal(merged.subjects[0].actions[1].checks[0].revealed, true, "a form with no Revealed field keeps the old value");
 });
 
 test("mergeForm: blank numbers keep their value, except limits and the round maximum", () => {
@@ -1071,7 +1071,7 @@ test("a visible check carries its current DC for the roll, thresholds and one-ti
   assert.equal(V.findPanelRow(null, { subject: "x", act: "y", id: "z" }), null);
 });
 
-test("a revealed decoy can't be told from a true entry, at any depth, and a decoy flag on an always-shown check is ignored", () => {
+test("a revealed decoy can't be told from a true entry, at any depth, and a decoy flag on a revealed check shows as a decoy to the GM", () => {
   const twin = (decoy) => {
     const s = secretSystem();
     revealAll(s);
@@ -1086,11 +1086,11 @@ test("a revealed decoy can't be told from a true entry, at any depth, and a deco
   const decoyView = viewOf(twin(true));
   assert.ok(![...scan(decoyView).values].some((value) => /decoy/i.test(String(value))));
   assertNoSecrets(decoyView);
-  assert.equal(D.isDecoyCheck({ decoy: true, always: true }), false);
-  assert.equal(D.isDecoyCheck({ decoy: true, always: false }), true);
+  assert.equal(D.isDecoyCheck({ decoy: true, revealed: true }), true);
+  assert.equal(D.isDecoyCheck({ decoy: false, revealed: true }), false);
 });
 
-test("an unrevealed decoy is left out, and an always-shown check is in from the start with its DC", () => {
+test("an unrevealed decoy is left out, and a preset check is revealed from the start with its DC", () => {
   const s = secretSystem();
   const planted = { ...D.newCheck(), skill: "occultism", decoy: true, dc: 654 };
   discover(s).checks.push(planted);
@@ -1575,7 +1575,7 @@ test("the Preparation preset: one revealed subject with GM Core's six activities
     ["ScoutLocation", true, "perception society stealth"],
     ["SecureDisguises", false, "crafting deception performance society"],
   ]);
-  assert.ok(prep.actions.every((action) => action.checks.every((row) => row.always)));
+  assert.ok(prep.actions.every((action) => action.checks.every((row) => row.revealed)));
   prep.actions.forEach(assertBareAction);
   assert.equal(named("ForgeDocuments").description, "SSM.Preset.preparation.ForgeDocuments.Description");
 });

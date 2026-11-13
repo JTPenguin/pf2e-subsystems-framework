@@ -34,10 +34,8 @@ export const skillKey = (check) => (check.skill === LORE ? `lore:${(check.lore |
 export const CATEGORY_COLOURS = ["#c0523f", "#6fae6a", "#7a9cc6", "#d1a03c", "#9a72c4", "#4fa8a0", "#c66f9f", "#8f8a5a"];
 export const categoryKey = (label) => String(label ?? "").trim().toLowerCase();
 
-/** A check players always see: no reveal control, and never a decoy, whatever its flag says. */
-export const isAlwaysShown = (check) => !!check.always;
-export const isVisibleCheck = (check) => isAlwaysShown(check) || !!check.revealed;
-export const isDecoyCheck = (check) => !!check.decoy && !isAlwaysShown(check);
+export const isVisibleCheck = (check) => !!check.revealed;
+export const isDecoyCheck = (check) => !!check.decoy;
 
 const id = () => foundry.utils.randomID();
 /** A language key's text. Outside Foundry, as in tools/test.mjs, the key itself. */
@@ -65,7 +63,7 @@ export function migrateModifier(modifier) {
   delete modifier.effects;
   return modifier;
 }
-export const newCheck = () => ({ id: id(), skill: "society", lore: "", dc: 15, revealed: false, decoy: false, always: false });
+export const newCheck = () => ({ id: id(), skill: "society", lore: "", dc: 15, revealed: false, decoy: false });
 /** `dc` is a DC change that applies while the threshold is reached. */
 export const newThreshold = () => ({ id: id(), points: 1, playerText: "", gmText: "", reveal: "hidden", reached: false, dc: 0 });
 /** A per-PC counter keeps one value per party PC in `valueBy`, starting from `value` (spec 14.8), and a GM-only note per PC in `noteBy`. */
@@ -111,7 +109,8 @@ const pointsSubject = (system, counter = {}) => ({ ...blankSubject(), counters: 
  * `subject(system)` makes a new subject; its counters take the challenge's points name. `categories` and `subjectCategories` are language keys for the suggested modifier and subject categories.
  * `counters()` and `rounds` are a new challenge's counters and round maximum. `gmNotes` is a language key, or a list of them, one paragraph each.
  */
-const always = (skill) => ({ ...newCheck(), skill, always: true });
+/** A preset check starts revealed. */
+const revealedCheck = (skill) => ({ ...newCheck(), skill, revealed: true });
 const threshold = (points, key, { dc = 0, reveal = "points" } = {}) => ({ ...newThreshold(), points, dc, reveal, playerText: say(`${key}.Player`), gmText: say(`${key}.Gm`) });
 
 const INF = "SSM.Preset.infiltration";
@@ -122,7 +121,7 @@ const PREP = "SSM.Preset.preparation";
 const PREP_ACTIVITIES = ["BribeContact", "ForgeDocuments", "GainContact", "Gossip", "ScoutLocation", "SecureDisguises"];
 
 /** One preparation activity (GM Core, Preparation Activities). What each degree gives is in the preset's GM notes. */
-const preparationActivity = (key, { secret = false, skills }) => ({ ...newAction(), name: say(`${PREP}.${key}.Name`), description: say(`${PREP}.${key}.Description`), secret, checks: skills.map(always) });
+const preparationActivity = (key, { secret = false, skills }) => ({ ...newAction(), name: say(`${PREP}.${key}.Name`), description: say(`${PREP}.${key}.Description`), secret, checks: skills.map(revealedCheck) });
 
 export const PRESETS = {
   victory: {
@@ -144,8 +143,8 @@ export const PRESETS = {
       ...pointsSubject(system),
       revealed: true,
       actions: [
-        { ...newAction(), name: say("SSM.Preset.influence.Discover"), secret: true, checks: [always(PERCEPTION)] },
-        { ...newAction(), name: say("SSM.Preset.influence.Influence"), checks: ["deception", "diplomacy", "intimidation"].map(always) },
+        { ...newAction(), name: say("SSM.Preset.influence.Discover"), secret: true, checks: [revealedCheck(PERCEPTION)] },
+        { ...newAction(), name: say("SSM.Preset.influence.Influence"), checks: ["deception", "diplomacy", "intimidation"].map(revealedCheck) },
       ],
     }),
   },

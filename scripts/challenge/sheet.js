@@ -7,7 +7,7 @@ import { announceTriggers, writeChallenge } from "./state.js";
 import { advanceRound, canAdvanceRound, canUndoRound, changeCounter, counterValueOf, currentDc, cycleThresholdReveal, endRun, resetRun, restoreModifier, startRun, toggleActed, toggleComplete, toggleModifier, toggleReached, toggleReveal, undoRound } from "./run.js";
 import { LINK_ROLL_ID } from "../roll-option.js";
 import { rollCheck, rollTarget } from "./roll.js";
-import { addRow, applyForm, BOTH_WAYS, categoryKey, clampTracks, counterMoves, counterValueText, EDITABLE, entryListPath, groupByCategory, isAlwaysShown, isDecoyCheck, moveSubject, nextThresholdReveal, pickFields, removeEntry, setCounterNote, subjectGroups } from "./data.js";
+import { addRow, applyForm, BOTH_WAYS, categoryKey, clampTracks, counterMoves, counterValueText, EDITABLE, entryListPath, groupByCategory, isDecoyCheck, moveSubject, nextThresholdReveal, pickFields, removeEntry, setCounterNote, subjectGroups } from "./data.js";
 import { ActionWindow, CounterWindow, ModifierWindow, SubjectWindow } from "./entry-window.js";
 
 const { DocumentSheetV2, HandlebarsApplicationMixin } = foundry.applications.api;
@@ -257,13 +257,12 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
     const rollRows = (subject, action) => action.checks.map((row) => {
       const dc = currentDc(system, subject, row);
       const label = skillLabel(row);
-      const always = isAlwaysShown(row);
       // The chip shows the name and current DC. The tooltip adds the base DC and whether the check is a decoy.
       const tooltip = [loc("SSM.Challenge.RollFor"), game.i18n.format("SSM.Challenge.BaseDc", { dc: row.dc })];
       if (isDecoyCheck(row)) tooltip.push(loc("SSM.Challenge.Decoy"));
       return {
-        ...row, subjectId: subject.id, actionId: action.id, label, always, decoy: isDecoyCheck(row), currentDc: dc, dcChanged: dc !== row.dc, dcUp: dc > row.dc,
-        shown: always || row.revealed,
+        ...row, subjectId: subject.id, actionId: action.id, label, decoy: isDecoyCheck(row), currentDc: dc, dcChanged: dc !== row.dc, dcUp: dc > row.dc,
+        shown: row.revealed,
         rollLabel: game.i18n.format("SSM.Challenge.RollSkill", { skill: label, dc }),
         postLabel: game.i18n.format("SSM.Challenge.PostSkill", { skill: label }),
         tooltip: tooltip.join(". "),

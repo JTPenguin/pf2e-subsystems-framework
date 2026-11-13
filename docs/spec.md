@@ -22,8 +22,8 @@ The first version covers **Influence only**. The data and panel code are built s
 | Missing Lore | A PC without a listed Lore rolls it untrained (Intelligence +0) from the sheet or panel. Chat links can't do this, as PF2e reports the statistic as missing. | Justin |
 | Applying points | Nothing applies points automatically. The GM changes every value by hand with + and − on the sheet. A roll only marks the PC as acted and spends the one-time DC entries it used. | Justin, 2026-11-12 |
 | NPCs | One challenge holds one or more NPCs and one shared round clock | Justin |
-| Hidden by default | Everything except the NPC name, Influence Points, rounds remaining and the universal skills: Perception for Discovery, and Deception, Diplomacy and Intimidation for Influence | Justin |
-| Universal skills | Always on the panel, with no reveal control and no decoy flag. A new NPC starts with a row for each, at the default DC; the GM can edit or delete them. Existing NPCs are unchanged. A universal row flagged as a decoy (from an import, say) is treated as not a decoy. | Justin |
+| Hidden by default | Everything except the NPC name, Influence Points, rounds remaining and the checks the GM has revealed (a preset starts its Perception, Deception, Diplomacy and Intimidation checks revealed) | Justin |
+| Universal skills | Dropped. No check is always shown: every check has a reveal eye and a decoy flag. Preset checks start revealed, and the GM can hide or delete them. | Justin |
 | DCs | Always hidden from players: not on the panel, not on the chat card. If a world turns on PF2e's `metagame_showDC` setting, DCs show as on any other roll, with no warning to the GM. | Justin |
 | Several NPCs on the panel | One column per NPC, each with its own skills. No separate NPC picker. | Justin |
 | Portraits | Not on the panel. Tokens or VN Stage handle those. | Justin |
@@ -68,7 +68,7 @@ Sidebar tab -> Challenge (journal entry + typed page, GM only) -> GM sheet
 
 **Filtered copy.** The GM's client writes a world setting containing only what players may see, for the one challenge on the panel. Other running challenges keep their state on their own pages and write nothing to the setting. Every client redraws its panel when that setting changes. This needs no socket for display, and it survives reloads.
 
-**Limit on secrecy.** Secrets only need to stay out of the player interface. As elsewhere in Foundry, a player who digs through the browser console may be able to read them, and Justin accepts that. A player-side roll needs the DC, so the copy includes DCs for revealed and universal skills, and the panel doesn't show them. The filtered copy leaves out unrevealed entries, decoy markers and GM text.
+**Limit on secrecy.** Secrets only need to stay out of the player interface. As elsewhere in Foundry, a player who digs through the browser console may be able to read them, and Justin accepts that. A player-side roll needs the DC, so the copy includes DCs for revealed skills, and the panel doesn't show them. The filtered copy leaves out unrevealed entries, decoy markers and GM text.
 
 **Multiple GMs.** Only the active GM's client writes state and handles arriving rolls.
 
@@ -93,11 +93,11 @@ Sidebar tab -> Challenge (journal entry + typed page, GM only) -> GM sheet
 | Name | The NPC's name |
 | Perception and Will | Modifiers, not DCs |
 | Influence Points | Current total |
-| Discovery checks | Skill, Perception or Lore, DC, revealed flag. A Lore also has a name. A Lore row is never universal. A new NPC starts with Perception, which is universal. |
-| Influence skills | Skill or Lore, DC, revealed flag. A new NPC starts with Deception, Diplomacy and Intimidation, which are universal. |
+| Discovery checks | Skill, Perception or Lore, DC, revealed flag. A Lore also has a name. A new NPC starts with Perception, revealed. |
+| Influence skills | Skill or Lore, DC, revealed flag. A new NPC starts with Deception, Diplomacy and Intimidation, revealed. |
 | Thresholds | Points, player text, GM text, reveal (hidden, points only, or points and text), reached flag. A threshold saved with the old revealed flag loads as points and text if it was revealed, hidden if not. |
 | Resistances, weaknesses, Other | Modifier entries (below) |
-| Decoys | A flag on any weakness, resistance or skill entry, except universal skills |
+| Decoys | A flag on any weakness, resistance or skill entry |
 
 **Modifier entry.** Resistances, weaknesses and Other entries share this shape.
 
@@ -147,7 +147,7 @@ The sheet has **one view** (Justin, 2026-11-12): live play and editing together,
 | Window | Fields |
 |---|---|
 | Subject | Name, category (with suggestions, 14.6), Revealed and description. |
-| Action | Name, Secret, description, and its checks table: Skill, Lore name, DC, Always shown, Revealed, Decoy and a delete button, with Add check under it. The Lore name cell is empty unless the skill is Lore; an always-shown row leaves Revealed and Decoy empty. |
+| Action | Name, Secret, description, and its checks table: Skill, Lore name, DC, Revealed, Decoy and a delete button, with Add check under it. The Lore name cell is empty unless the skill is Lore. |
 | Counter | Name, value, direction, display, minimum, maximum, change each round, per PC and Revealed, then its thresholds, which can be added, changed and removed. Each threshold has its points, reveal, DC change and Reached on one row (no Reached on a both-ways track), and its player and GM text side by side below, as text areas that grow with their text. |
 | Modifier | See below. |
 
@@ -157,8 +157,8 @@ Every window takes the sheet's theme. There is one window per entry: opening it 
 
 - One strip at the top, in two rows. Row 1 has the round clock with previous and next round buttons on the left, and Start, End and Reset, Hide or Show panel at the far right. Row 2 has the party chips, then the Roll as choice.
 - Each NPC's name with "Points" and the total beside it on the same line, with buttons to add and remove.
-- Each skill as a chip styled like a PF2e inline check, in a grid of two or three columns by window width, with the Discovery and Influence labels beside their grids. The chip shows the skill name (the Lore name for a Lore) and the current DC, colored green (higher) or red (lower) when it differs from the base DC. Its tooltip gives the base DC and says if the skill is a decoy. Clicking the chip rolls for the chosen PC; a chat icon on it posts a chat link. A revealed chip is full strength, and a universal chip looks the same; a hidden chip is faded, with its name in italics. On the light theme a revealed chip's eye is dark red, so it reads on parchment. While the challenge isn't running, the roll and chat link are disabled.
-- An eye toggle to reveal or hide each entry, on the chip for skills. Universal skills have no eye: they are always shown. A threshold's eye steps through hidden, points only, and points and text, then back to hidden.
+- Each skill as a chip styled like a PF2e inline check, in a grid of two or three columns by window width, with the Discovery and Influence labels beside their grids. The chip shows the skill name (the Lore name for a Lore) and the current DC, colored green (higher) or red (lower) when it differs from the base DC. Its tooltip gives the base DC and says if the skill is a decoy. Clicking the chip rolls for the chosen PC; a chat icon on it posts a chat link. A revealed chip is full strength; a hidden chip is faded, with its name in italics. On the light theme a revealed chip's eye is dark red, so it reads on parchment. While the challenge isn't running, the roll and chat link are disabled.
+- An eye toggle to reveal or hide each entry, on the chip for skills. A threshold's eye steps through hidden, points only, and points and text, then back to hidden.
 - Actions, modifiers and counters are each a row, like the actions on a PF2e NPC sheet: no box and no fill, a thin line between rows, the name at the left and plain icon controls at the right. Thresholds sit as indented rows under their counter. Fading means hidden, and nothing else: a hidden row is faded with italic text, and a revealed row is full strength. A points-only threshold is full strength with italic text. The eye icon also shows the state. The GM line keeps upright text inside a faded row, so it stays readable.
 - Fields in the sheet and every edit window look like the NPC sheet's labeled fields: a bold label with a slightly smaller input or dropdown beside it. A window's DC change and thresholds are rows too, split by a thin line.
 - Thresholds under their counter, each with its point value, its player text, and its GM text under it with no label, in PF2e's GM highlight. The Reached tag is a button (aria-pressed, GM only): click to mark a threshold reached by hand, click again to clear it. Dropping points never clears it; only this tag or the counter window does.
@@ -199,8 +199,8 @@ Every window takes the sheet's theme. There is one window per entry: opening it 
 |---|---|---|
 | Challenge name and rounds | Shown | The name at the left of the header and "Round 3 of 6" at its right, on one line. The round text is plain text, so the header still drags from it. |
 | NPC names and Influence Points | Shown | One column per NPC; compact when there are several |
-| Discovery skills | Perception (the universal skill) shown, no DCs. Others hidden until revealed. | Clickable. The GM's eye toggle appears on every row except the universal skill. The sheet shows no Revealed or Decoy checkbox for it. |
-| Influence skills | Deception, Diplomacy and Intimidation (the universal skills) shown. Others hidden until revealed. | Clickable. No DC shown. No eye toggle, Revealed or Decoy checkbox on a universal row. |
+| Discovery skills | Perception shown at the start (a preset reveals it), no DCs. Others hidden until revealed. | Clickable. The GM's eye toggle appears on every row. |
+| Influence skills | Deception, Diplomacy and Intimidation shown at the start (a preset reveals them). Others hidden until revealed. | Clickable. No DC shown. The eye toggle appears on every row. |
 | Resistances, weaknesses, Other | Hidden until revealed | One card each, in two rows: the name on the left and the kind (Resistance, Weakness or Other) on the right; then what it does on the left and the duration (One-time, Ongoing or Spent) on the right. A card with no effects players can see leaves the left of row two blank. The name and the effects wrap; the right-hand labels stay on one line. The player text is not on the card: it shows when the pointer rests on the card. A GM's hover shows the player text with no label, then "GM Only" on a line of its own over the GM text. A card with nothing to show has no hover. The kind's colour stripe shows only while it is On; an Off card has no stripe and fades to 40% for everyone, GM and players. A spent one-time entry shows Spent, faded the same way, with no stripe, with its effects struck through. An applied one-time entry whose DC change is still to come has its other effects struck through. |
 | Thresholds | Hidden until revealed | One card per NPC under its bar, in points order; hidden if none are revealed. Revealed in two steps: points only shows as "6  ???", then points and player text. A reached one has a check mark; its slot is kept (empty, no box) when unreached, so the number and text never move. |
 | Counters | Hidden until revealed | |
@@ -219,7 +219,7 @@ Every window takes the sheet's theme. There is one window per entry: opening it 
 | Rounds | "+1 round", "−2 rounds" | |
 | Note only | Left out: the note is the GM's text. The player text covers it. | The note |
 
-A DC change names only skills the panel shows (universal or revealed). It says nothing about hidden skills it covers, and a change that covers only hidden skills is left out (Justin, 2026-11-09). A change of zero, or one that points at a removed skill or counter, is left out. A revealed decoy's card looks like any other to players. On the GM's panel, a decoy skill button and a decoy card carry the orange Decoy tag, as in the GM window; it is read from the challenge on the GM's client, never from the shared copy.
+A DC change names only skills the panel shows (revealed). It says nothing about hidden skills it covers, and a change that covers only hidden skills is left out (Justin, 2026-11-09). A change of zero, or one that points at a removed skill or counter, is left out. A revealed decoy's card looks like any other to players. On the GM's panel, a decoy skill button and a decoy card carry the orange Decoy tag, as in the GM window; it is read from the challenge on the GM's client, never from the shared copy.
 
 **Rules for the panel:**
 
@@ -361,7 +361,7 @@ Every subsystem runs on one data model, one sheet and one panel: GM Core's [Vict
 | Name | "Influence", "Discover", "Overcome" |
 | Secret | The check gets PF2e's `secret` trait, as Discover has today |
 | Description | Plain text everyone sees: what the action is and how players use it |
-| Checks | Rows as today: skill, Perception, Lore or a saving throw (14.8); DC; revealed; decoy. A row can be **always shown**: no eye, never a decoy. This replaces the fixed universal-skill lists. |
+| Checks | Rows as today: skill, Perception, Lore or a saving throw (14.8); DC; revealed; decoy. Every row has an eye and a decoy flag; there is no always-shown flag (a stored `always` is dropped, with no conversion, 14.9). Preset checks start revealed. This replaces the fixed universal-skill lists. |
 
 An action has no outcome table and no maximum points (Justin, 2026-11-12).
 
@@ -412,10 +412,10 @@ A preset is a starting template: its names, and what a new challenge and a new s
 | Preset | Names | A new subject has |
 |---|---|---|
 | **Victory Points** (blank) | Victory Points, Subject | A Victory Points counter. Suggested category: Modifier. One action, "Check", with no rows. |
-| **Influence** | Influence Points, NPC | An Influence Points counter. Suggested categories: Resistance, Weakness. Revealed. Discover: secret, Perception always shown. Influence: Deception, Diplomacy and Intimidation always shown. |
+| **Influence** | Influence Points, NPC | An Influence Points counter. Suggested categories: Resistance, Weakness. Revealed. Discover: secret, Perception revealed. Influence: Deception, Diplomacy and Intimidation revealed. |
 | **Infiltration** | Infiltration Points, Obstacle | Suggested categories: Opportunity, Complication. Counters: Awareness Points (shown, +1 each round, minimum 0, GM Core's tiers at 5 (DC +1), 10 (complication), 15 (DC +1 more, +2 in total) and 20 (fails)) and Edge Points (per PC, shown). Suggested subject categories: Obstacle, Complication, Opportunity. A new obstacle: an Infiltration Points counter, maximum 2; Overcome with no checks. GM notes say how to turn an obstacle into a complication or an opportunity. The first obstacle starts revealed, later subjects hidden. |
 | **Chase** | Chase Points, Obstacle | No suggested categories. Allow multiple subjects is off. GM notes hold GM Core's reminders and how to set up each chase type. Counters: Party at 1 and Quarry at 2, +1 each round; both minimum 0, maximum 6, Track display, shown. A new obstacle: a Chase Points counter, 0 to 3; Overcome with no checks. The first obstacle starts revealed, later ones hidden. See 14.11. |
-| **Infiltration Preparation** | Edge Points, Preparation | Run before the infiltration; the GM types its results in. Counters: Edge Points (per PC, shown) and Awareness Points (hidden). One revealed subject with no counter and GM Core's six activities as actions, every check always shown, secret where the rules say. GM notes list what each activity gives at each degree, and say that a dud or cursed Edge Point still adds to Edge and goes in the PC's note. No suggested categories. |
+| **Infiltration Preparation** | Edge Points, Preparation | Run before the infiltration; the GM types its results in. Counters: Edge Points (per PC, shown) and Awareness Points (hidden). One revealed subject with no counter and GM Core's six activities as actions, every check revealed, secret where the rules say. GM notes list what each activity gives at each degree, and say that a dud or cursed Edge Point still adds to Edge and goes in the PC's note. No suggested categories. |
 
 A preset makes one kind of subject, so the sheet has one Add subject button, named by the subject label. A preset can suggest **subject categories**, apart from its modifier categories; the GM sets a subject's category by hand (Justin, 2026-11-12).
 
@@ -482,7 +482,7 @@ A preset makes one kind of subject, so the sheet has one Add subject button, nam
 | GM notes | Each PC's row on the sheet has a GM-only note, beside the value. It records which Edge Points are duds, cursed or only for one situation. It saves on its own, and Reset puts it back to its state at Start. The panel never sees it. |
 | Dud Edge Points | Not a counter: the GM adds the point to Edge, as the PC thinks it worked, and writes the dud in that PC's note. The preset's GM notes say so (Justin, 2026-11-11 and 2026-11-12). |
 
-**Saving throws as checks.** A check row can be Fortitude, Reflex or Will, as well as a skill, Perception or Lore. It rolls with PF2e's saving throw check at the row's DC and follows every other row rule: reveal, decoy, always shown, DC changes.
+**Saving throws as checks.** A check row can be Fortitude, Reflex or Will, as well as a skill, Perception or Lore. It rolls with PF2e's saving throw check at the row's DC and follows every other row rule: reveal, decoy, DC changes.
 
 **Limits.** Every counter, a subject's included, has an optional minimum and maximum. On a per-PC counter they apply to each PC's value. Chase Points use 0 to 3; Reputation uses −50 and +50.
 

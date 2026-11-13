@@ -39,7 +39,7 @@ const actionFields = () => ({
   // What the action is and how players use it, as rich text like an item's: say, its degrees of success. Everyone sees it but its secret blocks.
   description: new HTMLField({ required: true, blank: true, initial: "" }),
   secret: flag(),
-  checks: list({ id: rowId(), skill: text(), lore: text(), dc: int(15, { min: 0 }), revealed: flag(), decoy: flag(), always: flag() }),
+  checks: list({ id: rowId(), skill: text(), lore: text(), dc: int(15, { min: 0 }), revealed: flag(), decoy: flag() }),
 });
 
 /** One shape for the challenge's counters and a subject's (spec 14.13). */

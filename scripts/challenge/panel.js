@@ -84,7 +84,7 @@ function gmTexts(page) {
   return texts;
 }
 
-/** The checks and modifiers the GM flagged as decoys, as "subjectId:rowId" keys, read from the challenge itself. Empty for players, so a decoy flag never reaches their client. An always-shown check is never a decoy. */
+/** The checks and modifiers the GM flagged as decoys, as "subjectId:rowId" keys, read from the challenge itself. Empty for players, so a decoy flag never reaches their client. */
 function gmDecoys(page) {
   const keys = new Set();
   for (const row of page?.system.modifiers ?? []) if (row.decoy) keys.add(`:${row.id}`);

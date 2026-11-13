@@ -1,13 +1,14 @@
 ---
 title: "Remove Always shown from checks"
 kind: work
-status: ready
-waits_on: Claude
+status: done
+waits_on: none
 priority: ⏫
 blocked_by: []
 source: "Justin's UI list, 2026-11-12; details from Justin, 2026-11-12"
 added: 2026-11-12
 updated: 2026-11-12
+outcome: "Removed the always flag, its column, the universal chip style and two strings. Preset checks start revealed; every chip has an eye and any check can be a decoy. Checked in Foundry 2026-11-12."
 ---
 # Remove Always shown from checks
 

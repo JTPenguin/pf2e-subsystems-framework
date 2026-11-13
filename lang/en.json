@@ -174,8 +174,6 @@
       "UnnamedAction": "Unnamed action",
       "AddCheck": "Add check",
       "Checks": "Checks",
-      "Always": "Always shown",
-      "AlwaysHint": "Players see this check from the start. It has no reveal control and is never a decoy.",
       "Secret": "Secret",
       "SecretHint": "Rolled as a secret check, like Recall Knowledge.",
       "ThresholdAt": "At",
