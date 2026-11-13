@@ -691,6 +691,24 @@ test("a blank round maximum means no limit", () => {
   assert.deepEqual([s.rounds.max, s.rounds.current], [null, 0]);
 });
 
+test("a round maximum of 0 means no rounds: Start leaves the round at 0 and Next round does nothing; Reputation starts that way", () => {
+  const s = runSystem();
+  s.rounds.max = 0;
+  Run.startRun(s);
+  assert.deepEqual([Run.hasRounds(s), s.rounds.current, Run.canAdvanceRound(s), Run.advanceRound(s), Run.canUndoRound(s)], [false, 0, false, false, false]);
+  assert.equal(D.newChallengeSystem("reputation").rounds.max, 0);
+  assert.equal(D.newChallengeSystem("victory").rounds.max, null, "other presets keep rounds");
+  assert.equal(D.mergeForm(s, { rounds: { max: 0 } }).rounds.max, 0, "the sheet can set 0");
+  D.applyForm(s, { rounds: { max: 5 } });
+  assert.deepEqual([s.rounds.max, s.rounds.current, Run.canAdvanceRound(s)], [5, 1, true], "rounds turned back on mid-run start at round 1");
+  D.applyForm(s, { rounds: { max: null } });
+  assert.equal(s.rounds.current, 1, "a later change leaves the round alone");
+  const idle = runSystem();
+  idle.rounds.max = 0;
+  D.applyForm(idle, { rounds: { max: 5 } });
+  assert.equal(idle.rounds.current, 0, "a challenge not yet started keeps round 0 until Start");
+});
+
 test("a counter's change each round is added on Next round, and Previous round takes it and its thresholds back", () => {
   const s = running();
   const counter = s.counters[0];
@@ -1051,8 +1069,8 @@ test("revealing each kind of entry adds it, and only its player fields", () => {
   const subject = sub(s);
   assert.deepEqual(view.subjects[0].actions[1].checks.at(-1), { id: society(s).id, skill: "society", lore: "", dc: 15 });
   assert.deepEqual(known(view.subjects[0]), [{ id: subject.modifiers[0].id, name: "Flattery", text: "likes praise", category: "", colour: "", duration: "ongoing", active: false, spent: false, changes: [] }]);
-  assert.deepEqual(view.subjects[0].counters[0].thresholds, [{ id: pts(s).thresholds[0].id, points: 8, text: "she offers an introduction", textHidden: false, reached: false }]);
-  assert.deepEqual(view.counters, [{ id: s.counters[0].id, name: "Suspicion", value: 3, text: "3/222", perPc: false, pcs: [], display: "bar", slots: null, scale: 222, range: null, marks: [{ points: 5, reached: false }], thresholds: [{ id: s.counters[0].thresholds[0].id, points: 5, text: "the guards stir", textHidden: false, reached: false }] }]);
+  assert.deepEqual(view.subjects[0].counters[0].thresholds, [{ id: pts(s).thresholds[0].id, points: 8, label: "8", text: "she offers an introduction", textHidden: false, reached: false }]);
+  assert.deepEqual(view.counters, [{ id: s.counters[0].id, name: "Suspicion", value: 3, text: "3/222", perPc: false, pcs: [], display: "bar", slots: null, scale: 222, range: null, marks: [{ points: 5, reached: false }], thresholds: [{ id: s.counters[0].thresholds[0].id, points: 5, label: "5", text: "the guards stir", textHidden: false, reached: false }] }]);
   assertNoSecrets(view);
   Run.toggleReveal(s, society(s).id);
   assert.equal(viewOf(s).subjects[0].actions[1].checks.length, 3, "hiding an entry again takes it back out");
@@ -1678,7 +1696,7 @@ test("the Chase preset: Party and Quarry counters on tracks, one obstacle at a t
 
 test("the Reputation preset: revealed factions with no actions, each with a both-ways counter from −50 to +50 and GM Core's tiers shown in full", () => {
   const s = presetSystem("reputation");
-  assert.deepEqual([s.pointsName, s.subjectLabel, s.rounds.max, s.counters, s.multipleSubjects], ["SSM.Preset.reputation.Points", "SSM.Preset.reputation.Subject", null, [], undefined]);
+  assert.deepEqual([s.pointsName, s.subjectLabel, s.rounds.max, s.counters, s.multipleSubjects], ["SSM.Preset.reputation.Points", "SSM.Preset.reputation.Subject", 0, [], undefined]);
   assert.deepEqual(D.suggestedCategories(s), []);
   const [first] = s.subjects;
   const second = D.addRow(s, "subjects");
@@ -1704,7 +1722,8 @@ test("the Reputation preset: revealed factions with no actions, each with a both
   for (let i = 0; i < 80; i++) Run.changeCounter(s, counter.id, -1);
   assert.deepEqual([counter.value, reached()], [-50, [-5, -15, -30]], "held at −50, Hunted");
   const view = viewOf(s).subjects[0].counters[0];
-  assert.deepEqual([view.range, view.thresholds.map((row) => [row.points, row.reached, row.textHidden])], [{ lo: -50, hi: 50 }, [[-30, true, false], [-15, true, false], [-5, true, false], [5, false, false], [15, false, false], [30, false, false]]]);
+  // Highest first, so the list reads from Revered down; the points carry a sign so they line up.
+  assert.deepEqual([view.range, view.thresholds.map((row) => [row.points, row.label, row.reached, row.textHidden])], [{ lo: -50, hi: 50 }, [[30, "+30", false, false], [15, "+15", false, false], [5, "+5", false, false], [-5, "−5", true, false], [-15, "−15", true, false], [-30, "−30", true, false]]]);
 });
 
 /* Allow multiple subjects (spec 14.12) */

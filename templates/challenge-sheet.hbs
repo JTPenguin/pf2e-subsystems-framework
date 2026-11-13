@@ -88,9 +88,11 @@
   <div class="ssm-strip">
     <div class="ssm-strip-row">
     <span class="ssm-strip-group">
+      {{#if rounds}}
       <strong>{{roundLabel}}</strong>
       <button type="button" class="icon fa-solid fa-backward-step" data-action="previousRound" aria-label="{{localize "SSM.Challenge.PreviousRound"}}" data-tooltip="{{localize "SSM.Challenge.PreviousRound"}}" {{#unless canPreviousRound}}disabled{{/unless}}></button>
       <button type="button" class="icon fa-solid fa-forward-step" data-action="nextRound" aria-label="{{localize "SSM.Challenge.NextRound"}}" data-tooltip="{{localize "SSM.Challenge.NextRound"}}" {{#unless canNextRound}}disabled{{/unless}}></button>
+      {{else}}<strong>{{statusLabel}}</strong>{{/if}}
     </span>
     <span class="ssm-strip-group ssm-strip-end">
       {{#if canStart}}<button type="button" data-action="startRun" {{#unless canRun}}disabled{{/unless}}>{{localize "SSM.Challenge.Start"}}</button>{{/if}}
@@ -102,8 +104,10 @@
     </div>
     <div class="ssm-strip-row">
     <span class="ssm-strip-group ssm-grow">
+      {{#if rounds}}
       <span class="ssm-stat-label">{{localize "SSM.Challenge.Party"}}</span>
       {{#each party}}<button type="button" class="ssm-chip {{#if acted}}acted{{/if}}" data-action="toggleActed" data-id="{{id}}" aria-pressed="{{acted}}">{{name}}</button>{{else}}<span class="ssm-muted">{{localize "SSM.Challenge.NoPCs"}}</span>{{/each}}
+      {{/if}}
     </span>
     <label class="ssm-strip-group"><span class="ssm-stat-label">{{localize "SSM.Challenge.RollAs"}}</span><select data-roll-as>{{#each actors}}<option value="{{id}}" {{#if selected}}selected{{/if}}>{{name}}</option>{{/each}}</select></label>
     </div>
@@ -120,7 +124,7 @@
       <div class="ssm-section">
         <div class="ssm-row">
           <label>{{localize "SSM.Challenge.CurrentRound"}}<input type="number" min="0" step="1" name="rounds.current" value="{{@root.system.rounds.current}}" {{#if @root.runActive}}disabled{{/if}}></label>
-          <label>{{localize "SSM.Challenge.MaximumRounds"}}<input type="number" min="1" step="1" name="rounds.max" value="{{@root.system.rounds.max}}" placeholder="{{localize "SSM.Challenge.NoLimit"}}"></label>
+          <label data-tooltip="SSM.Challenge.MaximumRoundsHint">{{localize "SSM.Challenge.MaximumRounds"}}<input type="number" min="0" step="1" name="rounds.max" value="{{@root.system.rounds.max}}" placeholder="{{localize "SSM.Challenge.NoLimit"}}"></label>
           <label class="check" data-tooltip="SSM.Challenge.MultipleSubjectsHint"><input type="checkbox" name="multipleSubjects" {{checked @root.system.multipleSubjects}}>{{localize "SSM.Challenge.MultipleSubjects"}}</label>
         </div>
       </div>

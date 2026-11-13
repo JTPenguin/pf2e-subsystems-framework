@@ -215,6 +215,8 @@ button.ssm-reached { color: #4f9d5d; }
 .ssm-panel-threshold { display: flex; align-items: baseline; column-gap: 0.35rem; }
 /* A fixed width, always kept: the check is wider than 1em, so a narrower slot made the number and text jump right when it appeared. */
 .ssm-panel-threshold-mark { flex: 0 0 1.25em; min-width: 0; overflow: hidden; text-align: center; }
+/* The points are a right-aligned column wide enough for "−30", so −30 and +30 line up. The panel's overflow-wrap: anywhere would otherwise let the row squeeze them to one character a line. */
+.ssm-panel-threshold-points { flex: none; min-width: 2.2em; white-space: nowrap; overflow-wrap: normal; text-align: right; font-variant-numeric: tabular-nums; }
 .ssm-panel-threshold-text { flex: 1 1 auto; min-width: 0; }
 .ssm-panel-threshold.reached { color: #9fd08a; }
 .ssm-panel-counters { display: flex; flex-wrap: wrap; gap: 1rem; }
@@ -398,6 +400,8 @@ button.ssm-reached { color: #4f9d5d; }
 
 /* Each entry's edit and delete buttons, at the right of its row (spec section 6). */
 .ssm-sheet .ssm-row-tools { flex: none; display: inline-flex; gap: 0.1rem; margin-left: auto; }
+/* An edit window scrolls when its rows are taller than the window: Foundry caps an auto height at the screen, and a resized window has a fixed height. The form part is scrollable in PARTS, so a redraw after each save keeps the place. */
+.ssm-modifier-window .window-content > .ssm-layout { flex: 1 1 auto; overflow-y: auto; scrollbar-width: thin; }
 /* The entry windows' description editors: about 3 lines when short, growing with the text up to 14rem, then scrolling. Foundry places the editor's text absolutely, filling a fixed height; here it sits in the flow instead, as with Foundry's .content-sized editors, so it can grow. This holds for the shown text and the open editor alike; the menu sits above it. */
 .ssm-modifier-window .ssm-window-editor { display: block; margin-bottom: 0.35rem; }
 .ssm-modifier-window .ssm-window-editor prose-mirror { --min-height: 0; min-height: 0; height: auto; overflow: visible; }

@@ -123,9 +123,12 @@ async function prepareView(view, state) {
   const decoys = gmDecoys(page);
   const pcs = new Map(view.party.map((pc) => [pc.id, pc]));
   const segments = roundSegments(view.rounds.current, view.rounds.max);
+  // A maximum of 0 means no rounds: no round text, bar or buttons, and no party portraits, since acted marks only mean something within a round.
+  const rounds = view.rounds.max !== 0;
   return {
     name: view.name,
-    roundLabel: game.i18n.format(view.rounds.max === null ? "SSM.Challenge.RoundOpen" : "SSM.Challenge.Round", view.rounds),
+    rounds,
+    roundLabel: rounds ? game.i18n.format(view.rounds.max === null ? "SSM.Challenge.RoundOpen" : "SSM.Challenge.Round", view.rounds) : "",
     roundSegments: segments,
     ...roundButtons(page),
     several: view.subjects.length > 1,

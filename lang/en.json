@@ -63,6 +63,7 @@
       "Rounds": "Rounds",
       "CurrentRound": "Current Round",
       "MaximumRounds": "Maximum Rounds",
+      "MaximumRoundsHint": "Blank: rounds with no limit. 0: no rounds at all, for a challenge that lasts a campaign, such as Reputation. The round, its buttons and the acted marks are hidden on the sheet and the panel.",
       "Minimum": "Minimum",
       "Maximum": "Maximum",
       "Points": "Points",
@@ -118,6 +119,8 @@
       "NotActiveGM": "Another GM is running this challenge. Only the active GM can change it.",
       "Round": "Round {current} of {max}",
       "NotStarted": "Not started",
+      "InProgress": "Running",
+      "Finished": "Finished",
       "NextRound": "Next round",
       "PreviousRound": "Previous round",
       "Party": "Party",
@@ -349,7 +352,7 @@
         "GmNotes": {
           "Factions": "Factions: add one faction per group the party deals with, such as a guild, church or village. Each faction has a Reputation Points counter from −50 to +50, with GM Core's tiers as thresholds. A faction starts at 0, Ignored; set the value higher or lower if the party is already known to that group. A new faction starts revealed: hide one the party hasn't met yet. Factions have no actions, since nothing is rolled.",
           "Changing": "Favors and disservices: use + and − on the faction's counter, on the sheet or the panel. Each tier's GM text says which favors and disservices still count at that tier. Tiers tick and untick themselves as the value moves, so the highest ticked tier is where the party stands. With no tier ticked, the party is Ignored.",
-          "Running": "Across sessions: reputation lasts the whole campaign. Start the challenge once and leave it running; there are no rounds, so leave Maximum Rounds blank and ignore the round buttons. Show it on the panel when the party should see where they stand. For a long list, turn off Show thresholds list on panel on a faction's counter: its bar keeps a tick per tier."
+          "Running": "Across sessions: reputation lasts the whole campaign. Start the challenge once and leave it running; there are no rounds, so Maximum Rounds is 0 and the sheet and panel show no round. Show it on the panel when the party should see where they stand. For a long list, turn off Show thresholds list on panel on a faction's counter: its bar keeps a tick per tier."
         },
         "Threshold": {
           "30": {

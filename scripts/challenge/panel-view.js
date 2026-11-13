@@ -70,11 +70,17 @@ export function cardTooltip({ playerText, gmText, isGM }, { escape, gmLabel }) {
   return (player ? line(player) : "") + (gm ? line(gm, gmLabel) : "");
 }
 
-/** The thresholds players may see, in the order the track reaches them. A points-only threshold shows as "6: ???": its text stays out of the copy. */
+/** A threshold's points as the panel prints them: a real minus sign, and on a both-ways track a + on positives, so −30 and +30 line up. */
+const pointsLabel = (points, direction) => (points < 0 ? `−${-points}` : direction === BOTH_WAYS && points > 0 ? `+${points}` : String(points));
+
+/**
+ * The thresholds players may see. An up counter lists them in the order it reaches them; a down counter and a both-ways track list them highest first,
+ * so a both-ways list reads from the best tier down (Justin, 2026-11-13). A points-only threshold shows as "6: ???": its text stays out of the copy.
+ */
 function thresholdViews(rows, direction) {
-  const order = direction === "down" ? (a, b) => b.points - a.points : (a, b) => a.points - b.points;
+  const order = direction === "down" || direction === BOTH_WAYS ? (a, b) => b.points - a.points : (a, b) => a.points - b.points;
   return rows.filter((row) => row.reveal === "points" || row.reveal === "full").sort(order).map((row) => ({
-    id: row.id, points: row.points, text: row.reveal === "full" ? row.playerText : "", textHidden: row.reveal === "points", reached: !!row.reached,
+    id: row.id, points: row.points, label: pointsLabel(row.points, direction), text: row.reveal === "full" ? row.playerText : "", textHidden: row.reveal === "points", reached: !!row.reached,
   }));
 }
 

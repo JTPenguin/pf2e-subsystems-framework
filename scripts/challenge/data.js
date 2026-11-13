@@ -207,6 +207,8 @@ export const PRESETS = {
     names: { pointsName: `${REP}.Points`, subjectLabel: `${REP}.Subject`, subjectsLabel: `${REP}.Subjects`, noSubjects: `${REP}.NoSubjects` },
     categories: [],
     gmNotes: ["Factions", "Changing", "Running"].map((key) => `${REP}.GmNotes.${key}`),
+    // A maximum of 0: no rounds.
+    rounds: 0,
     subject: (system) => ({
       ...pointsSubject(system, {
         direction: BOTH_WAYS, min: -50, max: 50,
@@ -457,6 +459,8 @@ export function applyForm(system, form) {
   const categories = new Map(system.subjects.map((subject) => [subject.id, categoryKey(subject.category)]));
   const merged = mergeForm(system, form);
   for (const key of EDITABLE) if (key in merged) system[key] = merged[key];
+  // A run started with no rounds (maximum 0) sits at round 0. Giving it a maximum mid-run starts the count at round 1, as Start would have.
+  if (system.run?.status === "active" && system.rounds.max !== 0 && system.rounds.current < 1) system.rounds.current = 1;
   // A subject whose category changed moves to the end of its new group (spec 14.4).
   const moved = system.subjects.filter((subject) => categories.has(subject.id) && categories.get(subject.id) !== categoryKey(subject.category));
   if (moved.length) system.subjects = [...system.subjects.filter((subject) => !moved.includes(subject)), ...moved];

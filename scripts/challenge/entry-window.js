@@ -202,7 +202,7 @@ class EntryWindow extends HandlebarsApplicationMixin(ApplicationV2) {
 export class ModifierWindow extends EntryWindow {
   static ENTRY = { key: "modifier", find: findModifier, fields: MODIFIER_FIELDS, save: saveModifier, titleKey: "SSM.Challenge.EditModifierTitle", unnamed: "SSM.Challenge.UnnamedEntry", goneKey: "SSM.Challenge.ModifierGone" };
 
-  static PARTS = { form: { template: `modules/${MODULE}/templates/challenge-modifier.hbs` } };
+  static PARTS = { form: { template: `modules/${MODULE}/templates/challenge-modifier.hbs`, scrollable: [""] } };
 
   /** The category field's suggestions: the preset's and every modifier category in use. */
   #categories = new CategoryAutocomplete({
@@ -243,7 +243,7 @@ export class SubjectWindow extends EntryWindow {
 
   static DEFAULT_OPTIONS = { window: { icon: "fa-solid fa-user" } };
 
-  static PARTS = { form: { template: `modules/${MODULE}/templates/challenge-subject.hbs` } };
+  static PARTS = { form: { template: `modules/${MODULE}/templates/challenge-subject.hbs`, scrollable: [""] } };
 
   /** The category field suggests the preset's subject categories and those in use (spec 14.6). */
   #categories = new CategoryAutocomplete({
@@ -273,7 +273,7 @@ export class ActionWindow extends EntryWindow {
 
   static DEFAULT_OPTIONS = { window: { icon: "fa-solid fa-dice-d20" } };
 
-  static PARTS = { form: { template: `modules/${MODULE}/templates/challenge-action.hbs` } };
+  static PARTS = { form: { template: `modules/${MODULE}/templates/challenge-action.hbs`, scrollable: [""] } };
 
   async _entryContext(system, subject, action) {
     return {
@@ -291,7 +291,7 @@ export class CounterWindow extends EntryWindow {
 
   static DEFAULT_OPTIONS = { window: { icon: "fa-solid fa-gauge" } };
 
-  static PARTS = { form: { template: `modules/${MODULE}/templates/challenge-counter.hbs` } };
+  static PARTS = { form: { template: `modules/${MODULE}/templates/challenge-counter.hbs`, scrollable: [""] } };
 
   _saveWarning({ min, max }) {
     return min !== null && max !== null && min > max ? "SSM.Challenge.TrackLimits" : null;

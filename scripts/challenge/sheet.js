@@ -4,7 +4,7 @@ import { hidePanel, panelState, takePanel } from "../panel/activation.js";
 import { partyPCs } from "../party.js";
 import { actionName, skillKeyLabel, skillLabel, subjectName } from "./skill-label.js";
 import { announceTriggers, writeChallenge } from "./state.js";
-import { advanceRound, canAdvanceRound, canUndoRound, changeCounter, counterValueOf, currentDc, cycleThresholdReveal, endRun, resetRun, restoreModifier, startRun, toggleActed, toggleComplete, toggleModifier, toggleReached, toggleReveal, undoRound } from "./run.js";
+import { advanceRound, canAdvanceRound, hasRounds, canUndoRound, changeCounter, counterValueOf, currentDc, cycleThresholdReveal, endRun, resetRun, restoreModifier, startRun, toggleActed, toggleComplete, toggleModifier, toggleReached, toggleReveal, undoRound } from "./run.js";
 import { LINK_ROLL_ID } from "../roll-option.js";
 import { rollCheck, rollTarget } from "./roll.js";
 import { addRow, applyForm, BOTH_WAYS, categoryKey, clampTracks, collapseAllAction, counterMoves, counterValueText, EDITABLE, entryListPath, groupByCategory, isDecoyCheck, moveCounter, moveModifier, moveSubject, nextThresholdReveal, pickFields, removeEntry, setCounterNote, subjectGroups } from "./data.js";
@@ -315,6 +315,9 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
       canReset: status !== "inactive",
       canHidePanel: active && onPanel && !panel.hidden,
       canShowPanel: active && (!onPanel || !!panel.hidden),
+      // A maximum of 0 means no rounds: the strip drops the round, its buttons and the acted marks. The Current Round field stays, so the Challenge section doesn't shift when Maximum Rounds changes.
+      rounds: hasRounds(system),
+      statusLabel: loc(active ? "SSM.Challenge.InProgress" : status === "finished" ? "SSM.Challenge.Finished" : "SSM.Challenge.NotStarted"),
       roundLabel: active || status === "finished" ? game.i18n.format(system.rounds.max === null ? "SSM.Challenge.RoundOpen" : "SSM.Challenge.Round", system.rounds) : loc("SSM.Challenge.NotStarted"),
       canNextRound: canAdvanceRound(system),
       canPreviousRound: canUndoRound(system),

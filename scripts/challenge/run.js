@@ -159,7 +159,7 @@ function rememberCounter(system, counter) {
 export function startRun(system) {
   if (system.run.status !== "inactive") return false;
   system.run.baseline = takeBaseline(system);
-  system.rounds.current = Math.max(1, system.rounds.current);
+  if (hasRounds(system)) system.rounds.current = Math.max(1, system.rounds.current);
   system.run.status = "active";
 }
 
@@ -222,8 +222,11 @@ export function changeCounter(system, id, delta, actorId = "") {
   return { triggers: out.triggers };
 }
 
+/** Whether the challenge counts rounds. A maximum of 0 means it has none, as a campaign-long challenge such as Reputation: no round, no round buttons, no acted marks. */
+export const hasRounds = (system) => system.rounds.max !== 0;
+
 /** Whether Next round does anything. The GM window and the panel both disable the button when it doesn't. A blank maximum means no limit. */
-export const canAdvanceRound = (system) => system.run.status === "active" && (system.rounds.max === null || system.rounds.current < system.rounds.max);
+export const canAdvanceRound = (system) => system.run.status === "active" && hasRounds(system) && (system.rounds.max === null || system.rounds.current < system.rounds.max);
 
 /** Whether Previous round does anything: there is an advance to undo. */
 export const canUndoRound = (system) => system.run.status === "active" && system.run.roundHistory.length > 0;

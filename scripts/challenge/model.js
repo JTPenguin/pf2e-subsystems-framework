@@ -94,8 +94,8 @@ export class ChallengeModel extends foundry.abstract.TypeDataModel {
       gmNotes: new HTMLField({ required: true, blank: true, initial: "" }),
       rounds: new SchemaField({
         current: int(0, { min: 0 }),
-        // Blank means no limit.
-        max: optionalInt({ min: 1 }),
+        // Blank means no limit; 0 means the challenge has no rounds, as a campaign-long one such as Reputation.
+        max: optionalInt({ min: 0 }),
       }),
       // Challenge-level modifier entries (spec 14.7).
       modifiers: list(modifierFields()),
