@@ -363,10 +363,16 @@ button.ssm-reached { color: #4f9d5d; }
 .ssm-panel-slots { display: flex; gap: 2px; flex: 1 1 4rem; min-width: 3rem; list-style: none; margin: 0; padding: 0; }
 .ssm-panel-slots > li { flex: 1 1 0; height: 0.55rem; background: rgba(255, 255, 255, 0.15); border-radius: 2px; }
 .ssm-panel-slots.steps > li.filled { background: #b8a06a; }
-.ssm-panel-slots.track > li { height: 0.8rem; }
-.ssm-panel-slots.track > li.filled { background: #e8cf8f; box-shadow: 0 0 0 1px #fff inset; }
-.ssm-panel-slots > li.threshold { box-shadow: 0 -2px 0 #c9593f inset; }
-.ssm-panel-slots > li.threshold.reached { box-shadow: 0 -2px 0 #8fc98a inset; }
+.ssm-panel-slots.steps > li.threshold { box-shadow: 0 -2px 0 #c9593f inset; }
+.ssm-panel-slots.steps > li.threshold.reached { box-shadow: 0 -2px 0 #8fc98a inset; }
+/* Track (spec 14.12): a thin line, a tick per value spread end to end, and a rounded square on the value. A revealed threshold's tick is taller: red, green once reached. */
+.ssm-panel-slots.track { --ssm-track-mark: 0.55rem; position: relative; justify-content: space-between; gap: 0; height: 0.9rem; align-items: center; padding: 0 calc(var(--ssm-track-mark) / 2 - 3px); }
+.ssm-panel-slots.track::before { content: ""; position: absolute; left: calc(var(--ssm-track-mark) / 2); right: calc(var(--ssm-track-mark) / 2); top: 50%; height: 1px; background: rgba(255, 255, 255, 0.35); }
+.ssm-panel-slots.track > li { flex: 0 0 6px; position: relative; height: 100%; background: none; border-radius: 0; }
+.ssm-panel-slots.track > li::before { content: ""; position: absolute; left: 50%; top: 50%; width: 1px; height: 0.35rem; transform: translate(-50%, -50%); background: rgba(255, 255, 255, 0.45); }
+.ssm-panel-slots.track > li.threshold::before { width: 2px; height: 100%; background: #c9593f; }
+.ssm-panel-slots.track > li.threshold.reached::before { background: #8fc98a; }
+.ssm-panel-slots.track > li.filled::after { content: ""; position: absolute; left: 50%; top: 50%; width: var(--ssm-track-mark); height: var(--ssm-track-mark); transform: translate(-50%, -50%); border-radius: 2px; background: #e8cf8f; box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.5); z-index: 1; }
 
 /* Subjects by category in Run view (spec 14.4): a red bar per category, with each subject as a card under it. A card's header is a light tint of the bar's red, so the category bars stand out. */
 .ssm-sheet .ssm-subject-category { display: flex; flex-direction: column; gap: var(--space-4, 0.25rem); flex: none; }

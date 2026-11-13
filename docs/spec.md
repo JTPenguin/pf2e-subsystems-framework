@@ -557,10 +557,10 @@ Chase is a preset and nothing more: no code checks for it. The GM does by eye wh
 | Number | Name and value on the shared line. |
 | Bar | The progress bar with its threshold card. |
 | Steps | One segment per value above the minimum, filled up to the value, like the round counter. |
-| Track | One slot per value from the minimum to the maximum, with the value's slot marked. |
+| Track | A thin line with a tick per value from the minimum to the maximum, and a small rounded square on the value. A revealed threshold's tick is taller and red, green once reached (Justin, 2026-11-12). |
 
 - Steps and Track count from the minimum (0 when unset; −maximum for a both-ways counter) to the maximum. Without a maximum, or with more than 40 slots, they draw as a bar. Steps on a both-ways counter draws as a bar.
-- A revealed threshold marks its slot; a reached one in another colour. Hidden thresholds leave no mark.
+- A revealed threshold marks its slot (on a Track, its tick); a reached one in another colour. Hidden thresholds leave no mark.
 - A per-PC counter has no Display list, only Revealed: it keeps its per-PC rows.
 
 ### 14.13 Subjects own counters

@@ -1,13 +1,14 @@
 ---
 title: "Show Track counters as one line with segment markers"
 kind: feature
-status: ready
-waits_on: Claude
+status: done
+waits_on: none
 priority: 🔽
 blocked_by: []
 source: "Justin's list of items, 2026-11-12; interview with Justin, 2026-11-12"
 added: 2026-11-12
 updated: 2026-11-12
+outcome: "Track draws as a thin line with a tick per value, a rounded square on the value, and revealed thresholds as taller red ticks that turn green once reached; spec 14.12 updated. Checked live on a Chase preset's Party and Quarry counters, 2026-11-12."
 ---
 # Show Track counters as one line with segment markers
 
