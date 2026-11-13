@@ -124,26 +124,51 @@ Points, counter and rounds effects were removed (Justin, 2026-11-12): the GM mak
 
 ## 6. GM sheet
 
-The sheet has **Edit** and **Run** modes, like a locked and unlocked actor sheet.
+The sheet has **one view** (Justin, 2026-11-12): live play and editing together, like a PF2e NPC sheet whose actions each open their own edit window. There is no Edit/Run switch and no subject tabs.
 
-**It looks like the PF2e NPC and hazard sheets.** It uses the system's own fonts, colours and spacing: a light parchment window (unless the GM picks a theme for the sheet), the name in the NPC sheet's condensed small caps, each NPC and the counters in a red-edged box under a dark red bar. The Edit tab uses the same red bars: every section is its own red block (Names, Rounds, Premise, GM notes, Counters, Modifiers on the challenge tab; the subject's name, Revealed and description, then Counters, Actions, Modifiers on a subject tab, the first bar holding the subject's name, order and delete buttons). A section that adds rows (Counters, Actions, Modifiers) has a plain + at the right of its bar, as on a PF2e NPC sheet; Add check stays under its table, and the subject Add buttons stay in the tab row. The subject and action description editors have no label (Justin, 2026-11-12). The modifier window takes the sheet's theme. Picking a theme in Configure Sheet keeps the challenge sheet, since that dialog can't list it and would otherwise switch the entry to a core journal sheet. When the GM loads the world, any challenge that lost its sheet gets it back. A changed DC uses PF2e's colours for adjusted values: one for higher than the base, one for lower.
+**It looks like the PF2e NPC and hazard sheets.** It uses the system's own fonts, colours and spacing: a light parchment window (unless the GM picks a theme for the sheet), the name in the NPC sheet's condensed small caps, each section in a red-edged box under a dark red bar.
 
-**Run mode is laid out like a statblock:** small labels beside their values, with no boxed fieldsets and no folding sections. It shows:
+**Layout, top to bottom:**
+
+| Part | What it holds |
+|---|---|
+| Name | The challenge name, editable in place. |
+| Run strip | Always shown, even before Start. Roll buttons stay disabled until the run starts. |
+| Challenge | The challenge's own fields, edited in place: points name, subject label, Allow multiple subjects, rounds (current and maximum; current is locked while running), premise and GM notes. |
+| Modifiers | The challenge's own modifiers, grouped by category (14.7). |
+| Subjects | Grouped by category (14.4), then an Add subject button. |
+| Counters | The challenge's counters. |
+
+**Adding, editing and deleting.** Subjects, actions, counters and modifiers are each edited in their own window, opened by an edit button on the entry's row. Each row also has a delete button, which asks for confirmation first, as actions on a PF2e NPC sheet do. A + adds an entry and opens its window:
+
+| + on | Adds |
+|---|---|
+| The Modifiers and Counters bars | A challenge modifier or counter. |
+| A subject category's bar, and the Add subject button | A subject in that category, or with none. |
+| A modifier category's title | A modifier in that category. |
+| A subject card's Counters, Actions and Modifiers titles | One of those on that subject. |
+
+| Window | Fields |
+|---|---|
+| Subject | Name, category (with suggestions, 14.6), Revealed and description. |
+| Action | Name, Secret, description, and its checks table: Skill, Lore name, DC, Always shown, Revealed, Decoy and a delete button, with Add check under it. The Lore name cell is empty unless the skill is Lore; an always-shown row leaves Revealed and Decoy empty. |
+| Counter | Name, value, direction, display, minimum, maximum, change each round, per PC and Revealed, then its thresholds, which can be added, changed and removed. Each threshold has its points, reveal, DC change and Reached on one row (no Reached on a both-ways track), and its player and GM text side by side below, as text areas that grow with their text. |
+| Modifier | See below. |
+
+Every window takes the sheet's theme. There is one window per entry: opening it again brings it to the front. Save writes only the fields the GM changed onto the latest data, through the same write queue as every other change, so the sheet and the panel update and a run change made meanwhile is kept. An update from elsewhere redraws the window and keeps unsaved edits; deleting the entry closes it. Picking a theme in Configure Sheet keeps the challenge sheet, since that dialog can't list it and would otherwise switch the entry to a core journal sheet. When the GM loads the world, any challenge that lost its sheet gets it back. A changed DC uses PF2e's colours for adjusted values: one for higher than the base, one for lower.
+
+**Live play is laid out like a statblock:** small labels beside their values. It shows:
 
 - One strip at the top, in two rows. Row 1 has the round clock with previous and next round buttons on the left, and Start, End and Reset, Hide or Show panel at the far right. Row 2 has the party chips, then the Roll as choice.
 - Each NPC's name with "Points" and the total beside it on the same line, with buttons to add and remove.
 - Each skill as a chip styled like a PF2e inline check, in a grid of two or three columns by window width, with the Discovery and Influence labels beside their grids. The chip shows the skill name (the Lore name for a Lore) and the current DC, colored green (higher) or red (lower) when it differs from the base DC. Its tooltip gives the base DC and says if the skill is a decoy. Clicking the chip rolls for the chosen PC; a chat icon on it posts a chat link. A revealed chip has a bright fill, and a universal chip looks the same; a hidden chip is faded, with a dashed outline and no fill. On the light theme a revealed chip's eye is dark red, so it reads on parchment. While the challenge isn't running, the roll and chat link are disabled.
 - An eye toggle to reveal or hide each entry, on the chip for skills. Universal skills have no eye: they are always shown. A threshold's eye steps through hidden, points only, and points and text, then back to hidden.
 - Thresholds, modifiers and counters are each a card. Fading means hidden, and nothing else: a hidden card is faded with no fill and italic text, and a revealed card is full strength on a bright fill. A points-only threshold is full strength on half the fill. The fill is lighter than the background in both themes: white on the light parchment, the text colour on dark. The GM line keeps full strength inside a faded card, so it stays readable.
-- Thresholds under the skills, each with its point value, its player text, and its GM text under it with no label, in PF2e's GM highlight. The Reached tag is a button (aria-pressed, GM only): click to mark a threshold reached by hand, click again to clear it. Dropping points never clears it; only this tag or the Edit tab does.
-- Modifier entries as cards, in three sections, in order: Resistances, Weaknesses, Other. An empty section is hidden. In the GM window, no card carries a kind label, since its section heading says the kind. Each card shows the effects, the player text and the GM text (no label, in PF2e's GM highlight), with on, off and apply controls, and an edit button for a GM that opens the entry's window. The kind's colour stripe shows only while the entry is On: no stripe means Off or Spent. Off is not dimmed. The On button is filled solid green.
+- Thresholds under their counter, each with its point value, its player text, and its GM text under it with no label, in PF2e's GM highlight. The Reached tag is a button (aria-pressed, GM only): click to mark a threshold reached by hand, click again to clear it. Dropping points never clears it; only this tag or the counter window does.
+- Modifier entries as cards, in three sections, in order: Resistances, Weaknesses, Other. An empty section is hidden. In the GM window, no card carries a kind label, since its section heading says the kind. Each card shows the effects, the player text and the GM text (no label, in PF2e's GM highlight), with on, off and apply controls, and edit and delete buttons. The kind's colour stripe shows only while the entry is On: no stripe means Off or Spent. Off is not dimmed. The On button is filled solid green.
 - Counters.
 
-**Modifiers are edited in their own window, like a monster's attacks.** In the Edit tab each modifier entry is a read-only card with edit and delete buttons. It is the same whether the entry is hidden, revealed, On or Off: no fade, no italic name, no stripe, no state tag. The GM window has three sections, in order: Resistances, Weaknesses, Other. The panel lists cards in the same order. The Edit tab shows them in one Modifiers section; its + adds an entry and opens its window (see 14.7). The window holds the name, kind, duration, player and GM text, the On, Spent, Revealed and Decoy boxes, and the effects, which can be added, removed and changed there. Thresholds, counters and skills stay inline in the Edit tab. There is one window per entry: opening it again brings it to the front. Save writes only the fields the GM changed onto the latest data, through the same write queue as every other change, so the sheet and the panel update and a run change made meanwhile is kept. An update from elsewhere redraws the window and keeps unsaved edits; deleting the entry closes it.
-
-**Threshold text grows as the GM types.** In the Edit tab a threshold card has the points, reveal and Reached controls and the delete button on one row, and the player text and GM text side by side below, as text areas that grow with their text.
-
-**Skill checks are tables in the Edit tab.** Discovery and Influence each get one table with the field names in a header row: Skill, Lore name, DC, Revealed, Decoy and a delete button. The Lore name cell is empty unless the skill is Lore. Universal rows leave Revealed and Decoy empty.
+**The modifier window** holds the name, category, duration, player and GM text, the On, Spent, Revealed and Decoy boxes, and the effects, which can be added, removed and changed there.
 
 **Reveal is one click and can be undone.** The panel updates at once.
 
@@ -209,7 +234,7 @@ A DC change names only skills the panel shows (universal or revealed). It says n
 - Anyone, GM included, can resize the panel with the handle at its bottom-right corner. The top-left corner stays put, and a panel still at its starting spot is first placed where it is. The NPC columns, their point bars and their cards fill the new width, and the cards rewrap into as many columns as fit. A scrollbar appears only when the content is taller than the panel. The size is at least 240 by 120 pixels and at most the screen. It is saved with the spot, per user, and the reset button clears both.
 - For the GM, the challenge name in the header is a button that opens the challenge window, or brings it to the front. A press that moves drags the panel instead and opens nothing. Players see the name as plain text.
 - The GM can click a modifier card to turn it On or Off, as the GM window's chip does (a keyboard press works too). A spent card does nothing; restoring it stays a GM window action. Only the active GM's click writes. Players' cards are plain.
-- The GM gets − and + beside every counter value on the panel: each challenge and subject counter, and each PC's value on a per-PC counter. They do what the sheet's Run mode buttons do, with the same limits and threshold notices, and each is disabled at the limit it would pass (and when this GM is not the active one). Players get no buttons.
+- The GM gets − and + beside every counter value on the panel: each challenge and subject counter, and each PC's value on a per-PC counter. They do what the sheet's buttons do, with the same limits and threshold notices, and each is disabled at the limit it would pass (and when this GM is not the active one). Players get no buttons.
 - The GM can click a party portrait to mark that character acted or not, as the GM window's party chip does (a keyboard press works too). Only the active GM's click writes. Players' portraits are plain.
 - The GM sees the same panel and can click its skills too. The roll is for the selected token's actor, or, with no token selected, for the sheet's Roll as choice. The GM applies results from the chat cards (section 8).
 - It must not cover VN Stage's portrait controls at the default position.
@@ -361,23 +386,18 @@ Reached is set when the counter reaches the threshold in its direction. Only the
 
 ### 14.4 Sheet
 
-Run mode keeps its layout. Changes:
+The sheet's one view (section 6):
 
 - Each subject has an eye by its name, and a Complete tag that is a button, like Reached.
-- Each action is a labelled grid of chips, in the GM's order, as Discovery and Influence are today.
-- A subject's counters sit under its header, each with + and −, as the challenge's do (14.13).
+- Each action is a labelled grid of chips, in the GM's order, with edit and delete buttons. An action with no checks still shows, so it can be edited.
+- A subject's card has Counters, Actions and Modifiers subsections, each title with a + (section 6). Its counters each have + and −, as the challenge's do (14.13).
 - A counter with thresholds shows them as cards, like a subject's.
 - Subjects can be moved up and down, and collapsed (14.8). A per-PC counter lists each party PC, with the party total (14.8).
-- **Subjects group by category** (Justin, 2026-11-12). Each subject is a collapsible card. Uncategorised cards come first with no heading; then each category in use has a red section bar with its subjects' cards under it, in subject category order (14.6). A category bar doesn't collapse. A subject moves up and down only within its category.
+- **Subjects group by category** (Justin, 2026-11-12). Each subject is a collapsible card, with edit and delete buttons in its header. Uncategorised cards come first with no heading; then each category in use has a red section bar with its subjects' cards under it, in subject category order (14.6), and a + that adds a subject in that category. A category bar doesn't collapse. A subject moves up and down only within its category.
 - The stored subject list keeps this grouped order, so the panel's columns follow it. A subject whose category changes moves to the end of its new group.
-
-Edit mode changes:
-
-- The challenge has the points name, subject label and an optional round maximum.
-- Each subject has the description, and a Counters box like the challenge's (14.13).
-- Each action is a card: its name, Secret and description, then its checks as an inline table. The description is rich text, like an item's, so it can hold the action's degrees of success. Its secret blocks are the GM's alone.
-- Counters have direction, change each round, and thresholds in place of triggers.
-- The subject tabs follow the grouped order, with a small category label before each group's first tab.
+- The challenge has the points name, subject label and an optional round maximum, edited in place.
+- Each action's window holds its name, Secret and description, then its checks as a table. The description is rich text, like an item's, so it can hold the action's degrees of success. Its secret blocks are the GM's alone.
+- Counters have direction, change each round, and thresholds in place of triggers, set in the counter window.
 
 ### 14.5 Panel
 
@@ -400,7 +420,7 @@ A preset is a starting template: its names, and what a new challenge and a new s
 | **Chase** | Chase Points, Obstacle | No suggested categories. Allow multiple subjects is off. GM notes hold GM Core's reminders and how to set up each chase type. Counters: Party at 1 and Quarry at 2, +1 each round; both minimum 0, maximum 6, Track display, shown. A new obstacle: a Chase Points counter, 0 to 3; Overcome with no checks. The first obstacle starts revealed, later ones hidden. See 14.11. |
 | **Infiltration Preparation** | Edge Points, Preparation | Run before the infiltration; the GM types its results in. Counters: Edge Points (per PC, shown) and Awareness Points (hidden). One revealed subject with no counter and GM Core's six activities as actions, every check always shown, secret where the rules say. GM notes list what each activity gives at each degree, and say that a dud or cursed Edge Point still adds to Edge and goes in the PC's note. No suggested categories. |
 
-A preset makes one kind of subject, so the Edit tab has one Add button, named by the subject label. A preset can suggest **subject categories**, apart from its modifier categories; the GM sets a subject's category by hand (Justin, 2026-11-12).
+A preset makes one kind of subject, so the sheet has one Add subject button, named by the subject label. A preset can suggest **subject categories**, apart from its modifier categories; the GM sets a subject's category by hand (Justin, 2026-11-12).
 
 ### 14.7 Modifier categories and challenge-level modifiers
 
@@ -414,10 +434,10 @@ A preset makes one kind of subject, so the Edit tab has one Add button, named by
 | Order | Cards group by category: the preset's suggestions first, in their order, then other labels in order of first use. |
 | Colour | Each category's stripe takes the next colour of a fixed palette, in that order. Influence's two keep today's colours. There is no colour picker. |
 | Other | Not built in, and not suggested. An entry that fits no category goes in the blank one; the GM can still type "Other". |
-| Edit tab | One Modifiers section, with a small heading per category in use, as in Run mode. A category with no entries is not shown. One plain + in the section title adds an entry with an empty category and opens its window, where the GM picks the category (Justin, 2026-11-12). There is no list of categories to edit. |
+| Sheet | A small heading per category in use. A category with no entries is not shown. The + in the Modifiers title adds an entry with an empty category and opens its window, where the GM picks the category (Justin, 2026-11-12); the + on a category's heading starts it in that category. There is no list of categories to edit. |
 | Order on the sheet and panel | A blank category groups first, with no heading and no label, then the labelled ones (Justin, 2026-11-11). |
-| GM window | Under each subject, an Actions section of action cards, then Thresholds, then a Modifiers section with one subsection per category, its heading in the category's colour. In Run mode a card with a description opens and closes by its name to show it, as on the panel. The Edit tab has the same Actions and Modifiers sections. |
-| Panel | Each action is a card: its name, a Secret mark and its check buttons. A card with a description opens and closes by its name to show it, as it does in the GM window's Run mode; each user's open cards are their own. Then one section per category the subject has, plus the preset's suggestions, with a heading in the category's colour; one with nothing revealed says "None revealed". Its label shows even when every entry in it is hidden. The blank category shows only when one of its entries is revealed. The cards leave out the category label, since the heading names it. |
+| GM window | Under each subject, Counters, then an Actions section of action cards, then a Modifiers section with one subsection per category, its heading in the category's colour. A card with a description opens and closes by its name to show it, as on the panel. |
+| Panel | Each action is a card: its name, a Secret mark and its check buttons. A card with a description opens and closes by its name to show it, as it does in the GM window; each user's open cards are their own. Then one section per category the subject has, plus the preset's suggestions, with a heading in the category's colour; one with nothing revealed says "None revealed". Its label shows even when every entry in it is hidden. The blank category shows only when one of its entries is revealed. The cards leave out the category label, since the heading names it. |
 
 **Challenge-level modifiers.** The challenge holds its own list of modifier entries, beside each subject's.
 
@@ -425,7 +445,7 @@ A preset makes one kind of subject, so the Edit tab has one Add button, named by
 |---|---|
 | Shape | The same entry as a subject's: name, category, duration, texts, state, effects. |
 | DC change | Applies to every check in the challenge, still filtered by chosen skills. The skills are named, not picked by check: the choices are the skills used by checks in the challenge (a Lore by its name), and each matches that skill on any subject (Justin, 2026-11-11). A one-time one is spent by the next matching check anywhere. A change meant for one subject goes on that subject. |
-| Sheet | A Challenge box above the subjects, with its cards grouped by category, as a subject's are. Edit mode adds them there the same way. |
+| Sheet | A Modifiers box above the subjects, with its cards grouped by category, as a subject's are, and a + on its bar. |
 | Panel | Revealed ones show in a full-width strip above the subject columns, grouped by category with no section headings, in the same card style (with the category label) and with the same GM click. Hidden if none are revealed. |
 
 **Left to the GM.** These were weighed and cut, since each saves only a click or two (Justin, 2026-11-11). GM notes and threshold text say what the GM should do.
@@ -524,15 +544,15 @@ Chase is a preset and nothing more: no code checks for it. The GM does by eye wh
 
 **Status:** decided with Justin, 2026-11-12; built 2026-11-12. Generic features that replace the first Chase build's custom logic.
 
-**Allow multiple subjects.** A challenge checkbox in the Edit tab's Names box, with a tooltip.
+**Allow multiple subjects.** A checkbox in the sheet's Challenge section, with a tooltip.
 
 | Rule | Detail |
 |---|---|
 | On (default) | Any number of subjects can be revealed. |
-| Off | Revealing a subject, by the eye button or the Edit tab, hides every other subject. Hiding one reveals nothing. Turning it off changes nothing until the next reveal. |
+| Off | Revealing a subject, by the eye button or the subject window, hides every other subject. Hiding one reveals nothing. Turning it off changes nothing until the next reveal. |
 | Panel | Unchanged: it shows the revealed subjects. A subject keeps its place for a stand-in name ("Obstacle 3"). |
 
-**Counter display.** One Display list per counter in the Edit tab, beside its Revealed checkbox. The list sets the style only; Revealed, like the Run-mode eye button, sets whether players see it, in the style the list shows.
+**Counter display.** One Display list per counter in its window, beside its Revealed checkbox. The list sets the style only; Revealed, like the sheet's eye button, sets whether players see it, in the style the list shows.
 
 | Choice | Panel |
 |---|---|
@@ -564,7 +584,6 @@ Chase is a preset and nothing more: no code checks for it. The GM does by eye wh
 
 | Where | What it shows |
 |---|---|
-| Sheet, Run mode | The subject's counters under its header, each as a challenge counter is: eye, name and limits, + and −, per-PC rows, thresholds. Complete is always in the header. |
-| Sheet, Edit mode | A Counters box under the subject's name, the same as the challenge's. |
+| Sheet | The subject's counters under its header, each as a challenge counter is: eye, name and limits, + and −, per-PC rows, thresholds, and edit and delete buttons. Complete is always in the header. The Counters title's + adds one. |
 | Panel | Each revealed counter in the subject's column, under its name, in its display style: bar, steps, track, per-PC rows or a number. |
 

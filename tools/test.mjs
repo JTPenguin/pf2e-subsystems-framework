@@ -15,7 +15,8 @@ const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "ssm-test-"));
 process.on("exit", () => fs.rmSync(tmp, { recursive: true, force: true }));
 
 let nextId = 0;
-globalThis.foundry = { utils: { randomID: () => `id${++nextId}` } };
+// Letters only, so no id can look like a DC or point value in a test that searches a view for a number.
+globalThis.foundry = { utils: { randomID: () => `id${String(++nextId).replace(/\d/g, (d) => "abcdefghij"[d])}` } };
 
 const load = async (name) => {
   const target = path.join(tmp, `${name}.mjs`);
@@ -404,6 +405,52 @@ test("saving a modifier writes its changes, leaves run changes alone, and drops 
   assert.deepEqual([saved.effects[0].skills, saved.effects[1].note], [[kept], "softens"]);
   D.removeRow(s, "subjects.0.modifiers.0");
   assert.equal(D.saveModifier(s, subject.id, modifier.id, { name: "x" }), false);
+});
+
+test("the subject window saves its fields, moves a recategorised subject and reveals one at a time", () => {
+  const s = system("chase");
+  const [first] = s.subjects;
+  const second = D.addRow(s, "subjects");
+  const third = D.addRow(s, "subjects");
+  assert.equal(D.saveSubject(s, second.id, second.id, { name: "Gate", category: "  Obstacle " }), true);
+  assert.deepEqual([second.name, second.category], ["Gate", "Obstacle"]);
+  assert.deepEqual(s.subjects.map((subject) => subject.id), [first.id, third.id, second.id], "a new category moves it to its group");
+  assert.equal(D.saveSubject(s, third.id, third.id, { revealed: true }), true);
+  assert.deepEqual(s.subjects.map((subject) => subject.revealed), [false, true, false], "a chase shows one subject at a time");
+  D.removeRow(s, "subjects.2");
+  assert.equal(D.saveSubject(s, second.id, second.id, { name: "x" }), false);
+});
+
+test("the action window saves its checks and drops links to checks it removed", () => {
+  const { s, subject, modifier } = modifierSystem();
+  const action = influence(s);
+  const [kept, gone] = action.checks;
+  modifier.effects = [effectOf("dc", 2, { allSkills: false, skills: [kept.id, gone.id] })];
+  assert.equal(D.saveAction(s, subject.id, action.id, { name: "Sway", secret: true, checks: [kept] }), true);
+  assert.deepEqual([action.name, action.secret, action.checks.length], ["Sway", true, 1]);
+  assert.deepEqual(modifier.effects[0].skills, [kept.id]);
+  assert.equal(D.saveAction(s, subject.id, "nope", { name: "x" }), false);
+});
+
+test("the counter window saves a challenge or subject counter and keeps its value in its limits", () => {
+  const s = runSystem();
+  assert.equal(D.saveCounter(s, "", s.counters[0].id, { max: 2, thresholds: [D.newThreshold()] }), true);
+  assert.deepEqual([s.counters[0].value, s.counters[0].thresholds.length], [2, 1]);
+  assert.equal(D.saveCounter(s, sub(s).id, pts(s).id, { name: "Trust", min: null }), true);
+  assert.equal(pts(s).name, "Trust");
+  assert.deepEqual(D.mergeForm({ min: 0, max: 5 }, { min: null, max: null }), { min: null, max: null }, "the window can blank a limit");
+});
+
+test("the sheet's delete buttons remove an entry by its id, wherever it now sits", () => {
+  const { s, subject, modifier } = modifierSystem();
+  const challengeCounter = D.addRow(s, "counters");
+  assert.deepEqual([D.entryListPath(s, "actions", subject.id), D.entryListPath(s, "counters", ""), D.entryListPath(s, "actions", "")], ["subjects.0.actions", "counters", null]);
+  assert.equal(D.removeEntry(s, "modifiers", subject.id, modifier.id), true);
+  assert.equal(D.removeEntry(s, "counters", "", challengeCounter.id), true);
+  assert.equal(D.removeEntry(s, "actions", subject.id, discover(s).id), true);
+  assert.deepEqual([subject.modifiers.length, s.counters.length, subject.actions.length], [0, 0, 1]);
+  assert.equal(D.removeEntry(s, "subjects", "", subject.id), false, "the last subject stays");
+  assert.equal(D.removeEntry(s, "counters", "", "gone"), false);
 });
 
 test("the windows' rows use the shared row edits on the entry alone", () => {

@@ -2,7 +2,7 @@ import { MODULE } from "../constants.js";
 import { actionName, skillKeyLabel, skillLabel } from "./skill-label.js";
 import { writeChallenge } from "./state.js";
 import { CategoryAutocomplete } from "./category-autocomplete.js";
-import { addRow, categoryOrder, challengeSkillKeys, DURATIONS, EFFECT_TYPES, entryChanges, findModifier, mergeForm, MODIFIER_FIELDS, QUICK_DC_AMOUNTS, rebaseEntry, removeRow, saveModifier, setEffectAmount } from "./data.js";
+import { ACTION_FIELDS, addRow, BOTH_WAYS, categoryOrder, challengeSkillKeys, COUNTER_DISPLAYS, COUNTER_FIELDS, DIRECTIONS, DURATIONS, EFFECT_TYPES, entryChanges, findAction, findCounterEntry, findModifier, findSubject, LORE, mergeForm, MODIFIER_FIELDS, PERCEPTION, QUICK_DC_AMOUNTS, rebaseEntry, removeRow, SAVES, saveAction, saveCounter, saveModifier, saveSubject, setEffectAmount, SUBJECT_FIELDS, subjectCategoryOrder, THRESHOLD_REVEALS } from "./data.js";
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
@@ -12,9 +12,16 @@ const labels = (values, prefix) => Object.fromEntries(values.map((value) => [val
 /** What an effect row shows, by its type: a DC change or a note. */
 const effectView = (effect, path, canRemove) => ({ ...effect, path, canRemove, isDc: effect.type === "dc", isNote: effect.type === "note" });
 
+/** The skills a check can roll: Perception, the saves (spec 14.8), the skills, then Lore. */
+function checkSkillChoices() {
+  const skills = Object.fromEntries(Object.entries(CONFIG.PF2E.skills).map(([slug, skill]) => [slug, loc(skill.label)]));
+  const saves = Object.fromEntries(SAVES.map((slug) => [slug, loc(CONFIG.PF2E.saves[slug])]));
+  return { [PERCEPTION]: loc("PF2E.PerceptionLabel"), ...saves, ...skills, [LORE]: loc("SSM.Challenge.Lore") };
+}
+
 /**
- * A window for one modifier entry of a subject or of the challenge itself (spec sections 6, 14.4 and 14.7).
- * A challenge-level modifier has an empty subject id. It edits a copy and saves it through
+ * A window for one entry of a challenge: a modifier, subject, action or counter (spec sections 6, 14.4 and 14.7).
+ * A challenge-level modifier or counter has an empty subject id; a subject's window passes the subject's id as both ids. It edits a copy and saves it through
  * the page's write queue, so the sheet and the panel redraw as for any other change. It sits in the page's apps: an update from
  * elsewhere redraws it, keeping the GM's unsaved edits, and deleting the entry closes it.
  * A subclass sets ENTRY: { key, find, fields, save, titleKey, unnamed, goneKey }, and gives its template's context in _entryContext.
@@ -157,8 +164,15 @@ class EntryWindow extends HandlebarsApplicationMixin(ApplicationV2) {
     return this.#edit((draft) => setEffectAmount(draft, target.dataset.path, Number(target.dataset.amount)));
   }
 
+  /** A language key to warn with on save, or null. */
+  _saveWarning(draft) {
+    return null;
+  }
+
   static async #onSave() {
     this.#readForm();
+    const warning = this._saveWarning(this.#draft);
+    if (warning) ui.notifications.warn(warning, { localize: true });
     const changes = entryChanges(this.#base, this.#draft, this.#entry.fields);
     if (!Object.keys(changes).length) return;
     const saved = await writeChallenge(this.page, (system) => this.#entry.save(system, this.subjectId, this.entryId, changes));
@@ -202,6 +216,81 @@ export class ModifierWindow extends EntryWindow {
       effects: modifier.effects.map((effect, e) => ({ ...effectView(effect, `effects.${e}`, modifier.effects.length > 1), skillOptions })),
       quickDcAmounts: QUICK_DC_AMOUNTS.map((amount) => ({ amount, label: amount > 0 ? `+${amount}` : `${amount}`.replace("-", "−") })),
       choices: { durations: labels(DURATIONS, "Duration"), effects: labels(EFFECT_TYPES, "Effect") },
+    };
+  }
+}
+
+/** The window for one subject: its name, category, Revealed and description. */
+export class SubjectWindow extends EntryWindow {
+  static ENTRY = { key: "subject", find: findSubject, fields: SUBJECT_FIELDS, save: saveSubject, titleKey: "SSM.Challenge.EditSubjectTitle", unnamed: "SSM.Challenge.Subject", goneKey: "SSM.Challenge.EntryGone" };
+
+  static DEFAULT_OPTIONS = { window: { icon: "fa-solid fa-user" } };
+
+  static PARTS = { form: { template: `modules/${MODULE}/templates/challenge-subject.hbs` } };
+
+  /** The category field suggests the preset's subject categories and those in use (spec 14.6). */
+  #categories = new CategoryAutocomplete({
+    findInput: () => this.form?.querySelector('input[name="category"]') ?? null,
+    categories: () => subjectCategoryOrder(this.page.toObject().system),
+  });
+
+  async _onRender(context, options) {
+    this.#categories.detach();
+    await super._onRender(context, options);
+    this.#categories.attach();
+  }
+
+  _onClose(options) {
+    this.#categories.detach();
+    super._onClose(options);
+  }
+
+  _entryContext(system, subject, draft) {
+    return { subject: draft };
+  }
+}
+
+/** The window for one action: its name, Secret, description and checks table. */
+export class ActionWindow extends EntryWindow {
+  static ENTRY = { key: "action", find: findAction, fields: ACTION_FIELDS, save: saveAction, titleKey: "SSM.Challenge.EditActionTitle", unnamed: "SSM.Challenge.UnnamedAction", goneKey: "SSM.Challenge.EntryGone" };
+
+  static DEFAULT_OPTIONS = { window: { icon: "fa-solid fa-dice-d20" } };
+
+  static PARTS = { form: { template: `modules/${MODULE}/templates/challenge-action.hbs` } };
+
+  _entryContext(system, subject, action) {
+    return {
+      action,
+      checks: action.checks.map((row, i) => ({ ...row, path: `checks.${i}`, isLore: row.skill === LORE })),
+      choices: { skills: checkSkillChoices() },
+    };
+  }
+}
+
+/** The window for one counter, the challenge's or a subject's: its fields and its thresholds. */
+export class CounterWindow extends EntryWindow {
+  static ENTRY = { key: "counter", find: findCounterEntry, fields: COUNTER_FIELDS, save: saveCounter, titleKey: "SSM.Challenge.EditCounterTitle", unnamed: "SSM.Challenge.UnnamedCounter", goneKey: "SSM.Challenge.EntryGone" };
+
+  static DEFAULT_OPTIONS = { window: { icon: "fa-solid fa-gauge" } };
+
+  static PARTS = { form: { template: `modules/${MODULE}/templates/challenge-counter.hbs` } };
+
+  _saveWarning({ min, max }) {
+    return min !== null && max !== null && min > max ? "SSM.Challenge.TrackLimits" : null;
+  }
+
+  _entryContext(system, subject, counter) {
+    // A both-ways track's Reached follows its value, so its checkbox is left out.
+    const followsValue = counter.direction === BOTH_WAYS;
+    return {
+      counter,
+      thresholds: counter.thresholds.map((row, i) => ({ ...row, path: `thresholds.${i}`, followsValue })),
+      choices: {
+        thresholdReveals: labels(THRESHOLD_REVEALS, "ThresholdReveal"),
+        // Display styles only (spec 14.12); the Revealed checkbox beside the list controls visibility.
+        displays: labels(COUNTER_DISPLAYS, "Display"),
+        directions: labels(DIRECTIONS, "Direction"),
+      },
     };
   }
 }

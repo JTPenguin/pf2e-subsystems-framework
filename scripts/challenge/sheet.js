@@ -7,13 +7,11 @@ import { announceTriggers, writeChallenge } from "./state.js";
 import { advanceRound, canAdvanceRound, canUndoRound, changeCounter, counterValueOf, currentDc, cycleThresholdReveal, endRun, resetRun, restoreModifier, startRun, toggleActed, toggleComplete, toggleModifier, toggleReached, toggleReveal, undoRound } from "./run.js";
 import { LINK_ROLL_ID } from "../roll-option.js";
 import { rollCheck, rollTarget } from "./roll.js";
-import { counterMoves, counterValueText, addRow, applyForm, COUNTER_DISPLAYS, setCounterNote, subjectCategoryOrder, BOTH_WAYS, clampTracks, DIRECTIONS, EDITABLE, groupByCategory, isAlwaysShown, isDecoyCheck, LORE, moveSubject, PERCEPTION, subjectGroups, categoryKey, nextThresholdReveal, pickFields, removeRow, SAVES, THRESHOLD_REVEALS } from "./data.js";
-import { ModifierWindow } from "./entry-window.js";
-import { CategoryAutocomplete } from "./category-autocomplete.js";
+import { addRow, applyForm, BOTH_WAYS, categoryKey, clampTracks, counterMoves, counterValueText, EDITABLE, entryListPath, groupByCategory, isAlwaysShown, isDecoyCheck, moveSubject, nextThresholdReveal, pickFields, removeEntry, setCounterNote, subjectGroups } from "./data.js";
+import { ActionWindow, CounterWindow, ModifierWindow, SubjectWindow } from "./entry-window.js";
 
 const { DocumentSheetV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
-const CHALLENGE_TAB = "challenge";
 const loc = (key) => game.i18n.localize(key);
 /** The eye button's look for each step of a threshold's reveal. */
 const THRESHOLD_EYE = { hidden: { icon: "fa-eye-slash", pressed: "false" }, points: { icon: "fa-eye-low-vision", pressed: "mixed" }, full: { icon: "fa-eye", pressed: "true" } };
@@ -22,7 +20,10 @@ const THRESHOLD_EYE = { hidden: { icon: "fa-eye-slash", pressed: "false" }, poin
 const COLLAPSED_FLAG = "collapsedSubjects";
 const isCollapsed = (subjectId) => !!game.user.getFlag(MODULE, COLLAPSED_FLAG)?.[subjectId];
 
-/** The action cards this user has opened in Run mode, as "pageId:actionId". Each user's own, kept until the page reloads, as on the panel. */
+/** Each kind of entry's window. */
+const WINDOWS = { subjects: SubjectWindow, actions: ActionWindow, counters: CounterWindow, modifiers: ModifierWindow };
+
+/** The action cards this user has opened on the sheet, as "pageId:actionId". Each user's own, kept until the page reloads, as on the panel. */
 const openActions = new Set();
 
 /** Whether the subject at index `n` can move up or down: only past a neighbour in the same category (spec 14.4). */
@@ -34,12 +35,11 @@ function canMove(system, n) {
 /**
  * Modifier views as the GM window's sections, by category (spec 14.7): the blank category first, with no heading,
  * then the preset's suggestions, then other labels in order of first use. Each has a key, a heading, its stripe colour and its rows.
- * A category with no entries is left out, on both tabs: the Edit tab adds entries from the Modifiers title.
+ * A category with no entries is left out: the Modifiers title's + adds entries.
  */
 function modifierGroups(system, views) {
   return groupByCategory(system, views).map((group) => ({ ...group, heading: group.label, stripe: group.colour ? `--ssm-cat: ${group.colour}` : "" }));
 }
-const labels = (values, prefix) => Object.fromEntries(values.map((value) => [value, loc(`SSM.Challenge.${prefix}.${value}`)]));
 
 /** The GM sheet. It belongs to the journal entry, whose name is the challenge name; the data lives on the typed page. */
 export class ChallengeSheet extends HandlebarsApplicationMixin(DocumentSheetV2) {
@@ -50,15 +50,13 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
     window: { resizable: true, icon: "fa-solid fa-trophy" },
     form: { submitOnChange: true, closeOnSubmit: false },
     actions: {
-      selectTab: ChallengeSheet.#onSelectTab,
-      addRow: ChallengeSheet.#onAddRow,
-      removeRow: ChallengeSheet.#onRemoveRow,
-      editModifier: ChallengeSheet.#onEditModifier,
+      addEntry: ChallengeSheet.#onAddEntry,
+      removeEntry: ChallengeSheet.#onRemoveEntry,
+      editEntry: ChallengeSheet.#onEditEntry,
       toggleComplete: ChallengeSheet.#onToggleComplete,
       moveSubject: ChallengeSheet.#onMoveSubject,
       toggleCollapse: ChallengeSheet.#onToggleCollapse,
       toggleAction: ChallengeSheet.#onToggleAction,
-      setMode: ChallengeSheet.#onSetMode,
       startRun: ChallengeSheet.#onStartRun,
       endRun: ChallengeSheet.#onEndRun,
       showPanel: ChallengeSheet.#onShowPanel,
@@ -87,11 +85,6 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
 
   /** Each subject's enriched description, by subject id, from the last context. */
   #subjectHtml = new Map();
-
-  #tab = CHALLENGE_TAB;
-
-  /** Edit or Run. Null until the user picks: a running challenge opens in Run mode. */
-  #mode = null;
 
   /** The id of the actor chosen to roll, or null for the default. */
   #rollAs = null;
@@ -157,23 +150,6 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
     return result;
   }
 
-  /** A subject's Category field suggests the preset's subject categories and those in use (spec 14.6). */
-  #subjectCategories = new CategoryAutocomplete({
-    findInput: () => this.element?.querySelector("input[data-subject-category]") ?? null,
-    categories: () => subjectCategoryOrder(this.#source),
-  });
-
-  async _onRender(context, options) {
-    this.#subjectCategories.detach();
-    await super._onRender(context, options);
-    this.#subjectCategories.attach();
-  }
-
-  _onClose(options) {
-    this.#subjectCategories.detach();
-    super._onClose(options);
-  }
-
   /** Catch up on anything held back once the editor closes. */
   async _onFirstRender(context, options) {
     await super._onFirstRender(context, options);
@@ -230,85 +206,22 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
   async _prepareContext(options) {
     const context = await super._prepareContext(options);
     const system = this.#source;
-    if (!system.subjects.some((subject) => subject.id === this.#tab)) this.#tab = CHALLENGE_TAB;
-
-    const skills = Object.fromEntries(Object.entries(CONFIG.PF2E.skills).map(([slug, skill]) => [slug, loc(skill.label)]));
-    // Saving throws can be checks too (spec 14.8).
-    const saves = Object.fromEntries(SAVES.map((slug) => [slug, loc(CONFIG.PF2E.saves[slug])]));
-    const checkSkills = { [PERCEPTION]: loc("PF2E.PerceptionLabel"), ...saves, ...skills, [LORE]: loc("SSM.Challenge.Lore") };
     const subjectLabel = system.subjectLabel || loc("SSM.Challenge.Subject");
-
     const enrich = (html) => foundry.applications.ux.TextEditor.implementation.enrichHTML(html, { relativeTo: this.document, secrets: true });
-    // Each action's description, enriched once for both modes, by action id.
-    const actionHtml = new Map();
-    for (const action of system.subjects.flatMap((subject) => subject.actions)) actionHtml.set(action.id, action.description ? await enrich(action.description) : "");
-    this.#actionHtml = actionHtml;
-    // Each subject's description, by subject id, the same way.
-    const subjectHtml = new Map();
-    for (const subject of system.subjects) subjectHtml.set(subject.id, subject.description ? await enrich(subject.description) : "");
-    this.#subjectHtml = subjectHtml;
-    // A both-ways track's Reached follows its value, so its checkbox is left out.
-    const thresholds = (rows, path, direction) => rows.map((row, i) => ({ ...row, path: `${path}.thresholds.${i}`, followsValue: direction === BOTH_WAYS }));
-    const counterEdit = (counter, path) => ({ ...counter, path, thresholds: thresholds(counter.thresholds, path, counter.direction) });
-    const subjectView = (subject, n) => {
-      const path = `subjects.${n}`;
-      return {
-        ...subject,
-        path,
-        tabLabel: subjectName(subject, n, subjectLabel),
-        descriptionHtml: subjectHtml.get(subject.id),
-        canRemove: system.subjects.length > 1,
-        ...canMove(system, n),
-        counters: subject.counters.map((counter, i) => counterEdit(counter, `${path}.counters.${i}`)),
-        actions: subject.actions.map((action, a) => ({
-          ...action,
-          path: `${path}.actions.${a}`,
-          label: actionName(action),
-          descriptionHtml: actionHtml.get(action.id),
-          checks: action.checks.map((row, i) => ({ ...row, path: `${path}.actions.${a}.checks.${i}`, isLore: row.skill === LORE })),
-        })),
-        // Read-only here: each one is edited in its own window. The suggested categories show even when empty, as each holds an Add button.
-        modifierGroups: modifierGroups(system, subject.modifiers.map((modifier, i) => ({ ...this.#modifierView(system, subject, modifier, false), canEdit: true, path: `${path}.modifiers.${i}` }))),
-      };
-    };
-    const challengeModifierGroups = modifierGroups(system, system.modifiers.map((modifier, i) => ({ ...this.#modifierView(system, null, modifier, false), canEdit: true, path: `modifiers.${i}` })));
-
-    const subjects = system.subjects.map(subjectView);
-    const mode = this.#currentMode;
+    // Each action's and subject's description, enriched, by id.
+    this.#actionHtml = new Map();
+    for (const action of system.subjects.flatMap((subject) => subject.actions)) this.#actionHtml.set(action.id, action.description ? await enrich(action.description) : "");
+    this.#subjectHtml = new Map();
+    for (const subject of system.subjects) this.#subjectHtml.set(subject.id, subject.description ? await enrich(subject.description) : "");
     return Object.assign(context, {
-      isRun: mode === "run",
-      isEdit: mode === "edit",
-      run: mode === "run" ? this.#runContext(system) : null,
+      run: this.#runContext(system),
       name: this.document.name,
       system,
-      subjectLabel,
-      pointsName: system.pointsName || loc("SSM.Challenge.Points"),
       addSubjectLabel: game.i18n.format("SSM.Challenge.AddSubject", { subject: subjectLabel }),
-      removeSubjectLabel: game.i18n.format("SSM.Challenge.RemoveSubject", { subject: subjectLabel }),
       premiseHtml: await enrich(system.premise),
       gmNotesHtml: await enrich(system.gmNotes),
-      counters: system.counters.map((counter, i) => counterEdit(counter, `counters.${i}`)),
-      challengeModifierGroups,
-      subjects,
-      activeSubject: subjects.find((subject) => subject.id === this.#tab) ?? null,
-      onChallengeTab: this.#tab === CHALLENGE_TAB,
-      // Tabs in grouped order, a labelled group's first tab carrying its category (spec 14.4).
-      tabs: subjectGroups(system, subjects).flatMap((group) => group.items.map((subject, i) => ({
-        id: subject.id, label: subject.tabLabel, active: subject.id === this.#tab, groupLabel: i === 0 ? group.label : "",
-      }))),
       runActive: system.run.status === "active",
-      choices: {
-        skills: checkSkills,
-        thresholdReveals: labels(THRESHOLD_REVEALS, "ThresholdReveal"),
-        // Display styles only (spec 14.12); the Revealed checkbox beside the list controls visibility.
-        displays: labels(COUNTER_DISPLAYS, "Display"),
-        directions: labels(DIRECTIONS, "Direction"),
-      },
     });
-  }
-
-  get #currentMode() {
-    return this.#mode ?? (this.page.system.run.status === "inactive" ? "edit" : "run");
   }
 
   /** The PCs on the party's roster, as PF2e counts them, plus the actor of a selected token. */
@@ -330,7 +243,7 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
     return actors.find((actor) => actor.id === this.#rollAs) ?? actors.find((actor) => actor === controlled) ?? actors[0] ?? null;
   }
 
-  /** The Run-mode view of the challenge. */
+  /** The sheet's view of the challenge: live play, with each entry's edit and delete buttons. */
   #runContext(system) {
     const status = system.run.status;
     const canRun = game.user.isActiveGM;
@@ -370,7 +283,7 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
       reachedTooltip: loc(direction === BOTH_WAYS ? "SSM.Challenge.ReachedFollows" : row.reached ? "SSM.Challenge.ReachedClear" : "SSM.Challenge.ReachedSet"),
     }));
     // A counter, the challenge's or a subject's, with its + and − and its thresholds. A per-PC counter lists each party PC, and anyone else who has a value, with the party total by its name (spec 14.8).
-    const counterRun = (counter) => {
+    const counterRun = (counter, subjectId = "") => {
       const canMove = (value) => {
         const moves = counterMoves(counter, value);
         return { canAdd: canChange && moves.canAdd, canRemove: canChange && moves.canRemove };
@@ -381,6 +294,7 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
       });
       return {
         ...counter,
+        subjectId,
         label: counter.name || loc("SSM.Challenge.UnnamedCounter"),
         valueText: counterValueText(counter, counter.value),
         perRoundLabel: counter.perRound && !counter.perPc ? game.i18n.format("SSM.Challenge.PerRoundOf", { amount: signed(counter.perRound) }) : "",
@@ -415,27 +329,29 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
         name: subjectName(subject, n, subjectLabel),
         ...canMove(system, n),
         collapsed: isCollapsed(subject.id),
+        noDelete: system.subjects.length < 2,
         descriptionHtml: this.#subjectHtml.get(subject.id) ?? "",
         revealed: subject.revealed,
         // Set and cleared by the GM only (spec 14.13).
         complete: subject.complete,
         completeTooltip: loc(subject.complete ? "SSM.Challenge.CompleteClear" : "SSM.Challenge.CompleteSet"),
-        counters: subject.counters.map(counterRun),
+        counters: subject.counters.map((counter) => counterRun(counter, subject.id)),
         actions: subject.actions.map((action) => ({
           id: action.id,
+          subjectId: subject.id,
           label: actionName(action),
           descriptionHtml: this.#actionHtml.get(action.id) ?? "",
           open: openActions.has(`${this.page.id}:${action.id}`),
           secret: action.secret,
           checks: rollRows(subject, action),
-        })).filter((action) => action.checks.length),
+        })),
         modifierGroups: modifierGroups(system, subject.modifiers.map((row) => this.#modifierView(system, subject, row, canChange))),
       }))).map((group) => ({ heading: group.label, subjects: group.items })),
-      counters: system.counters.map(counterRun),
+      counters: system.counters.map((counter) => counterRun(counter)),
     };
   }
 
-  /** One modifier entry as Run mode shows it. `subject` is null for a challenge-level entry, whose buttons then carry an empty subject id. */
+  /** One modifier entry as the sheet shows it. `subject` is null for a challenge-level entry, whose buttons then carry an empty subject id. */
   #modifierView(system, subject, row, canChange) {
     const state = row.spent ? "spent" : row.active ? "on" : "off";
     const label = row.name || loc("SSM.Challenge.UnnamedEntry");
@@ -451,7 +367,6 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
       stateTooltip: loc(`SSM.Challenge.StateClick.${state}`),
       stateLabel: loc(`SSM.Challenge.State.${state}`),
       canChange,
-      canEdit: game.user.isGM,
       effectsText: row.effects.map((effect) => this.#effectText(system, subject, effect)).join("; "),
     };
   }
@@ -520,45 +435,41 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
 
   /* -------------------------------------------- */
 
-  static async #onSelectTab(event, target) {
-    await this.submit();
-    this.#tab = target.dataset.tab;
-    return this.render();
-  }
-
-  static async #onAddRow(event, target) {
-    const { list, category } = target.dataset;
+  /** Add an entry and open its window (spec section 6). A category's + starts the new modifier or subject in that category. */
+  static async #onAddEntry(event, target) {
+    const { kind, subject: subjectId = "", category } = target.dataset;
     let added;
     await this.#edit((system) => {
-      // A modifier category's + starts the new entry in that category.
+      const list = entryListPath(system, kind, subjectId);
+      if (!list) return false;
       added = addRow(system, list, category ? { category } : {});
     });
-    if (list === "subjects") {
-      this.#tab = added.id;
-      return this.render();
-    }
-    // A new modifier opens in its own window, where it is edited. A new action is edited on its card.
-    if (!list.endsWith("modifiers")) return;
-    // A challenge-level entry has an empty subject id.
-    const subjectId = list === "modifiers" ? "" : this.page.system.subjects[Number(list.split(".")[1])]?.id;
-    if (subjectId !== undefined) ModifierWindow.open(this.page, subjectId, added.id);
+    if (!added) return;
+    const owner = kind === "subjects" ? added.id : subjectId;
+    return WINDOWS[kind]?.open(this.page, owner, added.id);
   }
 
-  static #onRemoveRow(event, target) {
-    return this.#edit((system) => removeRow(system, target.dataset.path));
+  /** Delete an entry after the GM confirms, as on a PF2e NPC sheet. */
+  static async #onRemoveEntry(event, target) {
+    const { kind, subject: subjectId = "", id, name } = target.dataset;
+    const yes = await foundry.applications.api.DialogV2.confirm({
+      window: { title: "SSM.Challenge.DeleteTitle" },
+      content: `<p>${game.i18n.format("SSM.Challenge.DeleteConfirm", { name: foundry.utils.escapeHTML(name || loc("SSM.Challenge.UnnamedEntry")) })}</p>`,
+      rejectClose: false,
+    });
+    if (yes) return this.#edit((system) => removeEntry(system, kind, subjectId, id));
   }
 
-  /** Open a modifier's own window. From the Edit tab, save the form first. In Run mode only a GM edits. */
-  static async #onEditModifier(event, target) {
-    if (this.#currentMode === "edit") await this.submit();
-    else if (!game.user.isGM) return;
-    return ModifierWindow.open(this.page, target.dataset.subject, target.dataset.id);
+  /** Open an entry's own window. A subject's window takes the subject's id as both ids. */
+  static async #onEditEntry(event, target) {
+    const { kind, subject: subjectId = "", id } = target.dataset;
+    await this.submit();
+    return WINDOWS[kind]?.open(this.page, kind === "subjects" ? id : subjectId, id);
   }
 
-  /** Move a subject up or down the challenge's order, in either mode (spec 14.8). It is challenge data, so any GM can, as in Edit mode. */
+  /** Move a subject up or down the challenge's order (spec 14.8). It is challenge data, so any GM can. */
   static async #onMoveSubject(event, target) {
     if (!game.user.isGM) return;
-    if (this.#currentMode === "edit") await this.submit();
     await this.#whileSaving(() => writeChallenge(this.page, (system) => moveSubject(system, target.dataset.subject, Number(target.dataset.delta))));
   }
 
@@ -569,16 +480,10 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
     return this.render();
   }
 
-  /** Open an action's description in Run mode, or close it, by a click on its name. */
+  /** Open an action's description, or close it, by a click on its name. */
   static #onToggleAction(event, target) {
     const key = `${this.page.id}:${target.dataset.id}`;
     if (!openActions.delete(key)) openActions.add(key);
-    return this.render();
-  }
-
-  static async #onSetMode(event, target) {
-    if (this.#currentMode === "edit") await this.submit();
-    this.#mode = target.dataset.mode;
     return this.render();
   }
 

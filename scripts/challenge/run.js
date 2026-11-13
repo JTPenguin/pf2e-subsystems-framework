@@ -215,7 +215,7 @@ function adjustCounter(system, counter, delta, out, actorId = "") {
 /** The language key for a reached counter threshold's notice, which depends on whether it has GM text. */
 export const triggerKey = (trigger) => (trigger.note ? "SSM.Challenge.TriggerNotice" : "SSM.Challenge.TriggerNoticeBare");
 
-/** Add to or remove from a counter, the challenge's or a subject's, from Run mode; on a per-PC counter, from `actorId`'s value. Returns the thresholds reached, as notices. */
+/** Add to or remove from a counter, the challenge's or a subject's, from the sheet; on a per-PC counter, from `actorId`'s value. Returns the thresholds reached, as notices. */
 export function changeCounter(system, id, delta, actorId = "") {
   const counter = findCounter(system, id)?.counter;
   if (!isRunning(system) || !counter) return false;

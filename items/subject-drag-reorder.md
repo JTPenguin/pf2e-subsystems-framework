@@ -13,11 +13,10 @@ updated: 2026-11-12
 
 ## Decided (Justin, 2026-11-12)
 
-- **Run view:** drag a subject by a grip on its header.
-- **Edit view:** drag a subject's tab along the tab row. *If [[combine-edit-and-run-views]] lands first, this half goes: the subject tabs go with it.*
-- **Within a category only:** a subject can't be dropped into another category's group; its category changes only through the Edit tab field ([[run-view-subject-grouping]]).
-- The up and down arrows go from both views (the `ssmOrder` partial, and `SSM.Challenge.MoveUp` and `MoveDown`).
+- **Drag a subject by a grip on its card header.** The Edit-tab half (drag a subject's tab) went with the tabs in [[combine-edit-and-run-views]].
+- **Within a category only:** a subject can't be dropped into another category's group; its category changes only through the subject window's field ([[run-view-subject-grouping]]).
+- The up and down arrows go (the `ssmOrder` partial, and `SSM.Challenge.MoveUp` and `MoveDown`).
 
 **How:** Foundry v14's `DragDrop` helper (`client/applications/ux/drag-drop.mjs`). A drop writes the new subject order; `moveSubject` in `data.js` can become a move-to-index. Only the GM can drag.
 
-**Done when:** a GM can reorder subjects by drag in both views, the panel's columns follow, and tests pass.
+**Done when:** a GM can reorder subjects by drag, the panel's columns follow, and tests pass.

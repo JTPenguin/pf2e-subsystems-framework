@@ -1,0 +1,41 @@
+<div class="ssm-layout">
+  {{#with action}}
+  <div class="ssm-row">
+    <label class="grow">{{localize "SSM.Challenge.Name"}}<input type="text" name="name" value="{{name}}" placeholder="{{localize "SSM.Challenge.UnnamedAction"}}"></label>
+    <label class="check" data-tooltip="SSM.Challenge.SecretHint"><input type="checkbox" name="secret" {{checked secret}}>{{localize "SSM.Challenge.Secret"}}</label>
+  </div>
+  <div class="ssm-window-editor">
+    <prose-mirror name="description" value="{{description}}"></prose-mirror>
+  </div>
+  {{/with}}
+  <div class="ssm-checks-wrap"><table class="ssm-checks">
+    <thead><tr>
+      <th>{{localize "SSM.Challenge.Skill"}}</th>
+      <th>{{localize "SSM.Challenge.LoreName"}}</th>
+      <th>{{localize "SSM.Challenge.DC"}}</th>
+      <th data-tooltip="SSM.Challenge.AlwaysHint">{{localize "SSM.Challenge.Always"}}</th>
+      <th>{{localize "SSM.Challenge.Revealed"}}</th>
+      <th>{{localize "SSM.Challenge.Decoy"}}</th>
+      <th></th>
+    </tr></thead>
+    <tbody>
+    {{#each checks}}
+    <tr>
+      <td><select name="{{path}}.skill" data-redraw>{{selectOptions @root.choices.skills selected=skill}}</select></td>
+      <td>{{#if isLore}}<input type="text" name="{{path}}.lore" value="{{lore}}">{{/if}}</td>
+      <td><input type="number" min="0" step="1" name="{{path}}.dc" value="{{dc}}"></td>
+      <td class="check"><input type="checkbox" name="{{path}}.always" data-redraw {{checked always}}></td>
+      <td class="check">{{#unless always}}<input type="checkbox" name="{{path}}.revealed" {{checked revealed}}>{{/unless}}</td>
+      <td class="check">{{#unless always}}<input type="checkbox" name="{{path}}.decoy" {{checked decoy}}>{{/unless}}</td>
+      <td><button type="button" class="icon fa-solid fa-trash" data-action="removeRow" data-path="{{path}}" aria-label="{{localize "SSM.Challenge.Remove"}}"></button></td>
+    </tr>
+    {{else}}
+    <tr><td colspan="7" class="ssm-muted">{{localize "SSM.Challenge.NoChecks"}}</td></tr>
+    {{/each}}
+    </tbody>
+  </table></div>
+  <div class="ssm-row ssm-modifier-buttons">
+    <button type="button" class="ssm-add" data-action="addRow" data-list="checks"><i class="fa-solid fa-plus" inert></i> {{localize "SSM.Challenge.AddCheck"}}</button>
+    <button type="submit" class="ssm-save"><i class="fa-solid fa-floppy-disk" inert></i> {{localize "SSM.Challenge.SaveModifier"}}</button>
+  </div>
+</div>

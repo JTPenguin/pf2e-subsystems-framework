@@ -1,13 +1,14 @@
 ---
 title: "Combine Edit and Run into a single view"
 kind: feature
-status: ready
-waits_on: Claude
+status: done
+waits_on: none
 priority: ⏫
 blocked_by: []
 source: "Justin's words, 2026-11-12; interview with Justin, 2026-11-12"
 added: 2026-11-12
 updated: 2026-11-12
+outcome: "Built 2026-11-12. One view with no mode switch or tabs; Subject, Action and Counter windows on EntryWindow; delete with confirmation. Points name and Subject label still show in the Challenge section, for challenge-sheet-remove-points-and-label-fields to remove."
 ---
 # Combine Edit and Run into a single view
 
@@ -39,3 +40,9 @@ Merge the Edit and Run tabs into one view. Subjects and Counters work the way Mo
 - Spec sections 6, 14.4, 14.7 and 14.13 describe Edit and Run modes. Rewrite them in the same change.
 
 **Done when:** the sheet has one view with no mode switch or subject tabs; every subject, action, counter and modifier can be added, edited and deleted (with confirmation) as described above; a full run (Start, rolls, reveals, + and −, End, Reset) still works; tests pass; and it is checked live in Foundry.
+
+## Outcome (2026-11-12)
+
+- **Built:** one view in `templates/challenge-sheet.hbs`; `SubjectWindow`, `ActionWindow` and `CounterWindow` in `scripts/challenge/entry-window.js`; `saveSubject`, `saveAction`, `saveCounter` and `removeEntry` in `data.js`. Spec sections 6, 14.4, 14.7, 14.12 and 14.13 rewritten.
+- **Left for the next item:** Points name and Subject label still show in the Challenge section, so [[challenge-sheet-remove-points-and-label-fields]] removes them.
+- **Checked:** `tools/test.mjs` (127 pass, 4 new), `tools/check-load.mjs`. Live in the test world as GM, on a copy of "SSM 14.13 check" ("SSM combined view check"): edited a subject (category, description), an action (added a Lore check with DC 18) and a counter (blanked the maximum, added a threshold) in their windows; added a subject from a category bar, a challenge counter and a challenge modifier, each opening its window; deleted a counter through the confirmation dialog; edited the round maximum in place; ran Start, + and −, a reveal, Next round, a roll, End and Reset. Not checked with a player login.

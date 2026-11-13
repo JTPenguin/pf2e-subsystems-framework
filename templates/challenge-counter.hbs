@@ -1,0 +1,39 @@
+<div class="ssm-layout">
+  {{#with counter}}
+  <div class="ssm-row">
+    <label class="grow">{{localize "SSM.Challenge.Name"}}<input type="text" name="name" value="{{name}}" placeholder="{{localize "SSM.Challenge.UnnamedCounter"}}"></label>
+    <label>{{localize "SSM.Challenge.Value"}}<input type="number" step="1" name="value" value="{{value}}"></label>
+    <label>{{localize "SSM.Challenge.DirectionLabel"}}<select name="direction" data-redraw>{{selectOptions @root.choices.directions selected=direction}}</select></label>
+    {{#unless perPc}}<label data-tooltip="SSM.Challenge.DisplayHint">{{localize "SSM.Challenge.DisplayLabel"}}<select name="display">{{selectOptions @root.choices.displays selected=display}}</select></label>{{/unless}}
+  </div>
+  <div class="ssm-row">
+    <label>{{localize "SSM.Challenge.Minimum"}}<input type="number" step="1" name="min" value="{{min}}" placeholder="{{localize "SSM.Challenge.NoLimit"}}"></label>
+    <label>{{localize "SSM.Challenge.Maximum"}}<input type="number" step="1" name="max" value="{{max}}" placeholder="{{localize "SSM.Challenge.NoLimit"}}"></label>
+    {{#unless perPc}}<label data-tooltip="SSM.Challenge.PerRoundHint">{{localize "SSM.Challenge.PerRound"}}<input type="number" step="1" name="perRound" value="{{perRound}}"></label>{{/unless}}
+    <label class="check" data-tooltip="SSM.Challenge.PerPcHint"><input type="checkbox" name="perPc" data-redraw {{checked perPc}}>{{localize "SSM.Challenge.PerPc"}}</label>
+    <label class="check"><input type="checkbox" name="revealed" {{checked revealed}}>{{localize "SSM.Challenge.Revealed"}}</label>
+  </div>
+  {{/with}}
+  {{#unless counter.perPc}}
+  <h4 class="ssm-section-title">{{localize "SSM.Challenge.Thresholds"}}</h4>
+  {{#each thresholds}}
+  <div class="ssm-card ssm-threshold-edit">
+    <div class="ssm-row">
+      <label>{{localize "SSM.Challenge.ThresholdAt"}}<input type="number" step="1" name="{{path}}.points" value="{{points}}"></label>
+      <label>{{localize "SSM.Challenge.ThresholdReveal.Label"}}<select name="{{path}}.reveal">{{selectOptions @root.choices.thresholdReveals selected=reveal}}</select></label>
+      <label data-tooltip="SSM.Challenge.ThresholdDcHint">{{localize "SSM.Challenge.ThresholdDcLabel"}}<input type="number" step="1" name="{{path}}.dc" value="{{dc}}"></label>
+      {{#unless followsValue}}<label class="check"><input type="checkbox" name="{{path}}.reached" {{checked reached}}>{{localize "SSM.Challenge.Reached"}}</label>{{/unless}}
+      <button type="button" class="icon fa-solid fa-trash" data-action="removeRow" data-path="{{path}}" aria-label="{{localize "SSM.Challenge.Remove"}}"></button>
+    </div>
+    <div class="ssm-row ssm-text-row">
+      <label class="grow">{{localize "SSM.Challenge.PlayerText"}}<textarea class="ssm-autogrow" rows="1" name="{{path}}.playerText">{{playerText}}</textarea></label>
+      <label class="grow">{{localize "SSM.Challenge.GMText"}}<textarea class="ssm-autogrow" rows="1" name="{{path}}.gmText">{{gmText}}</textarea></label>
+    </div>
+  </div>
+  {{else}}<p class="ssm-muted">{{localize "SSM.Challenge.NoThresholds"}}</p>{{/each}}
+  {{/unless}}
+  <div class="ssm-row ssm-modifier-buttons">
+    {{#unless counter.perPc}}<button type="button" class="ssm-add" data-action="addRow" data-list="thresholds"><i class="fa-solid fa-plus" inert></i> {{localize "SSM.Challenge.AddThreshold"}}</button>{{else}}<span></span>{{/unless}}
+    <button type="submit" class="ssm-save"><i class="fa-solid fa-floppy-disk" inert></i> {{localize "SSM.Challenge.SaveModifier"}}</button>
+  </div>
+</div>

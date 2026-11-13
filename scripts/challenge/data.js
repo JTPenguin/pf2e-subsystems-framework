@@ -240,8 +240,8 @@ export const subjectCategoryOrder = (system) => orderLabels([...(presetOf(system
 
 /**
  * Rows grouped by category: the blank category first, with no heading, then the labelled ones in category order (spec 14.7). Each group is { key, label, colour, rows }.
- * A group with no rows is left out, except: `withSuggestions` keeps the preset's suggested categories, as the Edit tab does,
- * and `keep` (a list of category labels) keeps those, as the panel does for a subject's categories.
+ * A group with no rows is left out, except: `withSuggestions` keeps the preset's suggested categories,
+ * and `keep` (a list of category labels) keeps those. The panel uses both for a subject's categories.
  */
 export function groupByCategory(system, rows, { withSuggestions = false, keep = [] } = {}) {
   const kept = new Set([...(withSuggestions ? suggestedCategories(system) : []), ...keep].map(categoryKey));
@@ -344,7 +344,7 @@ export function setEffectAmount(system, path, amount) {
 }
 
 /** Number fields that may be blank. A blank in any other number field keeps the old value. */
-const BLANK_ALLOWED = new Set(["counters.*.min", "counters.*.max", "rounds.max", "subjects.*.counters.*.min", "subjects.*.counters.*.max"]);
+const BLANK_ALLOWED = new Set(["counters.*.min", "counters.*.max", "rounds.max", "subjects.*.counters.*.min", "subjects.*.counters.*.max", "min", "max"]);
 
 const isPlainObject = (value) => value !== null && typeof value === "object" && !Array.isArray(value);
 
@@ -488,6 +488,73 @@ export function saveModifier(system, subjectId, modifierId, changes) {
   const checks = new Set(subject ? allChecks(subject).map((check) => check.id) : challengeSkillKeys(system));
   for (const row of modifier.effects) row.skills = row.skills.filter((skill) => checks.has(skill));
   return true;
+}
+
+/** The fields the subject, action and counter windows edit. */
+export const SUBJECT_FIELDS = ["name", "category", "revealed", "description"];
+export const ACTION_FIELDS = ["name", "secret", "description", "checks"];
+export const COUNTER_FIELDS = ["name", "value", "direction", "display", "min", "max", "perRound", "perPc", "revealed", "thresholds"];
+
+/** The subject with this id. The subject window passes it as both ids. */
+export const findSubject = (system, subjectId, entryId = subjectId) => subjectById(system, entryId);
+export const findAction = (system, subjectId, actionId) => subjectById(system, subjectId)?.actions.find((action) => action.id === actionId);
+/** A counter, the challenge's or a subject's, by its id alone. */
+export const findCounterEntry = (system, subjectId, counterId) => findCounter(system, counterId)?.counter;
+
+const copyFields = (target, changes, fields) => {
+  for (const key of fields) if (key in changes) target[key] = structuredClone(changes[key]);
+};
+
+/**
+ * Save the subject window's changes. A subject whose category changed moves to the end of its new group (spec 14.4),
+ * and one newly revealed hides the others without Allow multiple subjects. Returns false if the subject is gone.
+ */
+export function saveSubject(system, subjectId, entryId, changes) {
+  const subject = findSubject(system, subjectId, entryId);
+  if (!subject) return false;
+  const wasShown = subject.revealed;
+  const before = categoryKey(subject.category);
+  copyFields(subject, changes, SUBJECT_FIELDS);
+  subject.category = String(subject.category ?? "").trim();
+  if (categoryKey(subject.category) !== before) system.subjects = [...system.subjects.filter((other) => other !== subject), subject];
+  sortSubjects(system);
+  if (subject.revealed && !wasShown) revealOnly(system, subject);
+  return true;
+}
+
+/** Save the action window's changes. The subject's modifiers drop links to checks the window removed. Returns false if the action is gone. */
+export function saveAction(system, subjectId, actionId, changes) {
+  const action = findAction(system, subjectId, actionId);
+  if (!action) return false;
+  copyFields(action, changes, ACTION_FIELDS);
+  const subject = subjectById(system, subjectId);
+  const checks = new Set(allChecks(subject).map((check) => check.id));
+  for (const modifier of subject.modifiers) for (const row of modifier.effects) row.skills = row.skills.filter((skill) => checks.has(skill));
+  return true;
+}
+
+/** Save the counter window's changes, then keep its values inside its limits. Returns false if the counter is gone. */
+export function saveCounter(system, subjectId, counterId, changes) {
+  const counter = findCounterEntry(system, subjectId, counterId);
+  if (!counter) return false;
+  copyFields(counter, changes, COUNTER_FIELDS);
+  clampTracks(system);
+  return true;
+}
+
+/** The path of a list of entries: "subjects", or a kind ("counters", "actions", "modifiers") on a subject, or on the challenge for an empty subject id. Null if there is none. */
+export function entryListPath(system, kind, subjectId) {
+  if (kind === "subjects") return "subjects";
+  if (!subjectId) return kind === "counters" || kind === "modifiers" ? kind : null;
+  const n = system.subjects.findIndex((subject) => subject.id === subjectId);
+  return n < 0 ? null : `subjects.${n}.${kind}`;
+}
+
+/** Remove an entry by its id, as the sheet's delete buttons do. Returns false if it is gone or must stay. */
+export function removeEntry(system, kind, subjectId, entryId) {
+  const listPath = entryListPath(system, kind, subjectId);
+  const index = listPath ? (getPath(system, listPath) ?? []).findIndex((row) => row.id === entryId) : -1;
+  return index >= 0 && removeRow(system, `${listPath}.${index}`);
 }
 
 /** A counter's value as text: "3/6" with a maximum, "+12" on a both-ways track, else just the number. */
