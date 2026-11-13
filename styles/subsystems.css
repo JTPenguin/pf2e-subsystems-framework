@@ -451,3 +451,11 @@ button.ssm-reached { color: #4f9d5d; }
 /* GM-only text on the panel. PF2e gives it a pale background meant for dark text, but the panel's text is light. A dark purple tint keeps it readable and still marks it as GM-only. Nested GM text keeps PF2e's own no-outline rule. */
 .ssm-panel [data-visibility=gm]:not(.dice-result > *) { background: rgba(90, 50, 130, 0.45); color: #efe6d8; outline: 1px dotted rgba(200, 170, 240, 0.7); }
 .ssm-panel [data-visibility=gm]:not(.dice-result > *) [data-visibility=gm] { background: none; outline: none; }
+
+/* The toggled description editors (scripts/challenge/description-field.js). Empty: a faint dashed box with a prompt, opened by a click. Filled: the edit button stays in view, not only on hover, and the text keeps clear of it. */
+prose-mirror.ssm-description-empty.inactive { border: 1px dashed color-mix(in srgb, currentColor 35%, transparent); border-radius: 3px; cursor: pointer; }
+prose-mirror.ssm-description-empty.inactive > .editor-content { cursor: pointer; padding: 0.25rem 0.5rem; }
+prose-mirror.ssm-description-empty.inactive > .editor-content::before { content: attr(data-placeholder); opacity: 0.6; font-style: italic; }
+prose-mirror.ssm-description-empty.inactive > button.toggle { display: none; }
+prose-mirror.ssm-description-field.inactive:not(.ssm-description-empty) > button.toggle:enabled { display: block; }
+prose-mirror.ssm-description-field.inactive:not(.ssm-description-empty) > .editor-content { padding-right: calc(var(--form-field-height, 1.75rem) + 0.25rem); }

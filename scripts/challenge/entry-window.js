@@ -2,6 +2,7 @@ import { MODULE } from "../constants.js";
 import { actionName, skillKeyLabel, skillLabel } from "./skill-label.js";
 import { writeChallenge } from "./state.js";
 import { CategoryAutocomplete } from "./category-autocomplete.js";
+import { markDescriptionFields } from "./description-field.js";
 import { ACTION_FIELDS, addRow, BOTH_WAYS, categoryOrder, challengeSkillKeys, COUNTER_DISPLAYS, COUNTER_FIELDS, DIRECTIONS, DURATIONS, entryChanges, findAction, findCounterEntry, findModifier, findSubject, LORE, mergeForm, MODIFIER_FIELDS, PERCEPTION, QUICK_DC_AMOUNTS, rebaseEntry, removeRow, SAVES, saveAction, saveCounter, saveModifier, saveSubject, setDcAmount, SUBJECT_FIELDS, subjectCategoryOrder, THRESHOLD_REVEALS } from "./data.js";
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
@@ -120,6 +121,7 @@ class EntryWindow extends HandlebarsApplicationMixin(ApplicationV2) {
     await super._onRender(context, options);
     // A saved name stays in the window, so its title follows.
     if (this.window?.title) this.window.title.innerText = this.title;
+    markDescriptionFields(this.element);
     const focus = this.#focus;
     const field = focus && this.form.querySelector(`[name="${CSS.escape(focus.name)}"]`);
     if (!field) return;

@@ -1,12 +1,13 @@
 ---
 title: "Make empty description fields visible"
 kind: feature
-status: ready
-waits_on: Claude
+status: done
+waits_on: none
 priority: 🔼
 blocked_by: []
 added: 2026-11-12
 updated: 2026-11-12
+outcome: "Done 2026-11-12. Shared scripts/challenge/description-field.js marks toggled editors empty or filled on each render; an empty one shows a dashed 'Click to add a description' box (lang SSM.Challenge.DescriptionPlaceholder) that opens and focuses the editor on a click; a filled one keeps its edit button in view. Foundry v14 has no placeholder for prose-mirror, so this adds one. Checked live in light and dark themes."
 source: "Justin's UI list, 2026-11-12; design chosen in triage interview, 2026-11-12"
 ---
 # Make empty description fields visible

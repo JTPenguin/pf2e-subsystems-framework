@@ -59,6 +59,7 @@
       "Challenge": "Challenge",
       "Name": "Name",
       "GMNotes": "GM notes",
+      "DescriptionPlaceholder": "Click to add a description",
       "Rounds": "Rounds",
       "CurrentRound": "Current Round",
       "MaximumRounds": "Maximum Rounds",

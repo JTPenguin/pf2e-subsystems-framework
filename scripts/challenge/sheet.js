@@ -9,6 +9,7 @@ import { LINK_ROLL_ID } from "../roll-option.js";
 import { rollCheck, rollTarget } from "./roll.js";
 import { addRow, applyForm, BOTH_WAYS, categoryKey, clampTracks, collapseAllAction, counterMoves, counterValueText, EDITABLE, entryListPath, groupByCategory, isDecoyCheck, moveSubject, nextThresholdReveal, pickFields, removeEntry, setCounterNote, subjectGroups } from "./data.js";
 import { ActionWindow, CounterWindow, ModifierWindow, SubjectWindow } from "./entry-window.js";
+import { markDescriptionFields } from "./description-field.js";
 
 const { DocumentSheetV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
@@ -492,6 +493,7 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
   async _onRender(context, options) {
     await super._onRender(context, options);
     this.#dragDrop.bind(this.element);
+    markDescriptionFields(this.element);
     if (!this.element.dataset.ssmHeaderClicks) {
       this.element.dataset.ssmHeaderClicks = "1";
       this.element.addEventListener("click", (event) => this.#onHeaderClick(event));
