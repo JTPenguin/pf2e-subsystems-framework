@@ -1,5 +1,5 @@
 /**
- * Build the zip to share with friends: dist/pf2e-subsystem-manager-<version>.zip. Unzip it into Data/modules. Needs `zip` and `unzip` on the machine.
+ * Build the zip to share with friends: dist/pf2e-subsystems-framework-<version>.zip. Unzip it into Data/modules. Needs `zip` and `unzip` on the machine.
  *
  *   ELECTRON_RUN_AS_NODE=1 ~/foundryvtt/foundryvtt tools/build-zip.mjs
  */
@@ -18,7 +18,7 @@ fs.mkdirSync(path.dirname(output), { recursive: true });
 fs.rmSync(output, { force: true });
 
 // A temporary copy gives the zip its top folder, whatever this repository's folder is called.
-const staging = fs.mkdtempSync(path.join(os.tmpdir(), "ssm-zip-"));
+const staging = fs.mkdtempSync(path.join(os.tmpdir(), "psf-zip-"));
 try {
   for (const name of CONTENTS) fs.cpSync(path.join(root, name), path.join(staging, manifest.id, name), { recursive: true });
   execFileSync("zip", ["-rqX", output, manifest.id], { cwd: staging, stdio: "inherit" });

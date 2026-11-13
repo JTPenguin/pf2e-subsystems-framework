@@ -11,7 +11,7 @@ Hooks.once("init", () => {
   for (const subsystem of allSubsystems()) {
     CONFIG.JournalEntryPage.dataModels[subsystem.pageType] = subsystem.model;
     // Ordinary journal entries must keep their normal sheet: this one can't be chosen, and only the flag below selects it.
-    DocumentSheetConfig.registerSheet(foundry.documents.JournalEntry, "pf2e-subsystem-manager", subsystem.sheet, {
+    DocumentSheetConfig.registerSheet(foundry.documents.JournalEntry, "pf2e-subsystems-framework", subsystem.sheet, {
       types: ["base"], makeDefault: false, canBeDefault: false, canConfigure: false, label: subsystem.label,
     });
   }

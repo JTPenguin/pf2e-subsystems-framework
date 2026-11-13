@@ -1,4 +1,4 @@
-# PF2e Subsystem Manager: spec
+# PF2e Subsystems Framework: spec
 
 **Status:** approved by Justin, including the three decisions proposed by Claude in section 2. **Date:** 2026-11-08. **Targets:** Foundry 14, PF2e 8.6 or later.
 
@@ -62,7 +62,7 @@ Sidebar tab -> Challenge (journal entry + typed page, GM only) -> GM sheet
               Player roll -> chat message -> GM changes points by hand on the sheet
 ```
 
-**Storage.** Each challenge is a `JournalEntry` holding one page of type `pf2e-subsystem-manager.challenge`. Journal entries bring folders, compendiums, JSON export and duplication for free. Players have no ownership of them, so the interface doesn't show them to players.
+**Storage.** Each challenge is a `JournalEntry` holding one page of type `pf2e-subsystems-framework.challenge`. Journal entries bring folders, compendiums, JSON export and duplication for free. Players have no ownership of them, so the interface doesn't show them to players.
 
 **Sidebar tab.** The tab lists only challenge entries, with folders, search, create, duplicate and delete. The Journal tab hides them. A running challenge has a play mark by its name; the one players see on the panel has an eye instead (a hidden panel's challenge keeps the play mark). A Running button in the search bar lists only running challenges, without folders; it is off on each load. A running challenge's right-click menu has Show on panel, and the panel's challenge has Hide panel.
 
@@ -516,7 +516,7 @@ A preset makes one kind of subject, so the sheet has one Add subject button, nam
 
 ### 14.9 No backward compatibility
 
-The module isn't in real use yet (Justin, 2026-11-11), so nothing is converted. Challenges use one page type, `pf2e-subsystem-manager.challenge`. Old Influence pages, their chat cards and old exports stop working, and the old load-time migrations are removed. An Influence challenge is rebuilt from the Influence preset.
+The module isn't in real use yet (Justin, 2026-11-11), so nothing is converted. Challenges use one page type, `pf2e-subsystems-framework.challenge`. Old Influence pages, their chat cards and old exports stop working, and the old load-time migrations are removed. An Influence challenge is rebuilt from the Influence preset.
 
 ### 14.10 Left to the preset items
 

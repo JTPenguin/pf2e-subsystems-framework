@@ -35,7 +35,7 @@ const Reg = await load("registry");
 const L = await load("roll-listener");
 const Spot = await load("panel/spot");
 
-const MODULE = "pf2e-subsystem-manager";
+const MODULE = "pf2e-subsystems-framework";
 const challenge = (name, folder) => ({ name, folder, pages: [{ type: `${MODULE}.challenge` }] });
 const ordinary = (name, folder) => ({ name, folder, pages: [{ type: "text" }] });
 const folder = (id, flagged, parent) => ({ id, folder: parent, flags: flagged ? { [MODULE]: { challengeFolder: true } } : {} });

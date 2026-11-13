@@ -1,4 +1,4 @@
-export const MODULE = "pf2e-subsystem-manager";
+export const MODULE = "pf2e-subsystems-framework";
 
 /** The sidebar tab id. Word characters only: Foundry swaps the tab's class with /active-\w+/. */
 export const TAB = "subsystems";

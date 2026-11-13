@@ -175,7 +175,7 @@ export function resetRun(system) {
   try {
     if (system.run.baseline) restoreBaseline(system, system.run.baseline);
   } catch (error) {
-    console.warn("pf2e-subsystem-manager | Could not restore a challenge's start values", error);
+    console.warn("pf2e-subsystems-framework | Could not restore a challenge's start values", error);
   }
   Object.assign(system.run, { status: "inactive", acted: [], roundHistory: [], baseline: null });
 }

@@ -1,4 +1,4 @@
-# PF2e Subsystem Manager
+# PF2e Subsystems Framework
 
 A Foundry VTT module (v14, PF2e) for running PF2e subsystems from sheets, with a player panel over the canvas. Shared privately with friends' tables. The design is in `docs/spec.md`.
 

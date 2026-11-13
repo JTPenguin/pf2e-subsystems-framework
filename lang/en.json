@@ -1,7 +1,7 @@
 {
   "TYPES": {
     "JournalEntryPage": {
-      "pf2e-subsystem-manager": {
+      "pf2e-subsystems-framework": {
         "challenge": "Challenge"
       }
     }
