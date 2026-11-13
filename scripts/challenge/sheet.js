@@ -21,6 +21,10 @@ const THRESHOLD_EYE = { hidden: { icon: "fa-eye-slash", pressed: "false" }, poin
 const COLLAPSED_FLAG = "collapsedSubjects";
 const isCollapsed = (subjectId) => !!game.user.getFlag(MODULE, COLLAPSED_FLAG)?.[subjectId];
 
+/** The user flag holding which counters this user has collapsed on the sheet, by counter id. Like a subject, a counter starts open. */
+const COLLAPSED_COUNTERS_FLAG = "collapsedCounters";
+const isCounterCollapsed = (counterId) => !!game.user.getFlag(MODULE, COLLAPSED_COUNTERS_FLAG)?.[counterId];
+
 /** A category bar's collapse-all button, from what it would do. */
 const collapseAllView = (action) => !action ? null
   : action === "collapse" ? { icon: "fa-angles-up", label: "SSM.Challenge.CollapseAll" }
@@ -56,6 +60,7 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
       toggleComplete: ChallengeSheet.#onToggleComplete,
       toggleCollapse: ChallengeSheet.#onToggleCollapse,
       toggleCollapseAll: ChallengeSheet.#onToggleCollapseAll,
+      toggleCounter: ChallengeSheet.#onToggleCounter,
       toggleAction: ChallengeSheet.#onToggleAction,
       toggleModifierDetails: ChallengeSheet.#onToggleAction,
       startRun: ChallengeSheet.#onStartRun,
@@ -304,6 +309,7 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
         pcs,
         totalLabel: counter.perPc ? game.i18n.format("SSM.Challenge.PartyTotal", { total: partyIds.reduce((sum, id) => sum + counterValueOf(counter, id), 0) }) : "",
         thresholds: counter.perPc ? [] : thresholdRows(counter.thresholds, counter.id, counter.direction),
+        open: !isCounterCollapsed(counter.id),
       };
     };
     return {
@@ -511,17 +517,17 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
     }
   }
 
-  /** The lines that open and close on a click outside their controls: a subject's header, an action's line and a modifier's row. */
-  static HEADERS = ".ssm-card-head, .ssm-skill-line, .ssm-modifier > .ssm-entry";
+  /** The lines that open and close on a click outside their controls: a subject's header, an action's line, a modifier's row and a counter's top row. */
+  static HEADERS = ".ssm-card-head, .ssm-skill-line, .ssm-modifier > .ssm-entry, .ssm-counter > .ssm-entry:first-child";
 
   /** What a header click or drag must leave alone: controls, skill chips and the row tools. */
   static HEADER_CONTROLS = "button, input, select, textarea, a, .ssm-skill, .ssm-row-tools, prose-mirror";
 
-  /** A click on a header's empty part presses its own toggle, if it has one: an action or modifier with no details stays still. */
+  /** A click on a header's empty part presses its caret, if it has one: an action, modifier or counter with nothing to show stays still. */
   #onHeaderClick(event) {
     const header = event.target.closest?.(ChallengeSheet.HEADERS);
     if (!header || event.target.closest(ChallengeSheet.HEADER_CONTROLS)) return;
-    header.querySelector("button.ssm-collapse, button.ssm-action-toggle, button.ssm-mod-chevron")?.click();
+    header.querySelector(":scope > button.ssm-caret")?.click();
   }
 
   /** Start dragging the header's entry, unless the press began on one of its controls. */
@@ -596,8 +602,15 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
 
   /** Collapse a subject to its header row, or open it. The state is this user's own, kept in a user flag (spec 14.8). */
   static async #onToggleCollapse(event, target) {
-    const id = target.dataset.subject;
+    const id = target.dataset.id;
     await game.user.setFlag(MODULE, COLLAPSED_FLAG, { [id]: !isCollapsed(id) });
+    return this.render();
+  }
+
+  /** Collapse a counter to its top row, hiding its thresholds, or open it. The state is this user's own, kept in a user flag, as a subject's is. */
+  static async #onToggleCounter(event, target) {
+    const id = target.dataset.id;
+    await game.user.setFlag(MODULE, COLLAPSED_COUNTERS_FLAG, { [id]: !isCounterCollapsed(id) });
     return this.render();
   }
 

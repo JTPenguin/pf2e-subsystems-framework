@@ -1,4 +1,6 @@
 {{#*inline "ssmEye"}}<button type="button" class="icon fa-solid {{#if revealed}}fa-eye{{else}}fa-eye-slash{{/if}}" data-action="toggleReveal" data-id="{{id}}" aria-label="{{localize "SSM.Challenge.RevealToggle"}}" aria-pressed="{{revealed}}" data-tooltip="{{localize "SSM.Challenge.RevealToggle"}}" {{#unless root.canRun}}disabled{{/unless}}></button>{{/inline}}
+{{!-- A collapsible row's caret, always first in its row (Justin, 2026-11-13). With no `action` the row has nothing to open, and an empty slot keeps its name in line with its neighbours'. `open` sets the icon; `id` goes in data-id. --}}
+{{#*inline "ssmCaret"}}{{#if action}}<button type="button" class="icon fa-solid {{#if open}}fa-chevron-down{{else}}fa-chevron-right{{/if}} ssm-caret" data-action="{{action}}" data-id="{{id}}" aria-expanded="{{#if open}}true{{else}}false{{/if}}" aria-label="{{localize "SSM.Challenge.Collapse"}}" data-tooltip="SSM.Challenge.Collapse"></button>{{else}}<span class="ssm-caret" aria-hidden="true"></span>{{/if}}{{/inline}}
 {{#*inline "ssmSkillChip"}}<span class="ssm-skill {{#if shown}}ssm-shown{{else}}ssm-hidden{{/if}}">
   {{> ssmEye root=root}}
   <button type="button" class="ssm-skill-roll" data-action="rollSkill" data-subject="{{subjectId}}" data-act="{{actionId}}" data-id="{{id}}" aria-label="{{rollLabel}}" data-tooltip-text="{{tooltip}}" {{#unless root.rollable}}disabled{{/unless}}><i class="fa-solid fa-dice-d20" aria-hidden="true"></i><span class="ssm-skill-name">{{label}}</span><span class="ssm-skill-dc{{#if dcChanged}} ssm-dc-changed {{#if dcUp}}ssm-dc-up{{else}}ssm-dc-down{{/if}}{{/if}}">{{localize "SSM.Challenge.DC"}} {{currentDc}}</span></button>
@@ -30,9 +32,9 @@
         {{#each rows}}
         <div class="ssm-modifier ssm-mod-{{stateClass}} {{#unless revealed}}ssm-hidden{{/unless}}" data-drag="modifiers" data-id="{{id}}" data-owner="{{subjectId}}" data-group="{{subjectId}}/{{../key}}"{{#if ../stripe}} style="{{../stripe}}"{{/if}}>
           <div class="ssm-row ssm-entry">
+            {{> ssmCaret action=(ifThen hasDetails "toggleModifierDetails" "") open=open id=id}}
             {{> ssmEye root=../../root}}
             <button type="button" class="icon fa-solid {{#if spent}}fa-rotate-left{{else}}fa-check{{/if}} ssm-toggle ssm-toggle-{{stateClass}}" data-action="{{#if spent}}restoreModifier{{else}}toggleModifier{{/if}}" data-subject="{{subjectId}}" data-id="{{id}}" aria-label="{{stateLabel}}" aria-pressed="{{pressed}}" data-tooltip="{{stateTooltip}}" {{#unless canChange}}disabled{{/unless}}></button>
-            {{#if hasDetails}}<button type="button" class="icon fa-solid {{#if open}}fa-chevron-down{{else}}fa-chevron-right{{/if}} ssm-mod-chevron" data-action="toggleModifierDetails" data-id="{{id}}" aria-expanded="{{#if open}}true{{else}}false{{/if}}" aria-label="{{localize "SSM.Challenge.Collapse"}}" data-tooltip="SSM.Challenge.Collapse"></button>{{else}}<span class="ssm-mod-chevron" aria-hidden="true"></span>{{/if}}
             {{> ssmModifierName}}
             {{> ssmRowTools kind="modifiers" subject=subjectId name=label}}
           </div>
@@ -56,6 +58,7 @@
 {{!-- A counter, the challenge's or a subject's. `root` is the run context. --}}
 {{#*inline "ssmCounterRun"}}<div class="ssm-counter {{#unless revealed}}ssm-hidden{{/unless}}" data-drag="counters" data-id="{{id}}" data-owner="{{subjectId}}" data-group="{{subjectId}}">
       <div class="ssm-row ssm-entry">
+        {{> ssmCaret action=(ifThen thresholds.length "toggleCounter" "") open=open id=id}}
         {{> ssmEye root=root}}
         <span class="ssm-grow">{{label}}{{#if perRoundLabel}} <span class="ssm-tag">{{perRoundLabel}}</span>{{/if}}{{#if perPc}} <strong class="ssm-pc-total">{{totalLabel}}</strong>{{/if}}</span>
         {{#unless perPc}}
@@ -74,7 +77,7 @@
         <button type="button" class="icon fa-solid fa-plus" data-action="changeCounter" data-id="{{../id}}" data-actor="{{id}}" data-delta="1" aria-label="{{localize "SSM.Challenge.AddToCounter"}}" {{#unless canAdd}}disabled{{/unless}}></button>
       </div>
       {{/each}}
-      {{#each thresholds}}{{> ssmThresholdRun root=../root}}{{/each}}
+      {{#if open}}{{#each thresholds}}{{> ssmThresholdRun root=../root}}{{/each}}{{/if}}
       </div>{{/inline}}
 <div class="ssm-layout">
   <header class="ssm-head">
@@ -153,7 +156,7 @@
     {{#each group.subjects as |subject|}}
     <section class="ssm-subject ssm-subject-card {{#unless subject.revealed}}ssm-subject-hidden{{/unless}} {{#if subject.collapsed}}ssm-collapsed{{/if}}" data-subject="{{subject.id}}" data-category="{{group.key}}" data-drag="subjects" data-id="{{subject.id}}" data-group="{{group.key}}">
       <header class="ssm-block-head ssm-card-head">
-        <button type="button" class="icon fa-solid {{#if subject.collapsed}}fa-chevron-right{{else}}fa-chevron-down{{/if}} ssm-collapse" data-action="toggleCollapse" data-subject="{{subject.id}}" aria-expanded="{{#if subject.collapsed}}false{{else}}true{{/if}}" aria-label="{{localize "SSM.Challenge.Collapse"}}" data-tooltip="SSM.Challenge.Collapse"></button>
+        {{> ssmCaret action="toggleCollapse" open=(not subject.collapsed) id=subject.id}}
         {{> ssmEye subject root=../..}}
         <h3>{{subject.name}}</h3>
         {{> ssmComplete subject root=../..}}
@@ -173,8 +176,8 @@
         {{#each subject.actions}}
         <div class="ssm-action-card {{#if open}}open{{/if}}">
           <div class="ssm-skill-line">
-            {{#if descriptionHtml}}<button type="button" class="ssm-stat-label ssm-action-toggle" data-action="toggleAction" data-id="{{id}}" aria-expanded="{{#if open}}true{{else}}false{{/if}}"><i class="fa-solid {{#if open}}fa-chevron-down{{else}}fa-chevron-right{{/if}} ssm-action-chevron" aria-hidden="true"></i>{{label}}{{#if secret}} <i class="fa-solid fa-user-secret" data-tooltip="SSM.Challenge.SecretHint" aria-label="{{localize "SSM.Challenge.Secret"}}"></i>{{/if}}</button>
-            {{else}}<span class="ssm-stat-label">{{label}}{{#if secret}} <i class="fa-solid fa-user-secret" data-tooltip="SSM.Challenge.SecretHint" aria-label="{{localize "SSM.Challenge.Secret"}}"></i>{{/if}}</span>{{/if}}
+            {{> ssmCaret action=(ifThen descriptionHtml "toggleAction" "") open=open id=id}}
+            <span class="ssm-stat-label">{{label}}{{#if secret}} <i class="fa-solid fa-user-secret" data-tooltip="SSM.Challenge.SecretHint" aria-label="{{localize "SSM.Challenge.Secret"}}"></i>{{/if}}</span>
             {{> ssmRowTools kind="actions" subject=subjectId name=label}}
           </div>
           <div class="ssm-skill-grid">{{#each checks}}{{> ssmSkillChip root=../../../..}}{{else}}<span class="ssm-muted">{{localize "SSM.Challenge.NoChecks"}}</span>{{/each}}</div>
