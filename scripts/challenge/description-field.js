@@ -1,7 +1,7 @@
 /**
  * The look of the toggled description editors (Subject and Action descriptions, GM notes). Foundry's toggled <prose-mirror> has no
  * placeholder and shows its edit button on hover only. Here an empty one is a dashed box saying "Click to add a description" that
- * opens the editor on a click, and a filled one keeps its edit button in view (styles: .ssm-description-*).
+ * opens the editor on a click. A filled one shows its edit button on hover, set in to clear the scrollbar (styles: .ssm-description-*).
  */
 
 /** Content that counts as filled even with no text. */

@@ -35,13 +35,16 @@
   {{/each}}
 </div>{{/if}}
 {{#if numbers.length}}<p class="ssm-panel-counters">{{#each numbers}}<span>{{name}}: {{> ssmPanelValue}}</span>{{/each}}</p>{{/if}}{{/inline}}
+{{!-- The party's portraits. For the GM each is a button that marks the character acted or not. --}}
+{{#*inline "ssmPanelParty"}}<div class="ssm-panel-party"{{#unless isGM}} role="list"{{/unless}}>{{#each party}}<img class="ssm-panel-pc {{#if acted}}acted{{/if}}"{{#if @root.isGM}} data-action="toggleActed" data-id="{{id}}" role="button" tabindex="0" aria-pressed="{{acted}}"{{else}} role="listitem"{{/if}} src="{{img}}" alt="{{label}}" aria-label="{{label}}" data-tooltip-text="{{name}}" draggable="false">{{/each}}</div>{{/inline}}
 <header class="ssm-panel-head">
   {{#if isGM}}<button type="button" class="ssm-panel-name" data-action="openChallenge" data-drag-click><strong>{{name}}</strong></button>{{else}}<strong class="ssm-panel-name">{{name}}</strong>{{/if}}
   <span class="ssm-panel-round-text">{{roundLabel}}</span>
 </header>
+{{!-- The round bar, when there is a maximum, sits above the portraits. The GM's round buttons always flank the portraits, so with no maximum the portraits take the bar's place. --}}
 <div class="ssm-panel-run">
-  <div class="ssm-panel-rounds">{{#if isGM}}<button type="button" class="ssm-panel-round-button" data-action="previousRound" aria-label="{{localize "SSM.Challenge.PreviousRound"}}" {{#unless canPreviousRound}}disabled{{/unless}}><i class="fa-solid fa-backward-step" inert></i></button>{{/if}}<span class="ssm-panel-segments" role="img" aria-label="{{roundLabel}}">{{#each roundSegments}}<span class="{{#if filled}}filled{{/if}}"></span>{{/each}}</span>{{#if isGM}}<button type="button" class="ssm-panel-round-button" data-action="nextRound" aria-label="{{localize "SSM.Challenge.NextRound"}}" {{#unless canNextRound}}disabled{{/unless}}><i class="fa-solid fa-forward-step" inert></i></button>{{/if}}</div>
-  {{#if party.length}}<div class="ssm-panel-party"{{#unless isGM}} role="list"{{/unless}}>{{#each party}}<img class="ssm-panel-pc {{#if acted}}acted{{/if}}"{{#if @root.isGM}} data-action="toggleActed" data-id="{{id}}" role="button" tabindex="0" aria-pressed="{{acted}}"{{else}} role="listitem"{{/if}} src="{{img}}" alt="{{label}}" aria-label="{{label}}" data-tooltip-text="{{name}}" draggable="false">{{/each}}</div>{{/if}}
+  {{#if roundSegments.length}}<span class="ssm-panel-segments" role="img" aria-label="{{roundLabel}}">{{#each roundSegments}}<span class="{{#if filled}}filled{{/if}}"></span>{{/each}}</span>{{/if}}
+  {{#if isGM}}<div class="ssm-panel-rounds"><button type="button" class="ssm-panel-round-button" data-action="previousRound" aria-label="{{localize "SSM.Challenge.PreviousRound"}}" {{#unless canPreviousRound}}disabled{{/unless}}><i class="fa-solid fa-backward-step" inert></i></button>{{> ssmPanelParty}}<button type="button" class="ssm-panel-round-button" data-action="nextRound" aria-label="{{localize "SSM.Challenge.NextRound"}}" {{#unless canNextRound}}disabled{{/unless}}><i class="fa-solid fa-forward-step" inert></i></button></div>{{else if party.length}}{{> ssmPanelParty}}{{/if}}
 </div>
 {{#if counterSet.any}}<div class="ssm-panel-challenge-counters">{{> ssmPanelCounters counterSet}}</div>{{/if}}
 {{#if challengeMods.length}}<div class="ssm-panel-mods ssm-panel-challenge-mods">{{#each challengeMods}}{{> ssmPanelMod}}{{/each}}</div>{{/if}}

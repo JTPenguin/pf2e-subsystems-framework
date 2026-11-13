@@ -263,6 +263,6 @@ export function installDirectories() {
   // TABS order sets button order: put the tab after Journal.
   const { Sidebar } = foundry.applications.sidebar;
   const tabs = Object.entries(Sidebar.TABS);
-  tabs.splice(tabs.findIndex(([id]) => id === "journal") + 1, 0, [TAB, { tooltip: "SSM.Tab", icon: "fa-solid fa-comments", gmOnly: true }]);
+  tabs.splice(tabs.findIndex(([id]) => id === "journal") + 1, 0, [TAB, { tooltip: "SSM.Tab", icon: "fa-solid fa-chess-knight", gmOnly: true }]);
   Sidebar.TABS = Object.fromEntries(tabs);
 }
