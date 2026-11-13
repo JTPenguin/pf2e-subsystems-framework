@@ -383,9 +383,10 @@ button.ssm-reached { color: #4f9d5d; }
 
 /* Each entry's edit and delete buttons, at the right of its row (spec section 6). */
 .ssm-sheet .ssm-row-tools { flex: none; display: inline-flex; gap: 0.1rem; margin-left: auto; }
-/* The entry windows' description editors: always open, with room for the menu and a few paragraphs. */
+/* The entry windows' description editors: about 3 lines when short, growing with the text up to 14rem, then scrolling. Foundry places the editor's text absolutely, filling a fixed height; here it sits in the flow instead, as with Foundry's .content-sized editors, so it can grow. This holds for the shown text and the open editor alike; the menu sits above it. */
 .ssm-modifier-window .ssm-window-editor { display: block; margin-bottom: 0.35rem; }
-.ssm-modifier-window .ssm-window-editor prose-mirror { min-height: 14rem; }
+.ssm-modifier-window .ssm-window-editor prose-mirror { --min-height: 0; min-height: 0; height: auto; overflow: visible; }
+.ssm-modifier-window .ssm-window-editor prose-mirror .editor-content { position: relative; inset: auto; min-height: 4.5em; max-height: 14rem; overflow-y: auto; }
 
 /* The NPC sheet look for rows and fields (spec section 6). Items in a section are rows like the NPC sheet's actions (.actions-list li.action in pf2e.css): no box and no fill, a thin line between rows, the name at the left and plain icon controls at the right. */
 .ssm-sheet :is(.ssm-modifier, .ssm-counter, .ssm-action-card) { box-sizing: border-box; margin: 0; padding-top: var(--space-2, 0.125rem); padding-bottom: var(--space-2, 0.125rem); border-bottom: 1px solid var(--color-border-light-tertiary, #7a7971); }

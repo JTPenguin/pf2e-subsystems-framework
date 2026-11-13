@@ -1,13 +1,14 @@
 ---
 title: "Shorter description field in the Edit action window"
 kind: work
-status: ready
-waits_on: Claude
+status: done
+waits_on: none
 priority: 🔼
 blocked_by: []
 source: "Justin's UI list, 2026-11-12; details from Justin, 2026-11-12"
 added: 2026-11-12
 updated: 2026-11-12
+outcome: "The Action and Subject windows' description sits in the flow: about 3 lines (4.5em) when short, growing with its text to 14rem, then scrolling, in both the shown text and the open editor (menu and save button visible). Checked in Foundry 2026-11-12, light and dark themes."
 ---
 # Shorter description field in the Edit action window
 
