@@ -122,8 +122,8 @@
       {{> ssmSectionHead label=(localize "SSM.Challenge.Challenge")}}
       <div class="ssm-section">
         <div class="ssm-row">
-          <label>{{localize "SSM.Challenge.Current"}}<input type="number" min="0" step="1" name="rounds.current" value="{{@root.system.rounds.current}}" {{#if @root.runActive}}disabled{{/if}}></label>
-          <label>{{localize "SSM.Challenge.Maximum"}}<input type="number" min="1" step="1" name="rounds.max" value="{{@root.system.rounds.max}}" placeholder="{{localize "SSM.Challenge.NoLimit"}}"></label>
+          <label>{{localize "SSM.Challenge.CurrentRound"}}<input type="number" min="0" step="1" name="rounds.current" value="{{@root.system.rounds.current}}" {{#if @root.runActive}}disabled{{/if}}></label>
+          <label>{{localize "SSM.Challenge.MaximumRounds"}}<input type="number" min="1" step="1" name="rounds.max" value="{{@root.system.rounds.max}}" placeholder="{{localize "SSM.Challenge.NoLimit"}}"></label>
           <label class="check" data-tooltip="SSM.Challenge.MultipleSubjectsHint"><input type="checkbox" name="multipleSubjects" {{checked @root.system.multipleSubjects}}>{{localize "SSM.Challenge.MultipleSubjects"}}</label>
         </div>
       </div>
