@@ -491,6 +491,23 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
   async _onRender(context, options) {
     await super._onRender(context, options);
     this.#dragDrop.bind(this.element);
+    if (!this.element.dataset.ssmHeaderClicks) {
+      this.element.dataset.ssmHeaderClicks = "1";
+      this.element.addEventListener("click", (event) => this.#onHeaderClick(event));
+    }
+  }
+
+  /** The lines that open and close on a click outside their controls: a subject's header, an action's line and a modifier's row. */
+  static HEADERS = ".ssm-card-head, .ssm-skill-line, .ssm-modifier > .ssm-entry";
+
+  /** What a header click must leave alone: controls, skill chips, the row tools and the grip. */
+  static HEADER_CONTROLS = "button, input, select, textarea, a, .ssm-skill, .ssm-row-tools, .ssm-subject-grip, prose-mirror";
+
+  /** A click on a header's empty part presses its own toggle, if it has one: an action or modifier with no details stays still. */
+  #onHeaderClick(event) {
+    const header = event.target.closest?.(ChallengeSheet.HEADERS);
+    if (!header || event.target.closest(ChallengeSheet.HEADER_CONTROLS)) return;
+    header.querySelector("button.ssm-collapse, button.ssm-action-toggle, button.ssm-mod-chevron")?.click();
   }
 
   #onDragStart(event) {

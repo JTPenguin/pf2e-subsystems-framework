@@ -1,13 +1,14 @@
 ---
 title: "Clicking a card header toggles it"
 kind: work
-status: ready
-waits_on: Claude
+status: done
+waits_on: none
 priority: 🔽
 blocked_by: [modifiers-collapsible-like-actions]
 source: "Justin's UI list, 2026-11-12; details from Justin, 2026-11-12"
 added: 2026-11-12
 updated: 2026-11-12
+outcome: "Clicking the empty part of a subject header, action line or modifier row toggles it; controls, chips, row tools and grip are left alone; a card with no details stays inert. Checked in Foundry 2026-11-12."
 ---
 # Clicking a card header toggles it
 

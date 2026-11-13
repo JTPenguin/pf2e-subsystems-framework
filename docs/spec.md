@@ -392,6 +392,7 @@ The sheet's one view (section 6):
 - A counter with thresholds shows them as rows under it, like a subject's.
 - Subjects can be reordered by drag, and collapsed (14.8). A per-PC counter lists each party PC, with the party total (14.8).
 - **Subjects group by category** (Justin, 2026-11-12). Each subject is a collapsible card, with edit and delete buttons in its header. Uncategorised cards come first with no heading; then each category in use has a red section bar with its subjects' cards under it, in subject category order (14.6), and a + that adds a subject in that category. A category bar doesn't collapse. A subject can be dragged only within its category.
+- **Clicking a header opens and closes it** (Justin, 2026-11-12). A click on the empty part of a subject's header, an action's line or a modifier's row does what its chevron does. Buttons, inputs, links, skill chips and their eyes, the edit and delete buttons and the drag grip keep their own jobs. An action or modifier with nothing to show stays still. The chevron stays the keyboard target.
 - The stored subject list keeps this grouped order, so the panel's columns follow it. A subject whose category changes moves to the end of its new group.
 - The challenge has the points name, subject label and an optional round maximum, edited in place.
 - Each action's window holds its name, Secret and description, then its checks as a table. The description is rich text, like an item's, so it can hold the action's degrees of success. Its secret blocks are the GM's alone.
