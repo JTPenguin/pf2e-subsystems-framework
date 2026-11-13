@@ -118,6 +118,9 @@ const CHASE = "SSM.Preset.chase";
 /** A chase's counter: an obstacle number on a track, shown. The GM sets the maximum to the number of obstacles (spec 14.11). */
 const chaseCounter = (name, value, perRound) => ({ ...newCounter(), name: say(`${CHASE}.${name}`), value, min: 0, max: 6, perRound, display: "track", revealed: true });
 const PREP = "SSM.Preset.preparation";
+const REP = "SSM.Preset.reputation";
+/** GM Core's Reputation tiers, as points on a both-ways track. Ignored, −4 to 4, has no threshold: no tier ticked means Ignored. */
+const REPUTATION_TIERS = [30, 15, 5, -5, -15, -30];
 
 /** One preparation activity (GM Core, Preparation Activities). */
 const preparationActivity = (key, { secret = false, skills }) => ({ ...newAction(), name: say(`${PREP}.${key}.Name`), description: say(`${PREP}.${key}.Description`), secret, checks: skills.map(checkFor) });
@@ -192,6 +195,25 @@ export const PRESETS = {
     subject: (system) => ({ ...pointsSubject(system, { min: 0, max: 3 }), actions: [{ ...newAction(), name: say(`${CHASE}.Overcome`) }] }),
     // The first obstacle starts on the panel; the GM reveals the rest in turn.
     firstSubject: { revealed: true },
+  },
+  /**
+   * GM Core's Reputation. Each faction is a subject with no actions and one both-ways Reputation Points counter, −50 to +50,
+   * with the tiers as thresholds that tick and untick as the value moves. Campaign-long: no rounds. The GM gives favors and disservices with + and −.
+   */
+  reputation: {
+    id: "reputation",
+    label: `${REP}.Label`,
+    icon: "fa-solid fa-handshake",
+    names: { pointsName: `${REP}.Points`, subjectLabel: `${REP}.Subject`, subjectsLabel: `${REP}.Subjects`, noSubjects: `${REP}.NoSubjects` },
+    categories: [],
+    gmNotes: ["Factions", "Changing", "Running"].map((key) => `${REP}.GmNotes.${key}`),
+    subject: (system) => ({
+      ...pointsSubject(system, {
+        direction: BOTH_WAYS, min: -50, max: 50,
+        thresholds: REPUTATION_TIERS.map((points) => threshold(points, `${REP}.Threshold.${points}`, { reveal: "full" })),
+      }),
+      revealed: true,
+    }),
   },
   /**
    * GM Core's preparation for an infiltration, run first as its own challenge. Its Edge and Awareness Points are typed into the infiltration by hand.

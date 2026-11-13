@@ -1674,6 +1674,39 @@ test("the Chase preset: Party and Quarry counters on tracks, one obstacle at a t
   assert.equal(first.counters[0].value, 0);
 });
 
+/* Reputation (items/reputation-subsystem.md): data only */
+
+test("the Reputation preset: revealed factions with no actions, each with a both-ways counter from −50 to +50 and GM Core's tiers shown in full", () => {
+  const s = presetSystem("reputation");
+  assert.deepEqual([s.pointsName, s.subjectLabel, s.rounds.max, s.counters, s.multipleSubjects], ["SSM.Preset.reputation.Points", "SSM.Preset.reputation.Subject", null, [], undefined]);
+  assert.deepEqual(D.suggestedCategories(s), []);
+  const [first] = s.subjects;
+  const second = D.addRow(s, "subjects");
+  for (const faction of [first, second]) {
+    assert.equal(faction.revealed, true, "every faction starts revealed");
+    assert.deepEqual(faction.actions, [], "nothing is rolled");
+    assert.deepEqual(countersOf(faction), [["SSM.Preset.reputation.Points", 0, -50, 50, true]]);
+  }
+  const counter = first.counters[0];
+  assert.equal(counter.direction, "both");
+  assert.deepEqual(counter.thresholds.map((row) => [row.points, row.reveal, row.dc, row.playerText, row.gmText]), [30, 15, 5, -5, -15, -30].map((points) => [points, "full", 0, `SSM.Preset.reputation.Threshold.${points}.Player`, `SSM.Preset.reputation.Threshold.${points}.Gm`]));
+  assert.equal(D.newChallengeSystem("reputation").gmNotes, ["Factions", "Changing", "Running"].map((key) => `<p>SSM.Preset.reputation.GmNotes.${key}</p>`).join(""));
+  const rep = EN.SSM.Preset.reputation;
+  for (const points of [30, 15, 5, -5, -15, -30]) assert.ok(rep.Threshold[points].Player && rep.Threshold[points].Gm, `tier ${points} has its texts`);
+  for (const key of ["Factions", "Changing", "Running"]) assert.ok(rep.GmNotes[key], `GM note ${key}`);
+
+  Run.startRun(s);
+  const reached = () => counter.thresholds.filter((row) => row.reached).map((row) => row.points);
+  for (let i = 0; i < 16; i++) Run.changeCounter(s, counter.id, 1);
+  assert.deepEqual(reached(), [15, 5], "Admired: the highest ticked tier");
+  Run.changeCounter(s, counter.id, -5);
+  assert.deepEqual(reached(), [5], "back down to Liked");
+  for (let i = 0; i < 80; i++) Run.changeCounter(s, counter.id, -1);
+  assert.deepEqual([counter.value, reached()], [-50, [-5, -15, -30]], "held at −50, Hunted");
+  const view = viewOf(s).subjects[0].counters[0];
+  assert.deepEqual([view.range, view.thresholds.map((row) => [row.points, row.reached, row.textHidden])], [{ lo: -50, hi: 50 }, [[-30, true, false], [-15, true, false], [-5, true, false], [5, false, false], [15, false, false], [30, false, false]]]);
+});
+
 /* Allow multiple subjects (spec 14.12) */
 
 test("without Allow multiple subjects, revealing a subject hides the others, from the eye button or the Edit tab; hiding reveals nothing", () => {

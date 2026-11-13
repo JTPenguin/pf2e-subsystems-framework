@@ -339,6 +339,44 @@
         },
         "Party": "Party",
         "Quarry": "Quarry"
+      },
+      "reputation": {
+        "Label": "Reputation",
+        "Points": "Reputation Points",
+        "Subject": "Faction",
+        "Subjects": "Factions",
+        "NoSubjects": "No factions yet.",
+        "GmNotes": {
+          "Factions": "Factions: add one faction per group the party deals with, such as a guild, church or village. Each faction has a Reputation Points counter from −50 to +50, with GM Core's tiers as thresholds. A faction starts at 0, Ignored; set the value higher or lower if the party is already known to that group. A new faction starts revealed: hide one the party hasn't met yet. Factions have no actions, since nothing is rolled.",
+          "Changing": "Favors and disservices: use + and − on the faction's counter, on the sheet or the panel. Each tier's GM text says which favors and disservices still count at that tier. Tiers tick and untick themselves as the value moves, so the highest ticked tier is where the party stands. With no tier ticked, the party is Ignored.",
+          "Running": "Across sessions: reputation lasts the whole campaign. Start the challenge once and leave it running; there are no rounds, so leave Maximum Rounds blank and ignore the round buttons. Show it on the panel when the party should see where they stand. For a long list, turn off Show thresholds list on panel on a faction's counter: its bar keeps a tick per tier."
+        },
+        "Threshold": {
+          "30": {
+            "Player": "Revered",
+            "Gm": "Only major favors add points. Only moderate and major disservices take points away."
+          },
+          "15": {
+            "Player": "Admired",
+            "Gm": "Only major favors add points. Any disservice takes points away."
+          },
+          "5": {
+            "Player": "Liked",
+            "Gm": "Only moderate and major favors add points. Any disservice takes points away."
+          },
+          "-5": {
+            "Player": "Disliked",
+            "Gm": "Any favor adds points. Only moderate and major disservices take points away."
+          },
+          "-15": {
+            "Player": "Hated",
+            "Gm": "Any favor adds points. Only major disservices take points away."
+          },
+          "-30": {
+            "Player": "Hunted",
+            "Gm": "Only moderate and major favors add points. Only major disservices take points away."
+          }
+        }
       }
     }
   }
