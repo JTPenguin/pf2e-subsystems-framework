@@ -7,7 +7,7 @@ import { announceTriggers, writeChallenge } from "./state.js";
 import { advanceRound, canAdvanceRound, canUndoRound, changeCounter, counterValueOf, currentDc, cycleThresholdReveal, endRun, resetRun, restoreModifier, startRun, toggleActed, toggleComplete, toggleModifier, toggleReached, toggleReveal, undoRound } from "./run.js";
 import { LINK_ROLL_ID } from "../roll-option.js";
 import { rollCheck, rollTarget } from "./roll.js";
-import { addRow, applyForm, BOTH_WAYS, categoryKey, clampTracks, counterMoves, counterValueText, EDITABLE, entryListPath, groupByCategory, isDecoyCheck, moveSubject, nextThresholdReveal, pickFields, removeEntry, setCounterNote, subjectGroups } from "./data.js";
+import { addRow, applyForm, BOTH_WAYS, categoryKey, clampTracks, collapseAllAction, counterMoves, counterValueText, EDITABLE, entryListPath, groupByCategory, isDecoyCheck, moveSubject, nextThresholdReveal, pickFields, removeEntry, setCounterNote, subjectGroups } from "./data.js";
 import { ActionWindow, CounterWindow, ModifierWindow, SubjectWindow } from "./entry-window.js";
 
 const { DocumentSheetV2, HandlebarsApplicationMixin } = foundry.applications.api;
@@ -19,6 +19,11 @@ const THRESHOLD_EYE = { hidden: { icon: "fa-eye-slash", pressed: "false" }, poin
 /** The user flag holding which subjects this user has collapsed on the sheet, by subject id (spec 14.8). */
 const COLLAPSED_FLAG = "collapsedSubjects";
 const isCollapsed = (subjectId) => !!game.user.getFlag(MODULE, COLLAPSED_FLAG)?.[subjectId];
+
+/** A category bar's collapse-all button, from what it would do. */
+const collapseAllView = (action) => !action ? null
+  : action === "collapse" ? { icon: "fa-angles-up", label: "SSM.Challenge.CollapseAll" }
+  : { icon: "fa-angles-down", label: "SSM.Challenge.ExpandAll" };
 
 /** Each kind of entry's window. */
 const WINDOWS = { subjects: SubjectWindow, actions: ActionWindow, counters: CounterWindow, modifiers: ModifierWindow };
@@ -342,11 +347,8 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
           checks: rollRows(subject, action),
         })),
         modifierGroups: modifierGroups(system, subject.modifiers.map((row) => this.#modifierView(system, subject, row, canChange))),
-      }))).map((group) => ({ key: group.key, heading: group.label, subjects: group.items })),
+      }))).map((group) => ({ key: group.key, heading: group.label, subjects: group.items, collapseAll: collapseAllView(collapseAllAction(group.items.map((subject) => subject.id), isCollapsed)) })),
       counters: system.counters.map((counter) => counterRun(counter)),
-      collapseAll: !system.subjects.length ? null : system.subjects.some((subject) => !isCollapsed(subject.id))
-        ? { icon: "fa-angles-up", label: "SSM.Challenge.CollapseAll" }
-        : { icon: "fa-angles-down", label: "SSM.Challenge.ExpandAll" },
     };
   }
 
@@ -567,10 +569,11 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
     return this.render();
   }
 
-  /** Collapse every subject when any is open, or expand them all when all are collapsed, in one update of the same flag. */
-  static async #onToggleCollapseAll() {
-    const subjects = this.#source.subjects;
-    const collapse = subjects.some((subject) => !isCollapsed(subject.id));
+  /** Collapse a category's subjects when any is open, or expand them when all are collapsed, in one update of the same flag. */
+  static async #onToggleCollapseAll(event, target) {
+    const key = target.dataset.category ?? "";
+    const subjects = this.#source.subjects.filter((subject) => categoryKey(subject.category) === key);
+    const collapse = collapseAllAction(subjects.map((subject) => subject.id), isCollapsed) === "collapse";
     await game.user.setFlag(MODULE, COLLAPSED_FLAG, Object.fromEntries(subjects.map((subject) => [subject.id, collapse])));
     return this.render();
   }

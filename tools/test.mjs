@@ -1518,6 +1518,15 @@ test("subjects group by category, blank first, and the stored order follows (spe
   assert.deepEqual(D.subjectGroups(s, views)[0].items, [first.id, blank.id], "groups any list in step with the subjects");
 });
 
+test("a category's collapse-all collapses when any subject is open, and expands when all are collapsed (spec 14.8)", () => {
+  const collapsed = new Set(["a", "b"]);
+  const is = (id) => collapsed.has(id);
+  assert.equal(D.collapseAllAction([], is), null, "no subjects, no toggle");
+  assert.equal(D.collapseAllAction(["a", "b"], is), "expand");
+  assert.equal(D.collapseAllAction(["a", "b", "c"], is), "collapse");
+  assert.equal(D.collapseAllAction(["c"], is), "collapse");
+});
+
 test("a subject whose category changes moves to the end of its new group", () => {
   const s = presetSystem("infiltration");
   const obstacle = "SSM.Preset.infiltration.SubjectCategory.obstacle";

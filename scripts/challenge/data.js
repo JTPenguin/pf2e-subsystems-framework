@@ -276,6 +276,12 @@ export function subjectGroups(system, items = system.subjects) {
   return groups.filter((group) => group.items.length);
 }
 
+/** What a category's collapse-all toggle does (spec 14.8): collapse its subjects when any is open, else expand them. Null when it has none. */
+export function collapseAllAction(subjectIds, isCollapsed) {
+  if (!subjectIds.length) return null;
+  return subjectIds.some((id) => !isCollapsed(id)) ? "collapse" : "expand";
+}
+
 /** Put the stored subjects in grouped order, so the panel's columns follow Run view (spec 14.4). Within a category the order stays. */
 export function sortSubjects(system) {
   system.subjects = subjectGroups(system).flatMap((group) => group.items);

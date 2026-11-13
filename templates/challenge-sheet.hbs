@@ -41,9 +41,10 @@
         {{/each}}
       </div>
 {{/each}}{{/inline}}
-{{!-- A section's red bar, with its Add button on the right, as on a PF2e NPC sheet. `kind` names what it adds; `addLabel` is the button's label. --}}
+{{!-- A section's red bar, with its Add button on the right and, on a subject category's bar, its collapse-all toggle (`collapseAll`, with the category key in `collapseKey`; spec 14.8), as on a PF2e NPC sheet. `kind` names what it adds; `addLabel` is the button's label. --}}
 {{#*inline "ssmSectionHead"}}<header class="ssm-block-head">
         <h3{{#if hint}} data-tooltip="{{hint}}"{{/if}}>{{label}}</h3>
+        {{#if collapseAll}}<button type="button" class="icon fa-solid {{collapseAll.icon}}" data-action="toggleCollapseAll"{{#if collapseKey}} data-category="{{collapseKey}}"{{/if}} aria-label="{{localize collapseAll.label}}" data-tooltip="{{collapseAll.label}}"></button>{{/if}}
         {{#if kind}}{{> ssmAdd}}{{/if}}
       </header>{{/inline}}
 {{!-- A subsection's title: small uppercase text with a thin underline. `stripe` adds the category's colour stripe on the left; `kind` and `addLabel` add a + on the right, as on a section's bar. --}}
@@ -139,16 +140,11 @@
       {{> ssmModGroups groups=challengeModifierGroups subject="" root=this}}
     </section>
 
-    {{!-- One toggle collapses every subject when any is open, and expands them all when all are collapsed (spec 14.8). --}}
-    {{#if collapseAll}}<div class="ssm-collapse-all">
-      <button type="button" class="icon fa-solid {{collapseAll.icon}}" data-action="toggleCollapseAll" aria-label="{{localize collapseAll.label}}" data-tooltip="{{collapseAll.label}}"></button>
-    </div>{{/if}}
-
     {{!-- Subjects by category (spec 14.4): the blank category's cards first with no bar, then a red bar per category with its subjects as cards. --}}
     {{#each subjectGroups as |group|}}
     <section class="ssm-block ssm-subject-category">
-      {{#if group.heading}}{{> ssmSectionHead label=group.heading kind="subjects" subject="" category=group.heading addLabel=@root.addSubjectLabel}}
-      {{else}}{{> ssmSectionHead label=@root.subjectsLabel kind="subjects" subject="" addLabel=@root.addSubjectLabel}}{{/if}}
+      {{#if group.heading}}{{> ssmSectionHead label=group.heading kind="subjects" subject="" category=group.heading addLabel=@root.addSubjectLabel collapseAll=group.collapseAll collapseKey=group.key}}
+      {{else}}{{> ssmSectionHead label=@root.subjectsLabel kind="subjects" subject="" addLabel=@root.addSubjectLabel collapseAll=group.collapseAll collapseKey=group.key}}{{/if}}
     {{#each group.subjects as |subject|}}
     <section class="ssm-subject ssm-subject-card {{#unless subject.revealed}}ssm-subject-hidden{{/unless}} {{#if subject.collapsed}}ssm-collapsed{{/if}}" data-subject="{{subject.id}}" data-category="{{group.key}}">
       <header class="ssm-block-head ssm-card-head">

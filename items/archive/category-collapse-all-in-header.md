@@ -1,13 +1,14 @@
 ---
 title: "Collapse and expand all per category, in the category header"
 kind: work
-status: ready
-waits_on: Claude
+status: done
+waits_on: none
 priority: 🔽
 blocked_by: []
 source: "Justin's UI list, 2026-11-12; details from Justin, 2026-11-12"
 added: 2026-11-12
 updated: 2026-11-12
+outcome: "Each subject category's red bar, the uncategorised one too, has its own collapse-all toggle beside its +; the single toggle above the subjects is gone. Checked in Foundry 2026-11-12."
 ---
 # Collapse and expand all per category, in the category header
 
