@@ -121,6 +121,7 @@ const PREP = "SSM.Preset.preparation";
 const REP = "SSM.Preset.reputation";
 /** GM Core's Reputation tiers, as points on a both-ways track. Ignored, −4 to 4, has no threshold: no tier ticked means Ignored. */
 const REPUTATION_TIERS = [30, 15, 5, -5, -15, -30];
+const RES = "SSM.Preset.research";
 
 /** One preparation activity (GM Core, Preparation Activities). */
 const preparationActivity = (key, { secret = false, skills }) => ({ ...newAction(), name: say(`${PREP}.${key}.Name`), description: say(`${PREP}.${key}.Description`), secret, checks: skills.map(checkFor) });
@@ -215,6 +216,30 @@ export const PRESETS = {
         thresholds: REPUTATION_TIERS.map((points) => threshold(points, `${REP}.Threshold.${points}`, { reveal: "full" })),
       }),
       revealed: true,
+    }),
+  },
+  /**
+   * GM Core's Research. Research Points are one pool for the party; the GM adds the stat block's thresholds to it. Days counts +1 each round,
+   * and its thresholds are the timed events, hidden until the GM reveals them. Each library area is a subject with one Research action and
+   * an RP Gathered counter up to its Maximum RP. Rolls change nothing: the GM adds to the area and the pool by hand (Justin, 2026-11-13).
+   */
+  research: {
+    id: "research",
+    label: `${RES}.Label`,
+    icon: "fa-solid fa-book-open",
+    names: { pointsName: `${RES}.Points`, subjectLabel: `${RES}.Subject`, subjectsLabel: `${RES}.Subjects`, noSubjects: `${RES}.NoSubjects` },
+    categories: [],
+    gmNotes: ["Library", "Rolling", "Thresholds", "Time"].map((key) => `${RES}.GmNotes.${key}`),
+    counters: () => [
+      { ...newCounter(), name: say(`${RES}.Points`), min: 0, revealed: true },
+      // Round 1 is day 1. A number, not a bar: a bar's scale would show players where the hidden events sit.
+      { ...newCounter(), name: say(`${RES}.Days`), value: 1, min: 0, perRound: 1, display: "number", revealed: true },
+    ],
+    // GM Core's sample areas allow 5, 10 and 15 RP; the GM sets each area's maximum.
+    subject: (system) => ({
+      ...pointsSubject(system, { name: say(`${RES}.Gathered`), min: 0, max: 5, display: "bar" }),
+      revealed: true,
+      actions: [{ ...newAction(), name: say(`${RES}.Research`) }],
     }),
   },
   /**

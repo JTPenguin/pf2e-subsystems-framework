@@ -1726,6 +1726,69 @@ test("the Reputation preset: revealed factions with no actions, each with a both
   assert.deepEqual([view.range, view.thresholds.map((row) => [row.points, row.label, row.reached, row.textHidden])], [{ lo: -50, hi: 50 }, [[30, "+30", false, false], [15, "+15", false, false], [5, "+5", false, false], [-5, "−5", true, false], [-15, "−15", true, false], [-30, "−30", true, false]]]);
 });
 
+/* Research (items/research-subsystem.md): data only */
+
+test("the Research preset: a Research Points pool, Days at 1 going up each round, and revealed library areas with a Research action and RP Gathered up to 5", () => {
+  const s = presetSystem("research");
+  assert.deepEqual([s.pointsName, s.subjectLabel, s.rounds.max, s.multipleSubjects], ["SSM.Preset.research.Points", "SSM.Preset.research.Subject", null, undefined]);
+  assert.deepEqual(D.suggestedCategories(s), []);
+  assert.deepEqual(s.counters.map((row) => [row.name, row.value, row.perRound, row.min, row.max, row.thresholds.length, row.revealed]), [
+    ["SSM.Preset.research.Points", 0, 0, 0, null, 0, true],
+    ["SSM.Preset.research.Days", 1, 1, 0, null, 0, true],
+  ]);
+  const [first] = s.subjects;
+  const second = D.addRow(s, "subjects");
+  for (const area of [first, second]) {
+    assert.equal(area.revealed, true, "every area starts revealed");
+    assert.deepEqual(area.actions.map((action) => [action.name, action.secret, action.checks]), [["SSM.Preset.research.Research", false, []]]);
+    assert.deepEqual(countersOf(area), [["SSM.Preset.research.Gathered", 0, 0, 5, true]]);
+    assert.equal(area.counters[0].display, "bar");
+  }
+  assert.equal(D.newChallengeSystem("research").gmNotes, ["Library", "Rolling", "Thresholds", "Time"].map((key) => `<p>SSM.Preset.research.GmNotes.${key}</p>`).join(""));
+  const res = EN.SSM.Preset.research;
+  for (const key of ["Label", "Points", "Subject", "Subjects", "NoSubjects", "Research", "Gathered", "Days"]) assert.ok(res[key], key);
+  for (const key of ["Library", "Rolling", "Thresholds", "Time"]) assert.ok(res.GmNotes[key], `GM note ${key}`);
+
+  // A timed event on day 3, added by the GM: hidden from players until revealed.
+  const [rp, days] = s.counters;
+  const event = D.addRow(s, "counters.1.thresholds", { points: 3 });
+  assert.equal(event.reveal, "hidden");
+  Run.startRun(s);
+  Run.advanceRound(s);
+  assert.equal(days.value, 2);
+  Run.advanceRound(s);
+  assert.deepEqual([days.value, event.reached], [3, true], "the third day's event");
+  assert.equal(rp.value, 0, "rounds don't add Research Points");
+  assert.equal(viewOf(s).counters[1].thresholds.length, 0, "players get no hidden event");
+  assert.equal(days.display, "number", "no bar whose end gives the event away");
+  const gathered = first.counters[0];
+  for (let i = 0; i < 7; i++) Run.changeCounter(s, gathered.id, 1);
+  assert.equal(gathered.value, 5, "an area gives no more than its Maximum RP");
+});
+
+test("Start marks the thresholds a counter's starting value already meets, with their notices; Reset clears them", () => {
+  const s = presetSystem("research");
+  const [rp, days] = s.counters;
+  const dayOne = D.addRow(s, "counters.1.thresholds", { points: 1, gmText: "Agents confront the party" });
+  const dayThree = D.addRow(s, "counters.1.thresholds", { points: 3 });
+  const rpFive = D.addRow(s, "counters.0.thresholds", { points: 5 });
+  const area = s.subjects[0].counters[0];
+  area.value = 2;
+  const areaTwo = D.addRow(s, "subjects.0.counters.0.thresholds", { points: 2 });
+  const result = Run.startRun(s);
+  assert.deepEqual(result.triggers, [
+    { counter: "SSM.Preset.research.Days", value: 1, note: "Agents confront the party" },
+    { counter: "SSM.Preset.research.Gathered", value: 2, note: "" },
+  ]);
+  assert.deepEqual([dayOne.reached, dayThree.reached, rpFive.reached, areaTwo.reached], [true, false, false, true]);
+  assert.equal(Run.startRun(s), false, "already running");
+  Run.advanceRound(s);
+  Run.advanceRound(s);
+  assert.equal(dayThree.reached, true);
+  Run.resetRun(s);
+  assert.deepEqual([dayOne.reached, dayThree.reached, areaTwo.reached, days.value, rp.value], [false, false, false, 1, 0], "back to before Start");
+});
+
 /* Allow multiple subjects (spec 14.12) */
 
 test("without Allow multiple subjects, revealing a subject hides the others, from the eye button or the Edit tab; hiding reveals nothing", () => {

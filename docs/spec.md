@@ -373,7 +373,7 @@ An action has no outcome table and no maximum points (Justin, 2026-11-12).
 | Points, player text, GM text, reveal, reached | As today |
 | DC change | Optional. Applies while the threshold is Reached: to that subject's checks for a threshold on a subject's counter, to every check in the challenge for one on a challenge counter. The GM text holds any note. |
 
-Reached is set when the counter reaches the threshold in its direction. Only the GM clears it, as today. The GM gets a notice when any counter's threshold is reached.
+Reached is set when the counter reaches the threshold in its direction. Start also sets it on any threshold a counter's starting value already meets, with its notice, such as an event on day 1 when Days starts at 1; Reset clears it again (Justin, 2026-11-13). Only the GM clears it, as today. The GM gets a notice when any counter's threshold is reached.
 
 **Counter.** Name, value, direction, optional minimum and maximum, thresholds, revealed (a new counter starts revealed), and an optional **change each round**. Next round adds that amount; Previous round takes it back. A counter can be **per PC** (14.8).
 
@@ -422,6 +422,7 @@ A preset is a starting template: its names, and what a new challenge and a new s
 | **Chase** | Chase Points, Obstacle | No suggested categories. Allow multiple subjects is off. GM notes say how to use the module for a chase: obstacles, the tracks, each round, and split paths or a split party. Counters: Party at 1 and Quarry at 2, +1 each round; both minimum 0, maximum 6, Track display, shown. A new obstacle: a Chase Points counter, 0 to 3; Overcome with no checks. The first obstacle starts revealed, later ones hidden. See 14.11. |
 | **Infiltration Preparation** | Edge Points, Preparation | Run before the infiltration; the GM types its results in. Counters: Edge Points (per PC, shown) and Awareness Points (hidden). One revealed subject with no counter and GM Core's six activities as actions, every check revealed, secret where the rules say. GM notes say how to run it with the module: rolling activities, adding points by hand, that a dud or cursed Edge Point still adds to Edge and goes in the PC's note, and handing the totals to the infiltration. No suggested categories. |
 | **Reputation** | Reputation Points, Faction | No challenge counters, no rounds (Maximum rounds 0), no suggested categories. A new faction is revealed, with no actions and one Reputation Points counter: both ways, −50 to +50, starting at 0, with GM Core's six tiers as thresholds (30, 15, 5, −5, −15, −30), shown in full. Each tier's player text is its name alone; its GM text says which favors and disservices still count (Justin, 2026-11-13). Ignored has no threshold: no tier ticked means Ignored. GM notes say how to use the module for reputation: factions, favors and disservices by hand, and leaving the challenge running across sessions (Justin, 2026-11-13). |
+| **Research** | Research Points, Library Area | No suggested categories, no round maximum. Counters: Research Points (minimum 0, shown, no thresholds: the GM adds the stat block's) and Days (starts at 1, +1 each round, minimum 0, shown as a number, so no bar gives a hidden event away; timed events are its thresholds, hidden until the GM reveals them). A new library area is revealed, with one Research action with no checks and an RP Gathered counter, 0 to 5, drawn as a bar: its maximum is the area's Maximum RP. The GM adds to both the area and the pool by hand after each roll (Justin, 2026-11-13). GM notes say how to use the module for research: areas, each roll and false discoveries, thresholds, and time. |
 
 **GM notes** are guidance on using the module for that subsystem: what to add, how to set up its counters, what to do each round. They don't repeat GM Core's rules; the GM reads those on their own (Justin, 2026-11-13).
 
@@ -526,7 +527,7 @@ The module isn't in real use yet (Justin, 2026-11-11), so nothing is converted. 
 
 - Chase: built as the Chase preset, data only (14.6, 14.11, 14.12). Split paths and solo chases need no new feature (14.11).
 - Infiltration: built as the Infiltration and Infiltration Preparation presets (14.6), and audited against GM Core (items/archive/infiltration-subsystem.md). Several objectives in sequence need nothing new: a subject category per objective, and Per PC counters for individual obstacles. GM Core's infiltration has no group checks; group obstacles pool their points on a plain counter.
-- Research: Research Points are a counter. Actions no longer have a maximum (Justin, 2026-11-12), so how each area's Maximum RP is tracked is decided when Research is built (items/research-subsystem.md).
+- Research: built as the Research preset (14.6), data only (items/archive/research-subsystem.md). Each area's Maximum RP is an RP Gathered counter on the area (Justin, 2026-11-13).
 - Enemy Victory Points need nothing new: a counter the GM changes by hand.
 - Reputation: built as the Reputation preset (14.6), data only (items/archive/reputation-subsystem.md).
 

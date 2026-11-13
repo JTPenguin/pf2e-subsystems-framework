@@ -156,11 +156,19 @@ function rememberCounter(system, counter) {
   if (saved && !saved[counter.id]) saved[counter.id] = counterBaseline(counter);
 }
 
+/**
+ * Start the run. A counter whose starting value already meets a threshold marks it Reached now, with its notice, as a change to it would,
+ * such as Research's Days at 1 with an event on day 1. The baseline is taken first, so Reset clears them again. Returns those notices.
+ */
 export function startRun(system) {
   if (system.run.status !== "inactive") return false;
   system.run.baseline = takeBaseline(system);
   if (hasRounds(system)) system.rounds.current = Math.max(1, system.rounds.current);
   system.run.status = "active";
+  const out = { triggers: [], reached: [] };
+  // A per-PC counter has no thresholds (spec 14.8).
+  for (const counter of allCounters(system)) if (!counter.perPc) noteReached(counter, settleThresholds(counter.thresholds, counter.direction, counter.value), out);
+  return { triggers: out.triggers };
 }
 
 export function endRun(system) {
@@ -202,12 +210,17 @@ function adjustCounter(system, counter, delta, out, actorId = "") {
   }
   counter.value = after;
   if (!movesOn(counter.direction, after - before)) return true;
+  noteReached(counter, settleThresholds(counter.thresholds, counter.direction, after), out);
+  return true;
+}
+
+/** Add a counter's newly reached thresholds to `out` as notices. */
+function noteReached(counter, thresholds, out) {
   const name = counter.name || say("SSM.Challenge.UnnamedCounter");
-  for (const threshold of settleThresholds(counter.thresholds, counter.direction, after)) {
+  for (const threshold of thresholds) {
     out.triggers.push({ counter: name, value: threshold.points, note: threshold.gmText });
     out.reached.push(threshold.id);
   }
-  return true;
 }
 
 /** The language key for a reached counter threshold's notice, which depends on whether it has GM text. */

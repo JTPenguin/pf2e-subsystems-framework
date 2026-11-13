@@ -380,6 +380,22 @@
             "Gm": "Only moderate and major favors add points. Only major disservices take points away."
           }
         }
+      },
+      "research": {
+        "Label": "Research",
+        "Points": "Research Points",
+        "Subject": "Library Area",
+        "Subjects": "Library Areas",
+        "NoSubjects": "No library areas yet.",
+        "Research": "Research",
+        "Gathered": "RP Gathered",
+        "Days": "Days",
+        "GmNotes": {
+          "Library": "Library areas: add one area per research check in the stat block, such as a shelf, a room or an NPC to question. Give its Research action one check row per skill, each with its DC. Set the area's RP Gathered maximum to its Maximum RP. Areas start revealed, as the party chooses where to research: hide any they haven't found yet.",
+          "Rolling": "Each roll: rolls change nothing, so after a success use + on the area's RP Gathered and on Research Points, once per RP gained. When RP Gathered is full, the area gives no more: mark it Complete. On a critical failure use − on Research Points only, and write the false discovery in a secret block in the area's description, which players don't see.",
+          "Thresholds": "Thresholds: add the stat block's research thresholds to Research Points, fewest RP first, with what the party learns as player text. Thresholds tick as the points rise, and the GM gets a notice on each one. To change the library when a threshold is reached, such as a new check or a harder DC, edit the area.",
+          "Time": "Time: set the round length with the players, from 10 minutes to a day, and set Maximum Rounds to the time limit. Days goes up by 1 each round; rename it, such as to Hours, if rounds are shorter. Add each timed event as a threshold on Days: it starts hidden, so reveal it when it happens."
+        }
       }
     }
   }
