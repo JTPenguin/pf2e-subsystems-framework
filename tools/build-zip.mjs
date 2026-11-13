@@ -11,7 +11,7 @@ import { fileURLToPath } from "node:url";
 
 const root = path.join(path.dirname(fileURLToPath(import.meta.url)), "..");
 const manifest = JSON.parse(fs.readFileSync(path.join(root, "module.json"), "utf8"));
-const CONTENTS = ["module.json", "scripts", "styles", "templates", "lang"];
+const CONTENTS = ["module.json", "LICENSE", "scripts", "styles", "templates", "lang"];
 
 const output = path.join(root, "dist", `${manifest.id}-${manifest.version}.zip`);
 fs.mkdirSync(path.dirname(output), { recursive: true });

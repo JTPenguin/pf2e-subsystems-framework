@@ -20,5 +20,5 @@ Players never see a DC: not on the panel, not on the chat card. Remove the per-r
 1. Remove `showDC` from the Influence row in `model.js`, `newInfluence` in `data.js`, the sheet's checkbox, and the panel view in `panel-view.js`.
 2. Always roll with the DC hidden from players (`roll.js` and the chat links).
 3. Old challenges and imports that still carry `showDC` must load without errors. Check how the data model handles an unknown field.
-4. Update the tests and `docs/spec.md` sections 5, 7 and 8.
+4. Update the tests and `docs/dev/spec.md` sections 5, 7 and 8.
 5. Check it: run `tools/test.mjs` and `tools/check-load.mjs`, then roll from the panel in Foundry as a player and confirm no DC shows.

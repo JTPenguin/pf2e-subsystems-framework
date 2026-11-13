@@ -18,7 +18,7 @@ priority: ⏫
 
 **Done:** id, title, page type, language keys, build script and docs renamed; tests pass; the zip builds as `pf2e-subsystems-framework-0.1.0.zip`. Justin renamed the module symlink and re-enabled the module. A one-off macro (`tools/migrate-old-id.macro.js`, deleted after use; in git at d9ab7e2) moved his test challenges to the new id, and he confirmed it worked.
 
-**Kept on purpose:** the `ssm-` CSS and temp-folder prefixes (internal only), and the old id in `docs/phase-0-results.md` (a record of past findings).
+**Kept on purpose:** the `ssm-` CSS and temp-folder prefixes (internal only), and the old id in `docs/dev/phase-0-results.md` (a record of past findings).
 
 **Folder:** moved to `~/Projects/PF2e Subsystems Framework`, with the Foundry symlink, the memory folder and the app preset updated (2026-11-13).
 
@@ -40,7 +40,7 @@ Don't use the bare title "PF2e Subsystems": that is the module this one replaces
 - `lang/en.json`: the keys sit under the module id.
 - `tools/build-zip.mjs`: the zip name and the `ssm-` temp prefix.
 - `styles/subsystems.css`: 368 `ssm-` class names. Decide whether to change the prefix (for example to `psf-`) or keep `ssm-` as an internal name. Changing it is cosmetic and touches every template.
-- Docs: `CLAUDE.md`, `docs/spec.md`, `docs/phase-0-results.md`. The spec's history can keep the old name where it records past decisions.
+- Docs: `CLAUDE.md`, `docs/dev/spec.md`, `docs/dev/phase-0-results.md`. The spec's history can keep the old name where it records past decisions.
 - The project folder (`~/Projects/PF2e Subsystem Manager`) and the symlink `Data/modules/pf2e-subsystem-manager`. Renaming the folder moves Claude's memory folder for this project too, so copy `MEMORY.md` and its notes across.
 - The git remote, if one is added before the rename.
 

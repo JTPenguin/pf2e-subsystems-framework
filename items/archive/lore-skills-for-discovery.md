@@ -24,5 +24,5 @@ Let a Discovery check use a Lore skill, as an Influence check already can.
 1. Add `lore` to the Discovery row in `scripts/subsystems/influence/model.js` and `newDiscovery` in `data.js`.
 2. Add Lore to the Discovery skill choices and show the Lore name input in `sheet.js` and `templates/influence-sheet.hbs`.
 3. Pass `lore` through the Discovery view in `panel-view.js`, so the panel shows the Lore's name.
-4. Update the Discovery row in `docs/spec.md` section 5.
+4. Update the Discovery row in `docs/dev/spec.md` section 5.
 5. Check it: run `tools/test.mjs`, then roll a Discovery Lore in Foundry from the sheet and the panel, with a PC who has the Lore and one who doesn't.

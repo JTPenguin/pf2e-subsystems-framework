@@ -59,38 +59,42 @@ export const paragraph = (text) => (String(text ?? "").trim() ? `<p>${escapeHtml
 export const secretBlock = (text) => (String(text ?? "").trim() ? `<section class="secret" id="secret-${id()}">${paragraph(text)}</section>` : "");
 
 /**
- * A threshold or modifier saved with player and GM text. A threshold's player text becomes its name; a modifier keeps its name and its
- * player text opens the description. The GM text follows as a secret block. Changes the row in place.
+ * Give every row a challenge-unique id. Entries are found by id alone, so two rows sharing one, as a hand-written import or a copied
+ * subject can hold, would reveal or change each other. A repeat gets its id plus a number, the same on every client and every load,
+ * so nothing random reaches the DOM. A subject modifier's DC change names its subject's checks by id, so it follows that subject's renames.
+ * Changes the challenge's source in place.
  */
-export function migrateTexts(row, { playerIsName = false } = {}) {
-  if (!row || (row.playerText === undefined && row.gmText === undefined)) return row;
-  if (playerIsName && !row.name) row.name = String(row.playerText ?? "").trim();
-  if (!row.description) row.description = (playerIsName ? "" : paragraph(row.playerText)) + secretBlock(row.gmText);
-  delete row.playerText;
-  delete row.gmText;
-  return row;
-}
-
-/**
- * A modifier saved with the old list of effects: its first DC row becomes its DC change, and its notes join with "; ".
- * Later DC rows are dropped. Changes the modifier in place.
- */
-export function migrateModifier(modifier) {
-  if (!Array.isArray(modifier?.effects)) return modifier;
-  const dcRow = modifier.effects.find((row) => row.type === "dc");
-  if (!modifier.dc) modifier.dc = dcRow ? { amount: dcRow.amount ?? 0, allSkills: dcRow.allSkills ?? true, skills: [...(dcRow.skills ?? [])] } : newModifierDc();
-  if (modifier.note === undefined) modifier.note = modifier.effects.filter((row) => row.type === "note").map((row) => (row.note ?? "").trim()).filter(Boolean).join("; ");
-  delete modifier.effects;
-  return modifier;
-}
-
-/** Bring every saved threshold and modifier to the name and description shape (migrateTexts). Changes the challenge's source in place. */
-export function migrateChallengeTexts(source) {
-  const subjects = source?.subjects ?? [];
-  for (const modifier of [...(source?.modifiers ?? []), ...subjects.flatMap((subject) => subject.modifiers ?? [])]) migrateTexts(modifier);
-  for (const counter of [...(source?.counters ?? []), ...subjects.flatMap((subject) => subject.counters ?? [])]) for (const row of counter.thresholds ?? []) migrateTexts(row, { playerIsName: true });
+export function dedupeIds(source) {
+  const seen = new Set();
+  const unique = (row) => {
+    if (!row || typeof row.id !== "string" || !row.id) return null;
+    if (!seen.has(row.id)) { seen.add(row.id); return null; }
+    const old = row.id;
+    let n = 2;
+    while (seen.has(`${old}${n}`)) n++;
+    row.id = `${old}${n}`;
+    seen.add(row.id);
+    return [old, row.id];
+  };
+  const counters = (list) => { for (const counter of list ?? []) { unique(counter); for (const row of counter.thresholds ?? []) unique(row); } };
+  counters(source?.counters);
+  for (const modifier of source?.modifiers ?? []) unique(modifier);
+  for (const subject of source?.subjects ?? []) {
+    unique(subject);
+    counters(subject.counters);
+    const renamed = new Map();
+    for (const action of subject.actions ?? []) {
+      unique(action);
+      for (const check of action.checks ?? []) { const pair = unique(check); if (pair) renamed.set(...pair); }
+    }
+    for (const modifier of subject.modifiers ?? []) {
+      unique(modifier);
+      if (renamed.size && Array.isArray(modifier.dc?.skills)) modifier.dc.skills = modifier.dc.skills.map((skill) => renamed.get(skill) ?? skill);
+    }
+  }
   return source;
 }
+
 export const newCheck = () => ({ id: id(), skill: "society", lore: "", dc: 15, revealed: true, decoy: false });
 /** `dc` is a DC change that applies while the threshold is reached. */
 export const newThreshold = () => ({ id: id(), points: 1, name: "", description: "", reveal: "hidden", reached: false, dc: 0 });

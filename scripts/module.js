@@ -43,7 +43,7 @@ Hooks.on("preUpdateJournalEntry", (entry, changes) => {
   Promise.resolve().then(() => entry._onSheetChange());
 });
 
-/** Puts back the sheet of any challenge that lost it before the hook above existed. */
+/** Puts back the sheet of any challenge without it. Import Data skips the hook above, so a file with no sheet flag arrives without one. */
 Hooks.once("ready", () => {
   if (!game.user.isActiveGM) return;
   const updates = [];

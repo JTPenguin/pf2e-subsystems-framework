@@ -137,25 +137,7 @@ test("every change type has an English string", () => {
 
 test("a modifier has one DC change and a note, both empty to start", () => {
   const m = D.newModifier();
-  assert.deepEqual([m.dc, m.note, "effects" in m], [{ amount: 0, allSkills: true, skills: [] }, "", false]);
-});
-
-test("a modifier saved with a list of effects keeps its first DC change and joins its notes", () => {
-  const old = { ...D.newModifier(), effects: [
-    { type: "note", note: "she softens", amount: 0, allSkills: true, skills: [] },
-    { type: "dc", amount: -2, allSkills: false, skills: ["a"], note: "" },
-    { type: "dc", amount: 5, allSkills: true, skills: [], note: "" },
-    { type: "note", note: " ends the talk ", amount: 0, allSkills: true, skills: [] },
-  ] };
-  delete old.dc;
-  delete old.note;
-  D.migrateModifier(old);
-  assert.deepEqual([old.dc, old.note, "effects" in old], [{ amount: -2, allSkills: false, skills: ["a"] }, "she softens; ends the talk", false]);
-  const noDc = { name: "x", effects: [{ type: "note", note: "" }] };
-  D.migrateModifier(noDc);
-  assert.deepEqual([noDc.dc, noDc.note], [{ amount: 0, allSkills: true, skills: [] }, ""]);
-  const current = D.newModifier();
-  assert.deepEqual(D.migrateModifier(structuredClone(current)), current, "a modifier in the new shape is left alone");
+  assert.deepEqual([m.dc, m.note], [{ amount: 0, allSkills: true, skills: [] }, ""]);
 });
 
 test("a dragged panel stays wholly on screen", () => {
@@ -191,35 +173,24 @@ test("only a size with two numbers counts as saved", () => {
   for (const value of [undefined, null, { left: 1, top: 2 }, { width: 300 }, { width: "300", height: 200 }, { width: 300, height: Infinity }]) assert.equal(Spot.readSize(value), null);
 });
 
-test("a threshold saved with player and GM text gets its player text as its name and its GM text as a secret block", () => {
-  const row = D.migrateTexts({ id: "t", points: 5, playerText: " Suspicions raised ", gmText: "DCs +1 & a <complication>" }, { playerIsName: true });
-  assert.equal(row.name, "Suspicions raised");
-  assert.match(row.description, /^<section class="secret" id="secret-[^"]+"><p>DCs \+1 &amp; a &lt;complication&gt;<\/p><\/section>$/);
-  assert.ok(!("playerText" in row) && !("gmText" in row), "the old fields go");
-  assert.deepEqual(D.migrateTexts({ playerText: "", gmText: "" }, { playerIsName: true }), { name: "", description: "" });
-  const current = { name: "Kept", description: "<p>kept</p>" };
-  assert.deepEqual(D.migrateTexts(structuredClone(current), { playerIsName: true }), current, "a row in the new shape is left alone");
-  assert.deepEqual(D.migrateTexts({ name: "Named", description: "", playerText: "old", gmText: "" }, { playerIsName: true }).name, "Named", "a name already set stays");
-});
-
-test("a modifier saved with player and GM text keeps its name, and its description is the player text then a secret block", () => {
-  const row = D.migrateTexts({ name: "Flattery", playerText: "likes praise", gmText: "she is lying" });
-  assert.equal(row.name, "Flattery");
-  assert.match(row.description, /^<p>likes praise<\/p><section class="secret" id="secret-[^"]+"><p>she is lying<\/p><\/section>$/);
-  assert.equal(D.migrateTexts({ playerText: "only this", gmText: "" }).description, "<p>only this</p>");
-  assert.equal(V.withoutSecrets(row.description), "<p>likes praise</p>", "players see the player text only");
-});
-
-test("a whole challenge's thresholds and modifiers move to the new shape, the challenge's and every subject's", () => {
-  const source = {
-    modifiers: [{ name: "A", playerText: "a", gmText: "" }],
-    counters: [{ thresholds: [{ points: 1, playerText: "One", gmText: "" }] }],
-    subjects: [{ modifiers: [{ name: "B", playerText: "", gmText: "b" }], counters: [{ thresholds: [{ points: 2, playerText: "Two", gmText: "two" }] }] }],
-  };
-  D.migrateChallengeTexts(source);
-  assert.deepEqual([source.modifiers[0].description, source.counters[0].thresholds[0].name, source.subjects[0].counters[0].thresholds[0].name], ["<p>a</p>", "One", "Two"]);
-  assert.match(source.subjects[0].modifiers[0].description, /^<section class="secret"/);
-  assert.ok(!JSON.stringify(source).includes("playerText") && !JSON.stringify(source).includes("gmText"));
+test("a challenge with repeated ids gets unique ones, the same on every run, and a copied subject's DC change follows its own check", () => {
+  const subject = (id) => ({
+    id, counters: [{ id: "cnt", thresholds: [{ id: "thr" }] }],
+    actions: [{ id: "act", checks: [{ id: "chk" }, { id: "other" }] }],
+    modifiers: [{ id: "mod", dc: { amount: -2, allSkills: false, skills: ["chk", "other"] } }],
+  });
+  const build = () => ({ counters: [{ id: "cnt", thresholds: [] }], modifiers: [], subjects: [subject("sergei"), subject("ireena")] });
+  const source = D.dedupeIds(build());
+  const ids = [];
+  const walk = (value) => { if (Array.isArray(value)) value.forEach(walk); else if (value && typeof value === "object") { if (typeof value.id === "string") ids.push(value.id); Object.values(value).forEach(walk); } };
+  walk(source);
+  assert.equal(new Set(ids).size, ids.length, "every id is unique");
+  assert.equal(source.counters[0].id, "cnt", "the first holder keeps its id");
+  assert.deepEqual(source.subjects[0].modifiers[0].dc.skills, ["chk", "other"], "the first subject's DC change is untouched");
+  const copy = source.subjects[1];
+  assert.deepEqual(copy.modifiers[0].dc.skills, copy.actions[0].checks.map((check) => check.id), "the copy's DC change names the copy's own checks");
+  assert.deepEqual(D.dedupeIds(build()), source, "the same ids on every run");
+  assert.deepEqual(D.dedupeIds(structuredClone(source)), source, "unique ids are left alone");
 });
 
 test("a challenge's update drops a sheet change away from its sheet and keeps the rest", () => {
@@ -304,7 +275,7 @@ test("a preset fills in the names, the rounds and the first subject", () => {
 
 test("addRow picks the right row for each list, and a new subject follows the preset", () => {
   const s = system();
-  assert.deepEqual([D.addRow(s, "subjects.0.actions.1.checks").revealed, "always" in D.addRow(s, "subjects.0.actions.1.checks")], [true, false], "a new check starts revealed");
+  assert.equal(D.addRow(s, "subjects.0.actions.1.checks").revealed, true, "a new check starts revealed");
   assert.ok("reached" in D.addRow(s, "subjects.0.counters.0.thresholds"));
   const own = D.addRow(s, "subjects.0.counters");
   assert.deepEqual([own.name, own.revealed, own.perRound, own.thresholds], ["SSM.Preset.influence.Points", true, 0, []], "a subject's new counter takes the points name and starts shown");
@@ -624,8 +595,6 @@ test("Complete is the GM's alone: a subject's counter reaching its maximum sets 
   Run.toggleComplete(s, sub(s).id);
   assert.equal(sub(s).complete, false);
   assert.equal(Run.toggleComplete(s, "gone"), false);
-  for (const key of ["points", "pointsBy", "direction", "min", "max", "goal", "completeBy", "tracksPoints", "individual", "thresholds"]) assert.ok(!(key in sub(s)), `a subject has no ${key}`);
-  for (const name of ["changePoints", "pointsOf", "isComplete"]) assert.equal(Run[name], undefined, name);
 });
 
 test("a subject's counter that counts down reaches its thresholds as it falls", () => {
@@ -1063,7 +1032,7 @@ const revealAll = (s) => {
 };
 const assertNoSecrets = (view) => {
   const { keys } = scan(view);
-  for (const key of ["decoy", "always", "gmText", "gmNotes", "statLine", "revealed", "effects", "note", "outcomes", "maxPoints", "given", "min", "perRound", "goal", "direction", "pointsBy", "completeBy", "baseline", "run", "preset"]) assert.ok(!keys.has(key), `key ${key} must not appear`);
+  for (const key of ["decoy", "gmNotes", "revealed", "note", "min", "perRound", "direction", "baseline", "run", "preset"]) assert.ok(!keys.has(key), `key ${key} must not appear`);
   assert.ok(!JSON.stringify(view).includes(GM_SECRET), "GM text must not appear");
 };
 
@@ -1287,7 +1256,6 @@ test("the copy is the same when nothing players see has changed", () => {
   const s = secretSystem();
   const before = JSON.stringify(viewOf(s, PARTY));
   sub(s).modifiers[0].description += '<section class="secret" id="secret-n"><p>new GM text</p></section>';
-  sub(s).statLine = "new stats";
   society(s).dc = 30;
   s.gmNotes = "changed";
   Run.receiveRoll(s, rollOf(s, { actorId: "" }));

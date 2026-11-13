@@ -20,7 +20,7 @@ priority: 🔽
 
 - `scripts/challenge/panel-view.js:89` (`cardGroups`) keeps every category a subject's modifiers use, via `keep: subject.modifiers.map((row) => row.category)`. So a labelled category with nothing revealed still gets a group.
 - `templates/challenge-panel.hbs:63` renders each group "empty or not", which is the same choice.
-- The blank category already follows the rule: spec 14.7 (`docs/spec.md`) and the comment at `panel-view.js:85` show it only when one of its entries is revealed.
+- The blank category already follows the rule: spec 14.7 (`docs/dev/spec.md`) and the comment at `panel-view.js:85` show it only when one of its entries is revealed.
 
 ## Next step
 

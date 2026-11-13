@@ -29,5 +29,5 @@ Treat Deception, Diplomacy and Intimidation as universal Influence skills, the w
 2. Make `newNpc` add the four universal rows, each with the default DC.
 3. Use the check in `panel-view.js` (always visible), and in `sheet.js` and `templates/influence-sheet.hbs` (no eye toggle, no Revealed or Decoy checkbox). Do the same for universal Discovery rows, so Perception loses its decoy checkbox too.
 4. Decide what happens to a universal row that already has `decoy: true`, for example from an import: treat it as not a decoy.
-5. Add tests and update `docs/spec.md` sections 2, 5 and 7.
+5. Add tests and update `docs/dev/spec.md` sections 2, 5 and 7.
 6. Check it: run `tools/test.mjs`, then add an NPC in Foundry and confirm the rows and the panel.

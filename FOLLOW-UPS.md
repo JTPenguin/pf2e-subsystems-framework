@@ -2,7 +2,6 @@
 
 Minor issues found while building the open items. None blocked the work. Each line names the item it came from.
 
-- **threshold-unreach-by-click:** in the test world, Sergei and Ireena share threshold ids (probably one NPC was copied from the other). `toggleReveal` and `findEntry` in `run.js` look up an entry by id alone, so revealing one NPC's threshold may also reveal the other's. Worth checking how the copy happened and either giving copies new ids or looking entries up per NPC.
 - **progress-bar-and-thresholds:** Reset catches errors while restoring the baseline but not while saving it. A damaged baseline (say, from a hand-edited import) holding a bad `reveal` value would make Reset fail validation (`run.js` around line 104). Very unlikely.
 - **thresholds-player-card:** a fully revealed threshold with empty player text shows only its points on the panel. Fine as is, or it could fall back to "???".
 - **challenge-overlay-draggable:** a player can drag the panel over the sidebar, chat or hotbar; it is only kept on screen, not clear of Foundry's UI. Not checked: a UI scale other than 1 in a real client setting, and touch input.
@@ -18,7 +17,6 @@ Minor issues found while building the open items. None blocked the work. Each li
 - **gm-panel-onoff-icon-button (2026-11-10):** in the GM window, Off and Spent now differ only by icon (a check vs a rotate-back arrow); the old struck-out "Spent" word is gone. If that is too subtle at the table, dim the Spent button or give Off its own icon.
 - **panel-card-gm-label-on-hover (2026-11-10):** the player text now shows only on hover, so a keyboard or screen-reader user can no longer read it on the panel (Foundry's tooltip opens on pointer hover only). If that matters at your table, give each card an `aria-description` with the same text.
 - **panel-fade-inactive-modifiers (2026-11-10):** the GM's hover highlight on a faded (Off or Spent) panel card is faint, because it fades with the card. If that is hard to see, lift faded cards to about 70% on hover.
-- **panel-threshold-no-shift-on-check (2026-11-10):** older bug: when a threshold's text wraps, a two-digit points number can split across lines ("12" as "1" over "2"). The panel's `overflow-wrap: anywhere` reaches the points span, and that span can shrink. Fix: `flex: none; white-space: nowrap` on `.ssm-panel-threshold-points`.
 - **panel-resize-corner-handle (2026-11-10):** a plain click on the resize handle, with no drag, still fixes the panel at its current size, so it stops growing with its content until Reset. Skip the save when nothing moved if that gets in the way.
 - **remove-premise-field (2026-11-12):** `items/description-field-affordance.md` line 36 still says "[[remove-premise-field]] removes it"; fine as history, but reword it if that note is edited. The skill's `build_challenge.py` still writes `pins.sidebar: "premise"` for the old PF2e Subsystems module; left as is.
 - **description-field-affordance (2026-11-12):** the empty description box opens by mouse only; Tab cannot reach it, as Foundry hides its edit button until hover. If keyboard use matters, give the empty box `tabindex="0"` and open it on Enter or Space.

@@ -6,14 +6,14 @@
 
 A Foundry module for running PF2e subsystems. Each subsystem challenge is an object in its own sidebar tab, with a sheet the GM runs it from. While a challenge is active, players see a panel over the canvas that they can't close.
 
-The first version covers **Influence only**. The data and panel code are built so chases and other subsystems can be added without a rewrite.
+Every subsystem is a Victory Points challenge (section 14), with presets for Influence, Infiltration, Infiltration Preparation, Chase, Reputation and Research. Sections 5 to 8 describe the first, Influence-only build; where section 14 differs, section 14 wins.
 
 ## 2. Decisions
 
 | Topic | Decision | Source |
 |---|---|---|
 | Existing PF2e Subsystems module | Replace it. No importer. | Justin |
-| Audience | Justin and friends' tables, shared privately | Justin |
+| Audience | Justin and friends' tables, released on a public GitHub repo with a manifest URL | Justin, 2026-11-13 |
 | First subsystem | Influence | Justin |
 | Player panel | Fixed on screen over the canvas. Stays put during pan and zoom. Only the GM can end or hide it. | Justin |
 | Where the panel shows | Every scene, for all players, until the GM ends or hides it. Survives scene changes and reloads. | Justin |
@@ -95,7 +95,7 @@ Sidebar tab -> Challenge (journal entry + typed page, GM only) -> GM sheet
 | Influence Points | Current total |
 | Discovery checks | Skill, Perception or Lore, DC, revealed flag. A Lore also has a name. A new NPC starts with Perception, revealed. |
 | Influence skills | Skill or Lore, DC, revealed flag. A new NPC starts with Deception, Diplomacy and Intimidation, revealed. |
-| Thresholds | Points, name, description (rich text; its secret blocks are the GM's), reveal (hidden, points only, or points, name and description), reached flag. A threshold saved with the old revealed flag loads as fully revealed if it was revealed, hidden if not. One saved with player and GM text loads with the player text as its name and the GM text as a secret block in its description (Justin, 2026-11-13). |
+| Thresholds | Points, name, description (rich text; its secret blocks are the GM's), reveal (hidden, points only, or points, name and description), reached flag. |
 | Resistances, weaknesses, Other | Modifier entries (below) |
 | Decoys | A flag on any weakness, resistance or skill entry |
 
@@ -103,8 +103,8 @@ Sidebar tab -> Challenge (journal entry + typed page, GM only) -> GM sheet
 
 | Field | Notes |
 |---|---|
-| Name, description | The description is rich text, like an action's. Players see it but its secret blocks. An entry saved with player and GM text loads with the player text as a paragraph, then the GM text as a secret block (Justin, 2026-11-13). |
-| Kind | Resistance, weakness or Other. Other holds anything that is not a resistance or weakness. On the panel its cards say Other, as the others say Resistance or Weakness. An entry saved as a penalty or an adjustment loads as Other. |
+| Name, description | The description is rich text, like an action's. Players see it but its secret blocks. |
+| Kind | Resistance, weakness or Other. Other holds anything that is not a resistance or weakness. On the panel its cards say Other, as the others say Resistance or Weakness. |
 | Duration | **One-time** (spent once used), **multi-use** (turns Off once used; the GM turns it On again each time it is exploited, with no limit) or **ongoing** (active until the GM turns it off) |
 | State | Active or off; spent; revealed; decoy |
 | DC change | One signed amount, on all skills or chosen skills. The window offers quick −5, −2, +2 and +5. An amount of 0 means no DC change. A split such as +2 to Diplomacy and −2 to Deception is two entries (Justin, 2026-11-12). |
@@ -218,9 +218,6 @@ Every window takes the sheet's theme. There is one window per entry: opening it 
 | Effect | Card text | Never shows |
 |---|---|---|
 | DC change | Shown as a DC change, never negated: "−2 to DCs vs Diplomacy" (a list for several skills), or "−2 to all DCs" when it covers every skill. | A DC number |
-| Influence Points | "−1 Influence Point", "+2 Influence Points" | |
-| Counter | "+1 Suspicion", once the counter is revealed | A hidden counter: the effect is left out |
-| Rounds | "+1 round", "−2 rounds" | |
 | Note only | Left out: the note is the GM's text. The description covers it. | The note |
 
 A DC change names only skills the panel shows (revealed). It says nothing about hidden skills it covers, and a change that covers only hidden skills is left out (Justin, 2026-11-09). A change of zero, or one that points at a removed skill or counter, is left out. A revealed decoy's card looks like any other to players. On the GM's panel, a decoy skill button and a decoy card carry the orange Decoy tag, as in the GM window; it is read from the challenge on the GM's client, never from the shared copy.
@@ -253,10 +250,10 @@ A DC change names only skills the panel shows (revealed). It says nothing about 
 
 ## 9. Not in the first version
 
-- Chases, infiltration, research, duels, reputation, leadership, hexploration and vehicles.
+- Duels, leadership, hexploration and vehicles. (Chases, infiltration, research and reputation became presets: section 14.)
 - Importing from PF2e Subsystems. Existing challenges stay in that module.
-- Updating the `pf2e-influence-foundry` skill. It needs a new target format once this data format settles.
-- Public release, translations beyond English, AI generation, a panel placed in the scene.
+- Updating the `pf2e-influence-foundry` skill: it was written for PF2e Subsystems, a different module (Justin, 2026-11-13). Challenges can be written as JSON instead: `docs/challenge-format.md`.
+- Translations beyond English, AI generation inside the module, a panel placed in the scene.
 
 ## 10. Later subsystems
 
@@ -278,7 +275,7 @@ These are notes to prove that the shared design stretches. They aren't requireme
 | 1. Objects and sheets | Module loads; sidebar tab; create and edit an Influence challenge | A challenge survives reload, folders, duplicate and JSON export |
 | 2. Run from the sheet | Run mode, rolling, chat links, apply flow, modifiers, counters | A GM can run a whole challenge without the panel |
 | 3. Panel | Filtered copy, panel, reveal, every-scene behaviour | A player client shows only what was revealed, across scene changes and reloads |
-| 4. Player actions | Clickable skills per NPC column, acted markers | A player's roll gets an Apply button on the GM's chat card and applies correctly |
+| 4. Player actions | Clickable skills per NPC column, acted markers | A player's roll marks the PC as acted and spends the one-time DC entries it used (the Apply button was removed, 2026-11-12) |
 | 5. Table polish | Layout with several NPCs, VN Stage check, zip build for friends | One real challenge run end to end with a second player login |
 
 **Checks.** Follow VN Stage's pattern: `tools/test.mjs` for logic and `tools/check-load.mjs` for load errors, run through Foundry's Electron because Node isn't installed. Every phase also gets a live check in Foundry, with a player login for phases 3 to 5.
@@ -318,7 +315,7 @@ Every subsystem runs on one data model, one sheet and one panel: GM Core's [Vict
 | Completion | The GM marks a subject Complete by hand: a check on its column, and its actions fade but still roll. Nothing sets it (14.13). | Justin, 2026-11-12 |
 | Diminishing points | A direction on the counter itself: **counts up** or **counts down**. Not set per threshold. | Justin |
 | Names | Each challenge stores a points name and a subject label. The preset fills them in; the GM can edit them. | Justin |
-| Subject description | Every subject has a rich-text description in place of the old GM-only stat line. Players see it in the subject's column on the panel, under the name, except its secret blocks. An old stat line becomes the description. | Justin, 2026-11-12 |
+| Subject description | Every subject has a rich-text description in place of the old GM-only stat line. Players see it in the subject's column on the panel, under the name, except its secret blocks. | Justin, 2026-11-12 |
 | No outcome tables | Rolls change nothing. Actions have no outcome table or maximum points, and the GM changes every value by hand (section 8). | Justin, 2026-11-12 |
 | Per-round and threshold rules | A counter can change by a set amount each round. A threshold can carry effects that apply while it is reached. | Justin |
 | Modifier categories | A modifier's kind becomes a free-text category. The preset suggests names. See 14.7. | Justin, 2026-11-11 |
@@ -367,7 +364,7 @@ Every subsystem runs on one data model, one sheet and one panel: GM Core's [Vict
 | Name | "Influence", "Discover", "Overcome" |
 | Secret | The check gets PF2e's `secret` trait, as Discover has today |
 | Description | Plain text everyone sees: what the action is and how players use it |
-| Checks | Rows as today: skill, Perception, Lore or a saving throw (14.8); DC; revealed; decoy. Every row has an eye and a decoy flag; there is no always-shown flag (a stored `always` is dropped, with no conversion, 14.9). Every new check starts revealed (Justin, 2026-11-12). This replaces the fixed universal-skill lists. |
+| Checks | Rows as today: skill, Perception, Lore or a saving throw (14.8); DC; revealed; decoy. Every row has an eye and a decoy flag; there is no always-shown flag. Every new check starts revealed (Justin, 2026-11-12). This replaces the fixed universal-skill lists. |
 
 An action has no outcome table and no maximum points (Justin, 2026-11-12).
 
@@ -529,7 +526,7 @@ A preset makes one kind of subject, so the sheet has one Add subject button, nam
 
 ### 14.9 No backward compatibility
 
-The module isn't in real use yet (Justin, 2026-11-11), so nothing is converted. Challenges use one page type, `pf2e-subsystems-framework.challenge`. Old Influence pages, their chat cards and old exports stop working, and the old load-time migrations are removed. An Influence challenge is rebuilt from the Influence preset.
+Nothing from before the first release is converted (Justin, 2026-11-11 and 2026-11-13). Challenges use one page type, `pf2e-subsystems-framework.challenge`, and the module has no load-time migrations. The model's only load-time step gives repeated ids new ones, so a hand-written import can't link two rows.
 
 ### 14.10 Left to the preset items
 
@@ -602,7 +599,6 @@ Chase is a preset and nothing more: no code checks for it. The GM does by eye wh
 | Thresholds | Live on the subject's counters. A DC change on one applies to that subject's checks only. The GM gets a notice when one is reached, as for a challenge counter. |
 | Change each round | Offered, as on a challenge counter: Next round adds it and Previous round takes it back (Justin, 2026-11-12). |
 | Revealed | Each counter has its own, on by default. Players see it only while its subject is revealed too. |
-| Removed fields | The subject's `points`, `pointsBy`, `direction`, `min`, `max`, `goal`, `completeBy`, `tracksPoints`, `individual` and `thresholds`. No conversion (14.9). |
 
 | Where | What it shows |
 |---|---|

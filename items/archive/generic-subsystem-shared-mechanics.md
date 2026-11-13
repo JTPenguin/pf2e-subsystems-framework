@@ -128,7 +128,7 @@ Each planned subsystem was checked against the framework as built plus spec 14.7
 
 ## Steps
 
-1. Write the generic model into `docs/spec.md` and get Justin's approval. This is the design sign-off the old generic-challenge-subsystem item asked for.
+1. Write the generic model into `docs/dev/spec.md` and get Justin's approval. This is the design sign-off the old generic-challenge-subsystem item asked for.
 2. Build the generic model, sheet and panel.
 3. Add the Influence preset and the load-time conversion. Check an old Influence challenge converts with nothing lost.
 4. Remove the Influence-only code.

@@ -24,7 +24,7 @@ outcome: "Traits and the linked actor are gone from the NPC schema, Edit mode, s
 **Work:**
 
 - Remove both fields from the NPC schema (`model.js`), the new-NPC defaults and search text (`data.js`), the sheet context (`sheet.js`), the Edit mode row (`influence-sheet.hbs`) and their strings in `lang/en.json`.
-- Update `docs/spec.md` (the NPC table).
+- Update `docs/dev/spec.md` (the NPC table).
 - Old challenges still load: the schema drops unknown fields.
 
 **Done when:** Edit mode shows no traits or linked actor row, and an old challenge with both set still loads.

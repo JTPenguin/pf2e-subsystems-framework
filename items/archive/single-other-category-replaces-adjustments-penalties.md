@@ -26,6 +26,6 @@ Adjustments and Penalties are not a native part of the subsystem. Remove both an
 
 - Migrate `penalty` and `adjustment` to `other` in `migrateData`, for modifiers and for any saved baseline.
 - Update the kind dropdown in the modifier window, the strings and the CSS kind colors.
-- Update `docs/spec.md`.
+- Update `docs/dev/spec.md`.
 
 **Done when:** an old challenge with a penalty and an adjustment loads with both as Other, and Other cards show no label on the panel.

@@ -29,7 +29,7 @@ outcome: "Removed the always flag, its column, the universal chip style and two 
 | `templates/challenge-sheet.hbs:2-3` | `ssm-universal`, and no eye on an always-shown chip |
 | `styles/subsystems.css:81-84` | The universal chip's look |
 | `lang/en.json:177-178` | `Always` and `AlwaysHint` |
-| `docs/spec.md` section 6 and 14.2 | The Action window's columns, universal skills with no eye, and the always-shown row |
+| `docs/dev/spec.md` section 6 and 14.2 | The Action window's columns, universal skills with no eye, and the always-shown row |
 
 ## Decided
 

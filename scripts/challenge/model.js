@@ -1,4 +1,4 @@
-import { COUNTER_DISPLAYS, DEFAULT_PRESET, DIRECTIONS, DURATIONS, migrateChallengeTexts, migrateModifier, PRESETS, STATUSES, THRESHOLD_REVEALS } from "./data.js";
+import { COUNTER_DISPLAYS, DEFAULT_PRESET, dedupeIds, DIRECTIONS, DURATIONS, PRESETS, STATUSES, THRESHOLD_REVEALS } from "./data.js";
 
 const { ArrayField, BooleanField, HTMLField, NumberField, ObjectField, SchemaField, StringField } = foundry.data.fields;
 
@@ -117,18 +117,9 @@ export class ChallengeModel extends foundry.abstract.TypeDataModel {
     };
   }
 
-  /**
-   * A subject saved with the old GM-only stat line keeps its text as the description. A modifier saved with a list of effects gets its DC change and note.
-   * A threshold or modifier saved with player and GM text gets a name and description from them.
-   */
+  /** Repeated ids, as a hand-written import can hold, become unique (dedupeIds). */
   static migrateData(source) {
-    for (const modifier of [...(source.modifiers ?? []), ...(source.subjects ?? []).flatMap((subject) => subject.modifiers ?? [])]) migrateModifier(modifier);
-    migrateChallengeTexts(source);
-    for (const subject of source.subjects ?? []) {
-      if (typeof subject.statLine !== "string") continue;
-      if (subject.statLine && !subject.description) subject.description = `<p>${foundry.utils.escapeHTML(subject.statLine)}</p>`;
-      delete subject.statLine;
-    }
+    dedupeIds(source);
     return super.migrateData(source);
   }
 }

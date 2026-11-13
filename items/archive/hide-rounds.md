@@ -30,7 +30,7 @@ A campaign-long challenge, such as Reputation, has no rounds. Start still sets R
 - **The sheet:** the run strip (`challenge-sheet.hbs` lines 87–93, `sheet.js` line 318) shows the round label and buttons too. Hide them the same way, keeping Start, End and Reset. The Current round field stays in place (Justin, 2026-11-13: hiding it made the section jump).
 - **Run logic:** `startRun` in `scripts/challenge/run.js` sets `rounds.current` to at least 1. With rounds off, leave it at 0 or ignore it. `canAdvanceRound` and `canUndoRound` should return false, so no path moves a round.
 - **Change each round:** a counter's "change each round" does nothing with rounds off. Leave the field, but consider a muted note on the counter. Ask before adding one.
-- **Spec:** add the rule to `docs/spec.md` next to the rounds description.
+- **Spec:** add the rule to `docs/dev/spec.md` next to the rounds description.
 
 ## Done when
 

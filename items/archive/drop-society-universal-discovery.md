@@ -19,5 +19,5 @@ Only Perception stays universal. A Society Discovery row then works like any oth
 
 1. Drop `"society"` from `UNIVERSAL_DISCOVERY`.
 2. Update the tests in `tools/test.mjs` that expect Society to be universal.
-3. Update `docs/spec.md`: the "Hidden by default" decision, the Discovery skills row in section 7, and the panel sketch.
+3. Update `docs/dev/spec.md`: the "Hidden by default" decision, the Discovery skills row in section 7, and the panel sketch.
 4. Check it: run `tools/test.mjs`, then in Foundry confirm a Society row is hidden on the panel until revealed. Existing challenges with an unrevealed Society row will hide it, which is the intent.

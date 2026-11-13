@@ -1,0 +1,46 @@
+# Builds the module zip when a version tag is pushed, and attaches it and module.json to a GitHub release.
+# Foundry's manifest URL points at the latest release's module.json; its download URL points at this tag's zip.
+#
+# To release: set "version" and "download" in module.json, add the version to CHANGELOG.md, commit, then
+#   git tag v0.1.0 && git push origin main v0.1.0
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check the tag matches module.json
+        run: |
+          version=$(jq -r .version module.json)
+          download=$(jq -r .download module.json)
+          tag="${GITHUB_REF_NAME}"
+          [ "$tag" = "v$version" ] || { echo "Tag $tag does not match module.json version $version"; exit 1; }
+          case "$download" in
+            */releases/download/$tag/pf2e-subsystems-framework.zip) ;;
+            *) echo "module.json download URL does not point at $tag: $download"; exit 1 ;;
+          esac
+
+      - name: Run the tests
+        run: node tools/test.mjs
+
+      - name: Build the zip
+        run: |
+          node tools/build-zip.mjs
+          cp "dist/pf2e-subsystems-framework-$(jq -r .version module.json).zip" pf2e-subsystems-framework.zip
+
+      - name: Publish the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          notes=$(awk -v v="## ${GITHUB_REF_NAME#v}" '$0==v{on=1;next} /^## /{on=0} on' CHANGELOG.md)
+          gh release create "$GITHUB_REF_NAME" pf2e-subsystems-framework.zip module.json \
+            --title "$GITHUB_REF_NAME" --notes "${notes:-See CHANGELOG.md}"

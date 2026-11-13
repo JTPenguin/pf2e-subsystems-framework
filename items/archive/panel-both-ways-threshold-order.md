@@ -21,7 +21,7 @@ The panel lists thresholds in the order the track reaches them. A both-ways coun
 - **Where:** `thresholdViews(rows, direction)` in `scripts/challenge/panel-view.js` (around line 74). Today only `"down"` sorts highest first; everything else, both-ways included, sorts lowest first.
 - **Change:** sort highest first for both `"down"` and `BOTH_WAYS`. Up counters keep lowest first. Import `BOTH_WAYS` from `data.js` rather than repeating the string.
 - **Test:** add a case to `tools/test.mjs` for a both-ways counter's order.
-- **Spec:** the panel's threshold card rule in `docs/spec.md` (around line 410 and section 14.8) should say a both-ways list runs highest first.
+- **Spec:** the panel's threshold card rule in `docs/dev/spec.md` (around line 410 and section 14.8) should say a both-ways list runs highest first.
 
 ## Done when
 

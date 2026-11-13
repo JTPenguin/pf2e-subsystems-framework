@@ -33,7 +33,7 @@ The Premise field is not used anywhere. Remove it and keep GM Notes as the only 
 | `templates/challenge-sheet.hbs` | Remove the Premise section. |
 | `lang/en.json` | Remove `SSM.Challenge.Premise`. |
 | `tools/test.mjs` | Fix the tests that set or check `premise`. |
-| `docs/spec.md` | Lines 83, 133 and 329 list it. |
+| `docs/dev/spec.md` | Lines 83, 133 and 329 list it. |
 | `~/.claude/skills/pf2e-influence-foundry/SKILL.md` | The skill writes Premise into import files. Stop it, and move what it wrote there into GM Notes. |
 
 The panel never showed Premise, so it is not affected.
