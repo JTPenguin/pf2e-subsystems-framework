@@ -1,12 +1,13 @@
 ---
 title: "Put the action name on the top line of the action"
 kind: feature
-status: ready
+status: done
 waits_on: Claude
 priority: ⏫
 blocked_by: []
 added: 2026-11-12
 updated: 2026-11-12
+outcome: "Name on line 1, checks on line 2, description last (2026-11-12)."
 source: "Justin's UI list, 2026-11-12; scope set in triage interview, 2026-11-12"
 ---
 # Put the action name on the top line of the action

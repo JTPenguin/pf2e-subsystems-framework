@@ -1,12 +1,13 @@
 ---
 title: "Make action checks smaller and fit their content"
 kind: feature
-status: ready
+status: done
 waits_on: Claude
 priority: ⏫
 blocked_by: []
 added: 2026-11-12
 updated: 2026-11-12
+outcome: "Checks are content-width, wrap, and match the inline check height (2026-11-12)."
 source: "Justin's UI list, 2026-11-12; scope set in triage interview, 2026-11-12"
 ---
 # Make action checks smaller and fit their content

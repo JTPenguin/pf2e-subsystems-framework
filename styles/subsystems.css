@@ -54,21 +54,18 @@ button.ssm-toggle:disabled { cursor: default; }
 .ssm-stat > button.icon { --button-size: 1.5rem; width: 1.5rem; height: 1.5rem; margin: 0; }
 .ssm-stat .ssm-point-total { min-width: 1.75rem; line-height: 1; }
 .ssm-skill-line { display: flex; align-items: flex-start; gap: 0.5rem; margin-bottom: 0.2rem; }
-.ssm-skill-line > .ssm-stat-label { flex: 0 0 6.5rem; line-height: 1.6rem; }
+.ssm-skill-line > .ssm-stat-label { flex: 0 1 auto; min-width: 0; line-height: 1.6rem; }
 .ssm-action-description > :first-child { margin-top: 0; }
 .ssm-action-description > :last-child { margin-bottom: 0; }
-.ssm-run-description { padding-left: 7rem; margin-bottom: 0.3rem; }
-/* Two or three columns, by the window's width. Each chip fills its cell, so the DCs line up. */
-.ssm-skill-grid { flex: 1 1 auto; min-width: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr)); gap: 0.2rem 0.25rem; }
-.ssm-skill-grid > .ssm-skill { min-width: 0; }
-.ssm-sheet .ssm-skill-grid .ssm-skill-roll { flex: 1 1 auto; min-width: 0; justify-content: flex-start; text-align: left; }
-.ssm-skill-grid .ssm-skill-name { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.ssm-run-description { margin-bottom: 0.3rem; }
+/* The checks sit on their own line under the action's name. Each chip is only as wide as its text and the row wraps. */
+.ssm-skill-grid { display: flex; flex-wrap: wrap; align-items: center; gap: 0.2rem 0.25rem; min-width: 0; margin-bottom: 0.2rem; }
 .ssm-subject-group { margin-top: 0.2rem; }
 .ssm-subject-group > h4 { margin: 0 0 0.1rem; }
 
 /* A skill chip looks like PF2e's inline check. It is a wrapper, not a button: the eye, the roll and the chat link are three separate buttons inside it. */
-.ssm-skill { display: inline-flex; align-items: stretch; height: 1.6rem; border: 1px solid var(--content-link-border-color, #7a7971); border-radius: 2px; background: var(--content-link-background, rgba(0, 0, 0, 0.1)); color: var(--content-link-text-color, inherit); font-size: var(--font-size-13, 0.8125rem); white-space: nowrap; }
-.ssm-sheet .ssm-skill > button { --button-size: auto; display: inline-flex; align-items: center; flex: none; width: auto; height: auto; min-height: 0; margin: 0; padding: 0 0.3rem; border: none; border-radius: 0; background: none; box-shadow: none; color: inherit; font-size: inherit; transition: none; }
+.ssm-skill { display: inline-flex; align-items: stretch; border: 1px solid var(--content-link-border-color, #7a7971); border-radius: 2px; background: var(--content-link-background, rgba(0, 0, 0, 0.1)); color: var(--content-link-text-color, inherit); font-size: inherit; line-height: 1.15em; white-space: nowrap; }
+.ssm-sheet .ssm-skill > button { --button-size: auto; display: inline-flex; align-items: center; flex: none; width: auto; height: auto; min-height: 0; margin: 0; padding: 0 0.25rem; border: none; border-radius: 0; background: none; box-shadow: none; color: inherit; font: inherit; line-height: 1.15em; transition: none; }
 .ssm-sheet .ssm-skill > button.icon, .ssm-sheet .ssm-skill > .ssm-skill-post { font-size: 0.8em; color: var(--content-link-icon-color, inherit); }
 .ssm-sheet .ssm-skill > button + button { border-left: 1px solid var(--content-link-border-color, #7a7971); }
 .ssm-sheet .ssm-skill > button:hover:not(:disabled) { text-shadow: 0 0 8px var(--color-shadow-primary, #ff6400); }
@@ -343,7 +340,7 @@ button.ssm-reached { color: #4f9d5d; }
 .ssm-sheet .ssm-action-card { min-width: 0; }
 .ssm-sheet .ssm-action-card .ssm-skill-line { margin-bottom: 0; }
 /* A card with a description opens by its name: a plain button with a chevron, as on the panel. */
-.ssm-sheet button.ssm-action-toggle { all: unset; flex: 0 0 6.5rem; box-sizing: border-box; line-height: 1.6rem; font-weight: 600; cursor: pointer; }
+.ssm-sheet button.ssm-action-toggle { all: unset; flex: 0 1 auto; min-width: 0; box-sizing: border-box; line-height: 1.6rem; font-weight: 600; cursor: pointer; }
 .ssm-sheet button.ssm-action-toggle:focus-visible { outline: 1px solid var(--color-border-highlight, #ff6400); }
 .ssm-sheet .ssm-action-chevron { width: 0.8rem; margin-right: 0.15rem; font-size: 0.7em; opacity: 0.75; }
 .ssm-sheet .ssm-action-card .ssm-run-description { margin: 0.1rem 0 0; }
@@ -443,3 +440,7 @@ button.ssm-reached { color: #4f9d5d; }
 .ssm-modifier-window fieldset > .ssm-muted { margin: 0; }
 .ssm-modifier-window .ssm-checks { margin: 0; }
 .ssm-modifier-window .form-fields > .ssm-quick { flex: none; }
+
+/* GM-only text on the panel. PF2e gives it a pale background meant for dark text, but the panel's text is light. A dark purple tint keeps it readable and still marks it as GM-only. Nested GM text keeps PF2e's own no-outline rule. */
+.ssm-panel [data-visibility=gm]:not(.dice-result > *) { background: rgba(90, 50, 130, 0.45); color: #efe6d8; outline: 1px dotted rgba(200, 170, 240, 0.7); }
+.ssm-panel [data-visibility=gm]:not(.dice-result > *) [data-visibility=gm] { background: none; outline: none; }

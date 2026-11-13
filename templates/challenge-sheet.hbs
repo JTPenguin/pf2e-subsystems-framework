@@ -167,9 +167,9 @@
           <div class="ssm-skill-line">
             {{#if descriptionHtml}}<button type="button" class="ssm-stat-label ssm-action-toggle" data-action="toggleAction" data-id="{{id}}" aria-expanded="{{#if open}}true{{else}}false{{/if}}"><i class="fa-solid {{#if open}}fa-chevron-down{{else}}fa-chevron-right{{/if}} ssm-action-chevron" aria-hidden="true"></i>{{label}}{{#if secret}} <i class="fa-solid fa-user-secret" data-tooltip="SSM.Challenge.SecretHint" aria-label="{{localize "SSM.Challenge.Secret"}}"></i>{{/if}}</button>
             {{else}}<span class="ssm-stat-label">{{label}}{{#if secret}} <i class="fa-solid fa-user-secret" data-tooltip="SSM.Challenge.SecretHint" aria-label="{{localize "SSM.Challenge.Secret"}}"></i>{{/if}}</span>{{/if}}
-            <span class="ssm-skill-grid">{{#each checks}}{{> ssmSkillChip root=../../../..}}{{else}}<span class="ssm-muted">{{localize "SSM.Challenge.NoChecks"}}</span>{{/each}}</span>
             {{> ssmRowTools kind="actions" subject=subjectId name=label}}
           </div>
+          <div class="ssm-skill-grid">{{#each checks}}{{> ssmSkillChip root=../../../..}}{{else}}<span class="ssm-muted">{{localize "SSM.Challenge.NoChecks"}}</span>{{/each}}</div>
           {{#if open}}<div class="ssm-action-description ssm-run-description">{{{descriptionHtml}}}</div>{{/if}}
         </div>
         {{/each}}

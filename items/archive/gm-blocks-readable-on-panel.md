@@ -1,12 +1,13 @@
 ---
 title: "Make GM blocks readable on the panel"
 kind: work
-status: ready
+status: done
 waits_on: Claude
 priority: ⏫
 blocked_by: []
 added: 2026-11-12
 updated: 2026-11-12
+outcome: "Dark purple tint on panel GM-only text; checked on injected markup, not with a real GM login (2026-11-12)."
 source: "Justin's UI list, 2026-11-12; cause and look confirmed in triage interview, 2026-11-12"
 ---
 # Make GM blocks readable on the panel
