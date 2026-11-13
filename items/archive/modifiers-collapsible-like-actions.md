@@ -1,13 +1,14 @@
 ---
 title: "Collapsible modifiers, styled like actions"
 kind: work
-status: ready
-waits_on: Claude
+status: done
+waits_on: none
 priority: 🔽
 blocked_by: []
 source: "Justin's UI list, 2026-11-12; details from Justin, 2026-11-12"
 added: 2026-11-12
 updated: 2026-11-12
+outcome: "Modifier rows collapse like action cards: start collapsed, chevron only when there are details, open state per user until reload. Checked in Foundry 2026-11-12."
 ---
 # Collapsible modifiers, styled like actions
 

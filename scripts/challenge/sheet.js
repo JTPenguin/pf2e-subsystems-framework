@@ -23,7 +23,7 @@ const isCollapsed = (subjectId) => !!game.user.getFlag(MODULE, COLLAPSED_FLAG)?.
 /** Each kind of entry's window. */
 const WINDOWS = { subjects: SubjectWindow, actions: ActionWindow, counters: CounterWindow, modifiers: ModifierWindow };
 
-/** The action cards this user has opened on the sheet, as "pageId:actionId". Each user's own, kept until the page reloads, as on the panel. */
+/** The action cards and modifier rows this user has opened on the sheet, as "pageId:entryId". Each user's own, kept until the page reloads, as on the panel. */
 const openActions = new Set();
 
 /**
@@ -51,6 +51,7 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
       toggleCollapse: ChallengeSheet.#onToggleCollapse,
       toggleCollapseAll: ChallengeSheet.#onToggleCollapseAll,
       toggleAction: ChallengeSheet.#onToggleAction,
+      toggleModifierDetails: ChallengeSheet.#onToggleAction,
       startRun: ChallengeSheet.#onStartRun,
       endRun: ChallengeSheet.#onEndRun,
       showPanel: ChallengeSheet.#onShowPanel,
@@ -353,7 +354,8 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
   #modifierView(system, subject, row, canChange) {
     const state = row.spent ? "spent" : row.active ? "on" : "off";
     const label = row.name || loc("SSM.Challenge.UnnamedEntry");
-    const challengeLevel = !subject;
+    const effectsText = [row.dc?.amount ? this.#dcText(system, subject, row.dc) : "", row.note].filter(Boolean).join("; ");
+    const hasDetails = !!(effectsText || row.playerText || row.gmText);
     return {
       ...row,
       label,
@@ -365,7 +367,9 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
       stateTooltip: loc(`SSM.Challenge.StateClick.${state}`),
       stateLabel: loc(`SSM.Challenge.State.${state}`),
       canChange,
-      effectsText: [row.dc?.amount ? this.#dcText(system, subject, row.dc) : "", row.note].filter(Boolean).join("; "),
+      effectsText,
+      hasDetails,
+      open: hasDetails && openActions.has(`${this.page.id}:${row.id}`),
     };
   }
 
@@ -554,7 +558,7 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
     return this.render();
   }
 
-  /** Open an action's description, or close it, by a click on its name. */
+  /** Open an action's description or a modifier's details, or close them. */
   static #onToggleAction(event, target) {
     const key = `${this.page.id}:${target.dataset.id}`;
     if (!openActions.delete(key)) openActions.add(key);

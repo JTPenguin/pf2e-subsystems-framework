@@ -394,7 +394,8 @@ button.ssm-reached { color: #4f9d5d; }
 .ssm-sheet :is(.ssm-counter, .ssm-modifier).ssm-hidden { opacity: var(--ssm-hidden-opacity); }
 .ssm-sheet .ssm-row.ssm-entry { gap: 0.5rem; }
 /* A modifier's detail lines start under its name: past the eye and the On icon. */
-.ssm-sheet .ssm-modifier > .ssm-detail { padding-left: calc(2 * 1.25rem + 2 * 0.5rem); }
+.ssm-sheet .ssm-modifier > .ssm-detail { padding-left: calc(3 * 1.25rem + 3 * 0.5rem); }
+.ssm-sheet .ssm-modifier .ssm-mod-chevron { flex: none; width: 1.25rem; }
 .ssm-sheet :is(.ssm-modifier, .ssm-counter) > .ssm-entry > .ssm-grow, .ssm-sheet .ssm-action-card .ssm-skill-line > .ssm-stat-label, .ssm-sheet button.ssm-action-toggle { font-weight: 500; }
 /* Icon controls are bare icons, as on the NPC sheet, with the same glow on hover. */
 .ssm-sheet :is(.ssm-entry, .ssm-row-tools) > button.icon { flex: none; --button-size: 1.25rem; width: 1.25rem; height: 1.25rem; min-height: 0; margin: 0; padding: 0; border: none; border-radius: 0; background: none; box-shadow: none; color: inherit; font-size: var(--font-size-12, 0.75rem); }

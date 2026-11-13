@@ -32,10 +32,11 @@
           <div class="ssm-row ssm-entry">
             {{> ssmEye root=../../root}}
             <button type="button" class="icon fa-solid {{#if spent}}fa-rotate-left{{else}}fa-check{{/if}} ssm-toggle ssm-toggle-{{stateClass}}" data-action="{{#if spent}}restoreModifier{{else}}toggleModifier{{/if}}" data-subject="{{subjectId}}" data-id="{{id}}" aria-label="{{stateLabel}}" aria-pressed="{{pressed}}" data-tooltip="{{stateTooltip}}" {{#unless canChange}}disabled{{/unless}}></button>
+            {{#if hasDetails}}<button type="button" class="icon fa-solid {{#if open}}fa-chevron-down{{else}}fa-chevron-right{{/if}} ssm-mod-chevron" data-action="toggleModifierDetails" data-id="{{id}}" aria-expanded="{{#if open}}true{{else}}false{{/if}}" aria-label="{{localize "SSM.Challenge.Collapse"}}" data-tooltip="SSM.Challenge.Collapse"></button>{{else}}<span class="ssm-mod-chevron" aria-hidden="true"></span>{{/if}}
             {{> ssmModifierName}}
             {{> ssmRowTools kind="modifiers" subject=subjectId name=label}}
           </div>
-          {{> ssmModifierDetails}}
+          {{#if open}}{{> ssmModifierDetails}}{{/if}}
         </div>
         {{/each}}
       </div>
