@@ -1,12 +1,13 @@
 ---
 title: "Show challenge Counters above Modifiers and Subjects"
 kind: feature
-status: ready
+status: done
 waits_on: Claude
 priority: 🔼
 blocked_by: []
 added: 2026-11-12
 updated: 2026-11-12
+outcome: "Built and checked live in Foundry, 2026-11-12."
 source: "Justin's UI list, 2026-11-12; sheet position set in triage interview, 2026-11-12"
 ---
 # Show challenge Counters above Modifiers and Subjects

@@ -130,6 +130,11 @@
       </div>
     </section>
 
+    <section class="ssm-block ssm-counters">
+      {{> ssmSectionHead label=(localize "SSM.Challenge.Counters") kind="counters" subject="" addLabel=(localize "SSM.Challenge.AddCounter")}}
+      {{#each counters}}{{> ssmCounterRun root=..}}{{/each}}
+    </section>
+
     {{!-- The challenge's own modifiers, by category (spec 14.7). --}}
     <section class="ssm-block ssm-challenge-mods">
       {{> ssmSectionHead label=(localize "SSM.Challenge.Modifiers") hint="SSM.Challenge.ChallengeModifiersHint" kind="modifiers" subject="" addLabel=(localize "SSM.Challenge.AddModifier")}}
@@ -157,6 +162,10 @@
         {{#each subject.counters}}{{> ssmCounterRun root=../../..}}{{/each}}
       </div>
       <div class="ssm-section">
+        {{> ssmSubsectionHead label=(localize "SSM.Challenge.Modifiers") kind="modifiers" subject=subject.id addLabel=(localize "SSM.Challenge.AddModifier")}}
+        {{> ssmModGroups groups=subject.modifierGroups subject=subject.id root=../..}}
+      </div>
+      <div class="ssm-section">
         {{> ssmSubsectionHead label=(localize "SSM.Challenge.Actions") kind="actions" subject=subject.id addLabel=(localize "SSM.Challenge.AddAction")}}
         {{#each subject.actions}}
         <div class="ssm-action-card {{#if open}}open{{/if}}">
@@ -170,10 +179,6 @@
         </div>
         {{/each}}
       </div>
-      <div class="ssm-section">
-        {{> ssmSubsectionHead label=(localize "SSM.Challenge.Modifiers") kind="modifiers" subject=subject.id addLabel=(localize "SSM.Challenge.AddModifier")}}
-        {{> ssmModGroups groups=subject.modifierGroups subject=subject.id root=../..}}
-      </div>
     </section>
     {{/each}}
     </section>
@@ -184,10 +189,6 @@
     </section>
     {{/each}}
 
-    <section class="ssm-block ssm-counters">
-      {{> ssmSectionHead label=(localize "SSM.Challenge.Counters") kind="counters" subject="" addLabel=(localize "SSM.Challenge.AddCounter")}}
-      {{#each counters}}{{> ssmCounterRun root=..}}{{/each}}
-    </section>
     {{/with}}
   </section>
 </div>

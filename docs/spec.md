@@ -131,9 +131,9 @@ The sheet has **one view** (Justin, 2026-11-12): live play and editing together,
 | Name | The challenge name, editable in place. |
 | Run strip | Always shown, even before Start. Roll buttons stay disabled until the run starts. |
 | Challenge | The challenge's own fields, edited in place: points name, subject label, Allow multiple subjects, rounds (current and maximum; current is locked while running) and GM notes. |
+| Counters | The challenge's counters. |
 | Modifiers | The challenge's own modifiers, grouped by category (14.7). |
 | Subjects | Grouped by category (14.4), then an Add subject button. |
-| Counters | The challenge's counters. |
 
 **Adding, editing and deleting.** Subjects, actions, counters and modifiers are each edited in their own window, opened by an edit button on the entry's row. Each row also has a delete button, which asks for confirmation first, as actions on a PF2e NPC sheet do. A + adds an entry and opens its window:
 
@@ -142,7 +142,7 @@ The sheet has **one view** (Justin, 2026-11-12): live play and editing together,
 | The Modifiers and Counters bars | A challenge modifier or counter. |
 | A subject category's bar, and the Add subject button | A subject in that category, or with none. |
 | A modifier category's title | A modifier in that category. |
-| A subject card's Counters, Actions and Modifiers titles | One of those on that subject. |
+| A subject card's Counters, Modifiers and Actions titles | One of those on that subject. |
 
 | Window | Fields |
 |---|---|
@@ -179,6 +179,7 @@ Every window takes the sheet's theme. There is one window per entry: opening it 
 | The Governor's Banquet                                           |
 | Round 3 of 6  [###########--------------------]                  |
 | (Ezren) (Amiri) (Kyra) (Valeros)   <- portraits                  |
+| Suspicion: 3                                                     |
 | Lady Vance                     | Lord Ostrov                     |
 | [#####-----] 5                 | [##--------] 2                  |
 | THRESHOLDS                     | THRESHOLDS                      |
@@ -192,7 +193,6 @@ Every window takes the sheet's theme. There is one window per entry: opening it 
 | |Flattery           WEAKNESS | | |Straight talk           OTHER| |
 | |-2 DCs vs Diplomacy  ONGOING| | |+2 DCs vs Deception   ONGOING| |
 | +----------------------------+ | +-----------------------------+ |
-| Suspicion: 3                                                     |
 +------------------------------------------------------------------+
 ```
 
@@ -388,7 +388,8 @@ The sheet's one view (section 6):
 
 - Each subject has an eye by its name, and a Complete tag that is a button, like Reached.
 - Each action is a labelled grid of chips, in the GM's order, with edit and delete buttons. An action with no checks still shows, so it can be edited.
-- A subject's card has Counters, Actions and Modifiers subsections, each title with a + (section 6). Its counters each have + and −, as the challenge's do (14.13).
+- **Order** (Justin, 2026-11-12). The challenge's own fields come first, then Counters, Modifiers and Subjects. A subject's card holds its description, then Counters, Modifiers and Actions.
+- A subject's card has Counters, Modifiers and Actions subsections, each title with a + (section 6). Its counters each have + and −, as the challenge's do (14.13).
 - A counter with thresholds shows them as rows under it, like a subject's.
 - Subjects can be reordered by drag, and collapsed (14.8). A per-PC counter lists each party PC, with the party total (14.8).
 - **Subjects group by category** (Justin, 2026-11-12). Each subject is a collapsible card, with edit and delete buttons in its header. Uncategorised cards come first with no heading; then each category in use has a red section bar with its subjects' cards under it, in subject category order (14.6), and a + that adds a subject in that category. A category bar doesn't collapse. A subject can be dragged only within its category.
@@ -402,6 +403,8 @@ The sheet's one view (section 6):
 
 - One column per revealed subject. Complete shows a check by the name and fades the actions.
 - A bar scales to the counter's maximum, else to the highest threshold, else to 10. A counts-down counter scales to its starting value.
+- **Order** (Justin, 2026-11-12). Round and party, then the challenge's counters, then its modifiers, then the subject columns. In a column: description, counters, modifiers, actions. A rule sits above and below the challenge's counters.
+- The challenge's bar, steps and track counters each take the full panel width on their own row. Per-PC and number counters keep their layout.
 - A subject's revealed counters show in its column, under its name, each in its display style (14.13).
 - Each action is a line: its name, then its visible checks.
 - A revealed counter with thresholds gets a bar and a threshold card. A plain counter stays "Suspicion: 3". A per-PC counter shows a row per PC, and a both-ways track a bar with a zero mark (14.8).
@@ -435,8 +438,8 @@ A preset makes one kind of subject, so the sheet has one Add subject button, nam
 | Other | Not built in, and not suggested. An entry that fits no category goes in the blank one; the GM can still type "Other". |
 | Sheet | A small heading per category in use. A category with no entries is not shown. The + in the Modifiers title adds an entry with an empty category and opens its window, where the GM picks the category (Justin, 2026-11-12); the + on a category's heading starts it in that category. There is no list of categories to edit. |
 | Order on the sheet and panel | A blank category groups first, with no heading and no label, then the labelled ones (Justin, 2026-11-11). |
-| GM window | Under each subject, Counters, then an Actions section of action rows, then a Modifiers section with one subsection per category, its heading in the category's colour. An action with a description opens and closes by its name to show it, as on the panel. |
-| Panel | Each action is a card: its name, a Secret mark and its check buttons. A card with a description opens and closes by its name to show it, as it does in the GM window; each user's open cards are their own. Then one section per category with a revealed entry, with a heading in the category's colour. A category with nothing revealed, the blank one included, is not shown (Justin, 2026-11-12). The cards leave out the category label, since the heading names it. |
+| GM window | Under each subject, Counters, then a Modifiers section with one subsection per category, its heading in the category's colour, then an Actions section of action rows. An action with a description opens and closes by its name to show it, as on the panel. |
+| Panel | Each action is a card: its name, a Secret mark and its check buttons. A card with a description opens and closes by its name to show it, as it does in the GM window; each user's open cards are their own. Above the actions, one section per category with a revealed entry, with a heading in the category's colour. A category with nothing revealed, the blank one included, is not shown (Justin, 2026-11-12). The cards leave out the category label, since the heading names it. |
 
 **Challenge-level modifiers.** The challenge holds its own list of modifier entries, beside each subject's.
 

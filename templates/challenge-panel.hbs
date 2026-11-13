@@ -13,7 +13,7 @@
 </div>{{/if}}{{/inline}}
 {{!-- A counter value. The GM gets − and + around it, doing what the sheet's buttons do; players see the value alone. --}}
 {{#*inline "ssmPanelValue"}}{{#if @root.isGM}}<span class="ssm-panel-step"><button type="button" class="ssm-panel-step-button" data-action="changeCounter" data-id="{{counterId}}"{{#if actor}} data-actor="{{actor}}"{{/if}} data-delta="-1" aria-label="{{localize "SSM.Challenge.RemoveFromCounter"}}" {{#unless canRemove}}disabled{{/unless}}><i class="fa-solid fa-minus" inert></i></button><strong>{{text}}</strong><button type="button" class="ssm-panel-step-button" data-action="changeCounter" data-id="{{counterId}}"{{#if actor}} data-actor="{{actor}}"{{/if}} data-delta="1" aria-label="{{localize "SSM.Challenge.AddToCounter"}}" {{#unless canAdd}}disabled{{/unless}}><i class="fa-solid fa-plus" inert></i></button></span>{{else}}<strong>{{text}}</strong>{{/if}}{{/inline}}
-{{!-- A set of counters: the challenge's below the columns, or a subject's in its column. --}}
+{{!-- A set of counters: the challenge's above its modifiers, or a subject's in its column. --}}
 {{#*inline "ssmPanelCounters"}}{{#if tracks.length}}<div class="ssm-panel-tracks">
   {{#each tracks}}
   <div class="ssm-panel-track">
@@ -43,6 +43,7 @@
   <div class="ssm-panel-rounds">{{#if isGM}}<button type="button" class="ssm-panel-round-button" data-action="previousRound" aria-label="{{localize "SSM.Challenge.PreviousRound"}}" {{#unless canPreviousRound}}disabled{{/unless}}><i class="fa-solid fa-backward-step" inert></i></button>{{/if}}<span class="ssm-panel-segments" role="img" aria-label="{{roundLabel}}">{{#each roundSegments}}<span class="{{#if filled}}filled{{/if}}"></span>{{/each}}</span>{{#if isGM}}<button type="button" class="ssm-panel-round-button" data-action="nextRound" aria-label="{{localize "SSM.Challenge.NextRound"}}" {{#unless canNextRound}}disabled{{/unless}}><i class="fa-solid fa-forward-step" inert></i></button>{{/if}}</div>
   {{#if party.length}}<div class="ssm-panel-party"{{#unless isGM}} role="list"{{/unless}}>{{#each party}}<img class="ssm-panel-pc {{#if acted}}acted{{/if}}"{{#if @root.isGM}} data-action="toggleActed" data-id="{{id}}" role="button" tabindex="0" aria-pressed="{{acted}}"{{else}} role="listitem"{{/if}} src="{{img}}" alt="{{label}}" aria-label="{{label}}" data-tooltip-text="{{name}}" draggable="false">{{/each}}</div>{{/if}}
 </div>
+{{#if counterSet.any}}<div class="ssm-panel-challenge-counters">{{> ssmPanelCounters counterSet}}</div>{{/if}}
 {{#if challengeMods.length}}<div class="ssm-panel-mods ssm-panel-challenge-mods">{{#each challengeMods}}{{> ssmPanelMod}}{{/each}}</div>{{/if}}
 <div class="ssm-panel-subjects {{#if several}}several{{/if}}">
   {{#each subjects}}
@@ -52,6 +53,11 @@
     </div>
     {{#if descriptionHtml}}<div class="ssm-panel-subject-description">{{{descriptionHtml}}}</div>{{/if}}
     {{#if counterSet.any}}<div class="ssm-panel-subject-counters">{{> ssmPanelCounters counterSet}}</div>{{/if}}
+    {{!-- Modifiers by category: the blank one first with no heading, then each labelled one. Only categories with a revealed entry come through. --}}
+    {{#each modifierGroups}}<div class="ssm-panel-mod-group"{{#if stripe}} style="{{stripe}}"{{/if}}>
+      {{#if heading}}<div class="ssm-panel-cat-head">{{heading}}</div>{{/if}}
+      <div class="ssm-panel-mods">{{#each cards}}{{> ssmPanelMod}}{{/each}}</div>
+    </div>{{/each}}
     {{#if actions.length}}<div class="ssm-panel-actions">
     {{#each actions}}<div class="ssm-panel-action {{#if open}}open{{/if}}">
       {{#if descriptionHtml}}<button type="button" class="ssm-panel-action-name ssm-panel-action-toggle" data-action="toggleAction" data-subject="{{subjectId}}" data-id="{{id}}" aria-expanded="{{#if open}}true{{else}}false{{/if}}"><i class="fa-solid {{#if open}}fa-chevron-down{{else}}fa-chevron-right{{/if}} ssm-panel-action-chevron" aria-hidden="true"></i><strong>{{name}}</strong>{{#if secret}} <i class="fa-solid fa-user-secret" role="img" aria-label="{{localize "SSM.Challenge.Secret"}}"></i>{{/if}}</button>
@@ -60,12 +66,6 @@
       {{#if open}}<div class="ssm-panel-action-description">{{{descriptionHtml}}}</div>{{/if}}
     </div>{{/each}}
     </div>{{/if}}
-    {{!-- Modifiers by category: the blank one first with no heading, then each labelled one. Only categories with a revealed entry come through. --}}
-    {{#each modifierGroups}}<div class="ssm-panel-mod-group"{{#if stripe}} style="{{stripe}}"{{/if}}>
-      {{#if heading}}<div class="ssm-panel-cat-head">{{heading}}</div>{{/if}}
-      <div class="ssm-panel-mods">{{#each cards}}{{> ssmPanelMod}}{{/each}}</div>
-    </div>{{/each}}
   </div>
   {{/each}}
 </div>
-{{> ssmPanelCounters counterSet}}
