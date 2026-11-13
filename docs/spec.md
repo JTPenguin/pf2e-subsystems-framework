@@ -564,7 +564,7 @@ Chase is a preset and nothing more: no code checks for it. The GM does by eye wh
 | Choice | Panel |
 |---|---|
 | Auto (default) | A bar with thresholds or a both-ways range, else a number: the rule before this section. |
-| Number | Name and value on the shared line. |
+| Number | Name and value on the shared line. With thresholds in its list, its own row instead: name and value, with the threshold card under it (Justin, 2026-11-13). |
 | Bar | The progress bar with its threshold card. |
 | Steps | One segment per value above the minimum, filled up to the value, like the round counter. |
 | Track | A thin line with a tick per value from the minimum to the maximum, and a small rounded square on the value. A revealed threshold's tick is taller and red, green once reached (Justin, 2026-11-12). |

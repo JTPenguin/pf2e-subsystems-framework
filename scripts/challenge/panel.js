@@ -33,13 +33,15 @@ function moves(page, counterId, actorId = "") {
 
 /**
  * Counters as the panel draws them, the challenge's below the columns or a subject's in its column (spec 14.12, 14.13):
- * a bar, steps or a track gets its own row and threshold card; per-PC counters a row per party PC; numbers share one line.
+ * a bar, steps or a track gets its own row and threshold card; per-PC counters a row per party PC; numbers share one line,
+ * except a number with thresholds in its list, which gets its own row (name and value, no bar) so its threshold card has a place.
  * On a GM's client each value carries whether its + and − work.
  */
 function counterSet(counters, pcs, page) {
   const named = (row) => ({ ...row, name: row.name || loc("SSM.Challenge.UnnamedCounter"), counterId: row.id, ...moves(page, row.id) });
+  const ownRow = (row) => SLOTTED.has(row.display) || row.display === "bar" || (row.display === "number" && row.thresholds.length > 0);
   return {
-    tracks: counters.filter((row) => SLOTTED.has(row.display) || row.display === "bar").map((row) => ({
+    tracks: counters.filter(ownRow).map((row) => ({
       ...named(row),
       bar: row.display === "bar" ? barOf(row.value, row) : null,
       ticks: row.display === "bar" ? barTicks(row.marks, row.value, row).map((tick) => ({ ...tick, tooltip: game.i18n.format("SSM.Panel.SlotThreshold", { number: tick.points }) })) : [],
@@ -50,7 +52,7 @@ function counterSet(counters, pcs, page) {
       ...named(row),
       pcs: row.pcs.map((pc) => ({ ...pc, counterId: row.id, actor: pc.id, name: pcs.get(pc.id)?.name ?? "", img: pcs.get(pc.id)?.img ?? "", ...moves(page, row.id, pc.id) })),
     })),
-    numbers: counters.filter((row) => row.display === "number").map(named),
+    numbers: counters.filter((row) => row.display === "number" && !ownRow(row)).map(named),
     any: counters.length > 0,
   };
 }
