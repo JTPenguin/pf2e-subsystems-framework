@@ -35,12 +35,22 @@ Challenges have folders, can be duplicated, and can be exported and imported fro
 
 ## The challenge window
 
-The window is laid out like a PF2e NPC sheet. From top to bottom:
+The window is laid out like a PF2e NPC sheet, with a sidebar on the left. The sidebar holds, from top to bottom:
 
 | Part | What it holds |
 |---|---|
-| **Run strip** | The round, Previous and Next round, Start, End and Reset, Hide or Show panel. Below that, the party (with any allies you added) and the **Roll as** choice. |
-| **Challenge** | The points name, subject label, Allow multiple subjects, rounds and GM notes. |
+| **Status** | Not started, Running or Finished. |
+| **Run buttons** | Start, End and Reset, Hide or Show panel. |
+| **Round** | `◀ Round current / max ▶`. The arrows are Previous and Next round. While the challenge runs, only the arrows change the current round. |
+| **Party** | The party, with any allies you added, one per line. Click a name to mark it acted. Below it, the **Roll as** choice. |
+| **Allow multiple subjects** | A checkbox. |
+
+The body on the right holds, from top to bottom:
+
+| Part | What it holds |
+|---|---|
+| **Name** | The challenge's name. |
+| **GM notes** | Your notes. Players never see them. |
 | **Counters** | The challenge's own counters. |
 | **Modifiers** | The challenge's own modifiers. Their DC changes and roll bonuses apply to every matching check on every subject. |
 | **Subjects** | Each subject as a card, grouped by category, then the Add button. |
@@ -53,8 +63,8 @@ The window is laid out like a PF2e NPC sheet. From top to bottom:
 
 | Field | Where | What it does |
 |---|---|---|
-| **Maximum Rounds** | Challenge | Blank: no limit. 0: no rounds at all, for a campaign-long challenge. |
-| **Allow multiple subjects** | Challenge | Off: revealing a subject hides all the others, so players see one at a time, such as a chase's obstacles. |
+| **Maximum rounds** | Sidebar, after the / | Blank: no limit. 0: no rounds at all, for a campaign-long challenge. |
+| **Allow multiple subjects** | Sidebar | Off: revealing a subject hides all the others, so players see one at a time, such as a chase's obstacles. |
 | **Direction** | Counter | Counts up, counts down, or both ways (a track around 0, such as Reputation). |
 | **Change each round** | Counter | Added on Next round, taken back on Previous round. |
 | **Per PC** | Counter | One value per party PC, each with a GM-only note, such as Edge Points. No thresholds. |

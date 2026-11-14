@@ -126,13 +126,20 @@ The sheet has **one view** (Justin, 2026-11-12): live play and editing together,
 
 **It looks like the PF2e NPC and hazard sheets.** It uses the system's own fonts, colours and spacing: a light parchment window (unless the GM picks a theme for the sheet), the name in the NPC sheet's condensed small caps, each section in a red-edged box under a dark red bar.
 
-**Layout, top to bottom:**
+**Layout.** A sidebar on the left and the body on the right, as on the PF2e NPC sheet (Justin, 2026-11-13). The sidebar is a fixed 10rem, the NPC sheet's width, at every window width, and runs the window's full height. The sidebar and the body each scroll on their own. Fields in the sidebar sit one per line, NPC style.
 
-| Part | What it holds |
+| Sidebar part, top to bottom | What it holds |
+|---|---|
+| Status | Not started, Running or Finished, always shown, apart from the rounds. |
+| Run buttons | Start, End, Reset, Hide or Show panel, one per line. |
+| Round | One line, like HP on an NPC sheet: Round, then ◀ current / max ▶. Current is locked while running, so only ◀ ▶ change it; max stays editable. A blank max (no limit) shows ∞. With max 0 the numbers stay and ◀ ▶ are disabled. |
+| Party | One participant per line; Roll as under the list. |
+| Allow multiple subjects | A checkbox. |
+
+| Body part, top to bottom | What it holds |
 |---|---|
 | Name | The challenge name, editable in place. |
-| Run strip | Always shown, even before Start. Roll buttons stay disabled until the run starts. |
-| Challenge | The challenge's own fields, edited in place: points name, subject label, Allow multiple subjects, rounds (current and maximum; current is locked while running) and GM notes. |
+| GM notes | Its own box, first in the body. |
 | Counters | The challenge's counters. |
 | Modifiers | The challenge's own modifiers, grouped by category (14.7). |
 | Subjects | Grouped by category (14.4), then an Add subject button. |
@@ -158,7 +165,7 @@ Every window takes the sheet's theme. There is one window per entry: opening it 
 
 **Live play is laid out like a statblock:** small labels beside their values. It shows:
 
-- One strip at the top, in two rows. Row 1 has the round clock with previous and next round buttons on the left, and Start, End and Reset, Hide or Show panel at the far right. Row 2 has the party chips, then the Roll as choice. The party chips include the actors the GM added (14.14), each with a remove button.
+- The sidebar (above). Its party list includes the actors the GM added (14.14), each with a remove button. Roll buttons stay disabled until the run starts.
 - Each NPC's name with "Points" and the total beside it on the same line, with buttons to add and remove.
 - Each skill as a chip styled like a PF2e inline check, in a grid of two or three columns by window width, with the Discovery and Influence labels beside their grids. The chip shows the skill name (the Lore name for a Lore) and the current DC, colored green (higher) or red (lower) when it differs from the base DC. Its tooltip gives the base DC and says if the skill is a decoy. Clicking the chip rolls for the chosen PC; a chat icon on it posts a chat link. A revealed chip is full strength; a hidden chip is faded, with its name in italics. On the light theme a revealed chip's eye is dark red, so it reads on parchment. While the challenge isn't running, the roll and chat link are disabled.
 - An eye toggle to reveal or hide each entry, on the chip for skills. A threshold's eye steps through hidden, points only, and points and text, then back to hidden.
@@ -331,7 +338,7 @@ Every subsystem runs on one data model, one sheet and one panel: GM Core's [Vict
 | Name, GM notes | As today |
 | Preset | Which preset made it. Used only to build a new subject and to name the Add button. |
 | Points name, subject label | "Influence Points" and "NPC" for Influence; "Victory Points" and "Subject" for a blank challenge |
-| Rounds | Current and maximum. The maximum can be blank: no limit, and the panel shows "Round 3" with no bar. A maximum of 0 means the challenge has no rounds, as a campaign-long one such as Reputation: Start leaves the round at 0, Next round does nothing, and neither the sheet nor the panel shows the round, its buttons, the party portraits or the acted marks. The sheet shows the run's state (Not started, Running, Finished) in the round's place, and the Current round field stays where it is. Giving a running challenge a maximum again starts it at round 1 (Justin, 2026-11-13). |
+| Rounds | Current and maximum. The maximum can be blank: no limit, and the panel shows "Round 3" with no bar. A maximum of 0 means the challenge has no rounds, as a campaign-long one such as Reputation: Start leaves the round at 0, Next round does nothing, and the panel shows neither the round, its buttons, the party portraits nor the acted marks. The sheet keeps its Round line with ◀ ▶ disabled, and lists only added actors, with no acted marks. The sheet's status shows the run's state at all times. Giving a running challenge a maximum again starts it at round 1 (Justin, 2026-11-13). |
 | Subjects | One or more, in the GM's order |
 | Modifiers | Challenge-level modifier entries (14.7) |
 | Counters | Zero or more |
@@ -390,7 +397,7 @@ The sheet's one view (section 6):
 
 - Each subject has an eye by its name, and a Complete tag that is a button, like Reached.
 - Each action is a labelled grid of chips, in the GM's order, with edit and delete buttons. An action with no checks still shows, so it can be edited.
-- **Order** (Justin, 2026-11-12). The challenge's own fields come first, then Counters, Modifiers and Subjects. A subject's card holds its description, then Counters, Modifiers and Actions.
+- **Order** (Justin, 2026-11-13). The challenge's own fields are in the sidebar (section 6). The body has GM notes, then Counters, Modifiers and Subjects. A subject's card holds its description, then Counters, Modifiers and Actions.
 - A subject's card has Counters, Modifiers and Actions subsections, each title with a + (section 6). Its counters each have + and −, as the challenge's do (14.13).
 - A counter with thresholds shows them as rows under it, like a subject's.
 - Subjects, modifiers and counters can be reordered by drag, and subjects and counters collapsed (14.8). A per-PC counter lists each party PC, with the party total (14.8).
@@ -398,7 +405,7 @@ The sheet's one view (section 6):
 - **Collapsible rows share one layout** (Justin, 2026-11-13). The caret comes first, then the eye (if the row has one), then other toggles (such as a modifier's On), then the name. Status tags, such as a subject's Complete, stay after the name. A row with nothing to open keeps an empty caret slot, so its name lines up with its neighbours'. This covers subjects, counters, modifiers and actions on the sheet, not the panel.
 - **Clicking a header opens and closes it** (Justin, 2026-11-12). A click on the empty part of a subject's header, an action's line, a modifier's row or a counter's top row does what its caret does. Buttons, inputs, links, skill chips and their eyes, and the edit and delete buttons keep their own jobs. An action, modifier or counter with nothing to show stays still. The caret stays the keyboard target.
 - The stored subject list keeps this grouped order, so the panel's columns follow it. A subject whose category changes moves to the end of its new group.
-- The challenge has the points name, subject label and an optional round maximum, edited in place.
+- The challenge has an optional round maximum, edited in place in the sidebar.
 - Each action's window holds its name, Secret and description, then its checks as a table. The description is rich text, like an item's, so it can hold the action's degrees of success. Its secret blocks are the GM's alone.
 - Counters have direction, change each round, and thresholds in place of triggers, set in the counter window.
 
@@ -556,7 +563,7 @@ Chase is a preset and nothing more: no code checks for it. The GM does by eye wh
 
 **Status:** decided with Justin, 2026-11-12; built 2026-11-12. Generic features that replace the first Chase build's custom logic.
 
-**Allow multiple subjects.** A checkbox in the sheet's Challenge section, with a tooltip.
+**Allow multiple subjects.** A checkbox in the sheet's sidebar, with a tooltip.
 
 | Rule | Detail |
 |---|---|

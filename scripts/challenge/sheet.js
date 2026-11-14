@@ -85,7 +85,7 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
   };
 
   static PARTS = {
-    form: { template: `modules/${MODULE}/templates/challenge-sheet.hbs`, scrollable: [".ssm-body"] },
+    form: { template: `modules/${MODULE}/templates/challenge-sheet.hbs`, scrollable: [".ssm-body", ".ssm-sidebar"] },
   };
 
   /** Each action's enriched description, by action id, from the last context. */
@@ -347,10 +347,10 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
       canReset: status !== "inactive",
       canHidePanel: active && onPanel && !panel.hidden,
       canShowPanel: active && (!onPanel || !!panel.hidden),
-      // A maximum of 0 means no rounds: the strip drops the round, its buttons and the acted marks. The Current Round field stays, so the Challenge section doesn't shift when Maximum Rounds changes.
+      // A maximum of 0 means no rounds: the party list drops the acted marks. The round still shows its numbers, with its buttons disabled.
       rounds: hasRounds(system),
+      // The run's status, always shown at the top of the sidebar, apart from the rounds.
       statusLabel: loc(active ? "SSM.Challenge.InProgress" : status === "finished" ? "SSM.Challenge.Finished" : "SSM.Challenge.NotStarted"),
-      roundLabel: active || status === "finished" ? game.i18n.format(system.rounds.max === null ? "SSM.Challenge.RoundOpen" : "SSM.Challenge.Round", system.rounds) : loc("SSM.Challenge.NotStarted"),
       canNextRound: canAdvanceRound(system),
       canPreviousRound: canUndoRound(system),
       party: [...new Set([...partyIds, ...actors.map((actor) => actor.id), ...system.run.acted])].map((id) => {
@@ -358,7 +358,7 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
         const added = system.participants.includes(id) && !pcIds.has(id);
         return { id, name: actor?.name ?? id, acted: system.run.acted.includes(id), added, removeLabel: game.i18n.format("SSM.Challenge.RemoveParticipant", { name: actor?.name ?? id }) };
       }),
-      // A challenge with no rounds has no acted marks, so the strip lists only the added actors, for their remove buttons.
+      // A challenge with no rounds has no acted marks, so the party list shows only the added actors, for their remove buttons.
       added: system.participants.map((id) => ({ id, name: game.actors.get(id)?.name ?? id, removeLabel: game.i18n.format("SSM.Challenge.RemoveParticipant", { name: game.actors.get(id)?.name ?? id }) })),
       actors: actors.map((actor) => ({ id: actor.id, name: actor.name, selected: actor === selected })),
       // The challenge's own entries, in a box above the subjects (spec 14.7).
