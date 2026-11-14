@@ -4,7 +4,7 @@
  */
 
 import { counterValueText, BOTH_WAYS, groupByCategory, isVisibleCheck, skillKey } from "./data.js";
-import { counterValueOf, currentDc } from "./run.js";
+import { counterValueOf, currentDc, rollBonuses, usedModifierIds } from "./run.js";
 
 /** Scale for a bar when the counter has no maximum and no thresholds. */
 const DEFAULT_SCALE = 10;
@@ -18,19 +18,30 @@ const allVisibleChecks = (system) => system.subjects.filter(isVisible).flatMap(v
 const skillName = (row) => ({ skill: row.skill, lore: row.lore });
 
 /**
- * What a modifier's DC change does, in terms players may see, or null if it shows nothing. A DC change shows as a DC change ("−2 to DCs vs Diplomacy"),
- * with the amount only, so no DC number appears. A check players can't see is left out without a trace,
- * and a change that covers only hidden checks shows nothing. Notes are the GM's words, so they never show.
+ * The checks a modifier applies to, in terms players may see: { all, skills }, or null if it covers only checks they can't see.
+ * One list, under `dc`, names the checks for both its DC change and its roll bonus. A check players can't see is left out without a trace.
  */
-function changeView(system, subject, dc) {
-  if (!dc?.amount) return null;
-  if (dc.allSkills) return { type: "dc", amount: dc.amount, all: true, skills: [] };
+function targetView(system, subject, dc) {
+  if (dc.allSkills) return { all: true, skills: [] };
   // A challenge-level entry (no subject) names skills, so it shows the skills of any check players can see (spec 14.7).
   const rows = subject ? visibleChecks(subject).filter((row) => dc.skills.includes(row.id)) : allVisibleChecks(system).filter((row) => dc.skills.includes(skillKey(row)));
   if (!rows.length) return null;
   // Two actions can share a skill: name it once.
-  const shown = [...new Map(rows.map((row) => [`${row.skill}:${row.lore}`, skillName(row)])).values()];
-  return { type: "dc", amount: dc.amount, all: false, skills: shown };
+  return { all: false, skills: [...new Map(rows.map((row) => [`${row.skill}:${row.lore}`, skillName(row)])).values()] };
+}
+
+/**
+ * What a modifier does, in terms players may see. A DC change shows as a DC change ("−2 to DCs vs Diplomacy"), with the amount only,
+ * so no DC number appears. A roll bonus shows with its type ("+1 circumstance to Diplomacy checks"); it is in the player's roll breakdown anyway.
+ * A change that covers only hidden checks shows nothing. Notes are the GM's words, so they never show.
+ */
+function changeViews(system, subject, row) {
+  const target = row.dc ? targetView(system, subject, row.dc) : null;
+  if (!target) return [];
+  return [
+    row.dc.amount ? { type: "dc", amount: row.dc.amount, ...target } : null,
+    row.roll?.amount ? { type: "roll", amount: row.roll.amount, rollType: row.roll.type, ...target } : null,
+  ].filter(Boolean);
 }
 
 /** A revealed modifier entry, as a card on the panel. `group` is its category: the label and the stripe colour. `subject` is null for a challenge-level entry. */
@@ -44,14 +55,22 @@ const modifierView = (system, subject, row, group) => ({
   duration: row.duration,
   active: !!row.active,
   spent: !!row.spent,
-  changes: [changeView(system, subject, row.dc)].filter(Boolean),
+  changes: changeViews(system, subject, row),
 });
 
+/** A roll bonus's amount with its type, such as "+1 circumstance" or, untyped, "+1". `format` is Foundry's localisation. */
+export const rollBonusText = (amount, type, format) => format(`SSM.Challenge.RollBonus.${type}`, { amount: amount > 0 ? `+${amount}` : `−${-amount}` });
+
 /**
- * One DC change as text, such as "−2 to DCs vs Diplomacy".
+ * One change as text, such as "−2 to DCs vs Diplomacy" or "+1 circumstance to Diplomacy checks".
  * `format(key, data)` and `list(items)` are Foundry's localisation and `label(skill)` names a skill, so tools/test.mjs can pass stand-ins.
  */
 export function changeText(change, { format, list, label }) {
+  if (change.type === "roll") {
+    const bonus = rollBonusText(change.amount, change.rollType, format);
+    if (change.all) return format("SSM.Panel.Change.rollAll", { bonus });
+    return format("SSM.Panel.Change.roll", { bonus, skills: list(change.skills.map(label)) });
+  }
   const amount = change.amount > 0 ? `+${change.amount}` : `−${-change.amount}`;
   if (change.all) return format("SSM.Panel.Change.dcAll", { amount });
   return format("SSM.Panel.Change.dc", { amount, skills: list(change.skills.map(label)) });
@@ -114,12 +133,13 @@ function subjectView(system, subject, party) {
     // The subject's revealed counters, drawn in its column (spec 14.13).
     counters: (subject.counters ?? []).filter(isVisible).map((counter) => counterView(system, counter, party)),
     // An action with no check players can see is left out whole. The DC is in the copy for the roll; the panel never shows it.
+    // So are the roll bonuses and the entries the roll uses; a hidden entry's bonus has no name, so its name stays the GM's.
     actions: subject.actions.map((action) => ({
       id: action.id,
       name: action.name,
       description: withoutSecrets(action.description),
       secret: !!action.secret,
-      checks: action.checks.filter(isVisibleCheck).map((row) => ({ id: row.id, skill: row.skill, lore: row.lore, dc: currentDc(system, subject, row) })),
+      checks: action.checks.filter(isVisibleCheck).map((row) => ({ id: row.id, skill: row.skill, lore: row.lore, dc: currentDc(system, subject, row), bonuses: rollBonuses(system, subject, row), used: usedModifierIds(system, subject, row) })),
     })).filter((action) => action.checks.length),
     // By category: the blank one first, then the preset's suggestions, then others by first use; each keeps the GM's order.
     modifierGroups: cardGroups(system, subject),

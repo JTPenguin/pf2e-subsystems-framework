@@ -186,7 +186,7 @@ async function rollFromPanel(state, button, event) {
   if (!actor) return game.user.isGM ? ui.notifications.warn("SSM.Panel.NoGMActor", { localize: true }) : ui.notifications.info("SSM.Panel.NoCharacter", { localize: true });
   const { subject, action, row } = found;
   const subjectLabel = subjectName(subject, subject.index ?? state.view.subjects.indexOf(subject), state.view.subjectLabel);
-  const target = rollTarget({ challengeId: state.id, subject, subjectLabel, action, row, dc: row.dc });
+  const target = rollTarget({ challengeId: state.id, subject, subjectLabel, action, row, dc: row.dc, bonuses: row.bonuses ?? [], used: row.used ?? [] });
   // One click, one roll: a double click or a click behind the open roll dialog doesn't start another.
   rolling = true;
   try {

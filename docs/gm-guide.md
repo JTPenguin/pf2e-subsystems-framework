@@ -42,10 +42,10 @@ The window is laid out like a PF2e NPC sheet. From top to bottom:
 | **Run strip** | The round, Previous and Next round, Start, End and Reset, Hide or Show panel. Below that, the party and the **Roll as** choice. |
 | **Challenge** | The points name, subject label, Allow multiple subjects, rounds and GM notes. |
 | **Counters** | The challenge's own counters. |
-| **Modifiers** | The challenge's own modifiers. Their DC changes apply to every matching check on every subject. |
+| **Modifiers** | The challenge's own modifiers. Their DC changes and roll bonuses apply to every matching check on every subject. |
 | **Subjects** | Each subject as a card, grouped by category, then the Add button. |
 
-**Editing.** Each entry has an edit button that opens its own window, and a delete button. A **+** in a section's title adds an entry there and opens its window. Changes save as you make them. There is no Save button. Drag an entry by its header to reorder it within its group.
+**Editing.** Each entry has an edit button that opens its own window, and a delete button. A **+** in a section's title adds an entry there and opens its window. To add a threshold, open the counter and click **Add threshold** under its thresholds. Changes save as you make them. There is no Save button. Drag an entry by its header to reorder it within its group.
 
 **Opening and closing.** Click a header or its caret to open or close a card or row. Collapsed subjects and counters stay collapsed for you across reloads.
 
@@ -88,11 +88,15 @@ A modifier is **On** or **Off**. Its colour stripe shows only while it's On.
 
 | Duration | What happens when a roll uses it |
 |---|---|
-| **One-time** | It is spent. The next check gets the normal DC. Click restore if the roll shouldn't have used it. |
+| **One-time** | It is spent. The next check gets the normal DC and no bonus. Click restore if the roll shouldn't have used it. |
 | **Multi-use** | It turns Off. Turn it On again the next time a PC exploits it. |
 | **Ongoing** | Nothing. It stays On until you turn it Off. |
 
-A DC change applies to all skills or to the skills you pick. On the panel, players see "−2 to DCs vs Diplomacy", never a DC. A change on hidden skills only is left out. A modifier's **Note** is for you; players see its description.
+A modifier can change the DC, give a **roll bonus**, or both. A roll bonus is a PF2e modifier with a type (circumstance, status, item or untyped), so PF2e's stacking rules apply and players see it in the roll's breakdown. Below 0 it is a penalty. Both changes apply to all skills or to the skills you pick, from one list.
+
+On the panel, players see "−2 to DCs vs Diplomacy" or "+1 circumstance to Diplomacy checks", never a DC. A change on hidden skills only is left out. A hidden modifier's bonus shows in the roll breakdown as "Challenge modifier", without its name. A modifier's **Note** is for you; players see its description.
+
+A chat link from the sheet can't carry a roll bonus: it rolls against the changed DC but without the bonus, and it spends only modifiers that changed its DC.
 
 ### Several challenges
 

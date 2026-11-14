@@ -10,8 +10,8 @@ A Foundry VTT module for running Pathfinder 2e subsystems: Influence, Infiltrati
 - **Presets.** Create a challenge from Victory Points (blank), Influence, Infiltration, Infiltration Preparation, Chase, Reputation or Research. Each fills in the names, counters, thresholds and actions the GM Core rules use, plus GM notes on running it with the module. Everything can be edited afterwards.
 - **Hidden until revealed.** Every subject, check, counter, threshold and modifier has an eye. Players see only what you reveal, and DCs stay hidden. You can plant a decoy that looks real to players.
 - **A player panel over the canvas.** It shows on every scene until you end or hide the challenge. Players can drag and resize it but can't close it.
-- **Rolls are normal PF2e checks.** Players click a check on the panel; you roll or post a chat link from the sheet. The DC includes any active DC changes. Discover-type actions can roll as secret checks.
-- **You stay in charge of the numbers.** A roll marks the PC as acted for the round and uses up any one-time DC changes it used. It never changes points: you read the chat card and click + or −.
+- **Rolls are normal PF2e checks.** Players click a check on the panel; you roll or post a chat link from the sheet. The DC includes any active DC changes, and a modifier can add a typed roll bonus or penalty that shows in PF2e's roll breakdown. Discover-type actions can roll as secret checks.
+- **You stay in charge of the numbers.** A roll marks the PC as acted for the round and uses up any one-time modifiers it used. It never changes points: you read the chat card and click + or −.
 - **Counters and thresholds.** Any number of counters, on the challenge or a subject, counting up, down or both ways, drawn as a bar, steps, a track or a number. Thresholds tick when reached, give you a notice and can change DCs.
 - **Rounds.** A round clock with an optional limit, party portraits that dim once a PC has acted, and per-round counter changes. A campaign-long challenge, such as Reputation, can have no rounds at all.
 - **Several at once.** Any number of challenges can run at the same time; one is on the panel.

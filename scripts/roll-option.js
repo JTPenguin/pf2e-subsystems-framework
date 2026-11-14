@@ -11,6 +11,18 @@ export const LINK_ROLL_ID = "link";
 
 export const buildRollOption = (roll) => `${PREFIX}${PARTS.map((part) => roll[part]).join(":")}`;
 
+/*
+ * A roll from the sheet or the panel also names the modifier entries it used, in a second option: ssm:used:<id>:<id>…, or ssm:used for none.
+ * The roll spends exactly those. A chat link has no such option.
+ */
+const USED = "ssm:used";
+export const buildUsedOption = (ids) => [USED, ...ids].join(":");
+/** The entry ids a roll's options name, or null if it names none (a chat link, or a roll from before this option). */
+export function parseUsedOption(options) {
+  const found = Array.isArray(options) ? options.find((option) => option === USED || (typeof option === "string" && option.startsWith(`${USED}:`))) : null;
+  return found ? found.split(":").slice(2).filter(Boolean) : null;
+}
+
 export function parseRollOption(option) {
   if (typeof option !== "string" || !option.startsWith(PREFIX)) return null;
   const parts = option.slice(PREFIX.length).split(":");

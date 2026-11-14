@@ -7,16 +7,32 @@ import { allCounters, BOTH_WAYS, clampTracks, findCounter, limitTrack, modifierL
 
 const isOneTime = (modifier) => modifier.duration === "oneTime";
 const isMultiUse = (modifier) => modifier.duration === "multiUse";
-/** A subject's entry names its checks by id; a challenge-level entry names skills, so it matches that skill on any subject (spec 14.7). */
-const dcMatches = ({ dc }, check, challengeLevel) => !!dc && dc.amount !== 0 && (dc.allSkills || dc.skills.includes(challengeLevel ? skillKey(check) : check.id));
+/**
+ * Whether an entry applies to this check. One list, under `dc`, names the checks for both its DC change and its roll bonus.
+ * A subject's entry names its checks by id; a challenge-level entry names skills, so it matches that skill on any subject (spec 14.7).
+ */
+const appliesTo = ({ dc }, check, challengeLevel) => !!dc && (dc.allSkills || dc.skills.includes(challengeLevel ? skillKey(check) : check.id));
+const changesDc = (modifier) => !!modifier.dc && modifier.dc.amount !== 0;
+const changesRoll = (modifier) => !!modifier.roll && modifier.roll.amount !== 0;
 
-/** The entries changing this check's DC for the next roll: on and unspent, on the check's subject and on the challenge. Each is { modifier, challengeLevel }. */
-function liveDcModifiers(system, subject, check) {
+/** The entries that apply to the next roll of this check: on and unspent, on the check's subject and on the challenge, with `has` true. Each is { modifier, challengeLevel }. */
+function liveModifiers(system, subject, check, has) {
   const live = (list, challengeLevel) => list
-    .filter((modifier) => modifier.active && !modifier.spent && dcMatches(modifier, check, challengeLevel))
+    .filter((modifier) => modifier.active && !modifier.spent && has(modifier) && appliesTo(modifier, check, challengeLevel))
     .map((modifier) => ({ modifier, challengeLevel }));
   return [...live(subject.modifiers, false), ...live(system.modifiers ?? [], true)];
 }
+const liveDcModifiers = (system, subject, check) => liveModifiers(system, subject, check, changesDc);
+
+/**
+ * The roll bonuses and penalties the next roll of this check gets, for PF2e to add as modifiers: { id, name, amount, type }.
+ * `name` is the entry's name if players can see it, else "" so the caller names it generically and a hidden entry's name stays the GM's.
+ */
+export const rollBonuses = (system, subject, check) => liveModifiers(system, subject, check, changesRoll)
+  .map(({ modifier }) => ({ id: modifier.id, name: modifier.revealed ? modifier.name : "", amount: modifier.roll.amount, type: modifier.roll.type }));
+
+/** The ids of every entry the next roll of this check uses, by its DC change, its roll bonus or both. A roll that carries them spends exactly these. */
+export const usedModifierIds = (system, subject, check) => liveModifiers(system, subject, check, (modifier) => changesDc(modifier) || changesRoll(modifier)).map(({ modifier }) => modifier.id);
 
 /** The DC change from reached thresholds. */
 const thresholdDc = (thresholds) => thresholds.reduce((sum, threshold) => sum + (threshold.reached ? threshold.dc || 0 : 0), 0);
@@ -319,27 +335,40 @@ function rollTargetOf(system, roll) {
   return check ? { subject, check } : null;
 }
 
-/** Spend the one-time entries that changed this roll's DC, and turn the multi-use ones Off for the GM to turn on again. Only a roll at the current DC used them: a roll at any other DC, such as an old chat link, leaves them for the next check. */
-function spendDcEntries(system, subject, check, dc) {
-  if (dc === null || dc === undefined || dc !== currentDc(system, subject, check)) return;
-  // A one-time challenge-level entry is spent by the next matching check anywhere (spec 14.7).
-  for (const { modifier } of liveDcModifiers(system, subject, check)) {
-    if (isOneTime(modifier)) modifier.spent = true;
-    else if (isMultiUse(modifier)) modifier.active = false;
+/** Spend a one-time entry, and turn a multi-use one Off for the GM to turn on again. */
+function spend(modifier) {
+  if (isOneTime(modifier)) modifier.spent = true;
+  else if (isMultiUse(modifier)) modifier.active = false;
+}
+
+/**
+ * Spend the entries a roll used. A roll from the sheet or the panel names them (`used`), so an entry with only a roll bonus is spent too;
+ * one turned off or spent since is left alone. A chat link's roll names none, as it can't carry a roll bonus: it spends the entries that
+ * changed its DC, and only if it was made at the current DC, so an old link leaves them for the next check.
+ * A one-time challenge-level entry is spent by the next matching check anywhere (spec 14.7).
+ */
+function spendUsedEntries(system, subject, check, roll) {
+  if (Array.isArray(roll.used)) {
+    const used = new Set(roll.used);
+    for (const { modifier } of liveModifiers(system, subject, check, (entry) => used.has(entry.id))) spend(modifier);
+    return;
   }
+  const dc = roll.dc ?? null;
+  if (dc === null || dc !== currentDc(system, subject, check)) return;
+  for (const { modifier } of liveDcModifiers(system, subject, check)) spend(modifier);
 }
 
 /**
  * Take in a roll as it arrives. This is all a roll does: no roll changes points or counters; the GM does that by hand (spec 14.8).
  * Returns false when it changes nothing: the roll doesn't belong to a running challenge, or it's a reroll.
- * The PC is marked as having acted, and the roll spends the one-time DC entries it used, so the next check gets the normal DC.
+ * The PC is marked as having acted, and the roll spends the one-time entries it used, so the next check gets the normal DC and no bonus.
  * A reroll does neither again. If the roll shouldn't have spent an entry, the GM restores it by hand.
  */
 export function receiveRoll(system, roll) {
   const target = rollTargetOf(system, roll);
   if (system.run.status !== "active" || !target || roll.isReroll) return false;
   if (roll.actorId && !system.run.acted.includes(roll.actorId)) system.run.acted.push(roll.actorId);
-  spendDcEntries(system, target.subject, target.check, roll.dc ?? null);
+  spendUsedEntries(system, target.subject, target.check, roll);
 }
 
 /* -------------------------------------------- */

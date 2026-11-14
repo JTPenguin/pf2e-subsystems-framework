@@ -42,13 +42,17 @@ const id = () => foundry.utils.randomID();
 const say = (key) => globalThis.game?.i18n?.localize(key) ?? key;
 
 /**
- * A modifier entry does two things, each optional: one DC change (`dc`, amount 0 for none) and a note.
+ * A modifier entry does three things, each optional: a DC change (`dc`, amount 0 for none), a typed bonus or penalty on the roll itself
+ * (`roll`, amount 0 for none) and a note. `dc.allSkills` and `dc.skills` name the checks both changes apply to.
  * Nothing changes points or counters but the GM's own + and − (spec 14.7).
  */
 export const newModifierDc = () => ({ amount: 0, allSkills: true, skills: [] });
+/** The PF2e modifier types a roll bonus can have. PF2e's own stacking rules then apply: the highest bonus and worst penalty of each type, except untyped. */
+export const ROLL_MODIFIER_TYPES = ["circumstance", "status", "item", "untyped"];
+export const newModifierRoll = () => ({ amount: 0, type: "circumstance" });
 export const newModifier = () => ({
   id: id(), name: "", description: "", category: "", duration: "ongoing",
-  active: false, spent: false, revealed: false, decoy: false, dc: newModifierDc(), note: "",
+  active: false, spent: false, revealed: false, decoy: false, dc: newModifierDc(), roll: newModifierRoll(), note: "",
 });
 
 /** Text as HTML, escaped, so tools/test.mjs can run it without Foundry. */
@@ -591,7 +595,7 @@ export function searchText(system) {
  */
 
 /** The fields each window edits. The id never changes. */
-export const MODIFIER_FIELDS = ["name", "category", "duration", "description", "active", "spent", "revealed", "decoy", "dc", "note"];
+export const MODIFIER_FIELDS = ["name", "category", "duration", "description", "active", "spent", "revealed", "decoy", "dc", "roll", "note"];
 
 const subjectById = (system, subjectId) => system.subjects.find((subject) => subject.id === subjectId);
 /** The modifier list a subject id names. An empty id names the challenge's own list (spec 14.7). */

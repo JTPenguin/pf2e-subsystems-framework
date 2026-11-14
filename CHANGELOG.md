@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+- Modifiers can give a typed roll bonus or penalty (circumstance, status, item or untyped), with or without a DC change. New `roll` field in the import format.
+- A roll spends the modifiers it used, including ones with only a roll bonus.
+- A counter's thresholds are added from an **Add threshold** row under the open counter; the counter's row keeps one +.
+- In the challenge window, an open row's content lines up with the first element after its caret.
+
 ## 0.1.0
 
 First release.

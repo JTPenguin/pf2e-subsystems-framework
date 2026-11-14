@@ -59,10 +59,10 @@
         {{#if kind}}{{> ssmAdd}}{{/if}}
       </h4>{{/inline}}
 {{#*inline "ssmComplete"}}<button type="button" class="ssm-tag ssm-state ssm-reached {{#unless complete}}ssm-unreached{{/unless}}" data-action="toggleComplete" data-subject="{{id}}" aria-pressed="{{complete}}" data-tooltip="{{completeTooltip}}" {{#unless root.canChange}}disabled{{/unless}}>{{#if complete}}<i class="fa-solid fa-check" aria-hidden="true"></i> {{/if}}{{localize "SSM.Challenge.Complete"}}</button>{{/inline}}
-{{!-- A counter, the challenge's or a subject's. `root` is the run context. --}}
+{{!-- A counter, the challenge's or a subject's. `root` is the run context. A counter that can hold thresholds (not per-PC) always has a caret; open, it lists its thresholds and an Add threshold row, so its row keeps a single +, the increase (Justin, 2026-11-13). --}}
 {{#*inline "ssmCounterRun"}}<div class="ssm-counter {{#unless revealed}}ssm-hidden{{/unless}}" data-drag="counters" data-id="{{id}}" data-owner="{{subjectId}}" data-group="{{subjectId}}">
       <div class="ssm-row ssm-entry">
-        {{> ssmCaret action=(ifThen thresholds.length "toggleCounter" "") open=open id=id}}
+        {{> ssmCaret action=(ifThen perPc "" "toggleCounter") open=open id=id}}
         {{> ssmEye root=root}}
         <span class="ssm-grow">{{label}}{{#if perRoundLabel}} <span class="ssm-tag">{{perRoundLabel}}</span>{{/if}}{{#if perPc}} <strong class="ssm-pc-total">{{totalLabel}}</strong>{{/if}}</span>
         {{#unless perPc}}
@@ -70,7 +70,6 @@
         <strong class="ssm-point-total">{{valueText}}</strong>
         <button type="button" class="icon fa-solid fa-plus" data-action="changeCounter" data-id="{{id}}" data-delta="1" aria-label="{{localize "SSM.Challenge.AddToCounter"}}" {{#unless canAdd}}disabled{{/unless}}></button>
         {{/unless}}
-        {{#unless perPc}}{{> ssmAdd kind="thresholds" subject=id addLabel=(localize "SSM.Challenge.AddThreshold")}}{{/unless}}
         {{> ssmRowTools kind="counters" subject=subjectId name=label}}
       </div>
       {{#each pcs}}
@@ -82,7 +81,8 @@
         <button type="button" class="icon fa-solid fa-plus" data-action="changeCounter" data-id="{{../id}}" data-actor="{{id}}" data-delta="1" aria-label="{{localize "SSM.Challenge.AddToCounter"}}" {{#unless canAdd}}disabled{{/unless}}></button>
       </div>
       {{/each}}
-      {{#if open}}{{#each thresholds}}{{> ssmThresholdRun root=../root}}{{/each}}{{/if}}
+      {{#if open}}{{#each thresholds}}{{> ssmThresholdRun root=../root}}{{/each}}
+      {{#unless perPc}}<button type="button" class="ssm-add-row" data-action="addEntry" data-kind="thresholds" data-subject="{{id}}"><i class="fa-solid fa-plus" aria-hidden="true"></i> {{localize "SSM.Challenge.AddThreshold"}}</button>{{/unless}}{{/if}}
       </div>{{/inline}}
 <div class="ssm-layout">
   <header class="ssm-head">

@@ -121,7 +121,8 @@ An Influence challenge with one NPC. Copy it as a starting point. Every key not 
                 "category": "Weakness",
                 "description": "<p>She softens when someone admires her collection.</p>",
                 "duration": "oneTime",
-                "dc": { "amount": -2, "allSkills": false, "skills": ["kVanceDiplomacy"] }
+                "dc": { "amount": -2, "allSkills": false, "skills": ["kVanceDiplomacy"] },
+                "roll": { "amount": 1, "type": "circumstance" }
               },
               {
                 "id": "mVanceThreats01",
@@ -248,9 +249,13 @@ The same shape on the challenge and on a subject.
 | `revealed` | Boolean | `false` | |
 | `decoy` | Boolean | `false` | |
 | `dc.amount` | Integer | `0` | The DC change, such as `-2`. `0` means none. |
-| `dc.allSkills` | Boolean | `true` | `true`: every check. `false`: only those in `dc.skills`. |
-| `dc.skills` | List | `[]` | **Differs by level** (below). |
+| `dc.allSkills` | Boolean | `true` | `true`: every check. `false`: only those in `dc.skills`. Applies to the roll bonus too. |
+| `dc.skills` | List | `[]` | **Differs by level** (below). Applies to the roll bonus too. |
+| `roll.amount` | Integer | `0` | A bonus on the roll itself, such as `1`; below 0 for a penalty. `0` means none. |
+| `roll.type` | `circumstance`, `status`, `item` or `untyped` | `circumstance` | The PF2e modifier type. PF2e's stacking rules apply. |
 | `note` | Plain | `""` | GM only: a consequence with no number, such as "she ends the conversation". |
+
+`dc.allSkills` and `dc.skills` name the checks for both the DC change and the roll bonus. A modifier with only a roll bonus still uses them; leave `dc.amount` at `0`.
 
 **`dc.skills` on a subject's modifier** lists that subject's **check ids**, such as `["kVanceDiplomacy"]`.
 

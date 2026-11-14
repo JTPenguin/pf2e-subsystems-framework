@@ -1,4 +1,4 @@
-import { COUNTER_DISPLAYS, DEFAULT_PRESET, dedupeIds, DIRECTIONS, DURATIONS, PRESETS, STATUSES, THRESHOLD_REVEALS } from "./data.js";
+import { COUNTER_DISPLAYS, DEFAULT_PRESET, dedupeIds, DIRECTIONS, DURATIONS, PRESETS, ROLL_MODIFIER_TYPES, STATUSES, THRESHOLD_REVEALS } from "./data.js";
 
 const { ArrayField, BooleanField, HTMLField, NumberField, ObjectField, SchemaField, StringField } = foundry.data.fields;
 
@@ -13,6 +13,8 @@ const ids = () => new ArrayField(new StringField({ blank: false }), { required: 
 
 /** A modifier's DC change (spec 14.7). An amount of 0 means none. */
 const modifierDcFields = () => ({ amount: int(), allSkills: flag(true), skills: ids() });
+/** A modifier's bonus (or, below 0, penalty) on the roll itself, as a PF2e modifier of this type. An amount of 0 means none. It applies to the checks `dc` names. */
+const modifierRollFields = () => ({ amount: int(), type: choice(ROLL_MODIFIER_TYPES, "circumstance") });
 
 const modifierFields = () => ({
   id: rowId(),
@@ -27,6 +29,7 @@ const modifierFields = () => ({
   revealed: flag(),
   decoy: flag(),
   dc: new SchemaField(modifierDcFields()),
+  roll: new SchemaField(modifierRollFields()),
   note: text(),
 });
 

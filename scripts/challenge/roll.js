@@ -1,5 +1,5 @@
 import { loreStatistic } from "../lore-statistic.js";
-import { buildRollOption } from "../roll-option.js";
+import { buildRollOption, buildUsedOption } from "../roll-option.js";
 import { LORE, PERCEPTION, SAVES } from "./data.js";
 import { actionName, skillLabel } from "./skill-label.js";
 import { loreSlug } from "./run.js";
@@ -13,14 +13,23 @@ const loc = (key) => game.i18n.localize(key);
 
 /**
  * What a roll or chat link needs. `subject` needs id; `action` needs id, name and secret; `row` needs id, skill and, for a Lore, lore.
- * `subjectLabel` is the subject's name as shown.
+ * `subjectLabel` is the subject's name as shown. `bonuses` are the live roll bonuses ({ id, name, amount, type }, from rollBonuses)
+ * and `used` the ids of every entry the roll uses (from usedModifierIds). A chat link carries neither.
  */
-export function rollTarget({ challengeId, subject, subjectLabel, action, row, dc }) {
+export function rollTarget({ challengeId, subject, subjectLabel, action, row, dc, bonuses = [], used = [] }) {
   const slug = row.skill === LORE ? loreSlug(row.lore || loc("SSM.Challenge.Lore"), game.pf2e.system.sluggify) : row.skill;
   const option = (rollId) => buildRollOption({ challengeId, subjectId: subject.id, actionId: action.id, checkId: row.id, rollId });
   const label = game.i18n.format("SSM.Challenge.RollLabel", { action: actionName(action), subject: subjectLabel });
-  return { row, slug, option, dc, label, secret: !!action.secret };
+  return { row, slug, option, dc, label, secret: !!action.secret, bonuses, used };
 }
+
+/** The roll bonuses as PF2e modifiers, so PF2e applies its stacking rules and shows them in the roll's breakdown. A hidden entry shows as "Challenge modifier". */
+const pf2eModifiers = (bonuses) => bonuses.map((bonus) => new game.pf2e.Modifier({
+  slug: `ssm-${bonus.id.toLowerCase()}`,
+  label: bonus.name || loc("SSM.Challenge.HiddenRollModifier"),
+  modifier: bonus.amount,
+  type: bonus.type,
+}));
 
 /** The statistic this actor rolls. Null if it has none, which a non-character without a Lore, or a loot actor, can be. */
 function statisticFor(actor, target) {
@@ -40,7 +49,8 @@ export function rollCheck(actor, target, { event, messageMode }) {
     // Players never see a DC. Pass a plain number with no slug or statistic, so PF2e doesn't look for an opposing actor. That would reveal the DC.
     dc: { value: target.dc, visible: false },
     label: target.label,
-    extraRollOptions: [target.option(foundry.utils.randomID())],
+    modifiers: pf2eModifiers(target.bonuses ?? []),
+    extraRollOptions: [target.option(foundry.utils.randomID()), buildUsedOption(target.used ?? [])],
     // A secret action rolls like Recall Knowledge: PF2e then makes it a blind roll for a player and a GM-only roll for the GM, whatever messageMode says.
     traits: target.secret ? ["secret"] : [],
     messageMode,

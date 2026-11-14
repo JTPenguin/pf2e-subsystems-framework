@@ -539,7 +539,7 @@ test("a roll's message gives the roll's identity, DC and reroll state; other mes
   const option = O.buildRollOption({ challengeId: "c", subjectId: "s", actionId: "a", checkId: "e", rollId: "r" });
   const message = (context) => ({ id: "m1", actor: { id: "a1" }, flags: { pf2e: { context } } });
   assert.deepEqual(L.rollFromMessage(message({ options: ["x", option], outcome: "success", dc: { value: 18 }, isReroll: true })), {
-    challengeId: "c", subjectId: "s", actionId: "a", checkId: "e", rollId: "r", messageId: "m1", actorId: "a1", dc: 18, isReroll: true,
+    challengeId: "c", subjectId: "s", actionId: "a", checkId: "e", rollId: "r", messageId: "m1", actorId: "a1", dc: 18, used: null, isReroll: true,
   });
   assert.equal(L.rollFromMessage(message({ options: ["x"] })), null);
   assert.equal(L.rollFromMessage({ flags: {} }), null);
@@ -952,6 +952,53 @@ test("an entry toggles only while the run is active, and a spent entry needs Res
   assert.equal(Run.toggleModifier(s, sub(s).id, m.id), false);
 });
 
+/** A modifier's roll bonus, as fields to spread onto it. `dc` sets which checks it applies to. */
+const rollEffect = (amount, type = "circumstance", dc = {}) => ({ roll: { amount, type }, dc: { ...D.newModifierDc(), ...dc } });
+
+test("a roll bonus applies to the checks the modifier names, and names a hidden entry with nothing", () => {
+  const s = running();
+  const shown = addModifier(s, { name: "Flattered", revealed: true }, rollEffect(1));
+  const hidden = addModifier(s, { name: "Secret ally" }, rollEffect(-2, "status", { allSkills: false, skills: [society(s).id] }));
+  addModifier(s, { active: false }, rollEffect(3));
+  addModifier(s, { spent: true }, rollEffect(3));
+  addModifier(s, {}, rollEffect(4, "item", { allSkills: false, skills: [discover(s).checks[0].id] }));
+  assert.deepEqual(Run.rollBonuses(s, sub(s), society(s)), [
+    { id: shown.id, name: "Flattered", amount: 1, type: "circumstance" },
+    { id: hidden.id, name: "", amount: -2, type: "status" },
+  ]);
+  assert.equal(dcOf(s), 15, "a roll bonus leaves the DC alone");
+});
+
+test("a roll from the sheet or panel spends the entries it names, a bonus-only one too", () => {
+  const s = running();
+  const bonus = addModifier(s, { duration: "oneTime" }, rollEffect(1));
+  const dc = addModifier(s, { duration: "multiUse" }, dcEffect(-2));
+  addModifier(s, { duration: "oneTime" }, dcEffect(1, { allSkills: false, skills: [discover(s).checks[0].id] }));
+  const used = Run.usedModifierIds(s, sub(s), society(s));
+  assert.deepEqual(used, [bonus.id, dc.id], "only the entries that apply to this check, with a change");
+  Run.receiveRoll(s, rollAt(s, "r1", 999, { used }));
+  assert.deepEqual([bonus.spent, dc.active], [true, false], "spent by the ids it names, whatever its DC");
+});
+
+test("a roll naming an entry turned off since spends nothing of it, and a chat link never spends a bonus-only entry", () => {
+  const s = running();
+  const bonus = addModifier(s, { duration: "oneTime" }, rollEffect(1));
+  const used = Run.usedModifierIds(s, sub(s), society(s));
+  Run.toggleModifier(s, sub(s).id, bonus.id);
+  Run.receiveRoll(s, rollAt(s, "r1", 15, { used }));
+  assert.deepEqual([bonus.spent, bonus.active], [false, false]);
+  Run.toggleModifier(s, sub(s).id, bonus.id);
+  Run.receiveRoll(s, rollAt(s, "r2", 15, { used: null }));
+  assert.equal(bonus.spent, false, "a link can't carry the bonus, so it doesn't spend it");
+});
+
+test("the used option round-trips its ids, and a roll without it names none", () => {
+  assert.deepEqual(O.parseUsedOption(["x", O.buildUsedOption(["abC", "dEf"])]), ["abC", "dEf"]);
+  assert.deepEqual(O.parseUsedOption([O.buildUsedOption([])]), []);
+  assert.equal(O.parseUsedOption(["ssm:roll:a:b:c:d:e"]), null);
+  assert.equal(O.parseUsedOption(undefined), null);
+});
+
 test("counters stop at their limits, and a counter at its limit does not move", () => {
   const s = running();
   const c = s.counters[0];
@@ -1079,7 +1126,7 @@ test("revealing each kind of entry adds it, and only its player fields", () => {
   revealAll(s);
   const view = viewOf(s);
   const subject = sub(s);
-  assert.deepEqual(view.subjects[0].actions[1].checks.at(-1), { id: society(s).id, skill: "society", lore: "", dc: 15 });
+  assert.deepEqual(view.subjects[0].actions[1].checks.at(-1), { id: society(s).id, skill: "society", lore: "", dc: 15, bonuses: [], used: [] });
   assert.deepEqual(known(view.subjects[0]), [{ id: subject.modifiers[0].id, name: "Flattery", description: "<p>likes praise</p>", category: "", colour: "", duration: "ongoing", active: false, spent: false, changes: [] }]);
   assert.deepEqual(view.subjects[0].counters[0].thresholds, [{ id: pts(s).thresholds[0].id, points: 8, label: "8", name: "Introduction", description: "<p>she offers an introduction</p>", textHidden: false, reached: false }]);
   assert.deepEqual(view.counters, [{ id: s.counters[0].id, name: "Suspicion", value: 3, text: "3/222", perPc: false, pcs: [], display: "bar", slots: null, scale: 222, range: null, marks: [{ points: 5, reached: false }], thresholds: [{ id: s.counters[0].thresholds[0].id, points: 5, label: "5", name: "the guards stir", description: "", textHidden: false, reached: false }] }]);
@@ -1127,7 +1174,7 @@ test("an unrevealed decoy is left out, and a preset check is revealed from the s
   discover(s).checks.push(planted);
   sub(s).modifiers[0].decoy = true;
   let view = viewOf(s);
-  assert.deepEqual(view.subjects[0].actions[0].checks, [{ id: discover(s).checks[0].id, skill: "perception", lore: "", dc: 15 }]);
+  assert.deepEqual(view.subjects[0].actions[0].checks, [{ id: discover(s).checks[0].id, skill: "perception", lore: "", dc: 15, bonuses: [], used: [] }]);
   assert.deepEqual(known(view.subjects[0]), []);
   assert.ok(!JSON.stringify(view).includes("654"));
   planted.revealed = true;
@@ -1141,7 +1188,7 @@ test("the copy gives a revealed Lore check its name, and a hidden one nothing", 
   influence(s).checks.push(lore);
   assert.ok(!JSON.stringify(viewOf(s)).includes("Warfare"));
   lore.revealed = true;
-  assert.deepEqual(viewOf(s).subjects[0].actions[1].checks.at(-1), { id: lore.id, skill: "lore", lore: "Warfare Lore", dc: 15 });
+  assert.deepEqual(viewOf(s).subjects[0].actions[1].checks.at(-1), { id: lore.id, skill: "lore", lore: "Warfare Lore", dc: 15, bonuses: [], used: [] });
 });
 
 const R_ = "SSM.Preset.influence.Category.resistance";
@@ -1909,4 +1956,16 @@ test("the Edit tab sets a counter's style and its visibility separately, and the
   D.applyForm(s, { counters: { 0: { display: "bar", revealed: true } } });
   assert.deepEqual([party().revealed, party().display], [true, "bar"]);
   assert.ok(!D.COUNTER_DISPLAYS.includes("hidden"), "Hidden is not a style");
+});
+
+test("a roll bonus shows on the panel card with its type, beside a DC change", () => {
+  const s = secretSystem();
+  const subject = s.subjects[0];
+  subject.modifiers.push({ ...D.newModifier(), name: "Flattered", revealed: true, dc: { ...D.newModifierDc(), amount: -1 }, roll: { amount: 1, type: "circumstance" } });
+  subject.modifiers.push({ ...D.newModifier(), name: "Shaken", revealed: true, roll: { amount: -2, type: "untyped" } });
+  const cards = viewOf(s).subjects[0].modifierGroups.flatMap((group) => group.cards).filter((card) => ["Flattered", "Shaken"].includes(card.name));
+  assert.deepEqual(cards.map((card) => card.changes.map((change) => V.changeText(change, enText))), [
+    ["−1 to all DCs", "+1 circumstance to all checks"],
+    ["−2 to all checks"],
+  ]);
 });

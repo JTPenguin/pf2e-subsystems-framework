@@ -4,9 +4,10 @@ import { hidePanel, panelState, takePanel } from "../panel/activation.js";
 import { partyPCs } from "../party.js";
 import { actionName, skillKeyLabel, skillLabel, subjectName } from "./skill-label.js";
 import { announceTriggers, writeChallenge } from "./state.js";
-import { advanceRound, canAdvanceRound, hasRounds, canUndoRound, changeCounter, counterValueOf, currentDc, cycleThresholdReveal, endRun, resetRun, restoreModifier, startRun, toggleActed, toggleComplete, toggleModifier, toggleReached, toggleReveal, undoRound } from "./run.js";
+import { advanceRound, canAdvanceRound, hasRounds, canUndoRound, changeCounter, counterValueOf, currentDc, cycleThresholdReveal, endRun, resetRun, restoreModifier, rollBonuses, startRun, toggleActed, toggleComplete, toggleModifier, toggleReached, toggleReveal, undoRound, usedModifierIds } from "./run.js";
 import { LINK_ROLL_ID } from "../roll-option.js";
 import { rollCheck, rollTarget } from "./roll.js";
+import { rollBonusText } from "./panel-view.js";
 import { addRow, allCounters, applyForm, BOTH_WAYS, categoryKey, clampTracks, collapseAllAction, counterMoves, counterValueText, EDITABLE, entryListPath, groupByCategory, isDecoyCheck, moveCounter, moveModifier, moveSubject, nextThresholdReveal, pickFields, removeEntry, setCounterNote, subjectGroups } from "./data.js";
 import { ActionWindow, CounterWindow, ModifierWindow, SubjectWindow, ThresholdWindow } from "./entry-window.js";
 import { markDescriptionFields } from "./description-field.js";
@@ -379,7 +380,7 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
   #modifierView(system, subject, row, canChange) {
     const state = row.spent ? "spent" : row.active ? "on" : "off";
     const label = row.name || loc("SSM.Challenge.UnnamedEntry");
-    const effectsText = [row.dc?.amount ? this.#dcText(system, subject, row.dc) : "", row.note].filter(Boolean).join("; ");
+    const effectsText = [row.dc?.amount ? this.#dcText(system, subject, row.dc) : "", row.roll?.amount ? this.#rollText(system, subject, row) : "", row.note].filter(Boolean).join("; ");
     const descriptionHtml = this.#rowHtml.get(`${subject?.id ?? ""}:${row.id}`) ?? "";
     const hasDetails = !!(effectsText || descriptionHtml);
     return {
@@ -400,14 +401,25 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
     };
   }
 
-  /** A modifier's DC change, as the GM reads it. A challenge-level entry (no subject) names skills by key. */
+  /** A modifier's DC change, as the GM reads it. */
   #dcText(system, subject, dc) {
     const amount = dc.amount > 0 ? `+${dc.amount}` : `${dc.amount}`.replace("-", "−");
+    return game.i18n.format("SSM.Challenge.DcChangeText", { amount, skills: this.#targetText(system, subject, dc) });
+  }
+
+  /** A modifier's roll bonus, as the GM reads it: "+1 circumstance to rolls (Diplomacy)". */
+  #rollText(system, subject, row) {
+    const bonus = rollBonusText(row.roll.amount, row.roll.type, (key, data) => game.i18n.format(key, data));
+    return game.i18n.format("SSM.Challenge.RollChangeText", { bonus, skills: this.#targetText(system, subject, row.dc) });
+  }
+
+  /** The checks a modifier applies to, for both its changes. A challenge-level entry (no subject) names skills by key. */
+  #targetText(system, subject, dc) {
+    if (dc.allSkills) return loc("SSM.Challenge.AllSkills");
     const named = subject
       ? subject.actions.flatMap((action) => action.checks).filter((row) => dc.skills.includes(row.id)).map(skillLabel)
       : dc.skills.map((key) => skillKeyLabel(system, key));
-    const skills = dc.allSkills ? loc("SSM.Challenge.AllSkills") : named.join(", ");
-    return game.i18n.format("SSM.Challenge.DcChangeText", { amount, skills });
+    return named.join(", ");
   }
 
   /* -------------------------------------------- */
@@ -737,7 +749,10 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
     const action = subject?.actions.find((candidate) => candidate.id === actionId);
     const row = action?.checks.find((candidate) => candidate.id === id);
     if (!row) return null;
-    return rollTarget({ challengeId: this.document.id, subject, subjectLabel: subjectName(subject, index, system.subjectLabel), action, row, dc: currentDc(system, subject, row) });
+    return rollTarget({
+      challengeId: this.document.id, subject, subjectLabel: subjectName(subject, index, system.subjectLabel), action, row,
+      dc: currentDc(system, subject, row), bonuses: rollBonuses(system, subject, row), used: usedModifierIds(system, subject, row),
+    });
   }
 
   static async #onRollSkill(event, target) {

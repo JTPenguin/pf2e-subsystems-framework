@@ -40,7 +40,9 @@
       "Resize": "Drag to resize",
       "Change": {
         "dc": "{amount} to DCs vs {skills}",
-        "dcAll": "{amount} to all DCs"
+        "dcAll": "{amount} to all DCs",
+        "roll": "{bonus} to {skills} checks",
+        "rollAll": "{bonus} to all checks"
       },
       "Thresholds": "Thresholds",
       "HiddenText": "???",
@@ -96,9 +98,26 @@
       },
       "Active": "On",
       "Spent": "Spent",
+      "ChecksEffect": "Effect on checks",
       "DcChange": "DC change",
-      "DcAmount": "Amount",
       "DcChangeText": "DC {amount} ({skills})",
+      "RollBonusLabel": "Roll bonus",
+      "RollBonusHint": "Added to the roll as a PF2e modifier of this type, so PF2e's stacking rules apply. Below 0 for a penalty. It applies to the same checks as the DC change.",
+      "RollTypeLabel": "Bonus type",
+      "RollType": {
+        "circumstance": "Circumstance",
+        "status": "Status",
+        "item": "Item",
+        "untyped": "Untyped"
+      },
+      "RollBonus": {
+        "circumstance": "{amount} circumstance",
+        "status": "{amount} status",
+        "item": "{amount} item",
+        "untyped": "{amount}"
+      },
+      "RollChangeText": "{bonus} to rolls ({skills})",
+      "HiddenRollModifier": "Challenge modifier",
       "AllSkills": "All skills",
       "Counter": "Counter",
       "UnnamedCounter": "Unnamed counter",

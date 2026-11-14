@@ -270,9 +270,13 @@ button.ssm-reached { color: #4f9d5d; }
 .ssm-sheet .ssm-subject-description > :last-child { margin-bottom: 0; }
 .ssm-sheet .ssm-pc-row { margin-bottom: 0.1rem; }
 .ssm-sheet .ssm-counter .ssm-threshold { margin: 0 0 0 1.75rem; padding: var(--space-1, 1px) 0; }
-/* A threshold's description starts under its name: past the caret, the eye and the points. */
-.ssm-sheet .ssm-threshold > .ssm-detail { padding-left: calc(2 * 1.25rem + 1.75rem + 3 * 0.5rem); }
+/* An open row's content starts at the first element after its caret: the caret's width plus the row's gap (Justin, 2026-11-13). The row's other icons don't move it. */
+.ssm-sheet .ssm-threshold > .ssm-detail { padding-left: calc(1.25rem + 0.5rem); }
 .ssm-sheet .ssm-threshold > .ssm-detail > :first-child { margin-top: 0; }
+/* A counter's Add threshold row, under its thresholds and in line with them: a quiet text button, so it doesn't read as the counter's own +. */
+.ssm-sheet .ssm-counter > button.ssm-add-row { display: flex; align-items: center; gap: 0.5rem; width: auto; height: auto; min-height: 0; margin: 0 0 0.15rem 1.75rem; padding: var(--space-1, 1px) 0; border: none; background: none; box-shadow: none; color: inherit; font-size: var(--font-size-12, 0.75rem); opacity: 0.75; }
+.ssm-sheet .ssm-counter > button.ssm-add-row > i { width: 1.25rem; text-align: center; }
+.ssm-sheet .ssm-counter > button.ssm-add-row:hover { opacity: 1; text-shadow: 0 0 8px var(--color-shadow-primary, #ff6400); }
 .ssm-sheet .ssm-counter .ssm-threshold.ssm-reveal-hidden { opacity: var(--ssm-hidden-opacity); }
 .ssm-sheet .ssm-action-lines { line-height: 1.4; }
 
@@ -358,8 +362,8 @@ button.ssm-reached { color: #4f9d5d; }
 .ssm-sheet .ssm-action-card { min-width: 0; }
 .ssm-sheet .ssm-action-card .ssm-skill-line { margin-bottom: 0; }
 .ssm-sheet .ssm-action-card .ssm-run-description { margin: 0.1rem 0 0; }
-/* An action's chips and description start under its name, past the caret slot. */
-.ssm-sheet .ssm-action-card > :is(.ssm-skill-grid, .ssm-run-description) { margin-left: 1.75rem; }
+/* An action's chips and description start at the first element after its caret: the caret's width plus the row's gap. */
+.ssm-sheet .ssm-action-card > :is(.ssm-skill-grid, .ssm-run-description) { margin-left: calc(1.25rem + 0.5rem); }
 .ssm-sheet .ssm-action-name { font-size: var(--font-size-14, 0.875rem); }
 /* A subsection's title: the section title's look, with an optional + on the right and an optional category stripe on the left. */
 .ssm-sheet .ssm-subsection-head { display: flex; align-items: center; gap: 0.25rem; min-height: 1.5rem; }
@@ -416,8 +420,8 @@ button.ssm-reached { color: #4f9d5d; }
 /* A wrapped action or subject name keeps normal line spacing; padding keeps a one-line row as tall as before. */
 .ssm-sheet .ssm-skill-line > .ssm-stat-label { line-height: 1.3; padding: 0.2rem 0; }
 .ssm-sheet .ssm-subject.ssm-subject-card > .ssm-card-head > h3 { line-height: 1.3; padding: 0.2em 0; }
-/* A modifier's detail lines start under its name: past the caret, the eye and the On icon. */
-.ssm-sheet .ssm-modifier > .ssm-detail { padding-left: calc(3 * 1.25rem + 3 * 0.5rem); }
+/* A modifier's detail lines start at the first element after its caret (its eye): the caret's width plus the row's gap. */
+.ssm-sheet .ssm-modifier > .ssm-detail { padding-left: calc(1.25rem + 0.5rem); }
 .ssm-sheet :is(.ssm-modifier, .ssm-counter) > .ssm-entry > .ssm-grow, .ssm-sheet .ssm-action-card .ssm-skill-line > .ssm-stat-label { font-weight: 500; }
 /* Icon controls are bare icons, as on the NPC sheet, with the same glow on hover. */
 .ssm-sheet :is(.ssm-entry, .ssm-row-tools) > button.icon { flex: none; --button-size: 1.25rem; width: 1.25rem; height: 1.25rem; min-height: 0; margin: 0; padding: 0; border: none; border-radius: 0; background: none; box-shadow: none; color: inherit; font-size: var(--font-size-12, 0.75rem); }

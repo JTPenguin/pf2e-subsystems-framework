@@ -3,7 +3,7 @@ import { actionName, skillKeyLabel, skillLabel } from "./skill-label.js";
 import { writeChallenge } from "./state.js";
 import { CategoryAutocomplete } from "./category-autocomplete.js";
 import { markDescriptionFields } from "./description-field.js";
-import { ACTION_FIELDS, addRow, BOTH_WAYS, categoryOrder, challengeSkillKeys, COUNTER_DISPLAYS, COUNTER_FIELDS, DIRECTIONS, DURATIONS, entryChanges, findAction, findCounter, findCounterEntry, findModifier, findSubject, findThreshold, LORE, mergeForm, MODIFIER_FIELDS, PERCEPTION, QUICK_DC_AMOUNTS, rebaseEntry, removeRow, SAVES, saveAction, saveCounter, saveModifier, saveSubject, saveThreshold, setDcAmount, SUBJECT_FIELDS, subjectCategoryOrder, THRESHOLD_FIELDS, THRESHOLD_REVEALS } from "./data.js";
+import { ACTION_FIELDS, addRow, BOTH_WAYS, categoryOrder, challengeSkillKeys, COUNTER_DISPLAYS, COUNTER_FIELDS, DIRECTIONS, DURATIONS, entryChanges, findAction, findCounter, findCounterEntry, findModifier, findSubject, findThreshold, LORE, mergeForm, MODIFIER_FIELDS, PERCEPTION, QUICK_DC_AMOUNTS, rebaseEntry, removeRow, ROLL_MODIFIER_TYPES, SAVES, saveAction, saveCounter, saveModifier, saveSubject, saveThreshold, setDcAmount, SUBJECT_FIELDS, subjectCategoryOrder, THRESHOLD_FIELDS, THRESHOLD_REVEALS } from "./data.js";
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
@@ -233,7 +233,7 @@ export class ModifierWindow extends EntryWindow {
       challengeLevel: !subject,
       skillOptions,
       quickDcAmounts: QUICK_DC_AMOUNTS.map((amount) => ({ amount, label: amount > 0 ? `+${amount}` : `${amount}`.replace("-", "−") })),
-      choices: { durations: labels(DURATIONS, "Duration") },
+      choices: { durations: labels(DURATIONS, "Duration"), rollTypes: labels(ROLL_MODIFIER_TYPES, "RollType") },
     };
   }
 }

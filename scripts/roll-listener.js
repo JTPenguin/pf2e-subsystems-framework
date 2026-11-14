@@ -1,5 +1,5 @@
 import { challengePage, subsystemFor } from "./registry.js";
-import { findRollOption, parseRollOption, stampLinkRoll } from "./roll-option.js";
+import { findRollOption, parseRollOption, parseUsedOption, stampLinkRoll } from "./roll-option.js";
 
 const contextOf = (message) => message.flags?.pf2e?.context;
 
@@ -22,6 +22,8 @@ export function rollFromMessage(message) {
     messageId: message.id,
     actorId: actor?.id ?? "",
     dc: context.dc?.value ?? null,
+    // The modifier entries the roll used, or null for a chat link's roll.
+    used: parseUsedOption(context.options),
     isReroll: !!context.isReroll,
   };
 }
