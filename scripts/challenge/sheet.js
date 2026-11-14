@@ -7,7 +7,7 @@ import { announceTriggers, writeChallenge } from "./state.js";
 import { advanceRound, canAdvanceRound, hasRounds, canUndoRound, changeCounter, counterValueOf, currentDc, cycleThresholdReveal, endRun, resetRun, restoreModifier, rollBonuses, startRun, toggleActed, toggleComplete, toggleModifier, toggleReached, toggleReveal, undoRound, usedModifierIds } from "./run.js";
 import { LINK_ROLL_ID } from "../roll-option.js";
 import { rollCheck, rollTarget } from "./roll.js";
-import { rollBonusText } from "./panel-view.js";
+import { DEFAULT_PC_IMAGE, rollBonusText } from "./panel-view.js";
 import { addParticipant, addRow, allCounters, applyForm, BOTH_WAYS, categoryKey, clampTracks, collapseAllAction, counterMoves, counterValueText, EDITABLE, entryListPath, groupByCategory, isDecoyCheck, moveCounter, moveModifier, moveSubject, nextThresholdReveal, pickFields, removeEntry, removeParticipant, setCounterNote, subjectGroups } from "./data.js";
 import { ActionWindow, CounterWindow, hasKeptBlank, ModifierWindow, SubjectWindow, ThresholdWindow } from "./entry-window.js";
 import { markDescriptionFields } from "./description-field.js";
@@ -248,6 +248,9 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
       noSubjects: system.noSubjects || loc("SSM.Challenge.NoSubjects"),
       addSubjectLabel: game.i18n.format("SSM.Challenge.AddSubject", { subject: subjectLabel }),
       gmNotesHtml: await enrich(system.gmNotes),
+      // GM notes collapse like a subject, in the same user flag, keyed by this challenge.
+      gmNotesKey: `gmNotes-${this.page.id}`,
+      gmNotesCollapsed: isCollapsed(`gmNotes-${this.page.id}`),
       runActive: system.run.status === "active",
       isGM: game.user.isGM,
     });
@@ -356,10 +359,11 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
       party: [...new Set([...partyIds, ...actors.map((actor) => actor.id), ...system.run.acted])].map((id) => {
         const actor = game.actors.get(id);
         const added = system.participants.includes(id) && !pcIds.has(id);
-        return { id, name: actor?.name ?? id, acted: system.run.acted.includes(id), added, removeLabel: game.i18n.format("SSM.Challenge.RemoveParticipant", { name: actor?.name ?? id }) };
+        const acted = system.run.acted.includes(id);
+        return { id, name: actor?.name ?? id, img: actor?.img || DEFAULT_PC_IMAGE, acted, added, actedTooltip: loc(acted ? "SSM.Challenge.ActedClear" : "SSM.Challenge.ActedSet"), removeLabel: game.i18n.format("SSM.Challenge.RemoveParticipant", { name: actor?.name ?? id }) };
       }),
       // A challenge with no rounds has no acted marks, so the party list shows only the added actors, for their remove buttons.
-      added: system.participants.map((id) => ({ id, name: game.actors.get(id)?.name ?? id, removeLabel: game.i18n.format("SSM.Challenge.RemoveParticipant", { name: game.actors.get(id)?.name ?? id }) })),
+      added: system.participants.map((id) => ({ id, name: game.actors.get(id)?.name ?? id, img: game.actors.get(id)?.img || DEFAULT_PC_IMAGE, removeLabel: game.i18n.format("SSM.Challenge.RemoveParticipant", { name: game.actors.get(id)?.name ?? id }) })),
       actors: actors.map((actor) => ({ id: actor.id, name: actor.name, selected: actor === selected })),
       // The challenge's own entries, in a box above the subjects (spec 14.7).
       challengeModifierGroups: modifierGroups(system, system.modifiers.map((row) => this.#modifierView(system, null, row, canChange))),
@@ -564,7 +568,7 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
   }
 
   /** The lines that open and close on a click outside their controls: a subject's header, an action's line, a modifier's row and a counter's top row. */
-  static HEADERS = ".ssm-card-head, .ssm-skill-line, .ssm-modifier > .ssm-entry, .ssm-counter > .ssm-entry:first-child, .ssm-threshold > .ssm-entry";
+  static HEADERS = ".ssm-gm-notes > .ssm-block-head, .ssm-card-head, .ssm-skill-line, .ssm-modifier > .ssm-entry, .ssm-counter > .ssm-entry:first-child, .ssm-threshold > .ssm-entry";
 
   /** What a header click or drag must leave alone: controls, skill chips and the row tools. */
   static HEADER_CONTROLS = "button, input, select, textarea, a, .ssm-skill, .ssm-row-tools, prose-mirror";

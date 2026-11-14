@@ -41,8 +41,8 @@ The window is laid out like a PF2e NPC sheet, with a sidebar on the left. The si
 |---|---|
 | **Status** | Not started, Running or Finished. |
 | **Run buttons** | Start, End and Reset, Hide or Show panel. |
-| **Round** | `◀ Round current / max ▶`. The arrows are Previous and Next round. While the challenge runs, only the arrows change the current round. |
-| **Party** | The party, with any allies you added, one per line. Click a name to mark it acted. Below it, the **Roll as** choice. |
+| **Round** | Round, then the current and maximum round between the Previous and Next round buttons (the same icons as on the panel). While the challenge runs, only those buttons change the current round. |
+| **Party** | The party, with any allies you added, one per line with its portrait. Click one to mark it acted. Hover over an ally to show its × to remove it. Below the list, the **Roll as** choice. |
 | **Allow multiple subjects** | A checkbox. |
 
 The body on the right holds, from top to bottom:
@@ -50,7 +50,7 @@ The body on the right holds, from top to bottom:
 | Part | What it holds |
 |---|---|
 | **Name** | The challenge's name. |
-| **GM notes** | Your notes. Players never see them. |
+| **GM notes** | Your notes. Players never see them. Click the bar to collapse or open them; each challenge remembers this for you. |
 | **Counters** | The challenge's own counters. |
 | **Modifiers** | The challenge's own modifiers. Their DC changes and roll bonuses apply to every matching check on every subject. |
 | **Subjects** | Each subject as a card, grouped by category, then the Add button. |

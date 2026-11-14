@@ -22,10 +22,6 @@
 .ssm-entry { margin-bottom: 0.15rem; }
 .ssm-point-total { font-size: var(--font-size-18, 1.125rem); min-width: 2rem; text-align: center; }
 .ssm-body h4 { margin: 0.4rem 0 0.15rem; font-size: var(--font-size-12, 0.75rem); text-transform: uppercase; border: none; opacity: 0.8; }
-.ssm-chip { width: auto; flex: none; }
-.ssm-chip.acted { opacity: 0.45; text-decoration: line-through; }
-/* A plain chip (no rounds) reads like a button with no click. */
-span.ssm-chip { display: inline-flex; align-items: center; padding: 0 0.4rem; min-height: var(--button-size, 1.6rem); border: 1px solid var(--color-border, #7a7971); border-radius: 3px; }
 .ssm-tag { font-size: var(--font-size-11, 0.7rem); border: 1px solid var(--color-border, #7a7971); border-radius: 3px; padding: 0 0.25rem; }
 .ssm-entry > button:not(.icon) { width: auto; flex: none; }
 .ssm-modifier { margin-bottom: 0.3rem; }
@@ -53,15 +49,23 @@ button.ssm-toggle:disabled { cursor: default; }
 /* The round, laid out like an NPC sheet's HP: label, then ◀ current / max ▶. */
 .ssm-round { display: flex; align-items: center; gap: 1px; border-bottom: 1px solid var(--color-border-book, var(--color-border, #7a7971)); padding-bottom: var(--space-2, 0.125rem); }
 .ssm-round .ssm-side-label { flex: 1 1 auto; padding-left: var(--space-2, 0.125rem); font-weight: 600; }
-.ssm-round button.icon { --button-size: 1rem; flex: none; width: 1rem; height: 1.25rem; padding: 0; border: none; background: none; box-shadow: none; }
 .ssm-round input { flex: none; width: 1.5rem; height: 1.5rem; padding: 0; text-align: center; }
 .ssm-round-current { flex: none; width: 1.5rem; text-align: center; font-size: var(--font-size-16, 1rem); }
+/* A participant is its portrait and name, plain text rather than a button. Acted fades it and strikes the name through. An added actor's remove button shows only on hover or keyboard focus. */
 .ssm-party-row { display: flex; align-items: center; gap: var(--space-2, 0.125rem); }
-.ssm-party-row .ssm-chip { flex: 1 1 auto; min-width: 0; justify-content: flex-start; text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.ssm-sidebar button.icon.ssm-chip-remove { --button-size: 1.2rem; flex: none; width: 1.2rem; height: 1.2rem; padding: 0; font-size: 0.75em; opacity: 0.7; }
+.ssm-party-row.acted .ssm-participant { opacity: 0.45; }
+.ssm-party-row.acted .ssm-participant-name { text-decoration: line-through; }
+.ssm-sidebar .ssm-participant { flex: 1 1 auto; min-width: 0; display: flex; align-items: center; gap: var(--space-4, 0.25rem); height: auto; margin: 0; padding: 0; border: none; border-radius: 0; background: none; box-shadow: none; color: inherit; font: inherit; line-height: 1.2; text-align: left; }
+.ssm-sidebar button.ssm-participant { cursor: pointer; }
+.ssm-sidebar button.ssm-participant:hover .ssm-participant-name { text-shadow: 0 0 6px var(--color-shadow-primary, #ff6400); }
+.ssm-participant img { flex: none; width: 1.75rem; height: 1.75rem; object-fit: cover; object-position: top; border: 1px solid var(--color-border, #7a7971); border-radius: 3px; }
+.ssm-participant-name { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ssm-sheet .ssm-party-row > button.icon.ssm-chip-remove { opacity: 0; }
+.ssm-sheet .ssm-party-row:is(:hover, :focus-within) > button.icon.ssm-chip-remove { opacity: 1; }
 .ssm-roll-as { display: flex; flex-direction: column; gap: var(--space-2, 0.125rem); margin-top: var(--space-4, 0.25rem); }
 .ssm-roll-as select { width: 100%; height: 1.6rem; }
-.ssm-side-check { display: flex; align-items: center; gap: var(--space-4, 0.25rem); font-weight: 600; }
+/* Label on the left, checkbox on the right, as the other sidebar fields. */
+.ssm-side-check { display: flex; align-items: center; justify-content: space-between; gap: var(--space-4, 0.25rem); font-weight: 600; }
 .ssm-side-check input { flex: none; margin: 0; }
 .ssm-block { padding-top: 0.15rem; border-top: 1px solid var(--color-border, #7a7971); }
 .ssm-block-head { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.2rem; }
@@ -364,10 +368,12 @@ button.ssm-reached { color: #4f9d5d; }
 .ssm-sheet :is(.ssm-modifier, .ssm-counter) { position: relative; }
 .ssm-sheet :is(.ssm-modifier, .ssm-counter).ssm-drop-before::before { top: -2px; }
 .ssm-sheet :is(.ssm-modifier, .ssm-counter).ssm-drop-after::after { bottom: -2px; }
-.ssm-sheet .ssm-subject.ssm-collapsed > :not(.ssm-block-head) { display: none; }
+.ssm-sheet :is(.ssm-subject, .ssm-gm-notes).ssm-collapsed > :not(.ssm-block-head) { display: none; }
+.ssm-sheet .ssm-gm-notes.ssm-collapsed { padding-bottom: 0; }
+.ssm-sheet .ssm-gm-notes.ssm-collapsed > .ssm-block-head { margin-bottom: 0; }
 .ssm-sheet .ssm-subject.ssm-collapsed { padding-bottom: 0; }
 .ssm-sheet .ssm-subject.ssm-collapsed > .ssm-block-head { margin-bottom: 0; }
-.ssm-sheet :is(.ssm-card-head, .ssm-skill-line, .ssm-modifier > .ssm-entry, .ssm-counter > .ssm-entry:first-child, .ssm-threshold > .ssm-entry):has(> button.ssm-caret) { cursor: pointer; }
+.ssm-sheet :is(.ssm-gm-notes > .ssm-block-head, .ssm-card-head, .ssm-skill-line, .ssm-modifier > .ssm-entry, .ssm-counter > .ssm-entry:first-child, .ssm-threshold > .ssm-entry):has(> button.ssm-caret) { cursor: pointer; }
 .ssm-sheet .ssm-pc-total { margin-left: 0.5rem; }
 /* A collapsible row's caret comes first (Justin, 2026-11-13): caret, eye, other toggles, then the name. A row with nothing to open keeps an empty slot the same width, so names line up. */
 .ssm-sheet .ssm-caret { flex: none; width: 1.25rem; height: 1.25rem; }
@@ -445,10 +451,13 @@ button.ssm-reached { color: #4f9d5d; }
 .ssm-sheet .ssm-modifier > .ssm-detail { padding-left: calc(1.25rem + 0.5rem); }
 .ssm-sheet :is(.ssm-modifier, .ssm-counter) > .ssm-entry > .ssm-grow, .ssm-sheet .ssm-action-card .ssm-skill-line > .ssm-stat-label { font-weight: 500; }
 /* Icon controls are bare icons, as on the NPC sheet, with the same glow on hover. */
-.ssm-sheet :is(.ssm-entry, .ssm-row-tools) > button.icon { flex: none; --button-size: 1.25rem; width: 1.25rem; height: 1.25rem; min-height: 0; margin: 0; padding: 0; border: none; border-radius: 0; background: none; box-shadow: none; color: inherit; font-size: var(--font-size-12, 0.75rem); }
-.ssm-sheet :is(.ssm-entry, .ssm-row-tools) > button.icon:hover:not(:disabled) { text-shadow: 0 0 8px var(--color-shadow-primary, #ff6400); }
-.ssm-sheet :is(.ssm-entry, .ssm-row-tools) > button.icon:focus-visible { outline: 1px solid var(--button-focus-outline-color, #ff6400); outline-offset: 0; }
-.ssm-sheet :is(.ssm-entry, .ssm-row-tools) > button.icon:disabled { opacity: 0.4; }
+.ssm-sheet :is(.ssm-entry, .ssm-row-tools, .ssm-round, .ssm-party-row) > button.icon { flex: none; --button-size: 1.25rem; width: 1.25rem; height: 1.25rem; min-height: 0; margin: 0; padding: 0; border: none; border-radius: 0; background: none; box-shadow: none; color: inherit; font-size: var(--font-size-12, 0.75rem); }
+.ssm-sheet :is(.ssm-entry, .ssm-row-tools, .ssm-round, .ssm-party-row) > button.icon:hover:not(:disabled) { text-shadow: 0 0 8px var(--color-shadow-primary, #ff6400); }
+.ssm-sheet :is(.ssm-entry, .ssm-row-tools, .ssm-round, .ssm-party-row) > button.icon:focus-visible { outline: 1px solid var(--button-focus-outline-color, #ff6400); outline-offset: 0; }
+.ssm-sheet :is(.ssm-entry, .ssm-row-tools, .ssm-round, .ssm-party-row) > button.icon:disabled { opacity: 0.4; }
+/* The round's arrows are narrower, so the round line fits the sidebar, and keep the text size. A disabled arrow keeps the plain cursor. */
+.ssm-sheet .ssm-round > button.icon { --button-size: 1rem; width: 1rem; font-size: inherit; cursor: pointer; }
+.ssm-sheet .ssm-round > button.icon:disabled { cursor: default; }
 /* The On toggle is a green icon while On. */
 .ssm-sheet .ssm-entry > button.ssm-toggle.ssm-toggle-on { color: #4f9d5d; }
 .ssm-sheet .ssm-entry > button.ssm-toggle.ssm-toggle-on:disabled { opacity: 1; }
@@ -502,3 +511,11 @@ prose-mirror.ssm-description-field > button.toggle { right: 1rem; }
 .ssm-panel-threshold-description { margin: 0.1rem 0 0.2rem calc(1.25em + 2.2em + 0.7rem); }
 .ssm-panel-mod > .ssm-panel-action-toggle.ssm-panel-mod-name { display: block; width: auto; }
 .ssm-panel-mod-description { grid-column: 1 / -1; }
+
+/* A click leaves no focus ring. Foundry rings every focused button (button:focus, and body.game .app button:focus), so a clicked control kept a border until the next click. Only keyboard focus (:focus-visible) shows a ring now. Bare icon buttons also drop Foundry's box glow; their hover glow is the icon's own text-shadow. :not(#ssm-none) only raises the rule's weight above Foundry's. */
+:is(.ssm-sheet, .ssm-modifier-window, .ssm-panel) :is(button, a, [role="button"], .ssm-participant):focus:not(:focus-visible):not(#ssm-none) { outline: none; }
+:is(.ssm-sheet, .ssm-modifier-window, .ssm-panel) :is(button, [role="button"]):focus:not(:focus-visible):not(:hover):not(#ssm-none) { box-shadow: none; }
+:is(.ssm-sheet, .ssm-modifier-window) button.icon:is(:focus, :hover):not(#ssm-none), .ssm-sheet button.ssm-participant:is(:focus, :hover):not(#ssm-none) { box-shadow: none; }
+/* With the box glow gone, every bare icon glows by its own text-shadow on hover: light on a dark red bar, orange elsewhere. */
+.ssm-sheet .ssm-block-head > button.icon:hover:not(:disabled) { text-shadow: 0 0 4px var(--text-light, #f7f3e8); }
+.ssm-sheet :is(.ssm-card-head, .ssm-subsection-head) > button.icon:hover:not(:disabled), .ssm-checks td button.icon:hover:not(:disabled) { text-shadow: 0 0 8px var(--color-shadow-primary, #ff6400); }

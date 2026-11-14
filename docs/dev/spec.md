@@ -133,13 +133,13 @@ The sheet has **one view** (Justin, 2026-11-12): live play and editing together,
 | Status | Not started, Running or Finished, always shown, apart from the rounds. |
 | Run buttons | Start, End, Reset, Hide or Show panel, one per line. |
 | Round | One line, like HP on an NPC sheet: Round, then ◀ current / max ▶. Current is locked while running, so only ◀ ▶ change it; max stays editable. A blank max (no limit) shows ∞. With max 0 the numbers stay and ◀ ▶ are disabled. |
-| Party | One participant per line; Roll as under the list. |
+| Party | One participant per line: portrait and name, plain, not styled as buttons. A click marks it acted, which fades it and strikes the name through. An added actor's remove button shows only on hover or keyboard focus (Justin, 2026-11-13). Roll as under the list. |
 | Allow multiple subjects | A checkbox. |
 
 | Body part, top to bottom | What it holds |
 |---|---|
 | Name | The challenge name, editable in place. |
-| GM notes | Its own box, first in the body. |
+| GM notes | Its own box, first in the body. It collapses like a subject card, by its caret or a click on its bar, and each user's choice is kept per challenge in the same user flag (Justin, 2026-11-13). It starts open. |
 | Counters | The challenge's counters. |
 | Modifiers | The challenge's own modifiers, grouped by category (14.7). |
 | Subjects | Grouped by category (14.4), then an Add subject button. |

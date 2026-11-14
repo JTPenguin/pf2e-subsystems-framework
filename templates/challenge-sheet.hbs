@@ -104,12 +104,12 @@
     <section class="ssm-side-section">
       <div class="ssm-round">
         <span class="ssm-side-label">{{localize "SSM.Challenge.RoundShort"}}</span>
-        <button type="button" class="icon fa-solid fa-caret-left" data-action="previousRound" aria-label="{{localize "SSM.Challenge.PreviousRound"}}" data-tooltip="{{localize "SSM.Challenge.PreviousRound"}}" {{#unless canPreviousRound}}disabled{{/unless}}></button>
+        <button type="button" class="icon fa-solid fa-backward-step" data-action="previousRound" aria-label="{{localize "SSM.Challenge.PreviousRound"}}" data-tooltip="{{localize "SSM.Challenge.PreviousRound"}}" {{#unless canPreviousRound}}disabled{{/unless}}></button>
         {{#if @root.runActive}}<strong class="ssm-round-current" aria-label="{{localize "SSM.Challenge.CurrentRound"}}" data-tooltip="SSM.Challenge.CurrentRoundLocked">{{@root.system.rounds.current}}</strong>
         {{else}}<input type="number" min="0" step="1" name="rounds.current" value="{{@root.system.rounds.current}}" aria-label="{{localize "SSM.Challenge.CurrentRound"}}" data-tooltip="SSM.Challenge.CurrentRound">{{/if}}
         <span class="ssm-round-slash">/</span>
         <input type="number" min="0" step="1" name="rounds.max" value="{{@root.system.rounds.max}}" placeholder="∞" aria-label="{{localize "SSM.Challenge.MaximumRounds"}}" data-tooltip="SSM.Challenge.MaximumRoundsHint">
-        <button type="button" class="icon fa-solid fa-caret-right" data-action="nextRound" aria-label="{{localize "SSM.Challenge.NextRound"}}" data-tooltip="{{localize "SSM.Challenge.NextRound"}}" {{#unless canNextRound}}disabled{{/unless}}></button>
+        <button type="button" class="icon fa-solid fa-forward-step" data-action="nextRound" aria-label="{{localize "SSM.Challenge.NextRound"}}" data-tooltip="{{localize "SSM.Challenge.NextRound"}}" {{#unless canNextRound}}disabled{{/unless}}></button>
       </div>
     </section>
 
@@ -117,16 +117,17 @@
     <section class="ssm-side-section ssm-party">
       {{#if rounds}}
       <header class="ssm-side-head" data-tooltip="{{localize "SSM.Challenge.DropActorHint"}}">{{localize "SSM.Challenge.Party"}}</header>
-      {{#each party}}<div class="ssm-party-row"><button type="button" class="ssm-chip {{#if acted}}acted{{/if}}" data-action="toggleActed" data-id="{{id}}" aria-pressed="{{acted}}">{{name}}</button>{{#if added}}<button type="button" class="icon fa-solid fa-xmark ssm-chip-remove" data-action="removeParticipant" data-id="{{id}}" aria-label="{{removeLabel}}" data-tooltip="{{removeLabel}}"></button>{{/if}}</div>{{else}}<span class="ssm-muted">{{localize "SSM.Challenge.NoPCs"}}</span>{{/each}}
+      {{!-- Each participant is its portrait and name. A click marks it acted; an added actor's remove button shows on hover. --}}
+      {{#each party}}<div class="ssm-party-row {{#if acted}}acted{{/if}}"><button type="button" class="ssm-participant" data-action="toggleActed" data-id="{{id}}" aria-pressed="{{acted}}" data-tooltip="{{actedTooltip}}"><img src="{{img}}" alt=""><span class="ssm-participant-name">{{name}}</span></button>{{#if added}}<button type="button" class="icon fa-solid fa-xmark ssm-chip-remove" data-action="removeParticipant" data-id="{{id}}" aria-label="{{removeLabel}}" data-tooltip="{{removeLabel}}"></button>{{/if}}</div>{{else}}<span class="ssm-muted">{{localize "SSM.Challenge.NoPCs"}}</span>{{/each}}
       {{else if added.length}}
       <header class="ssm-side-head" data-tooltip="{{localize "SSM.Challenge.DropActorHint"}}">{{localize "SSM.Challenge.Allies"}}</header>
-      {{#each added}}<div class="ssm-party-row"><span class="ssm-chip">{{name}}</span><button type="button" class="icon fa-solid fa-xmark ssm-chip-remove" data-action="removeParticipant" data-id="{{id}}" aria-label="{{removeLabel}}" data-tooltip="{{removeLabel}}"></button></div>{{/each}}
+      {{#each added}}<div class="ssm-party-row"><span class="ssm-participant"><img src="{{img}}" alt=""><span class="ssm-participant-name">{{name}}</span></span><button type="button" class="icon fa-solid fa-xmark ssm-chip-remove" data-action="removeParticipant" data-id="{{id}}" aria-label="{{removeLabel}}" data-tooltip="{{removeLabel}}"></button></div>{{/each}}
       {{/if}}
       <label class="ssm-roll-as"><span class="ssm-side-head">{{localize "SSM.Challenge.RollAs"}}</span><select data-roll-as>{{#each actors}}<option value="{{id}}" {{#if selected}}selected{{/if}}>{{name}}</option>{{/each}}</select></label>
     </section>
 
     <section class="ssm-side-section">
-      <label class="ssm-side-check" data-tooltip="SSM.Challenge.MultipleSubjectsHint"><input type="checkbox" name="multipleSubjects" {{checked @root.system.multipleSubjects}}>{{localize "SSM.Challenge.MultipleSubjects"}}</label>
+      <label class="ssm-side-check" data-tooltip="SSM.Challenge.MultipleSubjectsHint"><span>{{localize "SSM.Challenge.MultipleSubjects"}}</span><input type="checkbox" name="multipleSubjects" {{checked @root.system.multipleSubjects}}></label>
     </section>
   </aside>
 
@@ -140,8 +141,12 @@
   <section class="ssm-body">
     {{#unless canRun}}<p class="ssm-muted">{{localize "SSM.Challenge.NotActiveGM"}}</p>{{/unless}}
 
-    <section class="ssm-block ssm-gm-notes">
-      {{> ssmSectionHead label=(localize "SSM.Challenge.GMNotes")}}
+    {{!-- GM notes collapse like a subject card; the state is this user's own, per challenge. --}}
+    <section class="ssm-block ssm-gm-notes {{#if @root.gmNotesCollapsed}}ssm-collapsed{{/if}}">
+      <header class="ssm-block-head">
+        {{> ssmCaret action="toggleCollapse" open=(not @root.gmNotesCollapsed) id=@root.gmNotesKey}}
+        <h3>{{localize "SSM.Challenge.GMNotes"}}</h3>
+      </header>
       <prose-mirror name="gmNotes" toggled value="{{@root.system.gmNotes}}">{{{@root.gmNotesHtml}}}</prose-mirror>
     </section>
 

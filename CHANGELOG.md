@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- The challenge window has a sidebar on the left, as on a PF2e NPC sheet: the run's status (Not started, Running, Finished), the run buttons, the round as `◀ Round current / max ▶`, the party and Roll as, and Allow multiple subjects. GM notes move to their own box at the top of the body.
+- The challenge window has a sidebar on the left, as on a PF2e NPC sheet: the run's status (Not started, Running, Finished), the run buttons, the round as `◀ Round current / max ▶`, the party and Roll as, and Allow multiple subjects. GM notes move to their own collapsible box at the top of the body. The party list shows each participant's portrait; an ally's remove button shows on hover.
 - NPC allies can take part in a challenge: drag an actor onto the challenge window. It gets a portrait, an acted mark and per-PC counter values, and a × to remove it. A player who owns it picks its portrait on the panel to roll for it. New `participants` field in the import format.
 - Modifiers can give a typed roll bonus or penalty (circumstance, status, item or untyped), with or without a DC change. New `roll` field in the import format.
 - A roll spends the modifiers it used, including ones with only a roll bonus.
