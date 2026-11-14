@@ -183,7 +183,8 @@ class EntryWindow extends HandlebarsApplicationMixin(ApplicationV2) {
 
   static async #onSave() {
     this.#readForm();
-    await this.#save();
+    // A blank that kept its old value shows it again; a save that wrote something redraws anyway.
+    if (!(await this.#save()) && hasKeptBlank(this.form)) this.render();
   }
 
   /** Save what differs from the entry as loaded. Returns false if nothing was written. */
@@ -197,6 +198,12 @@ class EntryWindow extends HandlebarsApplicationMixin(ApplicationV2) {
     return saved !== false;
   }
 }
+
+/**
+ * Whether the form has a blank number field that keeps its old value on save, so a redraw should show that value again.
+ * A field that may stay blank (no limit) has a placeholder; one without a placeholder never saves blank.
+ */
+export const hasKeptBlank = (form) => [...(form?.querySelectorAll('input[type="number"]:not([placeholder]):not(:disabled)') ?? [])].some((input) => input.value === "");
 
 /** The window for one modifier entry. */
 export class ModifierWindow extends EntryWindow {

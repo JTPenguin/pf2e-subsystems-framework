@@ -484,8 +484,11 @@ export function setDcAmount(modifier, path, amount) {
   if (row?.dc) row.dc.amount = amount;
 }
 
-/** Number fields that may be blank. A blank in any other number field keeps the old value. */
+/** Number fields that may be blank. A blank in any other number field keeps the old value, except in BLANK_ZERO. */
 const BLANK_ALLOWED = new Set(["counters.*.min", "counters.*.max", "rounds.max", "subjects.*.counters.*.min", "subjects.*.counters.*.max", "min", "max"]);
+
+/** Amounts where 0 means none, as the entry windows name them: a modifier's DC change and roll bonus, a threshold's DC change, a counter's Per round. A blank saves as 0. */
+const BLANK_ZERO = new Set(["dc.amount", "roll.amount", "dc", "perRound"]);
 
 const isPlainObject = (value) => value !== null && typeof value === "object" && !Array.isArray(value);
 
@@ -501,6 +504,10 @@ export function mergeForm(source, form, path = "") {
     for (const [key, value] of Object.entries(form)) {
       if (!(key in source)) continue;
       const keyPath = `${path}${key}`;
+      if (value === null && typeof source[key] === "number" && BLANK_ZERO.has(keyPath)) {
+        merged[key] = 0;
+        continue;
+      }
       if (value === null && typeof source[key] === "number" && !BLANK_ALLOWED.has(keyPath)) continue;
       merged[key] = mergeForm(source[key], value, `${keyPath}.`);
     }

@@ -9,7 +9,7 @@ import { LINK_ROLL_ID } from "../roll-option.js";
 import { rollCheck, rollTarget } from "./roll.js";
 import { rollBonusText } from "./panel-view.js";
 import { addRow, allCounters, applyForm, BOTH_WAYS, categoryKey, clampTracks, collapseAllAction, counterMoves, counterValueText, EDITABLE, entryListPath, groupByCategory, isDecoyCheck, moveCounter, moveModifier, moveSubject, nextThresholdReveal, pickFields, removeEntry, setCounterNote, subjectGroups } from "./data.js";
-import { ActionWindow, CounterWindow, ModifierWindow, SubjectWindow, ThresholdWindow } from "./entry-window.js";
+import { ActionWindow, CounterWindow, hasKeptBlank, ModifierWindow, SubjectWindow, ThresholdWindow } from "./entry-window.js";
 import { markDescriptionFields } from "./description-field.js";
 
 const { DocumentSheetV2, HandlebarsApplicationMixin } = foundry.applications.api;
@@ -450,6 +450,8 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
         applyForm(system, fields);
         clampTracks(system);
       }, options);
+      // A blank Current round keeps its old value; show it again.
+      if (hasKeptBlank(form)) this.render();
       return { updated: this.document };
     });
   }

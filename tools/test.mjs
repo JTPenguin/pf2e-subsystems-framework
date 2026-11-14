@@ -324,6 +324,18 @@ test("mergeForm: numbered form rows merge into lists, and absent fields survive"
   assert.equal(merged.subjects[0].actions[1].checks[0].revealed, true, "a form with no Revealed field keeps the old value");
 });
 
+test("mergeForm: a blank amount where 0 means none saves as 0, in the entry windows", () => {
+  const modifier = { name: "Art", dc: { amount: -2, allSkills: true, skills: [] }, roll: { amount: 1, type: "status" } };
+  const blanked = D.mergeForm(modifier, { dc: { amount: null }, roll: { amount: null } });
+  assert.deepEqual([blanked.dc.amount, blanked.roll.amount], [0, 0], "a modifier's DC change and roll bonus");
+  const counter = { name: "Days", value: 3, perRound: 1 };
+  const counted = D.mergeForm(counter, { value: null, perRound: null });
+  assert.deepEqual([counted.value, counted.perRound], [3, 0], "a counter's Per round is 0; its value keeps");
+  const threshold = { name: "Warm", points: 3, dc: -1 };
+  const merged = D.mergeForm(threshold, { dc: null, points: null });
+  assert.deepEqual([merged.dc, merged.points], [0, 3], "a blank DC change is 0; other blanks keep their value");
+});
+
 test("mergeForm: blank numbers keep their value, except limits and the round maximum", () => {
   const s = system();
   Object.assign(pts(s), { max: 4, value: 2 });
@@ -480,7 +492,7 @@ test("the windows' rows use the shared row edits on the entry alone", () => {
   const draft = structuredClone(modifier);
   D.setDcAmount(draft, "", 5);
   const merged = D.mergeForm(draft, { name: "Praise", dc: { amount: null }, note: "x" });
-  assert.deepEqual([merged.name, merged.dc.amount, merged.note], ["Praise", 5, "x"], "a blank amount keeps the old one");
+  assert.deepEqual([merged.name, merged.dc.amount, merged.note], ["Praise", 0, "x"], "a blank amount is no DC change");
   const action = D.newAction();
   assert.equal(action.description, "", "a new action has an empty description");
 });
