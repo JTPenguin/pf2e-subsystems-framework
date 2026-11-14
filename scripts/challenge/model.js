@@ -109,6 +109,8 @@ export class ChallengeModel extends foundry.abstract.TypeDataModel {
       counters: list(counterFields()),
       // Off: revealing a subject hides the others, so the panel shows one at a time (spec 14.12).
       multipleSubjects: flag(true),
+      // Actors the GM added beside the party's PCs, such as an NPC ally, by actor id. Each takes part as a PC does.
+      participants: ids(),
       run: new SchemaField({
         status: choice(STATUSES, "inactive"),
         acted: ids(),

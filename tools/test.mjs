@@ -1981,3 +1981,20 @@ test("a roll bonus shows on the panel card with its type, beside a DC change", (
     ["−2 to all checks"],
   ]);
 });
+
+test("An added participant joins once, and leaves with its acted mark", () => {
+  const system = { participants: [], run: { acted: ["npc1", "pc1"] } };
+  assert.equal(D.addParticipant(system, "npc1"), undefined);
+  assert.equal(D.addParticipant(system, "npc1"), false);
+  assert.deepEqual(system.participants, ["npc1"]);
+  assert.equal(D.removeParticipant(system, "npc1"), undefined);
+  assert.deepEqual(system.participants, []);
+  assert.deepEqual(system.run.acted, ["pc1"]);
+  assert.equal(D.removeParticipant(system, "npc1"), false);
+});
+
+test("A challenge from before participants gets an empty list on its first add", () => {
+  const system = { run: { acted: [] } };
+  D.addParticipant(system, "npc1");
+  assert.deepEqual(system.participants, ["npc1"]);
+});

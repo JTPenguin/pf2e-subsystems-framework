@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- NPC allies can take part in a challenge: drag an actor onto the challenge window. It gets a portrait, an acted mark and per-PC counter values, and a × to remove it. A player who owns it picks its portrait on the panel to roll for it. New `participants` field in the import format.
 - Modifiers can give a typed roll bonus or penalty (circumstance, status, item or untyped), with or without a DC change. New `roll` field in the import format.
 - A roll spends the modifiers it used, including ones with only a roll bonus.
 - A counter's thresholds are added from an **Add threshold** row under the open counter; the counter's row keeps one +.

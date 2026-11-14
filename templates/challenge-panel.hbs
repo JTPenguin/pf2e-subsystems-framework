@@ -42,8 +42,8 @@
   {{/each}}
 </div>{{/if}}
 {{#if numbers.length}}<p class="ssm-panel-counters">{{#each numbers}}<span>{{name}}: {{> ssmPanelValue}}</span>{{/each}}</p>{{/if}}{{/inline}}
-{{!-- The party's portraits. For the GM each is a button that marks the character acted or not. --}}
-{{#*inline "ssmPanelParty"}}<div class="ssm-panel-party"{{#unless isGM}} role="list"{{/unless}}>{{#each party}}<img class="ssm-panel-pc {{#if acted}}acted{{/if}}"{{#if @root.isGM}} data-action="toggleActed" data-id="{{id}}" role="button" tabindex="0" aria-pressed="{{acted}}"{{else}} role="listitem"{{/if}} src="{{img}}" alt="{{label}}" aria-label="{{label}}" data-tooltip-text="{{name}}" draggable="false">{{/each}}</div>{{/inline}}
+{{!-- The party's portraits. For the GM each is a button that marks the character acted or not. A player who owns more than one participant clicks one to roll as it. --}}
+{{#*inline "ssmPanelParty"}}<div class="ssm-panel-party"{{#unless isGM}}{{#unless canPickRoller}} role="list"{{/unless}}{{/unless}}>{{#each party}}<img class="ssm-panel-pc {{#if acted}}acted{{/if}} {{#if picked}}picked{{/if}}"{{#if @root.isGM}} data-action="toggleActed" data-id="{{id}}" role="button" tabindex="0" aria-pressed="{{acted}}"{{else if canPick}} data-action="pickRoller" data-id="{{id}}" role="button" tabindex="0" aria-pressed="{{picked}}"{{else unless @root.canPickRoller}} role="listitem"{{/if}} src="{{img}}" alt="{{label}}" aria-label="{{label}}" data-tooltip-text="{{tooltip}}" draggable="false">{{/each}}</div>{{/inline}}
 <header class="ssm-panel-head">
   {{#if isGM}}<button type="button" class="ssm-panel-name" data-action="openChallenge" data-drag-click><strong>{{name}}</strong></button>{{else}}<strong class="ssm-panel-name">{{name}}</strong>{{/if}}
   {{#if rounds}}<span class="ssm-panel-round-text">{{roundLabel}}</span>{{/if}}
@@ -53,7 +53,7 @@
 {{#if rounds}}<div class="ssm-panel-run">
   {{#if roundSegments.length}}<span class="ssm-panel-segments" role="img" aria-label="{{roundLabel}}">{{#each roundSegments}}<span class="{{#if filled}}filled{{/if}}"></span>{{/each}}</span>{{/if}}
   {{#if isGM}}<div class="ssm-panel-rounds"><button type="button" class="ssm-panel-round-button" data-action="previousRound" aria-label="{{localize "SSM.Challenge.PreviousRound"}}" {{#unless canPreviousRound}}disabled{{/unless}}><i class="fa-solid fa-backward-step" inert></i></button>{{> ssmPanelParty}}<button type="button" class="ssm-panel-round-button" data-action="nextRound" aria-label="{{localize "SSM.Challenge.NextRound"}}" {{#unless canNextRound}}disabled{{/unless}}><i class="fa-solid fa-forward-step" inert></i></button></div>{{else if party.length}}{{> ssmPanelParty}}{{/if}}
-</div>{{/if}}
+</div>{{else if canPickRoller}}<div class="ssm-panel-run">{{> ssmPanelParty}}</div>{{/if}}
 {{#if counterSet.any}}<div class="ssm-panel-challenge-counters">{{> ssmPanelCounters counterSet}}</div>{{/if}}
 {{#if challengeMods.length}}<div class="ssm-panel-mods ssm-panel-challenge-mods">{{#each challengeMods}}{{> ssmPanelMod}}{{/each}}</div>{{/if}}
 <div class="ssm-panel-subjects {{#if several}}several{{/if}}" data-keep-scroll="subjects" style="--ssm-columns: {{columns}}">

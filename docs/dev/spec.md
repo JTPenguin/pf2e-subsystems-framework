@@ -158,7 +158,7 @@ Every window takes the sheet's theme. There is one window per entry: opening it 
 
 **Live play is laid out like a statblock:** small labels beside their values. It shows:
 
-- One strip at the top, in two rows. Row 1 has the round clock with previous and next round buttons on the left, and Start, End and Reset, Hide or Show panel at the far right. Row 2 has the party chips, then the Roll as choice.
+- One strip at the top, in two rows. Row 1 has the round clock with previous and next round buttons on the left, and Start, End and Reset, Hide or Show panel at the far right. Row 2 has the party chips, then the Roll as choice. The party chips include the actors the GM added (14.14), each with a remove button.
 - Each NPC's name with "Points" and the total beside it on the same line, with buttons to add and remove.
 - Each skill as a chip styled like a PF2e inline check, in a grid of two or three columns by window width, with the Discovery and Influence labels beside their grids. The chip shows the skill name (the Lore name for a Lore) and the current DC, colored green (higher) or red (lower) when it differs from the base DC. Its tooltip gives the base DC and says if the skill is a decoy. Clicking the chip rolls for the chosen PC; a chat icon on it posts a chat link. A revealed chip is full strength; a hidden chip is faded, with its name in italics. On the light theme a revealed chip's eye is dark red, so it reads on parchment. While the challenge isn't running, the roll and chat link are disabled.
 - An eye toggle to reveal or hide each entry, on the chip for skills. A threshold's eye steps through hidden, points only, and points and text, then back to hidden.
@@ -225,7 +225,7 @@ A DC change names only skills the panel shows (revealed). It says nothing about 
 **Rules for the panel:**
 
 - It has no close button, and players have no control that hides it.
-- Skills look like PF2e inline checks. Clicking one rolls for the player's assigned character. Each NPC's column has its own skills, so the click also chooses the NPC.
+- Skills look like PF2e inline checks. Clicking one rolls for the player's assigned character, or for the participant they picked (14.14). Each NPC's column has its own skills, so the click also chooses the NPC.
 - It leaves the canvas clickable outside its own area.
 - The default position is top centre. A world setting offers other positions; it is the starting spot for anyone who hasn't dragged the panel.
 - Anyone, GM included, can drag the panel by its header. The spot is saved in the browser, per user, so it survives reloads. A reset button in the header, shown once the panel is dragged, puts it back at the starting spot. A dragged panel is kept wholly on screen when it loads, redraws or the window shrinks.
@@ -605,3 +605,17 @@ Chase is a preset and nothing more: no code checks for it. The GM does by eye wh
 | Sheet | The subject's counters under its header, each as a challenge counter is: eye, name and limits, + and −, per-PC rows, thresholds, and edit and delete buttons. Complete is always in the header. The Counters title's + adds one. |
 | Panel | Each revealed counter in the subject's column, under its name, in its display style: bar, steps, track, per-PC rows or a number. |
 
+### 14.14 Participants beyond the party
+
+**Status:** decided with Justin, 2026-11-13; built 2026-11-13. Actors outside the Party actor, such as an NPC ally or a hireling, can take part in a challenge beside the PCs.
+
+| Topic | Decision |
+|---|---|
+| What one is | An ally beside the PCs: a portrait, an acted mark and a value on each per-PC counter, as a PC has. Not a rival with its own counter. |
+| Shape | `participants`: a list of world actor ids on the challenge. Setup, not run state, so Reset keeps it. The challenge's participants are the party's PCs, then these actors. |
+| Adding | The GM drags an actor from the Actors sidebar onto the challenge window. Only a world character or NPC can join; a party PC, another actor type or a compendium actor gets a notice instead. It joins that challenge only. |
+| Removing | A × beside its chip. Removing it clears its acted mark and keeps its per-PC values, so the sheet still lists them. Any GM can add or remove, running or not. |
+| No rounds | The sheet lists the added actors under Allies, each with its ×, since there are no acted marks to show. |
+| Missing actor | A deleted actor shows by its id on the sheet, so the GM can remove it. The panel leaves it out. |
+| Who rolls | The GM, as for a PC: the selected token or Roll as, which lists the participants. A player who owns it, from the panel. |
+| Player's choice | A player who owns more than one participant, or one that isn't their assigned character, clicks a portrait they own to roll as it. The one they roll as has a red ring. The choice is theirs alone and lasts until the page reloads. With no pick they roll as their assigned character, else the first participant they own. With no rounds the panel shows only the portraits they can pick. The panel redraws when ownership or their assigned character changes. |

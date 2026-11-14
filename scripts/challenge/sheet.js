@@ -1,14 +1,14 @@
 import { MODULE } from "../constants.js";
 import { challengePage } from "../registry.js";
 import { hidePanel, panelState, takePanel } from "../panel/activation.js";
-import { partyPCs } from "../party.js";
+import { participants, partyPCs } from "../party.js";
 import { actionName, skillKeyLabel, skillLabel, subjectName } from "./skill-label.js";
 import { announceTriggers, writeChallenge } from "./state.js";
 import { advanceRound, canAdvanceRound, hasRounds, canUndoRound, changeCounter, counterValueOf, currentDc, cycleThresholdReveal, endRun, resetRun, restoreModifier, rollBonuses, startRun, toggleActed, toggleComplete, toggleModifier, toggleReached, toggleReveal, undoRound, usedModifierIds } from "./run.js";
 import { LINK_ROLL_ID } from "../roll-option.js";
 import { rollCheck, rollTarget } from "./roll.js";
 import { rollBonusText } from "./panel-view.js";
-import { addRow, allCounters, applyForm, BOTH_WAYS, categoryKey, clampTracks, collapseAllAction, counterMoves, counterValueText, EDITABLE, entryListPath, groupByCategory, isDecoyCheck, moveCounter, moveModifier, moveSubject, nextThresholdReveal, pickFields, removeEntry, setCounterNote, subjectGroups } from "./data.js";
+import { addParticipant, addRow, allCounters, applyForm, BOTH_WAYS, categoryKey, clampTracks, collapseAllAction, counterMoves, counterValueText, EDITABLE, entryListPath, groupByCategory, isDecoyCheck, moveCounter, moveModifier, moveSubject, nextThresholdReveal, pickFields, removeEntry, removeParticipant, setCounterNote, subjectGroups } from "./data.js";
 import { ActionWindow, CounterWindow, hasKeptBlank, ModifierWindow, SubjectWindow, ThresholdWindow } from "./entry-window.js";
 import { markDescriptionFields } from "./description-field.js";
 
@@ -78,6 +78,7 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
       toggleReveal: ChallengeSheet.#onToggleReveal,
       cycleThresholdReveal: ChallengeSheet.#onCycleThresholdReveal,
       toggleActed: ChallengeSheet.#onToggleActed,
+      removeParticipant: ChallengeSheet.#onRemoveParticipant,
       rollSkill: ChallengeSheet.#onRollSkill,
       postLink: ChallengeSheet.#onPostLink,
     },
@@ -167,6 +168,15 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
       if (this.#stale && event.target.matches("prose-mirror")) this.render();
     });
     this.element.addEventListener("pointerdown", () => this.#startPress());
+    // An actor from the sidebar can drop anywhere on the window. The entries' own drop targets refuse it, so allow it again here as it bubbles up.
+    this.element.addEventListener("dragover", (event) => {
+      if (this.#dragging || !game.user.isGM) return;
+      event.preventDefault();
+      event.dataTransfer.dropEffect = "copy";
+    });
+    this.element.addEventListener("drop", (event) => {
+      if (!this.#dragging) this.#onActorDrop(event);
+    });
     this.element.addEventListener("focusout", (event) => {
       // The window losing focus also fires this, with the field still active: the user is still writing.
       if (this.#window.document.activeElement !== event.target && !this.#pressing) this.#catchUp();
@@ -243,9 +253,9 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
     });
   }
 
-  /** The PCs on the party's roster, as PF2e counts them, plus the actor of a selected token. */
+  /** The challenge's participants (the party's PCs and the actors added to it), plus the actor of a selected token. */
   get #rollableActors() {
-    const actors = partyPCs();
+    const actors = participants(this.page.system);
     const selected = canvas.ready ? canvas.tokens.controlled[0]?.actor : null;
     if (selected?.isOfType("character", "npc") && !actors.includes(selected)) actors.push(selected);
     return actors;
@@ -272,8 +282,9 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
     const canChange = active && canRun;
     const panel = panelState();
     const onPanel = panel.id === this.document.id;
-    const party = partyPCs();
-    const partyIds = party.map((actor) => actor.id);
+    const pcIds = new Set(partyPCs().map((actor) => actor.id));
+    // An added actor that has been deleted still shows, by its id, so the GM can remove it.
+    const partyIds = [...new Set([...participants(system).map((actor) => actor.id), ...system.participants])];
     const subjectLabel = system.subjectLabel || loc("SSM.Challenge.Subject");
     const signed = (n) => (n > 0 ? `+${n}` : `${n}`.replace("-", "−"));
     const rollRows = (subject, action) => action.checks.map((row) => {
@@ -342,10 +353,13 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
       roundLabel: active || status === "finished" ? game.i18n.format(system.rounds.max === null ? "SSM.Challenge.RoundOpen" : "SSM.Challenge.Round", system.rounds) : loc("SSM.Challenge.NotStarted"),
       canNextRound: canAdvanceRound(system),
       canPreviousRound: canUndoRound(system),
-      party: [...new Set([...actors.map((actor) => actor.id), ...system.run.acted])].map((id) => {
+      party: [...new Set([...partyIds, ...actors.map((actor) => actor.id), ...system.run.acted])].map((id) => {
         const actor = game.actors.get(id);
-        return { id, name: actor?.name ?? id, acted: system.run.acted.includes(id) };
+        const added = system.participants.includes(id) && !pcIds.has(id);
+        return { id, name: actor?.name ?? id, acted: system.run.acted.includes(id), added, removeLabel: game.i18n.format("SSM.Challenge.RemoveParticipant", { name: actor?.name ?? id }) };
       }),
+      // A challenge with no rounds has no acted marks, so the strip lists only the added actors, for their remove buttons.
+      added: system.participants.map((id) => ({ id, name: game.actors.get(id)?.name ?? id, removeLabel: game.i18n.format("SSM.Challenge.RemoveParticipant", { name: game.actors.get(id)?.name ?? id }) })),
       actors: actors.map((actor) => ({ id: actor.id, name: actor.name, selected: actor === selected })),
       // The challenge's own entries, in a box above the subjects (spec 14.7).
       challengeModifierGroups: modifierGroups(system, system.modifiers.map((row) => this.#modifierView(system, null, row, canChange))),
@@ -738,6 +752,27 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
 
   static #onToggleActed(event, target) {
     return this.#run((system) => toggleActed(system, target.dataset.id));
+  }
+
+  /** Take an added actor out of this challenge. It is challenge setup, so any GM can, running or not. */
+  static #onRemoveParticipant(event, target) {
+    if (!game.user.isGM) return;
+    return this.#whileSaving(() => writeChallenge(this.page, (system) => removeParticipant(system, target.dataset.id)));
+  }
+
+  /**
+   * An actor dragged from the sidebar onto the window joins this challenge beside the party's PCs.
+   * Only a world character or NPC can: another kind has no skills to roll, and a compendium actor must be imported first.
+   */
+  async #onActorDrop(event) {
+    const data = foundry.applications.ux.TextEditor.implementation.getDragEventData(event);
+    if (data?.type !== "Actor" || !game.user.isGM) return;
+    event.preventDefault();
+    const actor = await fromUuid(data.uuid);
+    if (!actor || actor.pack || game.actors.get(actor.id) !== actor) return ui.notifications.warn("SSM.Challenge.ParticipantWorldOnly", { localize: true });
+    if (!actor.isOfType("character", "npc")) return ui.notifications.warn(game.i18n.format("SSM.Challenge.ParticipantType", { name: actor.name }));
+    if (partyPCs().includes(actor)) return ui.notifications.info(game.i18n.format("SSM.Challenge.ParticipantInParty", { name: actor.name }));
+    await this.#whileSaving(() => writeChallenge(this.page, (system) => addParticipant(system, actor.id)));
   }
 
   /* -------------------------------------------- */

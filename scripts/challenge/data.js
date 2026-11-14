@@ -517,7 +517,7 @@ export function mergeForm(source, form, path = "") {
 }
 
 /** The parts of the data a form may edit. Run state and the preset never come from a form. */
-export const EDITABLE = ["pointsName", "subjectLabel", "gmNotes", "rounds", "modifiers", "subjects", "counters", "multipleSubjects"];
+export const EDITABLE = ["pointsName", "subjectLabel", "gmNotes", "rounds", "modifiers", "subjects", "counters", "multipleSubjects", "participants"];
 
 /**
  * Merge expanded form data into the source's editable parts. Without Allow multiple subjects, a subject the form newly reveals
@@ -720,6 +720,22 @@ export function entryListPath(system, kind, subjectId) {
   if (!subjectId) return kind === "counters" || kind === "modifiers" ? kind : null;
   const n = system.subjects.findIndex((subject) => subject.id === subjectId);
   return n < 0 ? null : `subjects.${n}.${kind}`;
+}
+
+/** Add an actor beside the party's PCs. Returns false if it is already there. */
+export function addParticipant(system, actorId) {
+  system.participants ??= [];
+  if (!actorId || system.participants.includes(actorId)) return false;
+  system.participants.push(actorId);
+}
+
+/** Take an added actor out of the challenge, with its acted mark. Its per-PC values stay, so the sheet still lists them. Returns false if it wasn't there. */
+export function removeParticipant(system, actorId) {
+  const at = system.participants?.indexOf(actorId) ?? -1;
+  if (at < 0) return false;
+  system.participants.splice(at, 1);
+  const acted = system.run?.acted ?? [];
+  if (acted.includes(actorId)) system.run.acted = acted.filter((id) => id !== actorId);
 }
 
 /** Remove an entry by its id, as the sheet's delete buttons do. Returns false if it is gone or must stay. */

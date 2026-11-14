@@ -112,9 +112,13 @@
     </div>
     <div class="ssm-strip-row">
     <span class="ssm-strip-group ssm-grow">
+      {{!-- An actor dropped on the window joins the party here, with a remove button. With no rounds there are no acted marks, so only the added actors show. --}}
       {{#if rounds}}
-      <span class="ssm-stat-label">{{localize "SSM.Challenge.Party"}}</span>
-      {{#each party}}<button type="button" class="ssm-chip {{#if acted}}acted{{/if}}" data-action="toggleActed" data-id="{{id}}" aria-pressed="{{acted}}">{{name}}</button>{{else}}<span class="ssm-muted">{{localize "SSM.Challenge.NoPCs"}}</span>{{/each}}
+      <span class="ssm-stat-label" data-tooltip="{{localize "SSM.Challenge.DropActorHint"}}">{{localize "SSM.Challenge.Party"}}</span>
+      {{#each party}}<span class="ssm-chip-group"><button type="button" class="ssm-chip {{#if acted}}acted{{/if}}" data-action="toggleActed" data-id="{{id}}" aria-pressed="{{acted}}">{{name}}</button>{{#if added}}<button type="button" class="icon fa-solid fa-xmark ssm-chip-remove" data-action="removeParticipant" data-id="{{id}}" aria-label="{{removeLabel}}" data-tooltip="{{removeLabel}}"></button>{{/if}}</span>{{else}}<span class="ssm-muted">{{localize "SSM.Challenge.NoPCs"}}</span>{{/each}}
+      {{else if added.length}}
+      <span class="ssm-stat-label" data-tooltip="{{localize "SSM.Challenge.DropActorHint"}}">{{localize "SSM.Challenge.Allies"}}</span>
+      {{#each added}}<span class="ssm-chip-group"><span class="ssm-chip">{{name}}</span><button type="button" class="icon fa-solid fa-xmark ssm-chip-remove" data-action="removeParticipant" data-id="{{id}}" aria-label="{{removeLabel}}" data-tooltip="{{removeLabel}}"></button></span>{{/each}}
       {{/if}}
     </span>
     <label class="ssm-strip-group"><span class="ssm-stat-label">{{localize "SSM.Challenge.RollAs"}}</span><select data-roll-as>{{#each actors}}<option value="{{id}}" {{#if selected}}selected{{/if}}>{{name}}</option>{{/each}}</select></label>

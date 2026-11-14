@@ -161,6 +161,7 @@ An Influence challenge with one NPC. Copy it as a starting point. Every key not 
 | `rounds.current` | Integer, 0 or more | `0` | Leave at 0. Start sets round 1. |
 | `rounds.max` | Integer, 0 or more, or `null` | `null` | `null`: no limit. `0`: no rounds at all. |
 | `multipleSubjects` | Boolean | `true` | `false`: revealing a subject hides all others. |
+| `participants` | List of actor ids | `[]` | Actors beside the party's PCs, such as an NPC ally. Ids are the world's own, so leave it out of a file meant for another world. |
 | `counters` | List of [counters](#counter) | `[]` | The challenge's own counters. |
 | `modifiers` | List of [modifiers](#modifier) | `[]` | Challenge-level: DC changes apply to every subject. |
 | `subjects` | List of [subjects](#subject) | `[]` | In order. Uncategorised subjects first, then each category's. |

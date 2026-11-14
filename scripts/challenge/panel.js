@@ -161,8 +161,52 @@ async function prepareView(view, state) {
       }))),
     }))),
     counterSet: await counterSet(state, view.counters, pcs, page),
-    party: view.party.map((pc) => ({ ...pc, label: game.i18n.format(pc.acted ? "SSM.Panel.ActedLabel" : "SSM.Panel.NotActedLabel", { name: pc.name }) })),
+    ...partyContext(view, state, rounds),
   };
+}
+
+/** The participant each player picked to roll as, by challenge id. Each user's own, kept until the page reloads. */
+const pickedRoller = new Map();
+
+/** The participants this player may roll as: those they own. Only a choice when there's more than one, or one that isn't their assigned character. */
+function rollChoices(view) {
+  if (game.user.isGM) return [];
+  const owned = view.party.filter((pc) => game.actors.get(pc.id)?.isOwner);
+  const own = game.user.character;
+  return owned.length > 1 || (owned.length === 1 && owned[0].id !== own?.id) ? owned : [];
+}
+
+/** Who a player rolls as: the participant they picked, else their assigned character, else the first participant they own. */
+function playerRollActor(state) {
+  const owned = (state.view?.party ?? []).map((pc) => game.actors.get(pc.id)).filter((actor) => actor?.isOwner);
+  return owned.find((actor) => actor.id === pickedRoller.get(state.id)) ?? game.user.character ?? owned[0] ?? null;
+}
+
+/**
+ * The party's portraits. A player who owns more than one participant clicks a portrait to roll as it; the one they roll as is marked.
+ * With no rounds there are no portraits, unless the player has that choice: then only the ones they can pick show.
+ */
+function partyContext(view, state, rounds) {
+  const choices = new Set(rollChoices(view).map((pc) => pc.id));
+  const roller = choices.size ? playerRollActor(state)?.id : null;
+  const party = view.party.filter((pc) => rounds || choices.has(pc.id)).map((pc) => {
+    const canPick = choices.has(pc.id);
+    const picked = canPick && pc.id === roller;
+    const acted = rounds && pc.acted;
+    const actedLabel = game.i18n.format(acted ? "SSM.Panel.ActedLabel" : "SSM.Panel.NotActedLabel", { name: pc.name });
+    const pickLabel = canPick ? game.i18n.format(picked ? "SSM.Panel.RollingAs" : "SSM.Panel.PickRoller", { name: pc.name }) : "";
+    // With no rounds there is no acted mark to name.
+    const label = !canPick ? actedLabel : rounds ? `${actedLabel}. ${pickLabel}` : pickLabel;
+    return { ...pc, acted, canPick, picked, label, tooltip: pickLabel || pc.name };
+  });
+  return { party, canPickRoller: choices.size > 0 };
+}
+
+/** A player's click on a portrait they own: roll as that participant from now on. */
+function pickRoller(state, portrait) {
+  if (game.user.isGM || !game.actors.get(portrait.dataset.id)?.isOwner) return;
+  pickedRoller.set(state.id, portrait.dataset.id);
+  return refreshPanel();
 }
 
 let rolling = false;
@@ -182,7 +226,7 @@ async function rollFromPanel(state, button, event) {
   if (rolling || event.detail > 1) return;
   const found = findPanelRow(state.view, button.dataset);
   if (!found) return ui.notifications.info("SSM.Panel.SkillGone", { localize: true });
-  const actor = game.user.isGM ? gmRollActor(state) : game.user.character;
+  const actor = game.user.isGM ? gmRollActor(state) : playerRollActor(state);
   if (!actor) return game.user.isGM ? ui.notifications.warn("SSM.Panel.NoGMActor", { localize: true }) : ui.notifications.info("SSM.Panel.NoCharacter", { localize: true });
   const { subject, action, row } = found;
   const subjectLabel = subjectName(subject, subject.index ?? state.view.subjects.indexOf(subject), state.view.subjectLabel);
@@ -235,5 +279,5 @@ export const challengePanel = {
   isRunning: (system) => system.run.status === "active",
   buildView: buildPanelView,
   prepareView,
-  viewActions: { rollSkill: rollFromPanel, previousRound: moveRound, nextRound: moveRound, toggleModifier: flipModifier, toggleActed: flipActed, toggleAction: toggleRow, changeCounter: stepCounter },
+  viewActions: { rollSkill: rollFromPanel, previousRound: moveRound, nextRound: moveRound, toggleModifier: flipModifier, toggleActed: flipActed, pickRoller, toggleAction: toggleRow, changeCounter: stepCounter },
 };

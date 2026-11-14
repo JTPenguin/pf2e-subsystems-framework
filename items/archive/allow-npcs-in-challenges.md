@@ -1,12 +1,13 @@
 ---
 title: "Let NPC allies join a challenge beside the PCs"
 kind: feature
-status: ready
-waits_on: Claude
+status: done
+waits_on: none
 priority: 🔽
 blocked_by: []
 added: 2026-11-13
 updated: 2026-11-13
+outcome: "Built 2026-11-13: drag an actor onto the challenge window to add it (system.participants), × to remove; portrait, acted mark and per-PC values on sheet and panel; a player who owns it picks its portrait to roll. Checked live with GM and Test Player 1."
 source: "Justin's request, 2026-11-13: allow NPCs and/or other actors outside the party to be included in subsystem challenges; questions answered by Justin in triage, 2026-11-13"
 ---
 # Let NPC allies join a challenge beside the PCs

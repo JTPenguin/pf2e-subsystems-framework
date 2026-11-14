@@ -24,6 +24,10 @@
 .ssm-body h4 { margin: 0.4rem 0 0.15rem; font-size: var(--font-size-12, 0.75rem); text-transform: uppercase; border: none; opacity: 0.8; }
 .ssm-chip { width: auto; flex: none; }
 .ssm-chip.acted { opacity: 0.45; text-decoration: line-through; }
+/* An added actor's chip and its remove button, kept together. A plain chip (no rounds) reads like a button with no click. */
+.ssm-chip-group { display: inline-flex; align-items: center; flex: none; }
+span.ssm-chip { display: inline-flex; align-items: center; padding: 0 0.4rem; min-height: var(--button-size, 1.6rem); border: 1px solid var(--color-border, #7a7971); border-radius: 3px; }
+.ssm-strip button.icon.ssm-chip-remove { --button-size: 1.2rem; width: 1.2rem; font-size: 0.75em; opacity: 0.7; }
 .ssm-tag { font-size: var(--font-size-11, 0.7rem); border: 1px solid var(--color-border, #7a7971); border-radius: 3px; padding: 0 0.25rem; }
 .ssm-entry > button:not(.icon) { width: auto; flex: none; }
 .ssm-modifier { margin-bottom: 0.3rem; }
@@ -240,6 +244,8 @@ button.ssm-reached { color: #4f9d5d; }
 .ssm-panel-pc[role="button"]:hover { border-color: #fff; }
 .ssm-panel-pc[role="button"]:focus-visible { outline: 2px solid #c9593f; outline-offset: 1px; }
 .ssm-panel-pc.acted { opacity: 0.35; filter: grayscale(1); }
+/* Who a player rolls as, when they own more than one participant. */
+.ssm-panel-pc.picked { border-color: #fff; box-shadow: 0 0 0 2px #c9593f; }
 
 /* A threshold's or counter's player and GM text, each on a line of its own. */
 

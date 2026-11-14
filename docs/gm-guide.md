@@ -39,7 +39,7 @@ The window is laid out like a PF2e NPC sheet. From top to bottom:
 
 | Part | What it holds |
 |---|---|
-| **Run strip** | The round, Previous and Next round, Start, End and Reset, Hide or Show panel. Below that, the party and the **Roll as** choice. |
+| **Run strip** | The round, Previous and Next round, Start, End and Reset, Hide or Show panel. Below that, the party (with any allies you added) and the **Roll as** choice. |
 | **Challenge** | The points name, subject label, Allow multiple subjects, rounds and GM notes. |
 | **Counters** | The challenge's own counters. |
 | **Modifiers** | The challenge's own modifiers. Their DC changes and roll bonuses apply to every matching check on every subject. |
@@ -78,6 +78,8 @@ Subjects, actions, thresholds and modifiers have a rich-text description that pl
 5. **Next round.** Clears the acted marks and applies each counter's change each round. Previous round undoes the last advance.
 6. **End.** Closes the panel and keeps the final state on the sheet. **Reset** puts everything back to how it was at Start.
 
+**Allies.** To add an NPC ally or hireling, drag its actor from the Actors sidebar onto the challenge window. It joins this challenge only, beside the party's PCs: it gets a portrait, an acted mark and a value on each per-PC counter. Its chip has a **×** to remove it. Only characters and NPCs from the sidebar can join; import a compendium actor first. You roll for an ally as for a PC, and so can any player who owns it.
+
 **Acted marks.** A roll marks the PC as acted, and their portrait dims on the panel. This is advisory: nothing stops a second roll. Click a portrait or party chip to change the mark by hand. A reroll doesn't mark the PC again.
 
 **Thresholds.** A threshold is marked Reached when its counter gets there, and you get a notice. Lowering the counter doesn't clear it: click its Reached tag. On a both-ways counter, Reached follows the value.
@@ -107,15 +109,15 @@ Any number of challenges can run at once, such as a Reputation challenge for the
 | Who | Can |
 |---|---|
 | **Everyone** | Drag it by its header, resize it from the bottom-right corner, and reset its position and size. Each user's spot is their own. |
-| **Players** | Click revealed checks to roll for their assigned character. Open descriptions. |
+| **Players** | Click revealed checks to roll for their assigned character. A player who also owns an ally clicks a portrait to choose who rolls; the chosen one has a red ring. Open descriptions. |
 | **GM** | Everything players can, plus: click the challenge name to open its window, turn modifiers On or Off, use + and − on counters, mark portraits acted, and move the round. |
 
 A world setting, **Panel position**, picks where the panel starts: top centre, top left or top right.
 
 ## Good to know
 
-- **Players need an assigned character** to roll from the panel.
-- **The party** is the player characters in PF2e's Party actor; familiars, eidolons and minions are left out. A PC not in the party gets no portrait, acted mark or per-PC value.
+- **Players need an assigned character**, or an ally they own, to roll from the panel.
+- **The party** is the player characters in PF2e's Party actor; familiars, eidolons and minions are left out. Anyone else, such as an NPC ally, takes part only if you drag them onto the challenge window.
 - **A PC without a listed Lore** rolls it untrained from the panel or sheet. A chat link can't do this.
 - **With more than one GM**, only the active GM's client writes changes and handles rolls.
 - **Configure Sheet** can change the window's theme. The window defaults to PF2e's light parchment.

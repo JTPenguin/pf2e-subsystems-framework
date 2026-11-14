@@ -360,6 +360,13 @@ function installHooks() {
   Hooks.on("deleteJournalEntry", (entry) => onChallengeChange(entry.id));
   // The party's roster and names are part of the copy. Most actor updates change nothing, and those cost no write.
   for (const hook of ["createActor", "updateActor", "deleteActor"]) Hooks.on(hook, schedulePublish);
+  // Which participants a player may roll as follows ownership and their assigned character, which the shared copy doesn't hold, so their panel redraws itself.
+  Hooks.on("updateActor", (actor, changes) => {
+    if (!game.user.isGM && "ownership" in changes) refreshPanel();
+  });
+  Hooks.on("updateUser", (user, changes) => {
+    if (user.isSelf && "character" in changes) refreshPanel();
+  });
   // A GM arriving may become the active GM, who then checks the setting is still right.
   Hooks.on("userConnected", schedulePublish);
   Hooks.once("ready", () => {
