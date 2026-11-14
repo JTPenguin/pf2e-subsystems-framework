@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.2.0
 
 - An **Example Challenges** compendium: one challenge for each preset, and one for each of GM Core's chase types (Chase Down, Run Away, Beat the Clock, Competitive). The source files are in `examples/` and import over a blank challenge.
 - GM-only text in descriptions uses PF2e's GM Text Block and GM Text Inline. The panel leaves them out, as it does Foundry's secret blocks. The presets' GM guidance on thresholds is now a GM Text Block.
