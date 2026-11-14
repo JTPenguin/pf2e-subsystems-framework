@@ -528,6 +528,17 @@ test("a subject's description reaches the panel copy without its secret blocks",
   assert.doesNotMatch(JSON.stringify(view), /guild/);
 });
 
+test("PF2e's GM text, block and inline, stays out of the panel copy", () => {
+  const s = system();
+  sub(s).revealed = true;
+  sub(s).description = '<p>A noble.</p><div data-visibility="gm"><p>Owes the guild.</p><div><p>Nested.</p></div></div><p>Proud, <span data-visibility="gm">and broke,</span> and tall.</p>';
+  const view = V.buildPanelView({ name: "c", system: s, party: [] });
+  assert.equal(view.subjects[0].description, "<p>A noble.</p><p>Proud,  and tall.</p>");
+  assert.doesNotMatch(JSON.stringify(view), /guild|Nested|broke/);
+  assert.equal(V.withoutSecrets('<p>Kept.</p><div data-visibility="owner"><p>Owner text.</p></div>'), '<p>Kept.</p><div data-visibility="owner"><p>Owner text.</p></div>', "only GM text is removed");
+  assert.equal(V.withoutSecrets('<p>A</p><div data-visibility="gm"><p>never closed'), "<p>A</p>", "an unclosed block is removed to the end");
+});
+
 /* Rolls */
 
 test("roll option round trip, and only our options parse", () => {
@@ -1777,7 +1788,8 @@ test("the Reputation preset: revealed factions with no actions, each with a both
   }
   const counter = first.counters[0];
   assert.equal(counter.direction, "both");
-  assert.deepEqual(counter.thresholds.map((row) => [row.points, row.reveal, row.dc, row.name, V.withoutSecrets(row.description)]), [30, 15, 5, -5, -15, -30].map((points) => [points, "full", 0, `SSM.Preset.reputation.Threshold.${points}.Name`, ""]), "the GM guidance is a secret block");
+  assert.deepEqual(counter.thresholds.map((row) => [row.points, row.reveal, row.dc, row.name, V.withoutSecrets(row.description)]), [30, 15, 5, -5, -15, -30].map((points) => [points, "full", 0, `SSM.Preset.reputation.Threshold.${points}.Name`, ""]), "the GM guidance is GM text");
+  assert.ok(counter.thresholds.every((row) => row.description.startsWith('<div data-visibility="gm">')), "as a GM Text Block");
   assert.ok(counter.thresholds.every((row, i) => row.description.includes(`SSM.Preset.reputation.Threshold.${[30, 15, 5, -5, -15, -30][i]}.Description`)));
   assert.equal(D.newChallengeSystem("reputation").gmNotes, ["Factions", "Changing", "Running"].map((key) => `<p>SSM.Preset.reputation.GmNotes.${key}</p>`).join(""));
   const rep = EN.SSM.Preset.reputation;

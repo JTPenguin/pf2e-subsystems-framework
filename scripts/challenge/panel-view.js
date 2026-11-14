@@ -48,7 +48,7 @@ function changeViews(system, subject, row) {
 const modifierView = (system, subject, row, group) => ({
   id: row.id,
   name: row.name,
-  // Everyone sees the description but its secret blocks.
+  // Everyone sees the description but its GM text.
   description: withoutSecrets(row.description),
   category: group.label,
   colour: group.colour,
@@ -82,7 +82,7 @@ const pointsLabel = (points, direction) => (points < 0 ? `−${-points}` : direc
 /**
  * The thresholds players may see. An up counter lists them in the order it reaches them; a down counter and a both-ways track list them highest first,
  * so a both-ways list reads from the best tier down (Justin, 2026-11-13). A points-only threshold shows as "6: ???": its name and description stay out of the copy.
- * A fully revealed one has its name and its description without secret blocks.
+ * A fully revealed one has its name and its description without GM text.
  */
 function thresholdViews(rows, direction) {
   const order = direction === "down" || direction === BOTH_WAYS ? (a, b) => b.points - a.points : (a, b) => a.points - b.points;
@@ -127,7 +127,7 @@ function subjectView(system, subject, party) {
     // Its place in the GM's order, for a stand-in name such as "Obstacle 3".
     index: system.subjects.indexOf(subject),
     name: subject.name,
-    // Everyone sees the description but its secret blocks.
+    // Everyone sees the description but its GM text.
     description: withoutSecrets(subject.description),
     complete: !!subject.complete,
     // The subject's revealed counters, drawn in its column (spec 14.13).
@@ -220,8 +220,28 @@ export function roundSegments(current, max) {
   return Array.from({ length: total }, (_, index) => ({ filled: index < filled }));
 }
 
-/** Rich text without its secret blocks, which only the GM sees. The copy reaches players' clients, so the blocks must not be in it. */
-export const withoutSecrets = (html) => String(html ?? "").replace(/<section\b[^>]*\bclass="[^"]*\bsecret\b[^"]*"[^>]*>[\s\S]*?<\/section>/gi, "").trim();
+/** An opening tag of GM-only text: PF2e's GM Text Block or GM Text Inline (`data-visibility="gm"`), or a Foundry secret block. */
+const GM_ONLY_OPENING = /<([a-z][a-z0-9]*)\b(?=[^>]*\bdata-visibility=["']gm["']|[^>]*\bclass=["'][^"']*\bsecret\b)[^>]*>/i;
+
+/**
+ * Rich text without its GM-only parts: PF2e's GM text and Foundry's secret blocks. The copy reaches players' clients, so they must not be in it.
+ * Each part ends at its own closing tag, counting nested tags of the same name, so a GM Text Block holding a div is removed whole.
+ */
+export function withoutSecrets(html) {
+  let text = String(html ?? "");
+  for (let match = text.match(GM_ONLY_OPENING); match; match = text.match(GM_ONLY_OPENING)) {
+    const tag = new RegExp(`<(/?)${match[1]}\\b[^>]*>`, "gi");
+    tag.lastIndex = match.index + match[0].length;
+    let depth = 1;
+    let end = text.length;
+    for (let next = tag.exec(text); next; next = tag.exec(text)) {
+      depth += next[1] ? -1 : 1;
+      if (depth === 0) { end = next.index + next[0].length; break; }
+    }
+    text = text.slice(0, match.index) + text.slice(end);
+  }
+  return text.trim();
+}
 
 /** The filtered copy. `party` is a list of { id, name, img }. Only revealed subjects and counters go in. */
 export function buildPanelView({ name, system, party }) {

@@ -1,0 +1,301 @@
+{
+  "name": "The Saltworks Office (Infiltration)",
+  "flags": {
+    "core": {
+      "sheetClass": "pf2e-subsystems-framework.ChallengeSheet"
+    }
+  },
+  "pages": [
+    {
+      "name": "The Saltworks Office (Infiltration)",
+      "type": "pf2e-subsystems-framework.challenge",
+      "system": {
+        "preset": "infiltration",
+        "pointsName": "Infiltration Points",
+        "subjectLabel": "Obstacle",
+        "subjectsLabel": "Obstacles",
+        "noSubjects": "No obstacles yet.",
+        "gmNotes": "<p><strong>Example: Infiltration.</strong> Built for four level-4 PCs. Base DC 19, level 4's DC.</p><p>The party breaks into the saltworks at night to copy the foreman's ledger. Rounds are about one minute. Each obstacle is revealed when the party reaches it.</p><p><strong>Each roll:</strong> a success gives the obstacle 1 Infiltration Point and a critical success 2. A failure adds 1 Awareness Point and a critical failure 2. Mark the obstacle Complete when it is full, and reveal the next.</p><p><strong>The Outer Fence</strong> is an individual obstacle: each PC needs 1 point. Its counter is per PC.</p><p><strong>Complications:</strong> the Night Clerk and the Dock Dog start hidden. Reveal each when its Awareness tier is reached.</p><p><strong>Edge Points:</strong> type in what each PC earned in Before the Saltworks.</p>",
+        "rounds": {
+          "current": 0,
+          "max": null
+        },
+        "multipleSubjects": true,
+        "counters": [
+          {
+            "id": "c001",
+            "name": "Awareness Points",
+            "min": 0,
+            "perRound": 1,
+            "thresholds": [
+              {
+                "id": "t001",
+                "points": 5,
+                "name": "Suspicions are raised",
+                "reveal": "points",
+                "description": "<div data-visibility=\"gm\"><p>Obstacle DCs +1. The first time the PCs reach this tier, reveal the Night Clerk.</p></div>",
+                "dc": 1
+              },
+              {
+                "id": "t002",
+                "points": 10,
+                "name": "Something goes wrong",
+                "reveal": "points",
+                "description": "<div data-visibility=\"gm\"><p>The first time the PCs reach this tier, reveal the Dock Dog.</p></div>"
+              },
+              {
+                "id": "t003",
+                "points": 15,
+                "name": "The yard is on alert",
+                "reveal": "points",
+                "description": "<div data-visibility=\"gm\"><p>With the 5 tier, obstacle DCs are +2 in total.</p></div>",
+                "dc": 1
+              },
+              {
+                "id": "t004",
+                "points": 20,
+                "name": "The infiltration fails",
+                "reveal": "points",
+                "description": "<div data-visibility=\"gm\"><p>The foreman's whistle goes. End the challenge, or start a chase.</p></div>"
+              }
+            ],
+            "revealed": true
+          },
+          {
+            "id": "c002",
+            "name": "Edge Points",
+            "min": 0,
+            "perPc": true,
+            "revealed": true
+          }
+        ],
+        "modifiers": [
+          {
+            "id": "m001",
+            "name": "Open Skylight",
+            "category": "Opportunity",
+            "description": "<p>A skylight above the office is propped open for the heat.</p>",
+            "duration": "oneTime",
+            "active": false,
+            "revealed": false,
+            "dc": {
+              "amount": -2,
+              "allSkills": false,
+              "skills": [
+                "thievery"
+              ]
+            },
+            "note": "Reveal and turn On if a PC climbs onto the roof."
+          }
+        ],
+        "subjects": [
+          {
+            "id": "s001",
+            "name": "The Outer Fence",
+            "description": "<p>A spiked plank fence, eight feet high, with a gate chained shut.</p>",
+            "category": "Obstacle",
+            "revealed": true,
+            "counters": [
+              {
+                "id": "c003",
+                "name": "Infiltration Points",
+                "min": 0,
+                "max": 1,
+                "perPc": true,
+                "revealed": true
+              }
+            ],
+            "modifiers": [],
+            "actions": [
+              {
+                "id": "a001",
+                "name": "Overcome",
+                "description": "<p>Climb it, vault it from the woodpile, or pick the gate's padlock.</p>",
+                "checks": [
+                  {
+                    "id": "k002",
+                    "skill": "athletics",
+                    "dc": 19,
+                    "revealed": true
+                  },
+                  {
+                    "id": "k003",
+                    "skill": "acrobatics",
+                    "dc": 17,
+                    "revealed": true
+                  },
+                  {
+                    "id": "k004",
+                    "skill": "thievery",
+                    "dc": 21,
+                    "revealed": true
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "s002",
+            "name": "The Evaporation Pans",
+            "description": "<p>Open salt pans under the moon, crossed by plank walkways. A watchman walks the far side.</p>",
+            "category": "Obstacle",
+            "revealed": false,
+            "counters": [
+              {
+                "id": "c004",
+                "name": "Infiltration Points",
+                "min": 0,
+                "max": 4,
+                "revealed": true
+              }
+            ],
+            "modifiers": [],
+            "actions": [
+              {
+                "id": "a002",
+                "name": "Overcome",
+                "description": "<p>Creep between the salt heaps, bluff the watchman as workers, or follow the drainage ditch.</p>",
+                "checks": [
+                  {
+                    "id": "k005",
+                    "skill": "stealth",
+                    "dc": 19,
+                    "revealed": true
+                  },
+                  {
+                    "id": "k006",
+                    "skill": "deception",
+                    "dc": 21,
+                    "revealed": true
+                  },
+                  {
+                    "id": "k007",
+                    "skill": "survival",
+                    "dc": 17,
+                    "revealed": true
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "s003",
+            "name": "The Office Door",
+            "description": "<p>A heavy door with a good lock, and the foreman's quarters above it.</p>",
+            "category": "Obstacle",
+            "revealed": false,
+            "counters": [
+              {
+                "id": "c005",
+                "name": "Infiltration Points",
+                "min": 0,
+                "max": 2,
+                "revealed": true
+              }
+            ],
+            "modifiers": [],
+            "actions": [
+              {
+                "id": "a003",
+                "name": "Overcome",
+                "description": "<p>Pick the lock, lift the door off its hinges, or wait for the foreman to snore.</p>",
+                "checks": [
+                  {
+                    "id": "k001",
+                    "skill": "thievery",
+                    "dc": 21,
+                    "revealed": true
+                  },
+                  {
+                    "id": "k008",
+                    "skill": "crafting",
+                    "dc": 19,
+                    "revealed": true
+                  },
+                  {
+                    "id": "k009",
+                    "skill": "stealth",
+                    "dc": 21,
+                    "revealed": true
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "s004",
+            "name": "The Night Clerk",
+            "description": "<p>A clerk comes back for a forgotten lamp.</p><div data-visibility=\"gm\"><p>Reveal at 5 Awareness. A failed check here adds 2 Awareness Points.</p></div>",
+            "category": "Complication",
+            "revealed": false,
+            "counters": [],
+            "modifiers": [],
+            "actions": [
+              {
+                "id": "a004",
+                "name": "Overcome",
+                "description": "<p>Hide, talk your way past, or send them home.</p>",
+                "checks": [
+                  {
+                    "id": "k010",
+                    "skill": "deception",
+                    "dc": 19,
+                    "revealed": true
+                  },
+                  {
+                    "id": "k011",
+                    "skill": "stealth",
+                    "dc": 21,
+                    "revealed": true
+                  },
+                  {
+                    "id": "k012",
+                    "skill": "diplomacy",
+                    "dc": 21,
+                    "revealed": true
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "s005",
+            "name": "The Dock Dog",
+            "description": "<p>The yard's mastiff has smelled something.</p><div data-visibility=\"gm\"><p>Reveal at 10 Awareness. A failure adds 1 Awareness Point; a critical failure means it barks: add 3.</p></div>",
+            "category": "Complication",
+            "revealed": false,
+            "counters": [],
+            "modifiers": [],
+            "actions": [
+              {
+                "id": "a005",
+                "name": "Overcome",
+                "description": "<p>Calm it, cow it, or slip downwind.</p>",
+                "checks": [
+                  {
+                    "id": "k013",
+                    "skill": "nature",
+                    "dc": 17,
+                    "revealed": true
+                  },
+                  {
+                    "id": "k014",
+                    "skill": "intimidation",
+                    "dc": 19,
+                    "revealed": true
+                  },
+                  {
+                    "id": "k015",
+                    "skill": "stealth",
+                    "dc": 21,
+                    "revealed": true
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

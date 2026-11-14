@@ -1,0 +1,220 @@
+{
+  "name": "The Harbor Factions (Reputation)",
+  "flags": {
+    "core": {
+      "sheetClass": "pf2e-subsystems-framework.ChallengeSheet"
+    }
+  },
+  "pages": [
+    {
+      "name": "The Harbor Factions (Reputation)",
+      "type": "pf2e-subsystems-framework.challenge",
+      "system": {
+        "preset": "reputation",
+        "pointsName": "Reputation Points",
+        "subjectLabel": "Faction",
+        "subjectsLabel": "Factions",
+        "noSubjects": "No factions yet.",
+        "gmNotes": "<p><strong>Example: Reputation.</strong> Three factions in a harbor town, for a campaign that spends time there.</p><p>Start the challenge once and leave it running. There are no rounds. Show it on the panel when the party should see where they stand.</p><p><strong>Favors and disservices:</strong> a minor favor is about +1, a moderate one +2 or +3, a major one +5 or more. Disservices are the same, below 0. Use + and − on the faction's counter. Each tier's GM text says what still counts at that tier.</p><p><strong>The Reed Market</strong> starts hidden and at −5, Disliked: the smugglers already know the party works with the Watch. Reveal it when the party meets them.</p>",
+        "rounds": {
+          "current": 0,
+          "max": 0
+        },
+        "multipleSubjects": true,
+        "counters": [],
+        "modifiers": [],
+        "subjects": [
+          {
+            "id": "s001",
+            "name": "The Dockworkers' Guild",
+            "description": "<p>The stevedores and porters who load every ship in the harbor.</p>",
+            "revealed": true,
+            "counters": [
+              {
+                "id": "c001",
+                "name": "Reputation Points",
+                "value": 0,
+                "direction": "both",
+                "min": -50,
+                "max": 50,
+                "thresholds": [
+                  {
+                    "id": "t001",
+                    "points": 30,
+                    "name": "Revered",
+                    "reveal": "full",
+                    "description": "<div data-visibility=\"gm\"><p>Only major favors add points. Only moderate and major disservices take points away.</p></div>"
+                  },
+                  {
+                    "id": "t002",
+                    "points": 15,
+                    "name": "Admired",
+                    "reveal": "full",
+                    "description": "<div data-visibility=\"gm\"><p>Only major favors add points. Any disservice takes points away.</p></div>"
+                  },
+                  {
+                    "id": "t003",
+                    "points": 5,
+                    "name": "Liked",
+                    "reveal": "full",
+                    "description": "<div data-visibility=\"gm\"><p>Only moderate and major favors add points. Any disservice takes points away.</p></div>"
+                  },
+                  {
+                    "id": "t004",
+                    "points": -5,
+                    "name": "Disliked",
+                    "reveal": "full",
+                    "description": "<div data-visibility=\"gm\"><p>Any favor adds points. Only moderate and major disservices take points away.</p></div>"
+                  },
+                  {
+                    "id": "t005",
+                    "points": -15,
+                    "name": "Hated",
+                    "reveal": "full",
+                    "description": "<div data-visibility=\"gm\"><p>Any favor adds points. Only major disservices take points away.</p></div>"
+                  },
+                  {
+                    "id": "t006",
+                    "points": -30,
+                    "name": "Hunted",
+                    "reveal": "full",
+                    "description": "<div data-visibility=\"gm\"><p>Only moderate and major favors add points. Only major disservices take points away.</p></div>"
+                  }
+                ],
+                "revealed": true
+              }
+            ],
+            "modifiers": [],
+            "actions": []
+          },
+          {
+            "id": "s002",
+            "name": "The Harbor Watch",
+            "description": "<p>The town's guards, stretched thin along the waterfront.</p><div data-visibility=\"gm\"><p>Favors: clearing smugglers, returning stolen cargo. Disservices: brawls, helping the Reed Market.</p></div>",
+            "revealed": true,
+            "counters": [
+              {
+                "id": "c002",
+                "name": "Reputation Points",
+                "value": 5,
+                "direction": "both",
+                "min": -50,
+                "max": 50,
+                "thresholds": [
+                  {
+                    "id": "t007",
+                    "points": 30,
+                    "name": "Revered",
+                    "reveal": "full",
+                    "description": "<div data-visibility=\"gm\"><p>Only major favors add points. Only moderate and major disservices take points away.</p></div>"
+                  },
+                  {
+                    "id": "t008",
+                    "points": 15,
+                    "name": "Admired",
+                    "reveal": "full",
+                    "description": "<div data-visibility=\"gm\"><p>Only major favors add points. Any disservice takes points away.</p></div>"
+                  },
+                  {
+                    "id": "t009",
+                    "points": 5,
+                    "name": "Liked",
+                    "reveal": "full",
+                    "description": "<div data-visibility=\"gm\"><p>Only moderate and major favors add points. Any disservice takes points away.</p></div>"
+                  },
+                  {
+                    "id": "t010",
+                    "points": -5,
+                    "name": "Disliked",
+                    "reveal": "full",
+                    "description": "<div data-visibility=\"gm\"><p>Any favor adds points. Only moderate and major disservices take points away.</p></div>"
+                  },
+                  {
+                    "id": "t011",
+                    "points": -15,
+                    "name": "Hated",
+                    "reveal": "full",
+                    "description": "<div data-visibility=\"gm\"><p>Any favor adds points. Only major disservices take points away.</p></div>"
+                  },
+                  {
+                    "id": "t012",
+                    "points": -30,
+                    "name": "Hunted",
+                    "reveal": "full",
+                    "description": "<div data-visibility=\"gm\"><p>Only moderate and major favors add points. Only major disservices take points away.</p></div>"
+                  }
+                ],
+                "revealed": true
+              }
+            ],
+            "modifiers": [],
+            "actions": []
+          },
+          {
+            "id": "s003",
+            "name": "The Reed Market",
+            "description": "<p>Smugglers who trade from flat boats in the marsh at night.</p><div data-visibility=\"gm\"><p>Favors: carrying goods, keeping quiet. Disservices: anything that helps the Watch.</p></div>",
+            "revealed": false,
+            "counters": [
+              {
+                "id": "c003",
+                "name": "Reputation Points",
+                "value": -5,
+                "direction": "both",
+                "min": -50,
+                "max": 50,
+                "thresholds": [
+                  {
+                    "id": "t013",
+                    "points": 30,
+                    "name": "Revered",
+                    "reveal": "full",
+                    "description": "<div data-visibility=\"gm\"><p>Only major favors add points. Only moderate and major disservices take points away.</p></div>"
+                  },
+                  {
+                    "id": "t014",
+                    "points": 15,
+                    "name": "Admired",
+                    "reveal": "full",
+                    "description": "<div data-visibility=\"gm\"><p>Only major favors add points. Any disservice takes points away.</p></div>"
+                  },
+                  {
+                    "id": "t015",
+                    "points": 5,
+                    "name": "Liked",
+                    "reveal": "full",
+                    "description": "<div data-visibility=\"gm\"><p>Only moderate and major favors add points. Any disservice takes points away.</p></div>"
+                  },
+                  {
+                    "id": "t016",
+                    "points": -5,
+                    "name": "Disliked",
+                    "reveal": "full",
+                    "description": "<div data-visibility=\"gm\"><p>Any favor adds points. Only moderate and major disservices take points away.</p></div>"
+                  },
+                  {
+                    "id": "t017",
+                    "points": -15,
+                    "name": "Hated",
+                    "reveal": "full",
+                    "description": "<div data-visibility=\"gm\"><p>Any favor adds points. Only major disservices take points away.</p></div>"
+                  },
+                  {
+                    "id": "t018",
+                    "points": -30,
+                    "name": "Hunted",
+                    "reveal": "full",
+                    "description": "<div data-visibility=\"gm\"><p>Only moderate and major favors add points. Only major disservices take points away.</p></div>"
+                  }
+                ],
+                "revealed": true
+              }
+            ],
+            "modifiers": [],
+            "actions": []
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,264 @@
+{
+  "name": "The Tide Causeway (Chase: Beat the Clock)",
+  "flags": {
+    "core": {
+      "sheetClass": "pf2e-subsystems-framework.ChallengeSheet"
+    }
+  },
+  "pages": [
+    {
+      "name": "The Tide Causeway (Chase: Beat the Clock)",
+      "type": "pf2e-subsystems-framework.challenge",
+      "system": {
+        "preset": "chase",
+        "pointsName": "Chase Points",
+        "subjectLabel": "Obstacle",
+        "subjectsLabel": "Obstacles",
+        "noSubjects": "No obstacles yet.",
+        "gmNotes": "<p><strong>Example: Chase, Beat the Clock.</strong> The PCs race the tide. Built for four level-5 PCs: base DC 20, easy 18. Six obstacles and six rounds.</p><p>The causeway to the island monastery floods at high tide. The party must cross before the sea covers it. Rounds are about five minutes. There is no other side, so there is no second track: Maximum Rounds is the clock.</p><p><strong>Each roll:</strong> a success earns 1 Chase Point, a critical success 2, and a critical failure loses 1. Use + and − on the obstacle. When it is full, mark it Complete, add 1 to Party and reveal the next obstacle. Chase Points don't carry over.</p><p><strong>It ends</strong> when Party gets past obstacle 6 to the monastery gate, or round 6 ends first. Then the sea covers the causeway: the PCs who are still on it must swim (Athletics DC 20) or be swept off.</p>",
+        "rounds": {
+          "current": 0,
+          "max": 6
+        },
+        "multipleSubjects": false,
+        "counters": [
+          {
+            "id": "c001",
+            "name": "Party",
+            "value": 1,
+            "min": 0,
+            "max": 6,
+            "display": "track",
+            "revealed": true
+          }
+        ],
+        "modifiers": [],
+        "subjects": [
+          {
+            "id": "s001",
+            "name": "Seaweed Flats",
+            "description": "<p>Slick weed over the stones.</p>",
+            "revealed": true,
+            "counters": [
+              {
+                "id": "c002",
+                "name": "Chase Points",
+                "min": 0,
+                "max": 3,
+                "revealed": true
+              }
+            ],
+            "modifiers": [],
+            "actions": [
+              {
+                "id": "a001",
+                "name": "Overcome",
+                "checks": [
+                  {
+                    "id": "k001",
+                    "skill": "acrobatics",
+                    "dc": 18,
+                    "revealed": true
+                  },
+                  {
+                    "id": "k002",
+                    "skill": "survival",
+                    "dc": 20,
+                    "revealed": true
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "s002",
+            "name": "Broken Span",
+            "description": "<p>A gap where the causeway has sunk.</p>",
+            "revealed": false,
+            "counters": [
+              {
+                "id": "c003",
+                "name": "Chase Points",
+                "min": 0,
+                "max": 2,
+                "revealed": true
+              }
+            ],
+            "modifiers": [],
+            "actions": [
+              {
+                "id": "a002",
+                "name": "Overcome",
+                "checks": [
+                  {
+                    "id": "k003",
+                    "skill": "athletics",
+                    "dc": 20,
+                    "revealed": true
+                  },
+                  {
+                    "id": "k004",
+                    "skill": "crafting",
+                    "dc": 18,
+                    "revealed": true
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "s003",
+            "name": "Fog Bank",
+            "description": "<p>Fog rolls in off the sea, hiding the marker posts.</p>",
+            "revealed": false,
+            "counters": [
+              {
+                "id": "c004",
+                "name": "Chase Points",
+                "min": 0,
+                "max": 3,
+                "revealed": true
+              }
+            ],
+            "modifiers": [],
+            "actions": [
+              {
+                "id": "a003",
+                "name": "Overcome",
+                "checks": [
+                  {
+                    "id": "k005",
+                    "skill": "perception",
+                    "dc": 18,
+                    "revealed": true
+                  },
+                  {
+                    "id": "k006",
+                    "skill": "survival",
+                    "dc": 20,
+                    "revealed": true
+                  },
+                  {
+                    "id": "k007",
+                    "skill": "lore",
+                    "dc": 18,
+                    "revealed": true,
+                    "lore": "Sailing Lore"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "s004",
+            "name": "Gull Rookery",
+            "description": "<p>Thousands of nesting gulls take offence.</p>",
+            "revealed": false,
+            "counters": [
+              {
+                "id": "c005",
+                "name": "Chase Points",
+                "min": 0,
+                "max": 2,
+                "revealed": true
+              }
+            ],
+            "modifiers": [],
+            "actions": [
+              {
+                "id": "a004",
+                "name": "Overcome",
+                "checks": [
+                  {
+                    "id": "k008",
+                    "skill": "nature",
+                    "dc": 18,
+                    "revealed": true
+                  },
+                  {
+                    "id": "k009",
+                    "skill": "intimidation",
+                    "dc": 20,
+                    "revealed": true
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "s005",
+            "name": "Tidal Channel",
+            "description": "<p>The first of the tide is pouring through a channel.</p>",
+            "revealed": false,
+            "counters": [
+              {
+                "id": "c006",
+                "name": "Chase Points",
+                "min": 0,
+                "max": 3,
+                "revealed": true
+              }
+            ],
+            "modifiers": [],
+            "actions": [
+              {
+                "id": "a005",
+                "name": "Overcome",
+                "checks": [
+                  {
+                    "id": "k010",
+                    "skill": "athletics",
+                    "dc": 20,
+                    "revealed": true
+                  },
+                  {
+                    "id": "k011",
+                    "skill": "reflex",
+                    "dc": 18,
+                    "revealed": true
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "s006",
+            "name": "Monastery Stair",
+            "description": "<p>Two hundred worn steps up the cliff.</p>",
+            "revealed": false,
+            "counters": [
+              {
+                "id": "c007",
+                "name": "Chase Points",
+                "min": 0,
+                "max": 2,
+                "revealed": true
+              }
+            ],
+            "modifiers": [],
+            "actions": [
+              {
+                "id": "a006",
+                "name": "Overcome",
+                "checks": [
+                  {
+                    "id": "k012",
+                    "skill": "fortitude",
+                    "dc": 18,
+                    "revealed": true
+                  },
+                  {
+                    "id": "k013",
+                    "skill": "athletics",
+                    "dc": 20,
+                    "revealed": true
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

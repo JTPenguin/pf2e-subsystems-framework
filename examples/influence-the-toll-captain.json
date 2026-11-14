@@ -1,0 +1,211 @@
+{
+  "name": "The Toll Captain (Influence)",
+  "flags": {
+    "core": {
+      "sheetClass": "pf2e-subsystems-framework.ChallengeSheet"
+    }
+  },
+  "pages": [
+    {
+      "name": "The Toll Captain (Influence)",
+      "type": "pf2e-subsystems-framework.challenge",
+      "system": {
+        "preset": "influence",
+        "pointsName": "Influence Points",
+        "subjectLabel": "NPC",
+        "subjectsLabel": "NPCs",
+        "noSubjects": "No NPCs yet.",
+        "gmNotes": "<p><strong>Example: Influence.</strong> Built for four level-3 PCs. Captain Brenn is level 3, so her base DC is 18.</p><p>The bridge toll is doubled this week and the party's caravan is stuck in the queue. The scene lasts four rounds of about ten minutes; each PC can Discover or Influence once a round.</p><p><strong>Each roll:</strong> an Influence success earns 1 Influence Point and a critical success 2. A critical failure loses 1. Use + and − on her counter. A Discover success reveals one hidden check or modifier; reveal it with its eye.</p><p><strong>Suspicion</strong> rises by 1 whenever a Deception check fails. At 3 she orders the caravan searched, and the scene ends.</p><p><strong>At the end:</strong> the highest reached threshold is the outcome.</p>",
+        "rounds": {
+          "current": 0,
+          "max": 4
+        },
+        "multipleSubjects": true,
+        "counters": [
+          {
+            "id": "c001",
+            "name": "Suspicion",
+            "min": 0,
+            "max": 3,
+            "display": "steps",
+            "thresholds": [
+              {
+                "id": "t001",
+                "points": 3,
+                "name": "She orders the caravan searched",
+                "reveal": "hidden",
+                "description": "<p>The scene ends. The search takes the rest of the day.</p>"
+              }
+            ],
+            "revealed": false
+          }
+        ],
+        "modifiers": [],
+        "subjects": [
+          {
+            "id": "s001",
+            "name": "Captain Orsola Brenn",
+            "description": "<p>The captain of the bridge guard, grey at the temples, with a ledger under one arm.</p><div data-visibility=\"gm\"><p>She doubled the toll on the town council's orders, to pay for repairs the council never made. She resents it.</p></div>",
+            "revealed": true,
+            "counters": [
+              {
+                "id": "c002",
+                "name": "Influence Points",
+                "thresholds": [
+                  {
+                    "id": "t002",
+                    "points": 2,
+                    "name": "She lets the caravan wait off the road",
+                    "reveal": "points"
+                  },
+                  {
+                    "id": "t003",
+                    "points": 4,
+                    "name": "She charges the old toll",
+                    "reveal": "points",
+                    "description": "<p>She waves the caravan through at the old rate.</p>"
+                  },
+                  {
+                    "id": "t004",
+                    "points": 6,
+                    "name": "She waives the toll",
+                    "reveal": "hidden",
+                    "description": "<p>She waives the toll and tells the party who on the council ordered it.</p>"
+                  }
+                ],
+                "revealed": true
+              }
+            ],
+            "modifiers": [
+              {
+                "id": "m001",
+                "name": "Old Soldier",
+                "category": "Weakness",
+                "description": "<p>She served on the border. A PC who talks about their own service, or the war, finds her listening.</p>",
+                "duration": "oneTime",
+                "active": false,
+                "revealed": false,
+                "dc": {
+                  "amount": -2,
+                  "allSkills": false,
+                  "skills": [
+                    "k001"
+                  ]
+                },
+                "note": "Turn On when a PC brings up military service."
+              },
+              {
+                "id": "m002",
+                "name": "The Council's Ledger",
+                "category": "Weakness",
+                "description": "<p>She wants proof that the council pocketed the repair money. Showing her any helps every check.</p>",
+                "duration": "multiUse",
+                "active": false,
+                "revealed": false,
+                "dc": {
+                  "amount": -2,
+                  "allSkills": true,
+                  "skills": []
+                },
+                "note": "Turn On whenever the PCs show evidence about the council."
+              },
+              {
+                "id": "m003",
+                "name": "No Bribes",
+                "category": "Resistance",
+                "description": "<p>She is proud of an honest post. Any hint of a bribe hardens her.</p>",
+                "duration": "ongoing",
+                "active": true,
+                "revealed": false,
+                "dc": {
+                  "amount": 2,
+                  "allSkills": false,
+                  "skills": [
+                    "k002"
+                  ]
+                },
+                "note": "A bribe offered openly loses 1 Influence Point."
+              },
+              {
+                "id": "m004",
+                "name": "Threats",
+                "category": "Resistance",
+                "duration": "ongoing",
+                "active": true,
+                "revealed": false,
+                "dc": {
+                  "amount": 2,
+                  "allSkills": false,
+                  "skills": [
+                    "k003"
+                  ]
+                },
+                "note": "A failed Intimidation adds 1 Suspicion."
+              }
+            ],
+            "actions": [
+              {
+                "id": "a001",
+                "name": "Discover",
+                "secret": true,
+                "checks": [
+                  {
+                    "id": "k005",
+                    "skill": "perception",
+                    "dc": 16,
+                    "revealed": true
+                  },
+                  {
+                    "id": "k006",
+                    "skill": "society",
+                    "dc": 18,
+                    "revealed": true
+                  },
+                  {
+                    "id": "k004",
+                    "skill": "lore",
+                    "dc": 16,
+                    "revealed": false,
+                    "lore": "Mercantile Lore"
+                  }
+                ]
+              },
+              {
+                "id": "a002",
+                "name": "Influence",
+                "description": "<p>Each success earns 1 Influence Point; a critical success earns 2. A critical failure loses 1.</p>",
+                "checks": [
+                  {
+                    "id": "k001",
+                    "skill": "diplomacy",
+                    "dc": 18,
+                    "revealed": true
+                  },
+                  {
+                    "id": "k002",
+                    "skill": "deception",
+                    "dc": 20,
+                    "revealed": true
+                  },
+                  {
+                    "id": "k003",
+                    "skill": "intimidation",
+                    "dc": 22,
+                    "revealed": true
+                  },
+                  {
+                    "id": "k007",
+                    "skill": "lore",
+                    "dc": 16,
+                    "revealed": false,
+                    "lore": "Mercantile Lore"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

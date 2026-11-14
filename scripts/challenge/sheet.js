@@ -305,7 +305,7 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
       };
     });
     // On a both-ways track Reached follows the value, so the GM can't click it (spec 14.8).
-    // A threshold opens to show its description, secret blocks included. With no name it shows just its points.
+    // A threshold opens to show its description, GM text included. With no name it shows just its points.
     const thresholdRows = (rows, ownerId, direction) => rows.map((row) => ({
       ...row, ownerId, canChange: canChange && direction !== BOTH_WAYS,
       textShown: row.reveal === "full",

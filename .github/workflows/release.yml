@@ -1,4 +1,4 @@
-# Builds the module zip when a version tag is pushed, and attaches it and module.json to a GitHub release.
+# Builds the module zip, with the Example Challenges compendium built from examples/, when a version tag is pushed, and attaches it and module.json to a GitHub release.
 # Foundry's manifest URL points at the latest release's module.json; its download URL points at this tag's zip.
 #
 # To release: set "version" and "download" in module.json, add the version to CHANGELOG.md, commit, then
@@ -31,6 +31,9 @@ jobs:
 
       - name: Run the tests
         run: node tools/test.mjs
+
+      - name: Install the pack builder
+        run: npm install --no-save classic-level
 
       - name: Build the zip
         run: |

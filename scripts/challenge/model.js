@@ -19,7 +19,7 @@ const modifierRollFields = () => ({ amount: int(), type: choice(ROLL_MODIFIER_TY
 const modifierFields = () => ({
   id: rowId(),
   name: text(),
-  // What players see of it, as rich text like an action's description; its secret blocks are the GM's.
+  // What players see of it, as rich text like an action's description; its GM text is the GM's.
   description: new HTMLField({ required: true, blank: true, initial: "" }),
   // Free text; the preset suggests labels (spec 14.7).
   category: text(),
@@ -35,14 +35,14 @@ const modifierFields = () => ({
 
 /**
  * One shape for a subject's thresholds and a counter's. `dc` is a DC change that applies while the threshold is reached.
- * The name and description are what players see at the last reveal step; the description's secret blocks are the GM's.
+ * The name and description are what players see at the last reveal step; the description's GM text is the GM's.
  */
 const thresholdFields = () => ({ id: rowId(), points: int(1), name: text(), description: new HTMLField({ required: true, blank: true, initial: "" }), reveal: choice(THRESHOLD_REVEALS, "hidden"), reached: flag(), dc: int() });
 
 const actionFields = () => ({
   id: rowId(),
   name: text(),
-  // What the action is and how players use it, as rich text like an item's: say, its degrees of success. Everyone sees it but its secret blocks.
+  // What the action is and how players use it, as rich text like an item's: say, its degrees of success. Everyone sees it but its GM text.
   description: new HTMLField({ required: true, blank: true, initial: "" }),
   secret: flag(),
   checks: list({ id: rowId(), skill: text(), lore: text(), dc: int(15, { min: 0 }), revealed: flag(), decoy: flag() }),
@@ -75,7 +75,7 @@ const counterFields = () => ({
 const subjectFields = () => ({
   id: rowId(),
   name: text(),
-  // Who or what the subject is, as rich text like an action's description. Players see it but its secret blocks.
+  // Who or what the subject is, as rich text like an action's description. Players see it but its GM text.
   description: new HTMLField({ required: true, blank: true, initial: "" }),
   // Free text, such as Obstacle or Complication; the preset suggests labels, apart from modifier categories (spec 14.6).
   category: text(),

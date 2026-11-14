@@ -1,0 +1,179 @@
+{
+  "name": "Before the Saltworks (Infiltration Preparation)",
+  "flags": {
+    "core": {
+      "sheetClass": "pf2e-subsystems-framework.ChallengeSheet"
+    }
+  },
+  "pages": [
+    {
+      "name": "Before the Saltworks (Infiltration Preparation)",
+      "type": "pf2e-subsystems-framework.challenge",
+      "system": {
+        "preset": "preparation",
+        "pointsName": "Edge Points",
+        "subjectLabel": "Preparation",
+        "subjectsLabel": "Preparations",
+        "noSubjects": "No preparations yet.",
+        "gmNotes": "<p><strong>Example: Infiltration Preparation.</strong> The preparation for The Saltworks Office. Built for four level-4 PCs: normal DC 19, hard 21, very hard 24.</p><p>The party has three days in the salt town. Each round is one day; each PC can do one activity a day.</p><p><strong>Each roll:</strong> a success gives that PC 1 Edge Point on their row. A critical failure adds 1 Awareness Point, which players don't see.</p><p><strong>Contacts:</strong> Bribe Contact needs a contact first. The likely contact is Mira, the saltworks' cook (Gain Contact).</p><p><strong>When it ends:</strong> type each PC's Edge Points and the Awareness Points into The Saltworks Office.</p>",
+        "rounds": {
+          "current": 0,
+          "max": 3
+        },
+        "multipleSubjects": true,
+        "counters": [
+          {
+            "id": "c001",
+            "name": "Edge Points",
+            "min": 0,
+            "perPc": true,
+            "revealed": true
+          },
+          {
+            "id": "c002",
+            "name": "Awareness Points",
+            "min": 0,
+            "revealed": false
+          }
+        ],
+        "modifiers": [],
+        "subjects": [
+          {
+            "id": "s001",
+            "name": "Preparation",
+            "description": "<p>The salt town, three days before the job.</p>",
+            "revealed": true,
+            "counters": [],
+            "modifiers": [],
+            "actions": [
+              {
+                "id": "a001",
+                "name": "Bribe Contact",
+                "description": "<p>Requires a contact. A bribe of 2 gp per PC; doubling it gives a +2 circumstance bonus. DC: hard.</p>",
+                "secret": true,
+                "checks": [
+                  {
+                    "id": "k001",
+                    "skill": "deception",
+                    "dc": 21,
+                    "revealed": true
+                  },
+                  {
+                    "id": "k002",
+                    "skill": "diplomacy",
+                    "dc": 21,
+                    "revealed": true
+                  }
+                ]
+              },
+              {
+                "id": "a002",
+                "name": "Forge Documents",
+                "description": "<p>Forge a work chit to get through the gate by day. DC: hard.</p>",
+                "secret": true,
+                "checks": [
+                  {
+                    "id": "k003",
+                    "skill": "society",
+                    "dc": 21,
+                    "revealed": true
+                  }
+                ]
+              },
+              {
+                "id": "a003",
+                "name": "Gain Contact",
+                "description": "<p>Befriend someone who works at the saltworks. Mercantile Lore also works. DC: normal.</p>",
+                "checks": [
+                  {
+                    "id": "k004",
+                    "skill": "diplomacy",
+                    "dc": 19,
+                    "revealed": true
+                  },
+                  {
+                    "id": "k005",
+                    "skill": "society",
+                    "dc": 19,
+                    "revealed": true
+                  }
+                ]
+              },
+              {
+                "id": "a004",
+                "name": "Gossip",
+                "description": "<p>Hear what the taverns say about the foreman. DC: normal.</p>",
+                "secret": true,
+                "checks": [
+                  {
+                    "id": "k006",
+                    "skill": "diplomacy",
+                    "dc": 19,
+                    "revealed": true
+                  }
+                ]
+              },
+              {
+                "id": "a005",
+                "name": "Scout Location",
+                "description": "<p>Watch the yard from the dunes. DC: normal.</p>",
+                "secret": true,
+                "checks": [
+                  {
+                    "id": "k007",
+                    "skill": "perception",
+                    "dc": 19,
+                    "revealed": true
+                  },
+                  {
+                    "id": "k008",
+                    "skill": "society",
+                    "dc": 19,
+                    "revealed": true
+                  },
+                  {
+                    "id": "k009",
+                    "skill": "stealth",
+                    "dc": 19,
+                    "revealed": true
+                  }
+                ]
+              },
+              {
+                "id": "a006",
+                "name": "Secure Disguises",
+                "description": "<p>Find salt-stained work clothes. DC: normal.</p>",
+                "checks": [
+                  {
+                    "id": "k010",
+                    "skill": "crafting",
+                    "dc": 19,
+                    "revealed": true
+                  },
+                  {
+                    "id": "k011",
+                    "skill": "deception",
+                    "dc": 19,
+                    "revealed": true
+                  },
+                  {
+                    "id": "k012",
+                    "skill": "performance",
+                    "dc": 19,
+                    "revealed": true
+                  },
+                  {
+                    "id": "k013",
+                    "skill": "society",
+                    "dc": 19,
+                    "revealed": true
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

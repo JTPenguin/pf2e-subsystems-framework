@@ -1,8 +1,9 @@
 ---
 title: "Add a compendium of example challenges, one per subsystem and type"
 kind: feature
-status: ready
-waits_on: Claude
+status: done
+waits_on: none
+outcome: "Ten examples in examples/ (one per preset, one per GM Core chase type), built into the Example Challenges compendium at release; all import, open and run in Foundry."
 priority: 🔽
 blocked_by: []
 added: 2026-11-13
@@ -36,3 +37,11 @@ One example for each preset: Victory Points, Influence, Infiltration, Preparatio
 - Every preset, and every Chase type, has an example.
 - The release zip holds the pack, and each example opens and runs in Foundry from the compendium.
 - Each source file imports cleanly over a blank challenge.
+
+## Progress (2026-11-13)
+
+- Ten examples in `examples/`: one per preset, and one per chase type. GM Core has four chase types, not three: Chase Down, Run Away, Beat the Clock and Competitive Chase.
+- `tools/build-pack.mjs` builds `packs/examples` (git-ignored); `tools/build-zip.mjs` runs it and checks the pack is in the zip. The release workflow installs `classic-level` from npm first. `module.json` has the `packs` entry.
+- Checked in Foundry: all ten import over a blank challenge with every id kept; The Toll Captain starts and shows only its revealed parts on the panel; The Lantern Race's Next round moves the Harrows.
+
+- After a restart: the Example Challenges compendium lists all ten. Each opens in the challenge sheet from the compendium, imports with Import Entry, starts, advances a round (Days, Awareness and each chase's other side move) and ends.

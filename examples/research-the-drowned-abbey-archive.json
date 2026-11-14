@@ -1,0 +1,255 @@
+{
+  "name": "The Drowned Abbey Archive (Research)",
+  "flags": {
+    "core": {
+      "sheetClass": "pf2e-subsystems-framework.ChallengeSheet"
+    }
+  },
+  "pages": [
+    {
+      "name": "The Drowned Abbey Archive (Research)",
+      "type": "pf2e-subsystems-framework.challenge",
+      "system": {
+        "preset": "research",
+        "pointsName": "Research Points",
+        "subjectLabel": "Library Area",
+        "subjectsLabel": "Library Areas",
+        "noSubjects": "No library areas yet.",
+        "gmNotes": "<p><strong>Example: Research.</strong> Built for four level-3 PCs: base DC 18. The party searches a half-flooded abbey's archive for where the abbot hid the reliquary.</p><p>Each round is one day, and the party has five before the bishop's agents arrive. Each PC can research one area a day.</p><p><strong>Each roll:</strong> a success gains 1 RP and a critical success 2. Use + on the area's RP Gathered and on Research Points. A critical failure loses 1 Research Point only. Mark an area Complete when it is full.</p><p><strong>Thresholds:</strong> Research Points thresholds tick as the points rise. Reveal each one fully when it's reached.</p><p><strong>Days:</strong> the timed events are hidden thresholds on Days. Reveal each when it happens.</p>",
+        "rounds": {
+          "current": 0,
+          "max": 5
+        },
+        "multipleSubjects": true,
+        "counters": [
+          {
+            "id": "c001",
+            "name": "Research Points",
+            "min": 0,
+            "thresholds": [
+              {
+                "id": "t001",
+                "points": 5,
+                "name": "The abbot fled by boat",
+                "reveal": "points",
+                "description": "<p>The abbey's last abbot left by water the night the abbey flooded, with a sealed chest.</p>"
+              },
+              {
+                "id": "t002",
+                "points": 10,
+                "name": "The chest went to the lighthouse",
+                "reveal": "points",
+                "description": "<p>A boatman's receipt names the old lighthouse on Gull Point.</p>"
+              },
+              {
+                "id": "t003",
+                "points": 15,
+                "name": "The lighthouse key",
+                "reveal": "points",
+                "description": "<p>The lighthouse's cellar key hangs in the abbey's bell tower.</p>"
+              },
+              {
+                "id": "t004",
+                "points": 20,
+                "name": "The ward on the cellar",
+                "reveal": "points",
+                "description": "<p>The abbot warded the cellar. A prayer to the abbey's saint opens it safely.</p>"
+              }
+            ],
+            "revealed": true
+          },
+          {
+            "id": "c002",
+            "name": "Days",
+            "value": 1,
+            "min": 0,
+            "perRound": 1,
+            "display": "number",
+            "thresholds": [
+              {
+                "id": "t005",
+                "points": 3,
+                "name": "Brother Tam falls ill",
+                "reveal": "hidden",
+                "description": "<p>The archivist is too ill to help today. Hide his area for a day.</p>"
+              },
+              {
+                "id": "t006",
+                "points": 5,
+                "name": "The bishop's agents arrive",
+                "reveal": "hidden",
+                "description": "<p>Riders on the road. Research ends at the end of today.</p>"
+              }
+            ],
+            "revealed": true
+          }
+        ],
+        "modifiers": [],
+        "subjects": [
+          {
+            "id": "s001",
+            "name": "Chapter-House Shelves",
+            "description": "<p>Dry shelves of letters and accounts, mostly in good order.</p>",
+            "revealed": true,
+            "counters": [
+              {
+                "id": "c003",
+                "name": "RP Gathered",
+                "min": 0,
+                "max": 5,
+                "display": "bar",
+                "revealed": true
+              }
+            ],
+            "modifiers": [],
+            "actions": [
+              {
+                "id": "a001",
+                "name": "Research",
+                "checks": [
+                  {
+                    "id": "k001",
+                    "skill": "society",
+                    "dc": 16,
+                    "revealed": true
+                  },
+                  {
+                    "id": "k002",
+                    "skill": "religion",
+                    "dc": 18,
+                    "revealed": true
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "s002",
+            "name": "Flooded Crypt Records",
+            "description": "<p>Waterlogged boxes in knee-deep water below the chapel.</p><div data-visibility=\"gm\"><p>Critical failure: a false clue that the chest was buried in the crypt.</p></div>",
+            "revealed": true,
+            "counters": [
+              {
+                "id": "c004",
+                "name": "RP Gathered",
+                "min": 0,
+                "max": 10,
+                "display": "bar",
+                "revealed": true
+              }
+            ],
+            "modifiers": [],
+            "actions": [
+              {
+                "id": "a002",
+                "name": "Research",
+                "checks": [
+                  {
+                    "id": "k003",
+                    "skill": "athletics",
+                    "dc": 18,
+                    "revealed": true
+                  },
+                  {
+                    "id": "k004",
+                    "skill": "occultism",
+                    "dc": 20,
+                    "revealed": true
+                  },
+                  {
+                    "id": "k005",
+                    "skill": "lore",
+                    "dc": 16,
+                    "revealed": true,
+                    "lore": "Library Lore"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "s003",
+            "name": "Brother Tam",
+            "description": "<p>The last old archivist, deaf and kind, who remembers more than the books.</p>",
+            "revealed": true,
+            "counters": [
+              {
+                "id": "c005",
+                "name": "RP Gathered",
+                "min": 0,
+                "max": 5,
+                "display": "bar",
+                "revealed": true
+              }
+            ],
+            "modifiers": [],
+            "actions": [
+              {
+                "id": "a003",
+                "name": "Research",
+                "checks": [
+                  {
+                    "id": "k006",
+                    "skill": "diplomacy",
+                    "dc": 16,
+                    "revealed": true
+                  },
+                  {
+                    "id": "k007",
+                    "skill": "medicine",
+                    "dc": 18,
+                    "revealed": true
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "s004",
+            "name": "The Map Room",
+            "description": "<p>Rotting charts of the coast, pinned to every wall.</p>",
+            "revealed": true,
+            "counters": [
+              {
+                "id": "c006",
+                "name": "RP Gathered",
+                "min": 0,
+                "max": 5,
+                "display": "bar",
+                "revealed": true
+              }
+            ],
+            "modifiers": [],
+            "actions": [
+              {
+                "id": "a004",
+                "name": "Research",
+                "checks": [
+                  {
+                    "id": "k008",
+                    "skill": "survival",
+                    "dc": 18,
+                    "revealed": true
+                  },
+                  {
+                    "id": "k009",
+                    "skill": "society",
+                    "dc": 18,
+                    "revealed": true
+                  },
+                  {
+                    "id": "k010",
+                    "skill": "lore",
+                    "dc": 16,
+                    "revealed": true,
+                    "lore": "Sailing Lore"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

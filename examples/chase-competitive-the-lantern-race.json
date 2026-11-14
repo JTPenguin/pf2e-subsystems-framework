@@ -1,0 +1,294 @@
+{
+  "name": "The Lantern Race (Chase: Competitive)",
+  "flags": {
+    "core": {
+      "sheetClass": "pf2e-subsystems-framework.ChallengeSheet"
+    }
+  },
+  "pages": [
+    {
+      "name": "The Lantern Race (Chase: Competitive)",
+      "type": "pf2e-subsystems-framework.challenge",
+      "system": {
+        "preset": "chase",
+        "pointsName": "Chase Points",
+        "subjectLabel": "Obstacle",
+        "subjectsLabel": "Obstacles",
+        "noSubjects": "No obstacles yet.",
+        "gmNotes": "<p><strong>Example: Chase, Competitive.</strong> Both sides race for the same goal. Built for four level-2 PCs: base DC 16, easy 14. Six obstacles.</p><p>At the midsummer festival, teams carry a lit lantern across the town to the bell tower. The party races the Harrow brothers. Rounds are about a minute.</p><p><strong>Each round:</strong> both teams roll initiative to set who goes first. The Harrows move at a steady pace: 1 obstacle each round on Next round.</p><p><strong>Each roll:</strong> a success earns 1 Chase Point, a critical success 2, and a critical failure loses 1. Use + and − on the obstacle. When it is full, mark it Complete, add 1 to Party and reveal the next obstacle. Chase Points don't carry over.</p><p><strong>The Lantern</strong> is a counter: if a critical failure would drop the lantern, lower it by 1. At 0 it goes out, and the team must relight it at the start, losing a round.</p><p><strong>It ends</strong> when a team gets past obstacle 6 and rings the bell. A tie goes to the side that acted first that round.</p>",
+        "rounds": {
+          "current": 0,
+          "max": null
+        },
+        "multipleSubjects": false,
+        "counters": [
+          {
+            "id": "c001",
+            "name": "Party",
+            "value": 1,
+            "min": 0,
+            "max": 6,
+            "display": "track",
+            "revealed": true
+          },
+          {
+            "id": "c002",
+            "name": "The Harrows",
+            "value": 1,
+            "min": 0,
+            "max": 6,
+            "perRound": 1,
+            "display": "track",
+            "revealed": true
+          },
+          {
+            "id": "c003",
+            "name": "Lantern",
+            "value": 3,
+            "min": 0,
+            "max": 3,
+            "display": "steps",
+            "revealed": true
+          }
+        ],
+        "modifiers": [],
+        "subjects": [
+          {
+            "id": "s001",
+            "name": "Starting Line",
+            "description": "<p>Every team surges forward at once.</p>",
+            "revealed": true,
+            "counters": [
+              {
+                "id": "c004",
+                "name": "Chase Points",
+                "min": 0,
+                "max": 3,
+                "revealed": true
+              }
+            ],
+            "modifiers": [],
+            "actions": [
+              {
+                "id": "a001",
+                "name": "Overcome",
+                "checks": [
+                  {
+                    "id": "k001",
+                    "skill": "athletics",
+                    "dc": 14,
+                    "revealed": true
+                  },
+                  {
+                    "id": "k002",
+                    "skill": "acrobatics",
+                    "dc": 16,
+                    "revealed": true
+                  },
+                  {
+                    "id": "k003",
+                    "skill": "intimidation",
+                    "dc": 16,
+                    "revealed": true
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "s002",
+            "name": "Bakers' Row",
+            "description": "<p>Trays of hot pies and angry bakers.</p>",
+            "revealed": false,
+            "counters": [
+              {
+                "id": "c005",
+                "name": "Chase Points",
+                "min": 0,
+                "max": 2,
+                "revealed": true
+              }
+            ],
+            "modifiers": [],
+            "actions": [
+              {
+                "id": "a002",
+                "name": "Overcome",
+                "checks": [
+                  {
+                    "id": "k004",
+                    "skill": "diplomacy",
+                    "dc": 14,
+                    "revealed": true
+                  },
+                  {
+                    "id": "k005",
+                    "skill": "acrobatics",
+                    "dc": 16,
+                    "revealed": true
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "s003",
+            "name": "Puppet Stage",
+            "description": "<p>A puppet show draws a dense, laughing crowd.</p>",
+            "revealed": false,
+            "counters": [
+              {
+                "id": "c006",
+                "name": "Chase Points",
+                "min": 0,
+                "max": 3,
+                "revealed": true
+              }
+            ],
+            "modifiers": [],
+            "actions": [
+              {
+                "id": "a003",
+                "name": "Overcome",
+                "checks": [
+                  {
+                    "id": "k006",
+                    "skill": "performance",
+                    "dc": 14,
+                    "revealed": true
+                  },
+                  {
+                    "id": "k007",
+                    "skill": "stealth",
+                    "dc": 16,
+                    "revealed": true
+                  },
+                  {
+                    "id": "k008",
+                    "skill": "athletics",
+                    "dc": 16,
+                    "revealed": true
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "s004",
+            "name": "Mill Race",
+            "description": "<p>A narrow plank bridge over fast water.</p>",
+            "revealed": false,
+            "counters": [
+              {
+                "id": "c007",
+                "name": "Chase Points",
+                "min": 0,
+                "max": 2,
+                "revealed": true
+              }
+            ],
+            "modifiers": [],
+            "actions": [
+              {
+                "id": "a004",
+                "name": "Overcome",
+                "checks": [
+                  {
+                    "id": "k009",
+                    "skill": "acrobatics",
+                    "dc": 16,
+                    "revealed": true
+                  },
+                  {
+                    "id": "k010",
+                    "skill": "reflex",
+                    "dc": 14,
+                    "revealed": true
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "s005",
+            "name": "Chandlers' Alley",
+            "description": "<p>The Harrows' cousins wait here to trip rivals.</p>",
+            "revealed": false,
+            "counters": [
+              {
+                "id": "c008",
+                "name": "Chase Points",
+                "min": 0,
+                "max": 3,
+                "revealed": true
+              }
+            ],
+            "modifiers": [],
+            "actions": [
+              {
+                "id": "a005",
+                "name": "Overcome",
+                "checks": [
+                  {
+                    "id": "k011",
+                    "skill": "perception",
+                    "dc": 14,
+                    "revealed": true
+                  },
+                  {
+                    "id": "k012",
+                    "skill": "deception",
+                    "dc": 16,
+                    "revealed": true
+                  },
+                  {
+                    "id": "k013",
+                    "skill": "intimidation",
+                    "dc": 16,
+                    "revealed": true
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "s006",
+            "name": "Bell Tower Stair",
+            "description": "<p>A tight spiral to the bell.</p>",
+            "revealed": false,
+            "counters": [
+              {
+                "id": "c009",
+                "name": "Chase Points",
+                "min": 0,
+                "max": 2,
+                "revealed": true
+              }
+            ],
+            "modifiers": [],
+            "actions": [
+              {
+                "id": "a006",
+                "name": "Overcome",
+                "checks": [
+                  {
+                    "id": "k014",
+                    "skill": "athletics",
+                    "dc": 16,
+                    "revealed": true
+                  },
+                  {
+                    "id": "k015",
+                    "skill": "fortitude",
+                    "dc": 14,
+                    "revealed": true
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

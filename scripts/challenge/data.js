@@ -59,8 +59,8 @@ export const newModifier = () => ({
 const escapeHtml = (text) => String(text).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
 /** Plain text as a description paragraph, or "" for none. */
 export const paragraph = (text) => (String(text ?? "").trim() ? `<p>${escapeHtml(String(text).trim())}</p>` : "");
-/** Plain text as a secret block, which only the GM sees, in the shape Foundry's editor makes. "" for none. */
-export const secretBlock = (text) => (String(text ?? "").trim() ? `<section class="secret" id="secret-${id()}">${paragraph(text)}</section>` : "");
+/** Plain text as a GM Text Block, which only the GM sees, in the shape PF2e's editor makes. "" for none. */
+export const gmBlock = (text) => (String(text ?? "").trim() ? `<div data-visibility="gm">${paragraph(text)}</div>` : "");
 
 /**
  * Give every row a challenge-unique id. Entries are found by id alone, so two rows sharing one, as a hand-written import or a copied
@@ -147,8 +147,8 @@ const pointsSubject = (system, counter = {}) => ({ ...blankSubject(), counters: 
  */
 /** A new check with its skill set. */
 const checkFor = (skill) => ({ ...newCheck(), skill });
-/** A preset threshold: its name from `key`.Name, and its GM guidance from `key`.Description as a secret block. */
-const threshold = (points, key, { dc = 0, reveal = "points" } = {}) => ({ ...newThreshold(), points, dc, reveal, name: say(`${key}.Name`), description: secretBlock(say(`${key}.Description`)) });
+/** A preset threshold: its name from `key`.Name, and its GM guidance from `key`.Description as a GM Text Block. */
+const threshold = (points, key, { dc = 0, reveal = "points" } = {}) => ({ ...newThreshold(), points, dc, reveal, name: say(`${key}.Name`), description: gmBlock(say(`${key}.Description`)) });
 
 const INF = "SSM.Preset.infiltration";
 const CHASE = "SSM.Preset.chase";

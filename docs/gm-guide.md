@@ -31,6 +31,25 @@ Every challenge uses one framework, GM Core's [Victory Points](https://2e.aonprd
 | **Reputation** | Faction | No rounds. Each faction has a −50 to +50 counter with GM Core's tiers. Leave it running for the whole campaign. |
 | **Research** | Library Area | Research Points and a Days counter. Each area has an RP Gathered counter and a Research action. |
 
+### Example challenges
+
+The **Example Challenges** compendium holds one challenge for each preset, and one for each chase type in GM Core. To use one, right-click it in the compendium and choose **Import Entry**; it lands in the Subsystems tab. Each one's GM notes give the party level it is built for and how to run it.
+
+| Example | Preset | Party level |
+|---|---|---|
+| The Failing Weir | Victory Points | 3 |
+| The Toll Captain | Influence | 3 |
+| Before the Saltworks | Infiltration Preparation | 4 |
+| The Saltworks Office | Infiltration | 4 |
+| After the Pickpocket | Chase: Chase Down (the PCs pursue) | 1 |
+| Out of the Burning Granary | Chase: Run Away (the PCs flee) | 3 |
+| The Tide Causeway | Chase: Beat the Clock (no other side, a round limit) | 5 |
+| The Lantern Race | Chase: Competitive (both sides race for one goal) | 2 |
+| The Harbor Factions | Reputation | Any |
+| The Drowned Abbey Archive | Research | 3 |
+
+Before the Saltworks is the preparation for The Saltworks Office: run it first and carry its points over.
+
 Challenges have folders, can be duplicated, and can be exported and imported from the right-click menu, like any Foundry document.
 
 ## The challenge window
@@ -75,9 +94,9 @@ The body on the right holds, from top to bottom:
 | **Duration** | Modifier | One-time, Multi-use or Ongoing (see below). |
 | **Decoy** | Check, modifier | Marks false information. Players can't tell it apart; you see an orange Decoy tag. |
 
-### Descriptions and secret text
+### Descriptions and GM text
 
-Subjects, actions, thresholds and modifiers have a rich-text description that players see on the panel. To keep part of it for yourself, put it in a **secret block** (Secret, in the editor's block format list). Players never see secret blocks. Inline checks and links in a description work on the panel as they do on an item.
+Subjects, actions, thresholds and modifiers have a rich-text description that players see on the panel. To keep part of it for yourself, mark it as PF2e's **GM Text Block**, or **GM Text Inline** for a few words, from the editor's format list. Players never see GM text; you see it shaded on the sheet. Foundry's own Secret blocks are hidden from players too. Inline checks and links in a description work on the panel as they do on an item.
 
 ## Running a challenge
 

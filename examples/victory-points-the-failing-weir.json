@@ -1,0 +1,186 @@
+{
+  "name": "The Failing Weir (Victory Points)",
+  "flags": {
+    "core": {
+      "sheetClass": "pf2e-subsystems-framework.ChallengeSheet"
+    }
+  },
+  "pages": [
+    {
+      "name": "The Failing Weir (Victory Points)",
+      "type": "pf2e-subsystems-framework.challenge",
+      "system": {
+        "preset": "victory",
+        "pointsName": "Victory Points",
+        "subjectLabel": "Subject",
+        "subjectsLabel": "Subjects",
+        "noSubjects": "No subjects yet.",
+        "gmNotes": "<p><strong>Example: Victory Points.</strong> Built for four level-3 PCs. The base DC is 18, level 3's DC.</p><p>The weir above the mill village is cracking in a storm. The PCs have four rounds of about ten minutes before the flood comes. Each PC acts once a round on either subject.</p><p><strong>Each roll:</strong> a success gives the subject 1 Victory Point, a critical success 2, and a critical failure takes 1 away. Use + and − on its counter. The thresholds say what each total buys.</p><p><strong>At the end of round 4:</strong> read the reached thresholds. Shore the Weir at 6 means the weir holds. Evacuate the Mill at 5 means everyone got out. Fewer means damage or people still inside, as the threshold text says.</p><p><strong>Spare Timbers</strong> is an opportunity: turn it On when a PC searches the mill yard (no roll needed). It is spent on the next Crafting check against the weir.</p>",
+        "rounds": {
+          "current": 0,
+          "max": 4
+        },
+        "multipleSubjects": true,
+        "counters": [],
+        "modifiers": [
+          {
+            "id": "m001",
+            "name": "Driving Rain",
+            "category": "Modifier",
+            "description": "<p>Wind and rain lash the dam. Every check takes a −1 circumstance penalty.</p>",
+            "duration": "ongoing",
+            "active": true,
+            "revealed": true,
+            "dc": {
+              "amount": 0,
+              "allSkills": true,
+              "skills": []
+            },
+            "roll": {
+              "amount": -1,
+              "type": "circumstance"
+            }
+          }
+        ],
+        "subjects": [
+          {
+            "id": "s001",
+            "name": "Shore the Weir",
+            "description": "<p>Water pours through a widening crack in the old stone weir. Brace it before it gives way.</p>",
+            "revealed": true,
+            "counters": [
+              {
+                "id": "c001",
+                "name": "Victory Points",
+                "min": 0,
+                "max": 6,
+                "thresholds": [
+                  {
+                    "id": "t001",
+                    "points": 3,
+                    "name": "The crack stops widening",
+                    "reveal": "points",
+                    "description": "<p>The weir will hold for now, but the lower fields flood.</p>"
+                  },
+                  {
+                    "id": "t002",
+                    "points": 6,
+                    "name": "The weir holds",
+                    "reveal": "points",
+                    "description": "<p>The water drops back behind the stones. The village is safe.</p>"
+                  }
+                ],
+                "revealed": true
+              }
+            ],
+            "modifiers": [
+              {
+                "id": "m002",
+                "name": "Spare Timbers",
+                "category": "Modifier",
+                "description": "<p>Seasoned beams from the mill yard make the props easier to fit.</p>",
+                "duration": "oneTime",
+                "active": false,
+                "revealed": true,
+                "dc": {
+                  "amount": -2,
+                  "allSkills": false,
+                  "skills": [
+                    "k002"
+                  ]
+                },
+                "note": "Turn On when a PC searches the mill yard."
+              }
+            ],
+            "actions": [
+              {
+                "id": "a001",
+                "name": "Check",
+                "description": "<p>Brace the stones with Athletics, or shape timbers into props with Crafting. A success earns 1 Victory Point; a critical success earns 2; a critical failure loses 1.</p>",
+                "checks": [
+                  {
+                    "id": "k001",
+                    "skill": "athletics",
+                    "dc": 18,
+                    "revealed": true
+                  },
+                  {
+                    "id": "k002",
+                    "skill": "crafting",
+                    "dc": 16,
+                    "revealed": true
+                  },
+                  {
+                    "id": "k003",
+                    "skill": "lore",
+                    "dc": 16,
+                    "revealed": true,
+                    "lore": "Engineering Lore"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "s002",
+            "name": "Evacuate the Mill",
+            "description": "<p>The miller's family and their workers are still inside, arguing about what to save.</p>",
+            "revealed": true,
+            "counters": [
+              {
+                "id": "c002",
+                "name": "Victory Points",
+                "min": 0,
+                "max": 5,
+                "thresholds": [
+                  {
+                    "id": "t003",
+                    "points": 2,
+                    "name": "The children are out",
+                    "reveal": "points"
+                  },
+                  {
+                    "id": "t004",
+                    "points": 5,
+                    "name": "Everyone is out",
+                    "reveal": "points",
+                    "description": "<p>The last of the workers runs clear with the mill's ledgers.</p>"
+                  }
+                ],
+                "revealed": true
+              }
+            ],
+            "modifiers": [],
+            "actions": [
+              {
+                "id": "a002",
+                "name": "Check",
+                "description": "<p>Talk them out with Diplomacy, order them out with Intimidation, or carry them out with Athletics. A success earns 1 Victory Point; a critical success earns 2; a critical failure loses 1.</p>",
+                "checks": [
+                  {
+                    "id": "k004",
+                    "skill": "diplomacy",
+                    "dc": 18,
+                    "revealed": true
+                  },
+                  {
+                    "id": "k005",
+                    "skill": "intimidation",
+                    "dc": 18,
+                    "revealed": true
+                  },
+                  {
+                    "id": "k006",
+                    "skill": "athletics",
+                    "dc": 20,
+                    "revealed": true
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

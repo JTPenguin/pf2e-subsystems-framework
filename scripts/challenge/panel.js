@@ -42,7 +42,7 @@ function toggleRow(state, button) {
   return refreshPanel();
 }
 
-/** A subject's, action's, threshold's or modifier's description as HTML. The copy holds no secret blocks, and inline rolls and links work as on an item. */
+/** A subject's, action's, threshold's or modifier's description as HTML. The copy holds no GM text, and inline rolls and links work as on an item. */
 const enrichDescription = (html) => (html ? foundry.applications.ux.TextEditor.implementation.enrichHTML(html, { secrets: false }) : "");
 
 /** A counter's listed thresholds, each with its description as HTML and whether this user has it open. */

@@ -41,6 +41,8 @@ A challenge is a journal entry holding one page of type `pf2e-subsystems-framewo
 
 ## A complete example
 
+The [examples](../examples/) folder holds ten more complete files, one per preset and chase type. They are the source of the Example Challenges compendium.
+
 An Influence challenge with one NPC. Copy it as a starting point. Every key not shown takes its default (see the field tables).
 
 ```json
@@ -78,7 +80,7 @@ An Influence challenge with one NPC. Copy it as a starting point. Every key not 
           {
             "id": "sLadyVance000001",
             "name": "Lady Vance",
-            "description": "<p>The governor's sister, bored by everyone here.</p><section class=\"secret\" id=\"secret-ladyVanceSecret1\"><p>She is the one selling the guest list.</p></section>",
+            "description": "<p>The governor's sister, bored by everyone here.</p><div data-visibility=\"gm\"><p>She is the one selling the guest list.</p></div>",
             "revealed": true,
             "counters": [
               {
@@ -144,7 +146,7 @@ An Influence challenge with one NPC. Copy it as a starting point. Every key not 
 
 ## Field tables
 
-**Text types.** *Plain* fields are shown as typed: don't put HTML or entities in them. *HTML* fields are rich text: wrap text in `<p>` and use secret blocks (below) for GM-only parts.
+**Text types.** *Plain* fields are shown as typed: don't put HTML or entities in them. *HTML* fields are rich text: wrap text in `<p>` and use GM text (below) for GM-only parts.
 
 **Defaults.** A key left out takes the default shown. Most `revealed` defaults are `false`: a check, counter or modifier with no `revealed` key starts hidden from players. (The challenge window's + buttons start new checks and counters revealed; the file does not.)
 
@@ -173,7 +175,7 @@ An Influence challenge with one NPC. Copy it as a starting point. Every key not 
 |---|---|---|---|
 | `id` | Id | random | See [ids](#ids). |
 | `name` | Plain | `""` | |
-| `description` | HTML | `""` | Players see it on the panel, apart from secret blocks. |
+| `description` | HTML | `""` | Players see it on the panel, apart from GM text. |
 | `category` | Plain | `""` | Free text, such as `Obstacle`. Groups subjects on the sheet. |
 | `revealed` | Boolean | `false` | Whether players see the subject at all. |
 | `complete` | Boolean | `false` | |
@@ -187,7 +189,7 @@ An Influence challenge with one NPC. Copy it as a starting point. Every key not 
 |---|---|---|---|
 | `id` | Id | random | |
 | `name` | Plain | `""` | Such as `Influence`, `Discover`, `Overcome`. |
-| `description` | HTML | `""` | What the action is and its degrees of success. Players see it, apart from secret blocks. |
+| `description` | HTML | `""` | What the action is and its degrees of success. Players see it, apart from GM text. |
 | `secret` | Boolean | `false` | Rolls as a secret check, like Recall Knowledge. Use it for Discover. |
 | `checks` | List of [checks](#check) | `[]` | |
 
@@ -229,7 +231,7 @@ The same shape on the challenge and on a subject.
 | `id` | Id | random | |
 | `points` | Integer | `1` | Negative on a both-ways counter for a threshold below 0. |
 | `name` | Plain | `""` | What players see at full reveal, such as `She offers an introduction`. |
-| `description` | HTML | `""` | More detail. Players see it at full reveal, apart from secret blocks. |
+| `description` | HTML | `""` | More detail. Players see it at full reveal, apart from GM text. |
 | `reveal` | `hidden`, `points` or `full` | `hidden` | `points` shows "4 ???". `full` shows the name and description too. |
 | `reached` | Boolean | `false` | Leave it out. |
 | `dc` | Integer | `0` | A DC change while reached: to the subject's checks, or to every check for a challenge counter. |
@@ -242,7 +244,7 @@ The same shape on the challenge and on a subject.
 |---|---|---|---|
 | `id` | Id | random | |
 | `name` | Plain | `""` | |
-| `description` | HTML | `""` | Players see it, apart from secret blocks. |
+| `description` | HTML | `""` | Players see it, apart from GM text. |
 | `category` | Plain | `""` | Free text, such as `Weakness`, `Resistance`, `Opportunity`. Groups and colours the cards. |
 | `duration` | `oneTime`, `multiUse` or `ongoing` | `ongoing` | One-time is spent by the next matching roll; multi-use turns Off; ongoing stays On. |
 | `active` | Boolean | `false` | On. A weakness the PCs must find and exploit usually starts Off. |
@@ -268,15 +270,16 @@ The same shape on the challenge and on a subject.
 - Any non-empty string works. Foundry's own are 16 letters and digits; readable ones, such as `kVanceDiplomacy`, make the file easier to check.
 - Ids can be left out; Foundry makes random ones. Give ids to anything another field points at: checks named in a subject modifier's `dc.skills`.
 
-## Secret blocks
+## GM text
 
-In an HTML field, GM-only text goes in a secret block. Players never see it; the GM sees it on the sheet.
+In an HTML field, GM-only text goes in PF2e's GM text: the GM Text Block and GM Text Inline formats in PF2e's editor. Players never see it; the GM sees it shaded on the sheet.
 
 ```html
-<p>What players see.</p><section class="secret" id="secret-aUniqueId001"><p>What only the GM sees.</p></section>
+<p>What players see.</p><div data-visibility="gm"><p>What only the GM sees.</p></div>
+<p>Players see this, <span data-visibility="gm">but not this,</span> and this.</p>
 ```
 
-Give each block a unique `id` starting with `secret-`. Escape `"` as `\"` inside JSON strings.
+Escape `"` as `\"` inside JSON strings. Foundry's secret blocks (`<section class="secret">`) are also hidden from players, but they show a Reveal button on the sheet that has no use here.
 
 ## Traps
 

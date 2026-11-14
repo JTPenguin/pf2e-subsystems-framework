@@ -1,0 +1,285 @@
+{
+  "name": "After the Pickpocket (Chase: Chase Down)",
+  "flags": {
+    "core": {
+      "sheetClass": "pf2e-subsystems-framework.ChallengeSheet"
+    }
+  },
+  "pages": [
+    {
+      "name": "After the Pickpocket (Chase: Chase Down)",
+      "type": "pf2e-subsystems-framework.challenge",
+      "system": {
+        "preset": "chase",
+        "pointsName": "Chase Points",
+        "subjectLabel": "Obstacle",
+        "subjectsLabel": "Obstacles",
+        "noSubjects": "No obstacles yet.",
+        "gmNotes": "<p><strong>Example: Chase, Chase Down.</strong> The PCs pursue. Built for four level-1 PCs: base DC 15, easy 13. Six obstacles, a short chase.</p><p>A pickpocket has the party's letter of introduction and bolts through the market. Rounds are about a minute. The pickpocket acts first; the PCs act second.</p><p><strong>Each roll:</strong> a success earns 1 Chase Point, a critical success 2, and a critical failure loses 1. Use + and − on the obstacle. When it is full, mark it Complete, add 1 to Party and reveal the next obstacle. Chase Points don't carry over.</p><p><strong>The pickpocket</strong> starts one obstacle ahead and moves 1 each round on Next round.</p><p><strong>It ends</strong> when Party reaches the Pickpocket's obstacle (they're caught: run the scene), or the Pickpocket gets past obstacle 6 into the sewers.</p>",
+        "rounds": {
+          "current": 0,
+          "max": null
+        },
+        "multipleSubjects": false,
+        "counters": [
+          {
+            "id": "c001",
+            "name": "Party",
+            "value": 1,
+            "min": 0,
+            "max": 6,
+            "display": "track",
+            "revealed": true
+          },
+          {
+            "id": "c002",
+            "name": "Pickpocket",
+            "value": 2,
+            "min": 0,
+            "max": 6,
+            "perRound": 1,
+            "display": "track",
+            "revealed": true
+          }
+        ],
+        "modifiers": [],
+        "subjects": [
+          {
+            "id": "s001",
+            "name": "Crowded Market",
+            "description": "<p>Stalls and shoppers press in on every side.</p>",
+            "revealed": true,
+            "counters": [
+              {
+                "id": "c003",
+                "name": "Chase Points",
+                "min": 0,
+                "max": 3,
+                "revealed": true
+              }
+            ],
+            "modifiers": [],
+            "actions": [
+              {
+                "id": "a001",
+                "name": "Overcome",
+                "checks": [
+                  {
+                    "id": "k001",
+                    "skill": "acrobatics",
+                    "dc": 13,
+                    "revealed": true
+                  },
+                  {
+                    "id": "k002",
+                    "skill": "intimidation",
+                    "dc": 15,
+                    "revealed": true
+                  },
+                  {
+                    "id": "k003",
+                    "skill": "perception",
+                    "dc": 15,
+                    "revealed": true
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "s002",
+            "name": "Fruit Cart",
+            "description": "<p>A cart of melons blocks the alley.</p>",
+            "revealed": false,
+            "counters": [
+              {
+                "id": "c004",
+                "name": "Chase Points",
+                "min": 0,
+                "max": 2,
+                "revealed": true
+              }
+            ],
+            "modifiers": [],
+            "actions": [
+              {
+                "id": "a002",
+                "name": "Overcome",
+                "checks": [
+                  {
+                    "id": "k004",
+                    "skill": "athletics",
+                    "dc": 13,
+                    "revealed": true
+                  },
+                  {
+                    "id": "k005",
+                    "skill": "acrobatics",
+                    "dc": 15,
+                    "revealed": true
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "s003",
+            "name": "Laundry Lines",
+            "description": "<p>Wet sheets hang across the lane, hiding the way ahead.</p>",
+            "revealed": false,
+            "counters": [
+              {
+                "id": "c005",
+                "name": "Chase Points",
+                "min": 0,
+                "max": 3,
+                "revealed": true
+              }
+            ],
+            "modifiers": [],
+            "actions": [
+              {
+                "id": "a003",
+                "name": "Overcome",
+                "checks": [
+                  {
+                    "id": "k006",
+                    "skill": "perception",
+                    "dc": 13,
+                    "revealed": true
+                  },
+                  {
+                    "id": "k007",
+                    "skill": "acrobatics",
+                    "dc": 15,
+                    "revealed": true
+                  },
+                  {
+                    "id": "k008",
+                    "skill": "survival",
+                    "dc": 15,
+                    "revealed": true
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "s004",
+            "name": "Rooftop Ladder",
+            "description": "<p>The pickpocket scrambles up onto the roofs.</p>",
+            "revealed": false,
+            "counters": [
+              {
+                "id": "c006",
+                "name": "Chase Points",
+                "min": 0,
+                "max": 2,
+                "revealed": true
+              }
+            ],
+            "modifiers": [],
+            "actions": [
+              {
+                "id": "a004",
+                "name": "Overcome",
+                "checks": [
+                  {
+                    "id": "k009",
+                    "skill": "athletics",
+                    "dc": 15,
+                    "revealed": true
+                  },
+                  {
+                    "id": "k010",
+                    "skill": "acrobatics",
+                    "dc": 13,
+                    "revealed": true
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "s005",
+            "name": "Temple Procession",
+            "description": "<p>Chanting worshippers fill the street below.</p>",
+            "revealed": false,
+            "counters": [
+              {
+                "id": "c007",
+                "name": "Chase Points",
+                "min": 0,
+                "max": 3,
+                "revealed": true
+              }
+            ],
+            "modifiers": [],
+            "actions": [
+              {
+                "id": "a005",
+                "name": "Overcome",
+                "checks": [
+                  {
+                    "id": "k011",
+                    "skill": "religion",
+                    "dc": 13,
+                    "revealed": true
+                  },
+                  {
+                    "id": "k012",
+                    "skill": "diplomacy",
+                    "dc": 15,
+                    "revealed": true
+                  },
+                  {
+                    "id": "k013",
+                    "skill": "stealth",
+                    "dc": 15,
+                    "revealed": true
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "s006",
+            "name": "Canal Steps",
+            "description": "<p>Slick steps down to a sewer grate.</p>",
+            "revealed": false,
+            "counters": [
+              {
+                "id": "c008",
+                "name": "Chase Points",
+                "min": 0,
+                "max": 2,
+                "revealed": true
+              }
+            ],
+            "modifiers": [],
+            "actions": [
+              {
+                "id": "a006",
+                "name": "Overcome",
+                "checks": [
+                  {
+                    "id": "k014",
+                    "skill": "athletics",
+                    "dc": 15,
+                    "revealed": true
+                  },
+                  {
+                    "id": "k015",
+                    "skill": "reflex",
+                    "dc": 13,
+                    "revealed": true
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

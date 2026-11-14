@@ -10,7 +10,7 @@ const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 const loc = (key) => game.i18n.localize(key);
 const labels = (values, prefix) => Object.fromEntries(values.map((value) => [value, loc(`SSM.Challenge.${prefix}.${value}`)]));
 
-/** A description as a toggled editor shows it until it opens: enriched, secret blocks and all, since only the GM edits. */
+/** A description as a toggled editor shows it until it opens: enriched, GM text and all, since only the GM edits. */
 const enrichDescription = (html, page) => foundry.applications.ux.TextEditor.implementation.enrichHTML(html, { relativeTo: page, secrets: true });
 
 /** The skills a check can roll: Perception, the saves (spec 14.8), the skills, then Lore. */

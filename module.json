@@ -48,5 +48,17 @@
       "name": "English",
       "path": "lang/en.json"
     }
+  ],
+  "packs": [
+    {
+      "name": "examples",
+      "label": "Example Challenges",
+      "path": "packs/examples",
+      "type": "JournalEntry",
+      "ownership": {
+        "PLAYER": "NONE",
+        "ASSISTANT": "OWNER"
+      }
+    }
   ]
 }

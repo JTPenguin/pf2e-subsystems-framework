@@ -37,9 +37,13 @@ Then enable **PF2e Subsystems Framework** in your world's module settings.
 
 The [GM guide](docs/gm-guide.md) covers each part in more detail.
 
+## Example challenges
+
+The module ships a compendium, **Example Challenges**, with one ready-to-run challenge for each preset and one for each of GM Core's four chase types. Each one's GM notes say what party level it is built for and how to run it. The [GM guide](docs/gm-guide.md#example-challenges) lists them.
+
 ## Writing challenges as JSON
 
-A challenge can be written as a JSON file, by hand or by an AI agent, and imported into Foundry. The format is in [docs/challenge-format.md](docs/challenge-format.md).
+A challenge can be written as a JSON file, by hand or by an AI agent, and imported into Foundry. The format is in [docs/challenge-format.md](docs/challenge-format.md). The example challenges are in [examples/](examples/) in the same format.
 
 ## Notes
 
@@ -61,6 +65,12 @@ ELECTRON_RUN_AS_NODE=1 ~/foundryvtt/foundryvtt tools/check-load.mjs
 
 ```bash
 ELECTRON_RUN_AS_NODE=1 ~/foundryvtt/foundryvtt tools/build-zip.mjs
+```
+
+The zip build first builds the Example Challenges compendium (`packs/examples`, not in git) from the files in `examples/`. To build only the compendium:
+
+```bash
+ELECTRON_RUN_AS_NODE=1 ~/foundryvtt/foundryvtt tools/build-pack.mjs
 ```
 
 ## License
