@@ -177,6 +177,7 @@ An Influence challenge with one NPC. Copy it as a starting point. Every key not 
 | `name` | Plain | `""` | |
 | `description` | HTML | `""` | Players see it on the panel, apart from GM text. |
 | `category` | Plain | `""` | Free text, such as `Obstacle`. Groups subjects on the sheet. |
+| `level` | Integer or `null` | `null` | Optional. Gives the subject's checks a level-based DC (GM Core Table 10-5) for their `difficulty`. |
 | `revealed` | Boolean | `false` | Whether players see the subject at all. |
 | `complete` | Boolean | `false` | |
 | `counters` | List of [counters](#counter) | `[]` | |
@@ -201,6 +202,7 @@ An Influence challenge with one NPC. Copy it as a starting point. Every key not 
 | `skill` | Key | `""` | **Lowercase.** One of: `acrobatics`, `arcana`, `athletics`, `crafting`, `deception`, `diplomacy`, `intimidation`, `medicine`, `nature`, `occultism`, `performance`, `religion`, `society`, `stealth`, `survival`, `thievery`, `perception`, `fortitude`, `reflex`, `will`, `lore`. |
 | `lore` | Plain | `""` | The Lore's name, such as `Art Lore`, when `skill` is `lore`. Otherwise empty. |
 | `dc` | Integer, 0 or more | `15` | The base DC. |
+| `difficulty` | `very-easy`, `easy`, `normal`, `hard`, `very-hard` or `""` | `""` | A step from the subject's level-based DC. `""` means the DC was typed by hand. With a step, `dc` must match it (level DC −5, −2, 0, +2 or +5), or the step is cleared on the next save. |
 | `revealed` | Boolean | `false` | |
 | `decoy` | Boolean | `false` | False information: players can't tell it apart. |
 
@@ -252,13 +254,18 @@ The same shape on the challenge and on a subject.
 | `revealed` | Boolean | `false` | |
 | `decoy` | Boolean | `false` | |
 | `dc.amount` | Integer | `0` | The DC change, such as `-2`. `0` means none. |
-| `dc.allSkills` | Boolean | `true` | `true`: every check. `false`: only those in `dc.skills`. Applies to the roll bonus too. |
+| `dc.allSkills` | Boolean | `true` | `true`: every check. `false`: only the checks of the actions in `dc.actions`, plus those in `dc.skills`. Applies to the roll bonus too. |
+| `dc.actions` | List | `[]` | Every check of these actions, including checks added later. **Differs by level** (below). |
 | `dc.skills` | List | `[]` | **Differs by level** (below). Applies to the roll bonus too. |
 | `roll.amount` | Integer | `0` | A bonus on the roll itself, such as `1`; below 0 for a penalty. `0` means none. |
 | `roll.type` | `circumstance`, `status`, `item` or `untyped` | `circumstance` | The PF2e modifier type. PF2e's stacking rules apply. |
 | `note` | Plain | `""` | GM only: a consequence with no number, such as "she ends the conversation". |
 
-`dc.allSkills` and `dc.skills` name the checks for both the DC change and the roll bonus. A modifier with only a roll bonus still uses them; leave `dc.amount` at `0`.
+`dc.allSkills`, `dc.actions` and `dc.skills` name the checks for both the DC change and the roll bonus. A modifier with only a roll bonus still uses them; leave `dc.amount` at `0`.
+
+**`dc.actions` on a subject's modifier** lists that subject's **action ids**, such as `["kVanceDiscover1"]`.
+
+**`dc.actions` on a challenge modifier** lists **action names in lowercase**, matching an action with that name on every subject, such as `["discover"]`.
 
 **`dc.skills` on a subject's modifier** lists that subject's **check ids**, such as `["kVanceDiplomacy"]`.
 
@@ -268,7 +275,7 @@ The same shape on the challenge and on a subject.
 
 - Every `id` must be **unique within the challenge**. Two entries with the same id can reveal or change each other.
 - Any non-empty string works. Foundry's own are 16 letters and digits; readable ones, such as `kVanceDiplomacy`, make the file easier to check.
-- Ids can be left out; Foundry makes random ones. Give ids to anything another field points at: checks named in a subject modifier's `dc.skills`.
+- Ids can be left out; Foundry makes random ones. Give ids to anything another field points at: actions named in a subject modifier's `dc.actions`, and checks named in its `dc.skills`.
 
 ## GM text
 

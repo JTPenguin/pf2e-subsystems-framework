@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- A subject can have a **level**. New checks start at its level-based DC, and the action window's VE, E, N, H and VH buttons set a check's DC to Very easy through Very hard from it. Changing the level moves every check that has a step; a typed DC clears it. New `level` (subject) and `difficulty` (check) fields in the import format.
+- A modifier can apply to whole **actions**, such as every Discover check, beside single checks. On a challenge modifier, an action means every action with that name. New `dc.actions` field in the import format.
+- The panel lists each action's checks in alphabetical order, so the sheet's easiest-to-hardest order doesn't give the DCs away.
+
 ## 0.2.0
 
 - An **Example Challenges** compendium: one challenge for each preset, and one for each of GM Core's chase types (Chase Down, Run Away, Beat the Clock, Competitive). The source files are in `examples/` and import over a blank challenge.

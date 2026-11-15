@@ -18,11 +18,41 @@ export const THRESHOLD_REVEALS = ["hidden", "points", "full"];
 export const COUNTER_DISPLAYS = ["auto", "number", "bar", "steps", "track"];
 export const nextThresholdReveal = (reveal) => THRESHOLD_REVEALS[(THRESHOLD_REVEALS.indexOf(reveal) + 1) % THRESHOLD_REVEALS.length];
 
+/**
+ * DCs by level, GM Core Table 10-5, as the installed PF2e system holds them (levels −1 to 25). A subject's level gives its checks a level-based DC.
+ * Proficiency Without Level is not applied.
+ */
+const DC_BY_LEVEL = [13, 14, 15, 16, 18, 19, 20, 22, 23, 24, 26, 27, 28, 30, 31, 32, 34, 35, 36, 38, 39, 40, 42, 44, 46, 48, 50];
+/** The difficulty steps a check can take from its subject's level-based DC (GM Core Table 10-6), with PF2e's own slugs. Blank means a hand-typed DC. */
+export const DIFFICULTIES = ["very-easy", "easy", "normal", "hard", "very-hard"];
+const DIFFICULTY_ADJUST = { "very-easy": -5, easy: -2, normal: 0, hard: 2, "very-hard": 5 };
+const hasLevel = (level) => typeof level === "number" && Number.isFinite(level);
+/** The level-based DC for a level, held to the table's range, or null for no level. */
+export const levelDc = (level) => (hasLevel(level) ? DC_BY_LEVEL[Math.min(25, Math.max(-1, Math.trunc(level))) + 1] : null);
+/** The DC of a difficulty step at a level, or null with no level or no such step. */
+export const stepDc = (level, difficulty) => (levelDc(level) === null || !(difficulty in DIFFICULTY_ADJUST) ? null : levelDc(level) + DIFFICULTY_ADJUST[difficulty]);
+/** The fields a new check takes under a subject with this level: Normal at the level-based DC. None with no level, so it keeps DC 15. */
+export const levelCheckFields = (level) => (levelDc(level) === null ? {} : { dc: levelDc(level), difficulty: "normal" });
+/**
+ * Keep each check's step true to its DC: a step whose DC no longer matches was overwritten by hand, so it is cleared. With no level, steps are kept
+ * for when a level comes back. Changes the checks in place.
+ */
+export function settleDifficulties(level, checks) {
+  for (const check of checks) {
+    if (!check.difficulty) continue;
+    if (!(check.difficulty in DIFFICULTY_ADJUST)) check.difficulty = "";
+    else if (hasLevel(level) && check.dc !== stepDc(level, check.difficulty)) check.difficulty = "";
+  }
+}
+
 /** The value of a check's `skill` field when it is a Lore; the `lore` field then holds the Lore's name. */
 export const LORE = "lore";
 export const PERCEPTION = "perception";
 /** Saving throws a check row can roll, as PF2e names them (spec 14.8). */
 export const SAVES = ["fortitude", "reflex", "will"];
+
+/** An action's name as one key, used by a challenge-level entry to name actions on any subject: its name in lower case, spaces trimmed. */
+export const actionKey = (action) => String(action?.name ?? "").trim().toLowerCase();
 
 /** A check's skill as one key, used to match a challenge-level DC change: the skill, or "lore:" and the Lore's name in lower case. */
 export const skillKey = (check) => (check.skill === LORE ? `lore:${(check.lore || "").trim().toLowerCase()}` : check.skill);
@@ -43,10 +73,11 @@ const say = (key) => globalThis.game?.i18n?.localize(key) ?? key;
 
 /**
  * A modifier entry does three things, each optional: a DC change (`dc`, amount 0 for none), a typed bonus or penalty on the roll itself
- * (`roll`, amount 0 for none) and a note. `dc.allSkills` and `dc.skills` name the checks both changes apply to.
+ * (`roll`, amount 0 for none) and a note. `dc.allSkills`, `dc.actions` and `dc.skills` name the checks both changes apply to:
+ * every check, or each check of the listed actions plus the listed checks. A subject's entry names its actions by id; a challenge-level entry by `actionKey`.
  * Nothing changes points or counters but the GM's own + and − (spec 14.7).
  */
-export const newModifierDc = () => ({ amount: 0, allSkills: true, skills: [] });
+export const newModifierDc = () => ({ amount: 0, allSkills: true, actions: [], skills: [] });
 /** The PF2e modifier types a roll bonus can have. PF2e's own stacking rules then apply: the highest bonus and worst penalty of each type, except untyped. */
 export const ROLL_MODIFIER_TYPES = ["circumstance", "status", "item", "untyped"];
 export const newModifierRoll = () => ({ amount: 0, type: "circumstance" });
@@ -87,19 +118,22 @@ export function dedupeIds(source) {
     unique(subject);
     counters(subject.counters);
     const renamed = new Map();
+    const renamedActions = new Map();
     for (const action of subject.actions ?? []) {
-      unique(action);
+      const actionPair = unique(action);
+      if (actionPair) renamedActions.set(...actionPair);
       for (const check of action.checks ?? []) { const pair = unique(check); if (pair) renamed.set(...pair); }
     }
     for (const modifier of subject.modifiers ?? []) {
       unique(modifier);
       if (renamed.size && Array.isArray(modifier.dc?.skills)) modifier.dc.skills = modifier.dc.skills.map((skill) => renamed.get(skill) ?? skill);
+      if (renamedActions.size && Array.isArray(modifier.dc?.actions)) modifier.dc.actions = modifier.dc.actions.map((key) => renamedActions.get(key) ?? key);
     }
   }
   return source;
 }
 
-export const newCheck = () => ({ id: id(), skill: "society", lore: "", dc: 15, revealed: true, decoy: false });
+export const newCheck = () => ({ id: id(), skill: "society", lore: "", dc: 15, difficulty: "", revealed: true, decoy: false });
 /** `dc` is a DC change that applies while the threshold is reached. */
 export const newThreshold = () => ({ id: id(), points: 1, name: "", description: "", reveal: "hidden", reached: false, dc: 0 });
 /** A per-PC counter keeps one value per party PC in `valueBy`, starting from `value` (spec 14.8), and a GM-only note per PC in `noteBy`. */
@@ -135,7 +169,7 @@ export function setCounterNote(system, counterId, actorId, note) {
 export const newAction = () => ({ id: id(), name: "", description: "", secret: false, checks: [] });
 
 /** A subject with no counters. Complete is the GM's alone (spec 14.13). Its category is free text, as a modifier's is, from its own suggestions. */
-const blankSubject = () => ({ id: id(), name: "", description: "", category: "", revealed: false, complete: false, counters: [], modifiers: [], actions: [] });
+const blankSubject = () => ({ id: id(), name: "", description: "", category: "", level: null, revealed: false, complete: false, counters: [], modifiers: [], actions: [] });
 /** A subject with one counter named by the points name, as most presets make them. */
 const pointsSubject = (system, counter = {}) => ({ ...blankSubject(), counters: [newSubjectCounter(system, counter)] });
 
@@ -473,7 +507,10 @@ export function removeRow(system, path) {
   const gone = listName === "checks" ? [removed.id] : listName === "actions" ? removed.checks.map((check) => check.id) : [];
   if (gone.length) {
     const subject = getPath(system, keys.slice(0, 2).join("."));
-    for (const modifier of subject?.modifiers ?? []) modifier.dc.skills = modifier.dc.skills.filter((skill) => !gone.includes(skill));
+    for (const modifier of subject?.modifiers ?? []) {
+      modifier.dc.skills = modifier.dc.skills.filter((skill) => !gone.includes(skill));
+      if (listName === "actions") modifier.dc.actions = (modifier.dc.actions ?? []).filter((key) => key !== removed.id);
+    }
   }
   return true;
 }
@@ -485,7 +522,7 @@ export function setDcAmount(modifier, path, amount) {
 }
 
 /** Number fields that may be blank. A blank in any other number field keeps the old value, except in BLANK_ZERO. */
-const BLANK_ALLOWED = new Set(["counters.*.min", "counters.*.max", "rounds.max", "subjects.*.counters.*.min", "subjects.*.counters.*.max", "min", "max"]);
+const BLANK_ALLOWED = new Set(["counters.*.min", "counters.*.max", "rounds.max", "subjects.*.counters.*.min", "subjects.*.counters.*.max", "subjects.*.level", "min", "max", "level"]);
 
 /** Amounts where 0 means none, as the entry windows name them: a modifier's DC change and roll bonus, a threshold's DC change, a counter's Per round. A blank saves as 0. */
 const BLANK_ZERO = new Set(["dc.amount", "roll.amount", "dc", "perRound"]);
@@ -624,6 +661,8 @@ export const rebaseEntry = (latest, changes) => ({ ...structuredClone(latest), .
 
 /** The skill keys a challenge-level DC change can name: each skill used by a check anywhere in the challenge. */
 export const challengeSkillKeys = (system) => [...new Set(system.subjects.flatMap(allChecks).map(skillKey))];
+/** The action keys a challenge-level entry can name: each named action's `actionKey`, once, on any subject. */
+export const challengeActionKeys = (system) => [...new Set(system.subjects.flatMap((subject) => subject.actions).map(actionKey).filter(Boolean))];
 
 /**
  * Save the window's changes onto a modifier. Its DC change drops links to checks that no longer exist.
@@ -637,11 +676,13 @@ export function saveModifier(system, subjectId, modifierId, changes) {
   const subject = subjectId ? subjectById(system, subjectId) : null;
   const checks = new Set(subject ? allChecks(subject).map((check) => check.id) : challengeSkillKeys(system));
   modifier.dc.skills = modifier.dc.skills.filter((skill) => checks.has(skill));
+  const actions = new Set(subject ? subject.actions.map((action) => action.id) : challengeActionKeys(system));
+  modifier.dc.actions = (modifier.dc.actions ?? []).filter((key) => actions.has(key));
   return true;
 }
 
 /** The fields the subject, action and counter windows edit. */
-export const SUBJECT_FIELDS = ["name", "category", "revealed", "description"];
+export const SUBJECT_FIELDS = ["name", "category", "level", "revealed", "description"];
 export const ACTION_FIELDS = ["name", "secret", "description", "checks"];
 export const COUNTER_FIELDS = ["name", "value", "direction", "display", "min", "max", "perRound", "perPc", "revealed", "showThresholdList", "showThresholdMarks"];
 export const THRESHOLD_FIELDS = ["name", "points", "reveal", "dc", "reached", "description"];
@@ -665,7 +706,13 @@ export function saveSubject(system, subjectId, entryId, changes) {
   if (!subject) return false;
   const wasShown = subject.revealed;
   const before = categoryKey(subject.category);
+  const oldLevel = subject.level ?? null;
   copyFields(subject, changes, SUBJECT_FIELDS);
+  subject.level ??= null;
+  // A new level moves every check that has a step; a hand-typed DC stays as typed.
+  if (subject.level !== oldLevel && levelDc(subject.level) !== null) {
+    for (const check of allChecks(subject)) if (check.difficulty) check.dc = stepDc(subject.level, check.difficulty) ?? check.dc;
+  }
   subject.category = String(subject.category ?? "").trim();
   if (categoryKey(subject.category) !== before) system.subjects = [...system.subjects.filter((other) => other !== subject), subject];
   sortSubjects(system);
@@ -679,6 +726,7 @@ export function saveAction(system, subjectId, actionId, changes) {
   if (!action) return false;
   copyFields(action, changes, ACTION_FIELDS);
   const subject = subjectById(system, subjectId);
+  settleDifficulties(subject.level ?? null, action.checks);
   const checks = new Set(allChecks(subject).map((check) => check.id));
   for (const modifier of subject.modifiers) modifier.dc.skills = modifier.dc.skills.filter((skill) => checks.has(skill));
   return true;

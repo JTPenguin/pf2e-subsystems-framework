@@ -54,7 +54,16 @@
       <input type="checkbox" name="dc.allSkills" data-redraw {{checked modifier.dc.allSkills}}>
     </div>
     {{#unless modifier.dc.allSkills}}
-    <multi-checkbox name="dc.skills">{{selectOptions skillOptions selected=modifier.dc.skills}}</multi-checkbox>
+    {{#if hasActionOptions}}
+    <div class="form-group stacked">
+      <label data-tooltip="{{#if challengeLevel}}SSM.Challenge.ChallengeActionsHint{{else}}SSM.Challenge.ActionsHint{{/if}}">{{localize "SSM.Challenge.AppliesToActions"}}</label>
+      <multi-checkbox name="dc.actions">{{selectOptions actionOptions selected=modifier.dc.actions}}</multi-checkbox>
+    </div>
+    {{/if}}
+    <div class="form-group stacked">
+      <label>{{localize "SSM.Challenge.AppliesToChecks"}}</label>
+      <multi-checkbox name="dc.skills">{{selectOptions skillOptions selected=modifier.dc.skills}}</multi-checkbox>
+    </div>
     {{/unless}}
   </fieldset>
   <div class="form-group">

@@ -1,4 +1,4 @@
-import { LORE, PERCEPTION, SAVES, skillKey } from "./data.js";
+import { actionKey, LORE, PERCEPTION, SAVES, skillKey } from "./data.js";
 
 const loc = (key) => game.i18n.localize(key);
 
@@ -21,4 +21,10 @@ export const actionName = (action) => action.name || loc("SSM.Challenge.UnnamedA
 export function skillKeyLabel(system, key) {
   const check = system.subjects.flatMap((subject) => subject.actions.flatMap((action) => action.checks)).find((row) => skillKey(row) === key);
   return check ? skillLabel(check) : key;
+}
+
+/** The name of an action key, as a challenge-level entry names it: the first action with that key gives the name. */
+export function actionKeyLabel(system, key) {
+  const action = system.subjects.flatMap((subject) => subject.actions).find((row) => actionKey(row) === key);
+  return action ? actionName(action) : key;
 }

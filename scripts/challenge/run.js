@@ -3,22 +3,31 @@
  * A function that returns false changed nothing. No Foundry document calls, so tools/test.mjs can check them.
  */
 
-import { allCounters, BOTH_WAYS, clampTracks, findCounter, limitTrack, modifierList, nextThresholdReveal, revealOnly, skillKey } from "./data.js";
+import { actionKey, allCounters, BOTH_WAYS, clampTracks, findCounter, limitTrack, modifierList, nextThresholdReveal, revealOnly, skillKey } from "./data.js";
 
 const isOneTime = (modifier) => modifier.duration === "oneTime";
 const isMultiUse = (modifier) => modifier.duration === "multiUse";
 /**
- * Whether an entry applies to this check. One list, under `dc`, names the checks for both its DC change and its roll bonus.
- * A subject's entry names its checks by id; a challenge-level entry names skills, so it matches that skill on any subject (spec 14.7).
+ * Whether an entry applies to this check, which belongs to `action`. One target, under `dc`, names the checks for both its DC change and its roll bonus:
+ * all of them, or the checks of its listed actions plus its listed checks. A subject's entry names its actions and checks by id;
+ * a challenge-level entry names actions by name and skills by key, so it matches them on any subject (spec 14.7).
  */
-const appliesTo = ({ dc }, check, challengeLevel) => !!dc && (dc.allSkills || dc.skills.includes(challengeLevel ? skillKey(check) : check.id));
+const appliesTo = ({ dc }, check, action, challengeLevel) => {
+  if (!dc) return false;
+  if (dc.allSkills) return true;
+  if (action && (dc.actions ?? []).includes(challengeLevel ? actionKey(action) : action.id)) return true;
+  return dc.skills.includes(challengeLevel ? skillKey(check) : check.id);
+};
+/** The subject's action holding this check, found by id, since a caller may pass a copy of the check. */
+const actionOf = (subject, check) => subject.actions.find((action) => action.checks.some((row) => row.id === check.id));
 const changesDc = (modifier) => !!modifier.dc && modifier.dc.amount !== 0;
 const changesRoll = (modifier) => !!modifier.roll && modifier.roll.amount !== 0;
 
 /** The entries that apply to the next roll of this check: on and unspent, on the check's subject and on the challenge, with `has` true. Each is { modifier, challengeLevel }. */
 function liveModifiers(system, subject, check, has) {
+  const action = actionOf(subject, check);
   const live = (list, challengeLevel) => list
-    .filter((modifier) => modifier.active && !modifier.spent && has(modifier) && appliesTo(modifier, check, challengeLevel))
+    .filter((modifier) => modifier.active && !modifier.spent && has(modifier) && appliesTo(modifier, check, action, challengeLevel))
     .map((modifier) => ({ modifier, challengeLevel }));
   return [...live(subject.modifiers, false), ...live(system.modifiers ?? [], true)];
 }

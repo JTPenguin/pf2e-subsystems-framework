@@ -9,6 +9,10 @@
     <input type="text" name="category" value="{{category}}" placeholder="{{localize "SSM.Challenge.CategoryPlaceholder"}}" autocomplete="off">
   </div>
   <div class="form-group">
+    <label data-tooltip="SSM.Challenge.LevelHint">{{localize "SSM.Challenge.Level"}}</label>
+    <input type="number" step="1" name="level" value="{{level}}" placeholder="{{localize "SSM.Challenge.NoLevel"}}">
+  </div>
+  <div class="form-group">
     <label>{{localize "SSM.Challenge.Revealed"}}</label>
     <input type="checkbox" name="revealed" {{checked revealed}}>
   </div>

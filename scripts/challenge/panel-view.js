@@ -3,7 +3,7 @@
  * Every entry is built field by field: a new field on the data can't reach players until it is added here.
  */
 
-import { counterValueText, BOTH_WAYS, groupByCategory, isVisibleCheck, skillKey } from "./data.js";
+import { actionKey, counterValueText, BOTH_WAYS, groupByCategory, isVisibleCheck, skillKey } from "./data.js";
 import { counterValueOf, currentDc, rollBonuses, usedModifierIds } from "./run.js";
 
 /** Scale for a bar when the counter has no maximum and no thresholds. */
@@ -18,16 +18,26 @@ const allVisibleChecks = (system) => system.subjects.filter(isVisible).flatMap(v
 const skillName = (row) => ({ skill: row.skill, lore: row.lore });
 
 /**
- * The checks a modifier applies to, in terms players may see: { all, skills }, or null if it covers only checks they can't see.
- * One list, under `dc`, names the checks for both its DC change and its roll bonus. A check players can't see is left out without a trace.
+ * The checks a modifier applies to, in terms players may see: { all, actions, skills }, or null if it covers only checks they can't see.
+ * `actions` are the names of the listed actions with a check players can see; `skills` the listed checks outside those actions.
+ * One target, under `dc`, names the checks for both its DC change and its roll bonus. A check or action players can't see is left out without a trace.
  */
 function targetView(system, subject, dc) {
-  if (dc.allSkills) return { all: true, skills: [] };
-  // A challenge-level entry (no subject) names skills, so it shows the skills of any check players can see (spec 14.7).
-  const rows = subject ? visibleChecks(subject).filter((row) => dc.skills.includes(row.id)) : allVisibleChecks(system).filter((row) => dc.skills.includes(skillKey(row)));
-  if (!rows.length) return null;
-  // Two actions can share a skill: name it once.
-  return { all: false, skills: [...new Map(rows.map((row) => [`${row.skill}:${row.lore}`, skillName(row)])).values()] };
+  if (dc.allSkills) return { all: true, actions: [], skills: [] };
+  // A challenge-level entry (no subject) names actions by name and skills by key, so it matches them on any revealed subject (spec 14.7).
+  const listed = dc.actions ?? [];
+  const actions = (subject ? [subject] : system.subjects.filter(isVisible)).flatMap((row) => row.actions)
+    .filter((action) => listed.includes(subject ? action.id : actionKey(action)) && action.checks.some(isVisibleCheck));
+  const inActions = new Set(actions.flatMap((action) => action.checks.map((row) => row.id)));
+  const rows = (subject ? visibleChecks(subject).filter((row) => dc.skills.includes(row.id)) : allVisibleChecks(system).filter((row) => dc.skills.includes(skillKey(row))))
+    .filter((row) => !inActions.has(row.id));
+  if (!actions.length && !rows.length) return null;
+  // Two subjects can share an action name, and two actions a skill: name each once.
+  return {
+    all: false,
+    actions: [...new Map(actions.map((action) => [actionKey(action) || action.id, action.name])).values()],
+    skills: [...new Map(rows.map((row) => [`${row.skill}:${row.lore}`, skillName(row)])).values()],
+  };
 }
 
 /**
@@ -66,14 +76,20 @@ export const rollBonusText = (amount, type, format) => format(`SSM.Challenge.Rol
  * `format(key, data)` and `list(items)` are Foundry's localisation and `label(skill)` names a skill, so tools/test.mjs can pass stand-ins.
  */
 export function changeText(change, { format, list, label }) {
+  // A listed action reads "Discover checks"; an unnamed one gets the sheet's stand-in name.
+  const actionText = (name) => format("SSM.Panel.Change.actionChecks", { action: name || format("SSM.Challenge.UnnamedAction", {}) });
+  const targets = (skillText) => list([...(change.actions ?? []).map(actionText), ...change.skills.map(skillText)]);
   if (change.type === "roll") {
     const bonus = rollBonusText(change.amount, change.rollType, format);
     if (change.all) return format("SSM.Panel.Change.rollAll", { bonus });
-    return format("SSM.Panel.Change.roll", { bonus, skills: list(change.skills.map(label)) });
+    // Skills alone read "Diplomacy and Deception checks"; beside an action, each skill names its checks.
+    const skillChecks = (skill) => format("SSM.Panel.Change.skillChecks", { skill });
+    const text = change.actions?.length ? targets((skill) => skillChecks(label(skill))) : skillChecks(list(change.skills.map(label)));
+    return format("SSM.Panel.Change.roll", { bonus, targets: text });
   }
   const amount = change.amount > 0 ? `+${change.amount}` : `−${-change.amount}`;
   if (change.all) return format("SSM.Panel.Change.dcAll", { amount });
-  return format("SSM.Panel.Change.dc", { amount, skills: list(change.skills.map(label)) });
+  return format("SSM.Panel.Change.dc", { amount, targets: targets(label) });
 }
 
 /** A threshold's points as the panel prints them: a real minus sign, and on a both-ways track a + on positives, so −30 and +30 line up. */
@@ -257,6 +273,12 @@ export function buildPanelView({ name, system, party }) {
     party: party.map(({ id, name: pcName, img }) => ({ id, name: pcName, img: img || DEFAULT_PC_IMAGE, acted: system.run.acted.includes(id) })),
   };
 }
+
+/**
+ * An action's checks in A–Z order by the label players see, Lores, Perception and saves mixed in. Adventure Paths list skills easiest first,
+ * so the GM's order could give the DCs away (Justin, 2026-11-14). Rows need a `label`; the input is left alone.
+ */
+export const sortByLabel = (rows) => [...rows].sort((a, b) => a.label.localeCompare(b.label, undefined, { sensitivity: "base" }));
 
 /** The subject, action and check a panel click means, from the copy as it is now. Null if the check is hidden or the panel has gone. */
 export function findPanelRow(view, { subject: subjectId, act: actionId, id }) {

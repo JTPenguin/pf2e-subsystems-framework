@@ -12,7 +12,7 @@ const choice = (choices, initial) => new StringField({ required: true, blank: fa
 const ids = () => new ArrayField(new StringField({ blank: false }), { required: true, initial: [] });
 
 /** A modifier's DC change (spec 14.7). An amount of 0 means none. */
-const modifierDcFields = () => ({ amount: int(), allSkills: flag(true), skills: ids() });
+const modifierDcFields = () => ({ amount: int(), allSkills: flag(true), actions: ids(), skills: ids() });
 /** A modifier's bonus (or, below 0, penalty) on the roll itself, as a PF2e modifier of this type. An amount of 0 means none. It applies to the checks `dc` names. */
 const modifierRollFields = () => ({ amount: int(), type: choice(ROLL_MODIFIER_TYPES, "circumstance") });
 
@@ -45,7 +45,8 @@ const actionFields = () => ({
   // What the action is and how players use it, as rich text like an item's: say, its degrees of success. Everyone sees it but its GM text.
   description: new HTMLField({ required: true, blank: true, initial: "" }),
   secret: flag(),
-  checks: list({ id: rowId(), skill: text(), lore: text(), dc: int(15, { min: 0 }), revealed: flag(), decoy: flag() }),
+  // `difficulty` is a step from the subject's level-based DC (DIFFICULTIES), or blank for a hand-typed DC.
+  checks: list({ id: rowId(), skill: text(), lore: text(), dc: int(15, { min: 0 }), difficulty: text(), revealed: flag(), decoy: flag() }),
 });
 
 /** One shape for the challenge's counters and a subject's (spec 14.13). */
@@ -79,6 +80,8 @@ const subjectFields = () => ({
   description: new HTMLField({ required: true, blank: true, initial: "" }),
   // Free text, such as Obstacle or Complication; the preset suggests labels, apart from modifier categories (spec 14.6).
   category: text(),
+  // Blank for none. With a level, new checks start at its level-based DC and can take a difficulty step from it.
+  level: optionalInt(),
   revealed: flag(),
   // Set and cleared by the GM only (spec 14.13).
   complete: flag(),

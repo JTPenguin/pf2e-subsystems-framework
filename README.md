@@ -29,7 +29,7 @@ Then enable **PF2e Subsystems Framework** in your world's module settings.
 ## Quick start
 
 1. Open the **Subsystems** tab in the sidebar and click **Create Challenge**. Pick a preset, such as Influence.
-2. In the challenge window, click **Add NPC** (the button is named for the preset's subjects). Name the NPC, set the DCs of its checks, and add thresholds to its Influence Points counter.
+2. In the challenge window, click **Add NPC** (the button is named for the preset's subjects). Name the NPC, give it a level so its checks start at the level-based DC (then set each one Easy, Hard and so on, or type a DC), and add thresholds to its Influence Points counter.
 3. Click **Start**. The panel appears for everyone.
 4. Reveal what the players have learned with the eye buttons. The panel updates at once.
 5. Players click checks on the panel to roll. After each roll, change the points with + and −.

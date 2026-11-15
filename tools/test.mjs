@@ -137,7 +137,7 @@ test("every change type has an English string", () => {
 
 test("a modifier has one DC change and a note, both empty to start", () => {
   const m = D.newModifier();
-  assert.deepEqual([m.dc, m.note], [{ amount: 0, allSkills: true, skills: [] }, ""]);
+  assert.deepEqual([m.dc, m.note], [{ amount: 0, allSkills: true, actions: [], skills: [] }, ""]);
 });
 
 test("a dragged panel stays wholly on screen", () => {
@@ -2009,4 +2009,105 @@ test("A challenge from before participants gets an empty list on its first add",
   const system = { run: { acted: [] } };
   D.addParticipant(system, "npc1");
   assert.deepEqual(system.participants, ["npc1"]);
+});
+
+test("the panel lists an action's checks A–Z by label, Lores and Perception mixed in, whatever the GM's order", () => {
+  const rows = ["Society", "Perception", "diplomacy", "Engineering Lore", "Arcana"].map((label, n) => ({ id: `r${n}`, label }));
+  assert.deepEqual(V.sortByLabel(rows).map((row) => row.label), ["Arcana", "diplomacy", "Engineering Lore", "Perception", "Society"]);
+  assert.equal(rows[0].label, "Society");
+});
+
+/* A modifier aimed at actions */
+
+test("a modifier aimed at an action changes every check of it, checks added later too, beside its single checks", () => {
+  const s = running();
+  addModifier(s, {}, dcEffect(2, { allSkills: false, actions: [discover(s).id], skills: [influence(s).checks[0].id] }));
+  const later = { ...D.newCheck(), skill: "society" };
+  discover(s).checks.push(later);
+  assert.deepEqual([Run.currentDc(s, sub(s), discover(s).checks[0]), Run.currentDc(s, sub(s), later), Run.currentDc(s, sub(s), influence(s).checks[0]), dcOf(s)], [17, 17, 17, 15]);
+  // A copy of the check, as a roll passes, still finds its action.
+  assert.equal(Run.currentDc(s, sub(s), { ...later }), 17);
+});
+
+test("a challenge-level modifier aimed at an action name reaches that action on every subject, and only that one", () => {
+  const s = running();
+  const other = addSecondSubject(s);
+  challengeMod(s, {}, dcEffect(-2, { allSkills: false, actions: [D.actionKey(discover(s))] }));
+  assert.deepEqual([Run.currentDc(s, sub(s), discover(s).checks[0]), Run.currentDc(s, other, other.actions[0].checks[0]), Run.currentDc(s, other, other.actions[1].checks[0])], [13, 13, 15]);
+  assert.deepEqual(D.challengeActionKeys(s), [D.actionKey(discover(s)), D.actionKey(influence(s))], "each name once, across subjects");
+});
+
+test("a modifier drops an action that is gone, on save, on removal and when a copied action gets a new id", () => {
+  const s = running();
+  const m = addModifier(s, {}, dcEffect(2, { allSkills: false, actions: [discover(s).id, "gone"] }));
+  D.saveModifier(s, sub(s).id, m.id, { name: "Praise" });
+  assert.deepEqual(m.dc.actions, [discover(s).id]);
+  D.removeRow(s, "subjects.0.actions.0");
+  assert.deepEqual(m.dc.actions, []);
+  const left = D.actionKey(sub(s).actions[0]);
+  const c = challengeMod(s, {}, dcEffect(1, { allSkills: false, actions: [left, "no such action"] }));
+  D.saveModifier(s, "", c.id, {});
+  assert.deepEqual(c.dc.actions, [left]);
+  const subject = () => ({ id: "x", actions: [{ id: "act", checks: [] }], modifiers: [{ id: "mod", dc: { amount: 1, allSkills: false, actions: ["act"], skills: [] } }] });
+  const copy = { subjects: [subject(), subject()] };
+  D.dedupeIds(copy);
+  assert.deepEqual(copy.subjects.map((row) => [row.actions[0].id, row.modifiers[0].dc.actions]), [["act", ["act"]], ["act2", ["act2"]]], "a copied subject's entry follows its own action");
+});
+
+test("a card names an aimed action as its checks, leaves out its own checks from the skill list, and hides an action players can't see", () => {
+  const named = (s) => { discover(s).name = "Discover"; influence(s).name = "Influence"; };
+  const both = cardOf((s) => { named(s); return dcEffect(-2, { allSkills: false, actions: [discover(s).id], skills: [discover(s).checks[0].id, influence(s).checks[0].id] }); });
+  assert.deepEqual(both.texts, ["−2 to DCs vs Discover checks and Deception"]);
+  const roll = cardOf((s) => { named(s); return rollEffect(1, "circumstance", { allSkills: false, actions: [discover(s).id], skills: [influence(s).checks[0].id] }); });
+  assert.deepEqual(roll.texts, ["+1 circumstance to Discover checks and Deception checks"]);
+  const hidden = cardOf((s) => {
+    named(s);
+    for (const row of discover(s).checks) row.revealed = false;
+    return dcEffect(-2, { allSkills: false, actions: [discover(s).id] });
+  });
+  assert.deepEqual(hidden.card.changes, []);
+  assert.ok(!JSON.stringify(hidden.card).includes("Discover"));
+});
+
+/* A subject's level and difficulty steps */
+
+test("a level gives PF2e's level-based DC, held to levels −1 to 25, and a step adds Table 10-6's change", () => {
+  assert.deepEqual([D.levelDc(-1), D.levelDc(0), D.levelDc(3), D.levelDc(20), D.levelDc(25), D.levelDc(30), D.levelDc(-5), D.levelDc(null)], [13, 14, 18, 40, 50, 50, 13, null]);
+  assert.deepEqual(D.DIFFICULTIES.map((step) => D.stepDc(3, step)), [13, 16, 18, 20, 23]);
+  assert.equal(D.stepDc(null, "hard"), null);
+  assert.equal(D.stepDc(3, "incredibly-hard"), null);
+  assert.deepEqual([D.levelCheckFields(3), D.levelCheckFields(null)], [{ dc: 18, difficulty: "normal" }, {}]);
+});
+
+test("a check keeps its step while its DC matches it, and loses it to a hand-typed DC", () => {
+  const s = system();
+  const subject = sub(s);
+  subject.level = 3;
+  const action = influence(s);
+  const [stepped, typed, wrong] = action.checks;
+  const changes = { checks: [{ ...stepped, dc: 20, difficulty: "hard" }, { ...typed, dc: 17, difficulty: "normal" }, { ...wrong, difficulty: "nonsense" }] };
+  D.saveAction(s, subject.id, action.id, changes);
+  assert.deepEqual(action.checks.map((row) => [row.dc, row.difficulty]), [[20, "hard"], [17, ""], [15, ""]]);
+});
+
+test("a new level moves every check with a step, leaves hand-typed DCs alone, and clearing the level keeps the steps", () => {
+  const s = system();
+  const subject = sub(s);
+  D.saveSubject(s, subject.id, subject.id, { level: 3 });
+  const [hard, normal] = influence(s).checks;
+  Object.assign(hard, { dc: 20, difficulty: "hard" });
+  Object.assign(normal, { dc: 18, difficulty: "normal" });
+  const typed = influence(s).checks[2];
+  typed.dc = 12;
+  D.saveSubject(s, subject.id, subject.id, { level: 5 });
+  assert.deepEqual(influence(s).checks.map((row) => row.dc), [22, 20, 12]);
+  D.saveSubject(s, subject.id, subject.id, { level: null });
+  assert.deepEqual([subject.level, hard.dc, hard.difficulty], [null, 22, "hard"]);
+  D.saveSubject(s, subject.id, subject.id, { level: 1 });
+  assert.deepEqual(influence(s).checks.map((row) => row.dc), [17, 15, 12]);
+});
+
+test("a subject's level can be left blank in its window", () => {
+  const subject = { ...D.newSubject(system()), level: 4 };
+  assert.equal(D.mergeForm(subject, { level: null }).level, null);
 });

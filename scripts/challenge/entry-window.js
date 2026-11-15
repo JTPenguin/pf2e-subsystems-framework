@@ -1,9 +1,9 @@
 import { MODULE } from "../constants.js";
-import { actionName, skillKeyLabel, skillLabel } from "./skill-label.js";
+import { actionKeyLabel, actionName, skillKeyLabel, skillLabel } from "./skill-label.js";
 import { writeChallenge } from "./state.js";
 import { CategoryAutocomplete } from "./category-autocomplete.js";
 import { markDescriptionFields } from "./description-field.js";
-import { ACTION_FIELDS, addRow, BOTH_WAYS, categoryOrder, challengeSkillKeys, COUNTER_DISPLAYS, COUNTER_FIELDS, DIRECTIONS, DURATIONS, entryChanges, findAction, findCounter, findCounterEntry, findModifier, findSubject, findThreshold, LORE, mergeForm, MODIFIER_FIELDS, PERCEPTION, QUICK_DC_AMOUNTS, rebaseEntry, removeRow, ROLL_MODIFIER_TYPES, SAVES, saveAction, saveCounter, saveModifier, saveSubject, saveThreshold, setDcAmount, SUBJECT_FIELDS, subjectCategoryOrder, THRESHOLD_FIELDS, THRESHOLD_REVEALS } from "./data.js";
+import { ACTION_FIELDS, addRow, BOTH_WAYS, categoryOrder, challengeActionKeys, challengeSkillKeys, COUNTER_DISPLAYS, COUNTER_FIELDS, DIFFICULTIES, DIRECTIONS, DURATIONS, entryChanges, findAction, findCounter, findCounterEntry, findModifier, findSubject, findThreshold, levelCheckFields, levelDc, LORE, mergeForm, MODIFIER_FIELDS, PERCEPTION, QUICK_DC_AMOUNTS, rebaseEntry, removeRow, ROLL_MODIFIER_TYPES, SAVES, saveAction, saveCounter, saveModifier, saveSubject, saveThreshold, setDcAmount, stepDc, SUBJECT_FIELDS, subjectCategoryOrder, THRESHOLD_FIELDS, THRESHOLD_REVEALS } from "./data.js";
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
@@ -165,7 +165,22 @@ class EntryWindow extends HandlebarsApplicationMixin(ApplicationV2) {
   }
 
   static #onAddRow(event, target) {
-    return this.#editAndSave((draft) => addRow(draft, target.dataset.list));
+    return this.#editAndSave((draft) => addRow(draft, target.dataset.list, this._newRowFields(target.dataset.list)));
+  }
+
+  /** Fields a new row in this list starts with, beyond its defaults. */
+  _newRowFields(list) {
+    return {};
+  }
+
+  /** Change the draft and save it, for a subclass's own buttons. */
+  _editAndSave(change) {
+    return this.#editAndSave(change);
+  }
+
+  /** The subject this window's entry belongs to, from the page as it is now. */
+  get _subject() {
+    return this.page.toObject().system.subjects.find((candidate) => candidate.id === this.subjectId) ?? null;
   }
 
   static #onRemoveRow(event, target) {
@@ -234,11 +249,17 @@ export class ModifierWindow extends EntryWindow {
     const skillOptions = subject
       ? Object.fromEntries(subject.actions.flatMap((action) => action.checks.map((row) => [row.id, `${actionName(action)}: ${skillLabel(row)}`])))
       : Object.fromEntries(challengeSkillKeys(system).map((key) => [key, skillKeyLabel(system, key)]));
+    // Every check of a listed action, added later too. A challenge-level entry names actions by name, matching them on any subject.
+    const actionOptions = subject
+      ? Object.fromEntries(subject.actions.map((action) => [action.id, actionName(action)]))
+      : Object.fromEntries(challengeActionKeys(system).map((key) => [key, actionKeyLabel(system, key)]));
     return {
       modifier,
       descriptionHtml: await enrichDescription(modifier.description, this.page),
       challengeLevel: !subject,
       skillOptions,
+      actionOptions,
+      hasActionOptions: Object.keys(actionOptions).length > 0,
       quickDcAmounts: QUICK_DC_AMOUNTS.map((amount) => ({ amount, label: amount > 0 ? `+${amount}` : `${amount}`.replace("-", "−") })),
       choices: { durations: labels(DURATIONS, "Duration"), rollTypes: labels(ROLL_MODIFIER_TYPES, "RollType") },
     };
@@ -279,15 +300,42 @@ export class SubjectWindow extends EntryWindow {
 export class ActionWindow extends EntryWindow {
   static ENTRY = { key: "action", find: findAction, fields: ACTION_FIELDS, save: saveAction, titleKey: "SSM.Challenge.EditActionTitle", unnamed: "SSM.Challenge.UnnamedAction", goneKey: "SSM.Challenge.EntryGone" };
 
-  static DEFAULT_OPTIONS = { window: { icon: "fa-solid fa-dice-d20" } };
+  // Wider than the other windows, for the checks table's difficulty buttons.
+  static DEFAULT_OPTIONS = { position: { width: 720 }, window: { icon: "fa-solid fa-dice-d20" }, actions: { setDifficulty: ActionWindow.#onSetDifficulty } };
 
   static PARTS = { form: { template: `modules/${MODULE}/templates/challenge-action.hbs`, scrollable: [""] } };
 
+  /** A new check under a levelled subject starts at Normal, the level-based DC. */
+  _newRowFields(list) {
+    return list === "checks" ? levelCheckFields(this._subject?.level ?? null) : {};
+  }
+
+  /** A difficulty button sets its check's DC from the subject's level-based DC and remembers the step. */
+  static #onSetDifficulty(event, target) {
+    const dc = stepDc(this._subject?.level ?? null, target.dataset.step);
+    if (dc === null) return;
+    const index = Number(target.dataset.index);
+    return this._editAndSave((draft) => {
+      const check = draft.checks[index];
+      if (check) Object.assign(check, { dc, difficulty: target.dataset.step });
+    });
+  }
+
   async _entryContext(system, subject, action) {
+    const level = subject?.level ?? null;
+    const base = levelDc(level);
+    const steps = (row) => DIFFICULTIES.map((step) => ({
+      step,
+      label: loc(`SSM.Challenge.Difficulty.${step}.Short`),
+      tooltip: base === null ? loc("SSM.Challenge.DifficultyNeedsLevel") : game.i18n.format("SSM.Challenge.DifficultyTooltip", { step: loc(`SSM.Challenge.Difficulty.${step}.Name`), dc: stepDc(level, step) }),
+      active: row.difficulty === step,
+    }));
     return {
       action,
       descriptionHtml: await enrichDescription(action.description, this.page),
-      checks: action.checks.map((row, i) => ({ ...row, path: `checks.${i}`, isLore: row.skill === LORE })),
+      checks: action.checks.map((row, i) => ({ ...row, path: `checks.${i}`, index: i, isLore: row.skill === LORE, steps: steps(row) })),
+      noLevel: base === null,
+      levelText: base === null ? loc("SSM.Challenge.DifficultyNeedsLevel") : game.i18n.format("SSM.Challenge.LevelDcText", { level, dc: base }),
       choices: { skills: checkSkillChoices() },
     };
   }

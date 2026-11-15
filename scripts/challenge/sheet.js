@@ -2,7 +2,7 @@ import { MODULE } from "../constants.js";
 import { challengePage } from "../registry.js";
 import { hidePanel, panelState, takePanel } from "../panel/activation.js";
 import { participants, partyPCs } from "../party.js";
-import { actionName, skillKeyLabel, skillLabel, subjectName } from "./skill-label.js";
+import { actionKeyLabel, actionName, skillKeyLabel, skillLabel, subjectName } from "./skill-label.js";
 import { announceTriggers, writeChallenge } from "./state.js";
 import { advanceRound, canAdvanceRound, hasRounds, canUndoRound, changeCounter, counterValueOf, currentDc, cycleThresholdReveal, endRun, resetRun, restoreModifier, rollBonuses, startRun, toggleActed, toggleComplete, toggleModifier, toggleReached, toggleReveal, undoRound, usedModifierIds } from "./run.js";
 import { LINK_ROLL_ID } from "../roll-option.js";
@@ -431,13 +431,17 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
     return game.i18n.format("SSM.Challenge.RollChangeText", { bonus, skills: this.#targetText(system, subject, row.dc) });
   }
 
-  /** The checks a modifier applies to, for both its changes. A challenge-level entry (no subject) names skills by key. */
+  /** The checks a modifier applies to, for both its changes: its actions ("Discover checks"), then its single checks. A challenge-level entry (no subject) names both by key. */
   #targetText(system, subject, dc) {
     if (dc.allSkills) return loc("SSM.Challenge.AllSkills");
-    const named = subject
+    const listed = dc.actions ?? [];
+    const actions = subject
+      ? subject.actions.filter((action) => listed.includes(action.id)).map(actionName)
+      : listed.map((key) => actionKeyLabel(system, key));
+    const checks = subject
       ? subject.actions.flatMap((action) => action.checks).filter((row) => dc.skills.includes(row.id)).map(skillLabel)
       : dc.skills.map((key) => skillKeyLabel(system, key));
-    return named.join(", ");
+    return [...actions.map((action) => game.i18n.format("SSM.Panel.Change.actionChecks", { action })), ...checks].join(", ");
   }
 
   /* -------------------------------------------- */
