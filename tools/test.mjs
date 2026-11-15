@@ -1036,6 +1036,42 @@ test("a roll bonus applies to the checks the modifier names, and names a hidden 
   assert.equal(dcOf(s), 15, "a roll bonus leaves the DC alone");
 });
 
+test("a roll's DC changes name its entries and reached thresholds, and mark what players don't see", () => {
+  const s = running();
+  const shown = addModifier(s, { name: "Old Soldier", revealed: true }, dcEffect(-2));
+  addModifier(s, { name: "Secret ally" }, dcEffect(1));
+  addModifier(s, { name: "Bonus only", revealed: true }, rollEffect(1));
+  const counter = s.counters.at(-1);
+  counter.revealed = true;
+  counter.thresholds = [
+    { ...D.newThreshold(), name: "Guards", points: 1, dc: 2, reveal: "full", reached: true },
+    { ...D.newThreshold(), name: "Alarm", points: 2, dc: 1, reveal: "points", reached: true },
+    { ...D.newThreshold(), name: "Lockdown", points: 9, dc: 5, reveal: "full", reached: false },
+  ];
+  const used = Run.usedModifierIds(s, sub(s), society(s));
+  const expected = [
+    { name: "Old Soldier", amount: -2, hidden: false },
+    { name: "Secret ally", amount: 1, hidden: true },
+    { name: "Guards", amount: 2, hidden: false },
+    { name: "Alarm", amount: 1, hidden: true },
+  ];
+  assert.deepEqual(Run.rollDcChanges(s, rollAt(s, "r1", 999, { used })), expected, "a sheet or panel roll names its entries, whatever its DC");
+  Run.receiveRoll(s, rollAt(s, "r1", 999, { used }));
+  assert.deepEqual(Run.rollDcChanges(s, rollAt(s, "r1", 999, { used, isReroll: true })), expected, "a reroll still names them once spent");
+  shown.spent = false;
+  counter.revealed = false;
+  const link = Run.rollDcChanges(s, rollAt(s, "r2", dcOf(s), { used: null }));
+  assert.deepEqual(link.map((change) => [change.name, change.hidden]), [["Old Soldier", false], ["Secret ally", true], ["Guards", true], ["Alarm", true]], "a link names the live DC entries; a hidden counter's thresholds are hidden");
+  assert.deepEqual(Run.rollDcChanges(s, rollAt(s, "r3", dcOf(s) + 1, { used: null })).map((change) => change.name), ["Guards", "Alarm"], "a link at an old DC names no entries");
+});
+
+test("the DC line shows players only what they may see, and the GM everything", () => {
+  const changes = [{ name: "Old Soldier", amount: -2, hidden: false }, { name: "Secret ally", amount: 2, hidden: true }];
+  assert.deepEqual(L.dcChangeParts(changes, false), [{ text: "Old Soldier −2", hidden: false }]);
+  assert.deepEqual(L.dcChangeParts(changes, true), [{ text: "Old Soldier −2", hidden: false }, { text: "Secret ally +2", hidden: true }], "shown even though they cancel out");
+  assert.deepEqual(L.dcChangeParts(undefined, true), []);
+});
+
 test("a roll from the sheet or panel spends the entries it names, a bonus-only one too", () => {
   const s = running();
   const bonus = addModifier(s, { duration: "oneTime" }, rollEffect(1));

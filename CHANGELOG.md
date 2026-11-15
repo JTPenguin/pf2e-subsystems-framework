@@ -7,6 +7,7 @@
 - The example challenges give each subject a level and each check a difficulty step. The Toll Captain's Intimidation check is now Very hard, DC 23 (was 22).
 - Checks are listed Perception, saves, skills, then Lores, A–Z within each, on the sheet, the panel and in the windows, so an easiest-to-hardest order doesn't give the DCs away.
 - On the sheet, a modifier row shows its effect as a short tag after its name, such as "−2 DC vs Diplomacy", "−1 DC, +1 to Diplomacy, Deception" or "+2 to Overcome with Acrobatics, Athletics". Its Decoy and Duration tags line up on the right. Opening the row shows the note and description.
+- A roll's chat card names what changed its DC, under the degree of success, such as "DC: Old Soldier −2, Suspicion 4 +2", without showing the DC. Players see revealed modifiers and fully revealed thresholds; the GM sees everything, with what players don't see dimmed.
 
 ## 0.2.0
 

@@ -535,3 +535,7 @@ prose-mirror.ssm-description-field > button.toggle { right: 1rem; }
 /* With the box glow gone, every bare icon glows by its own text-shadow on hover: light on a dark red bar, orange elsewhere. */
 .ssm-sheet .ssm-block-head > button.icon:hover:not(:disabled) { text-shadow: 0 0 4px var(--text-light, #f7f3e8); }
 .ssm-sheet :is(.ssm-card-head, .ssm-subsection-head) > button.icon:hover:not(:disabled), .ssm-checks td button.icon:hover:not(:disabled) { text-shadow: 0 0 8px var(--color-shadow-primary, #ff6400); }
+
+/* The line on a roll's chat card naming what changed the DC. A change players don't see is dimmed on the GM's card. */
+.ssm-dc-changes { margin-top: 0.25rem; font-size: var(--font-size-12, 0.75rem); }
+.ssm-dc-changes .hidden-change { opacity: 0.5; font-style: italic; }

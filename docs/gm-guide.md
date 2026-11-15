@@ -133,6 +133,8 @@ On the panel, players see "−2 to DCs vs Diplomacy", "−2 to DCs vs Discover c
 
 A chat link from the sheet can't carry a roll bonus: it rolls against the changed DC but without the bonus, and it spends only modifiers that changed its DC.
 
+The roll's chat card names what changed its DC, on a line under the degree of success, such as "DC: Old Soldier −2, Suspicion 4 +2". It never shows the DC itself. Players see revealed modifiers and reached thresholds that are fully revealed on a revealed counter. You see everything; what players don't see is dimmed. A chat link's card names the modifiers only when it was rolled at the current DC. The line appears a moment after the card, once your client has read the roll.
+
 ### Several challenges
 
 Any number of challenges can run at once, such as a Reputation challenge for the whole campaign beside tonight's Influence scene. One is on the panel. Start or **Show on panel** (right-click it in the Subsystems tab) puts a challenge on the panel; the one it replaces keeps running. The **Running** button in the tab's search bar lists only running challenges.

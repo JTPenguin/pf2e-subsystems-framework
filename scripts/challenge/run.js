@@ -64,6 +64,31 @@ export const canRestoreModifier = (modifier) => !!modifier.spent;
 
 const say = (key, data) => globalThis.game?.i18n?.format(key, data) ?? key;
 
+/**
+ * What changed a roll's DC, for its chat card: [{ name, amount, hidden }], modifier entries first, then reached thresholds.
+ * Worked out on the active GM's client as the roll arrives, before it spends anything. A sheet or panel roll names its entries (`used`),
+ * so a reroll still names them after they're spent. A chat link names the live DC entries, and only if it was made at the current DC.
+ * `hidden` marks what players may not see: a hidden entry, or a threshold not fully revealed or on a hidden counter.
+ */
+export function rollDcChanges(system, roll) {
+  const target = rollTargetOf(system, roll);
+  if (!target) return [];
+  const { subject, check } = target;
+  let entries;
+  if (Array.isArray(roll.used)) {
+    const used = new Set(roll.used);
+    entries = [...subject.modifiers, ...(system.modifiers ?? [])].filter((modifier) => used.has(modifier.id) && changesDc(modifier));
+  } else {
+    entries = roll.dc !== null && roll.dc !== undefined && roll.dc === currentDc(system, subject, check)
+      ? liveDcModifiers(system, subject, check).map(({ modifier }) => modifier) : [];
+  }
+  const modifiers = entries.map((modifier) => ({ name: modifier.name || say("SSM.Challenge.UnnamedEntry"), amount: modifier.dc.amount, hidden: !modifier.revealed }));
+  const thresholds = [...system.counters, ...(subject.counters ?? [])].flatMap((counter) => counter.thresholds
+    .filter((threshold) => threshold.reached && threshold.dc)
+    .map((threshold) => ({ name: threshold.name || say("SSM.Challenge.UnnamedThreshold"), amount: threshold.dc, hidden: !counter.revealed || threshold.reveal !== "full" })));
+  return [...modifiers, ...thresholds];
+}
+
 const subjectById = (system, id) => system.subjects.find((subject) => subject.id === id);
 const allChecks = (subject) => subject.actions.flatMap((action) => action.checks);
 

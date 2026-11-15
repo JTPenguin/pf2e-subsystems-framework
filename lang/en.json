@@ -124,6 +124,8 @@
         "untyped": "{amount}"
       },
       "HiddenRollModifier": "Challenge modifier",
+      "DcChanges": "DC: {changes}",
+      "DcChangesHidden": "Players don't see this.",
       "Effect": {
         "dc": "{dc}\u00a0DC vs {targets}",
         "dcAll": "{dc}\u00a0DC on all checks",
