@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.3.0
 
 - A subject can have a **level**. New checks start at its level-based DC, and the action window's VE, E, N, H and VH buttons set a check's DC to Very easy through Very hard from it. Changing the level moves every check that has a step. A typed DC stays as typed, even when it equals a step; a faint button marks the step it equals. The subject's header shows its level. New `level` (subject) and `difficulty` (check) fields in the import format.
 - A modifier picks what it applies to from two lists, each with **Select all**: **Actions**, such as every Discover check, and **Checks**, which are skills on any of its actions. Ticking both narrows it to those skills within those actions, such as Overcome with Acrobatics. On a challenge modifier, an action means every action with that name. **Every check**, above the lists, replaces All skills and covers checks and actions added later; new modifiers start with it on. A subject modifier's checks become their skills. New `dc.all` and `dc.actions` fields in the import format; `dc.skills` holds skill keys everywhere, and `dc.allSkills` is gone (older files still import).
