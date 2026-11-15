@@ -172,6 +172,7 @@
         {{> ssmCaret action="toggleCollapse" open=(not subject.collapsed) id=subject.id}}
         {{> ssmEye subject root=../..}}
         <h3>{{subject.name}}</h3>
+        {{#if subject.levelText}}<span class="ssm-subject-level">{{subject.levelText}}</span>{{/if}}
         {{> ssmComplete subject root=../..}}
         {{> ssmRowTools kind="subjects" subject=subject.id id=subject.id name=subject.name noDelete=subject.noDelete}}
       </header>

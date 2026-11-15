@@ -33,8 +33,8 @@
             "revealed": true,
             "dc": {
               "amount": 0,
-              "allSkills": true,
-              "skills": []
+              "skills": [],
+              "all": true
             },
             "roll": {
               "amount": -1,
@@ -46,6 +46,7 @@
           {
             "id": "s001",
             "name": "Shore the Weir",
+            "level": 3,
             "description": "<p>Water pours through a widening crack in the old stone weir. Brace it before it gives way.</p>",
             "revealed": true,
             "counters": [
@@ -84,10 +85,10 @@
                 "revealed": true,
                 "dc": {
                   "amount": -2,
-                  "allSkills": false,
                   "skills": [
-                    "k002"
-                  ]
+                    "crafting"
+                  ],
+                  "all": false
                 },
                 "note": "Turn On when a PC searches the mill yard."
               }
@@ -102,18 +103,21 @@
                     "id": "k001",
                     "skill": "athletics",
                     "dc": 18,
+                    "difficulty": "normal",
                     "revealed": true
                   },
                   {
                     "id": "k002",
                     "skill": "crafting",
                     "dc": 16,
+                    "difficulty": "easy",
                     "revealed": true
                   },
                   {
                     "id": "k003",
                     "skill": "lore",
                     "dc": 16,
+                    "difficulty": "easy",
                     "revealed": true,
                     "lore": "Engineering Lore"
                   }
@@ -124,6 +128,7 @@
           {
             "id": "s002",
             "name": "Evacuate the Mill",
+            "level": 3,
             "description": "<p>The miller's family and their workers are still inside, arguing about what to save.</p>",
             "revealed": true,
             "counters": [
@@ -161,18 +166,21 @@
                     "id": "k004",
                     "skill": "diplomacy",
                     "dc": 18,
+                    "difficulty": "normal",
                     "revealed": true
                   },
                   {
                     "id": "k005",
                     "skill": "intimidation",
                     "dc": 18,
+                    "difficulty": "normal",
                     "revealed": true
                   },
                   {
                     "id": "k006",
                     "skill": "athletics",
                     "dc": 20,
+                    "difficulty": "hard",
                     "revealed": true
                   }
                 ]

@@ -56,6 +56,7 @@
           {
             "id": "s001",
             "name": "Starting Line",
+            "level": 2,
             "description": "<p>Every team surges forward at once.</p>",
             "revealed": true,
             "counters": [
@@ -77,18 +78,21 @@
                     "id": "k001",
                     "skill": "athletics",
                     "dc": 14,
+                    "difficulty": "easy",
                     "revealed": true
                   },
                   {
                     "id": "k002",
                     "skill": "acrobatics",
                     "dc": 16,
+                    "difficulty": "normal",
                     "revealed": true
                   },
                   {
                     "id": "k003",
                     "skill": "intimidation",
                     "dc": 16,
+                    "difficulty": "normal",
                     "revealed": true
                   }
                 ]
@@ -98,6 +102,7 @@
           {
             "id": "s002",
             "name": "Bakers' Row",
+            "level": 2,
             "description": "<p>Trays of hot pies and angry bakers.</p>",
             "revealed": false,
             "counters": [
@@ -119,12 +124,14 @@
                     "id": "k004",
                     "skill": "diplomacy",
                     "dc": 14,
+                    "difficulty": "easy",
                     "revealed": true
                   },
                   {
                     "id": "k005",
                     "skill": "acrobatics",
                     "dc": 16,
+                    "difficulty": "normal",
                     "revealed": true
                   }
                 ]
@@ -134,6 +141,7 @@
           {
             "id": "s003",
             "name": "Puppet Stage",
+            "level": 2,
             "description": "<p>A puppet show draws a dense, laughing crowd.</p>",
             "revealed": false,
             "counters": [
@@ -155,18 +163,21 @@
                     "id": "k006",
                     "skill": "performance",
                     "dc": 14,
+                    "difficulty": "easy",
                     "revealed": true
                   },
                   {
                     "id": "k007",
                     "skill": "stealth",
                     "dc": 16,
+                    "difficulty": "normal",
                     "revealed": true
                   },
                   {
                     "id": "k008",
                     "skill": "athletics",
                     "dc": 16,
+                    "difficulty": "normal",
                     "revealed": true
                   }
                 ]
@@ -176,6 +187,7 @@
           {
             "id": "s004",
             "name": "Mill Race",
+            "level": 2,
             "description": "<p>A narrow plank bridge over fast water.</p>",
             "revealed": false,
             "counters": [
@@ -197,12 +209,14 @@
                     "id": "k009",
                     "skill": "acrobatics",
                     "dc": 16,
+                    "difficulty": "normal",
                     "revealed": true
                   },
                   {
                     "id": "k010",
                     "skill": "reflex",
                     "dc": 14,
+                    "difficulty": "easy",
                     "revealed": true
                   }
                 ]
@@ -212,6 +226,7 @@
           {
             "id": "s005",
             "name": "Chandlers' Alley",
+            "level": 2,
             "description": "<p>The Harrows' cousins wait here to trip rivals.</p>",
             "revealed": false,
             "counters": [
@@ -233,18 +248,21 @@
                     "id": "k011",
                     "skill": "perception",
                     "dc": 14,
+                    "difficulty": "easy",
                     "revealed": true
                   },
                   {
                     "id": "k012",
                     "skill": "deception",
                     "dc": 16,
+                    "difficulty": "normal",
                     "revealed": true
                   },
                   {
                     "id": "k013",
                     "skill": "intimidation",
                     "dc": 16,
+                    "difficulty": "normal",
                     "revealed": true
                   }
                 ]
@@ -254,6 +272,7 @@
           {
             "id": "s006",
             "name": "Bell Tower Stair",
+            "level": 2,
             "description": "<p>A tight spiral to the bell.</p>",
             "revealed": false,
             "counters": [
@@ -275,12 +294,14 @@
                     "id": "k014",
                     "skill": "athletics",
                     "dc": 16,
+                    "difficulty": "normal",
                     "revealed": true
                   },
                   {
                     "id": "k015",
                     "skill": "fortitude",
                     "dc": 14,
+                    "difficulty": "easy",
                     "revealed": true
                   }
                 ]

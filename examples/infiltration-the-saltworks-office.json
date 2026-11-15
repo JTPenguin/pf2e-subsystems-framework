@@ -80,10 +80,10 @@
             "revealed": false,
             "dc": {
               "amount": -2,
-              "allSkills": false,
               "skills": [
                 "thievery"
-              ]
+              ],
+              "all": false
             },
             "note": "Reveal and turn On if a PC climbs onto the roof."
           }
@@ -92,6 +92,7 @@
           {
             "id": "s001",
             "name": "The Outer Fence",
+            "level": 4,
             "description": "<p>A spiked plank fence, eight feet high, with a gate chained shut.</p>",
             "category": "Obstacle",
             "revealed": true,
@@ -116,18 +117,21 @@
                     "id": "k002",
                     "skill": "athletics",
                     "dc": 19,
+                    "difficulty": "normal",
                     "revealed": true
                   },
                   {
                     "id": "k003",
                     "skill": "acrobatics",
                     "dc": 17,
+                    "difficulty": "easy",
                     "revealed": true
                   },
                   {
                     "id": "k004",
                     "skill": "thievery",
                     "dc": 21,
+                    "difficulty": "hard",
                     "revealed": true
                   }
                 ]
@@ -137,6 +141,7 @@
           {
             "id": "s002",
             "name": "The Evaporation Pans",
+            "level": 4,
             "description": "<p>Open salt pans under the moon, crossed by plank walkways. A watchman walks the far side.</p>",
             "category": "Obstacle",
             "revealed": false,
@@ -160,18 +165,21 @@
                     "id": "k005",
                     "skill": "stealth",
                     "dc": 19,
+                    "difficulty": "normal",
                     "revealed": true
                   },
                   {
                     "id": "k006",
                     "skill": "deception",
                     "dc": 21,
+                    "difficulty": "hard",
                     "revealed": true
                   },
                   {
                     "id": "k007",
                     "skill": "survival",
                     "dc": 17,
+                    "difficulty": "easy",
                     "revealed": true
                   }
                 ]
@@ -181,6 +189,7 @@
           {
             "id": "s003",
             "name": "The Office Door",
+            "level": 4,
             "description": "<p>A heavy door with a good lock, and the foreman's quarters above it.</p>",
             "category": "Obstacle",
             "revealed": false,
@@ -204,18 +213,21 @@
                     "id": "k001",
                     "skill": "thievery",
                     "dc": 21,
+                    "difficulty": "hard",
                     "revealed": true
                   },
                   {
                     "id": "k008",
                     "skill": "crafting",
                     "dc": 19,
+                    "difficulty": "normal",
                     "revealed": true
                   },
                   {
                     "id": "k009",
                     "skill": "stealth",
                     "dc": 21,
+                    "difficulty": "hard",
                     "revealed": true
                   }
                 ]
@@ -225,6 +237,7 @@
           {
             "id": "s004",
             "name": "The Night Clerk",
+            "level": 4,
             "description": "<p>A clerk comes back for a forgotten lamp.</p><div data-visibility=\"gm\"><p>Reveal at 5 Awareness. A failed check here adds 2 Awareness Points.</p></div>",
             "category": "Complication",
             "revealed": false,
@@ -240,18 +253,21 @@
                     "id": "k010",
                     "skill": "deception",
                     "dc": 19,
+                    "difficulty": "normal",
                     "revealed": true
                   },
                   {
                     "id": "k011",
                     "skill": "stealth",
                     "dc": 21,
+                    "difficulty": "hard",
                     "revealed": true
                   },
                   {
                     "id": "k012",
                     "skill": "diplomacy",
                     "dc": 21,
+                    "difficulty": "hard",
                     "revealed": true
                   }
                 ]
@@ -261,6 +277,7 @@
           {
             "id": "s005",
             "name": "The Dock Dog",
+            "level": 4,
             "description": "<p>The yard's mastiff has smelled something.</p><div data-visibility=\"gm\"><p>Reveal at 10 Awareness. A failure adds 1 Awareness Point; a critical failure means it barks: add 3.</p></div>",
             "category": "Complication",
             "revealed": false,
@@ -276,18 +293,21 @@
                     "id": "k013",
                     "skill": "nature",
                     "dc": 17,
+                    "difficulty": "easy",
                     "revealed": true
                   },
                   {
                     "id": "k014",
                     "skill": "intimidation",
                     "dc": 19,
+                    "difficulty": "normal",
                     "revealed": true
                   },
                   {
                     "id": "k015",
                     "skill": "stealth",
                     "dc": 21,
+                    "difficulty": "hard",
                     "revealed": true
                   }
                 ]

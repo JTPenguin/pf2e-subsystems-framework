@@ -90,7 +90,7 @@ The body on the right holds, from top to bottom:
 | **Display** | Counter | How players see it: Auto, Number, Bar, Steps or Track. |
 | **Thresholds list / Threshold marks** | Counter | Turn off the list under the counter, or the marks on its bar, separately. |
 | **Level** | Subject | Optional. New checks start at the level-based DC (GM Core Table 10-5). Blank: new checks start at DC 15. |
-| **Difficulty** | Check, in the action window | VE, E, N, H and VH set the DC to the subject's level-based DC −5, −2, 0, +2 or +5, and the check remembers the step. Change the subject's level and every check with a step moves with it. Typing a DC by hand clears the step. The buttons need the subject to have a level. |
+| **Difficulty** | Check, in the action window | VE, E, N, H and VH set the DC to the subject's level-based DC −5, −2, 0, +2 or +5, and the check remembers the step. Change the subject's level and every check with a step moves with it. Typing a DC by hand clears the step and keeps the DC fixed, even if it equals a step; that step's button gets a faint dashed mark. The buttons need the subject to have a level. The subject's header on the sheet shows its level. |
 | **DC change** | Threshold | Applies while the threshold is reached: to the subject's checks, or to every check for a challenge counter. |
 | **Secret** | Action | Rolls its checks as secret checks, like Recall Knowledge. |
 | **Duration** | Modifier | One-time, Multi-use or Ongoing (see below). |
@@ -125,7 +125,7 @@ A modifier is **On** or **Off**. Its colour stripe shows only while it's On.
 | **Multi-use** | It turns Off. Turn it On again the next time a PC exploits it. |
 | **Ongoing** | Nothing. It stays On until you turn it Off. |
 
-A modifier can change the DC, give a **roll bonus**, or both. A roll bonus is a PF2e modifier with a type (circumstance, status, item or untyped), so PF2e's stacking rules apply and players see it in the roll's breakdown. Below 0 it is a penalty. Both changes apply to all skills, or to what you pick from one list: whole **actions**, single **checks**, or both. An action covers every check under it, including checks you add later. On a challenge modifier, an action means every action with that name on any subject, such as every NPC's Discover.
+A modifier can change the DC, give a **roll bonus**, or both. A roll bonus is a PF2e modifier with a type (circumstance, status, item or untyped), so PF2e's stacking rules apply and players see it in the roll's breakdown. Below 0 it is a penalty. Both changes apply to every check when **Every check** is ticked, including checks and actions you add later. A new modifier starts with it ticked. Otherwise they apply to what you tick in two lists, each with a **Select all** button that ticks what exists now. **Actions** covers every check under a ticked action, including checks you add later. **Checks** lists skills (Perception, saves, skills, then Lores): a ticked skill covers every check of it, in any action. On a challenge modifier, an action means every action with that name on any subject, such as every NPC's Discover, and a skill means that skill on any subject. A modifier with nothing ticked changes nothing.
 
 On the panel, players see "−2 to DCs vs Diplomacy", "−2 to DCs vs Discover checks" or "+1 circumstance to Diplomacy checks", never a DC. A change on hidden skills only is left out. A hidden modifier's bonus shows in the roll breakdown as "Challenge modifier", without its name. A modifier's **Note** is for you; players see its description.
 
@@ -145,7 +145,7 @@ Any number of challenges can run at once, such as a Reputation challenge for the
 
 A world setting, **Panel position**, picks where the panel starts: top centre, top left or top right.
 
-The panel lists each action's checks in alphabetical order, whatever order you entered them in. Adventures often list skills from easiest to hardest, so the sheet's order could give the DCs away.
+Checks are listed in one order everywhere: Perception, then saves, then skills, then Lores, A–Z within each, whatever order you entered them in. Adventures often list skills from easiest to hardest, so that order could give the DCs away. The action window sorts its checks when it opens and leaves them in place while you edit.
 
 ## Good to know
 

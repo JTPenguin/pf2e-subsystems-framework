@@ -54,8 +54,20 @@ export const SAVES = ["fortitude", "reflex", "will"];
 /** An action's name as one key, used by a challenge-level entry to name actions on any subject: its name in lower case, spaces trimmed. */
 export const actionKey = (action) => String(action?.name ?? "").trim().toLowerCase();
 
-/** A check's skill as one key, used to match a challenge-level DC change: the skill, or "lore:" and the Lore's name in lower case. */
+/** A check's skill as one key, as a modifier names the checks it applies to: the skill, or "lore:" and the Lore's name in lower case. */
 export const skillKey = (check) => (check.skill === LORE ? `lore:${(check.lore || "").trim().toLowerCase()}` : check.skill);
+/** The skill a skill key names: LORE for any Lore. */
+export const keySkill = (key) => (String(key).startsWith("lore:") ? LORE : key);
+
+/** Where a skill sorts: Perception, then the saves, then the skills, then the Lores (Justin, 2026-11-15). */
+const skillGroup = (skill) => (skill === PERCEPTION ? 0 : SAVES.includes(skill) ? 1 : skill === LORE ? 3 : 2);
+/**
+ * Rows in check order: Perception, saves, skills, Lores, A–Z by name within each. `labelOf` names a row; `skillOf` gives its skill
+ * (a check's own by default; keySkill for skill keys). A new array; the input is left alone. The panel never shows the GM's order,
+ * which may run easiest first (Justin, 2026-11-14).
+ */
+export const sortChecks = (rows, labelOf, skillOf = (row) => row.skill) => [...rows].sort((a, b) =>
+  skillGroup(skillOf(a)) - skillGroup(skillOf(b)) || String(labelOf(a)).localeCompare(String(labelOf(b)), undefined, { sensitivity: "base" }));
 
 /**
  * Modifier categories (spec 14.7). A category is free text; two labels that differ only in case or spaces are one category.
@@ -73,11 +85,12 @@ const say = (key) => globalThis.game?.i18n?.localize(key) ?? key;
 
 /**
  * A modifier entry does three things, each optional: a DC change (`dc`, amount 0 for none), a typed bonus or penalty on the roll itself
- * (`roll`, amount 0 for none) and a note. `dc.allSkills`, `dc.actions` and `dc.skills` name the checks both changes apply to:
- * every check, or each check of the listed actions plus the listed checks. A subject's entry names its actions by id; a challenge-level entry by `actionKey`.
+ * (`roll`, amount 0 for none) and a note. `dc.all`, `dc.actions` and `dc.skills` name the checks both changes apply to: every check, checks added
+ * later too; or each check of the listed actions, plus each check of a listed skill (by `skillKey`). A subject's entry names its actions by id; a challenge-level entry by `actionKey`.
  * Nothing changes points or counters but the GM's own + and − (spec 14.7).
  */
-export const newModifierDc = () => ({ amount: 0, allSkills: true, actions: [], skills: [] });
+/** A new modifier applies to every check until the GM narrows it (Justin, 2026-11-15). */
+export const newModifierDc = () => ({ amount: 0, all: true, actions: [], skills: [] });
 /** The PF2e modifier types a roll bonus can have. PF2e's own stacking rules then apply: the highest bonus and worst penalty of each type, except untyped. */
 export const ROLL_MODIFIER_TYPES = ["circumstance", "status", "item", "untyped"];
 export const newModifierRoll = () => ({ amount: 0, type: "circumstance" });
@@ -96,7 +109,7 @@ export const gmBlock = (text) => (String(text ?? "").trim() ? `<div data-visibil
 /**
  * Give every row a challenge-unique id. Entries are found by id alone, so two rows sharing one, as a hand-written import or a copied
  * subject can hold, would reveal or change each other. A repeat gets its id plus a number, the same on every client and every load,
- * so nothing random reaches the DOM. A subject modifier's DC change names its subject's checks by id, so it follows that subject's renames.
+ * so nothing random reaches the DOM. A subject modifier's DC change names its subject's actions by id, so it follows that subject's renames.
  * Changes the challenge's source in place.
  */
 export function dedupeIds(source) {
@@ -117,19 +130,43 @@ export function dedupeIds(source) {
   for (const subject of source?.subjects ?? []) {
     unique(subject);
     counters(subject.counters);
-    const renamed = new Map();
     const renamedActions = new Map();
     for (const action of subject.actions ?? []) {
       const actionPair = unique(action);
       if (actionPair) renamedActions.set(...actionPair);
-      for (const check of action.checks ?? []) { const pair = unique(check); if (pair) renamed.set(...pair); }
+      for (const check of action.checks ?? []) unique(check);
     }
     for (const modifier of subject.modifiers ?? []) {
       unique(modifier);
-      if (renamed.size && Array.isArray(modifier.dc?.skills)) modifier.dc.skills = modifier.dc.skills.map((skill) => renamed.get(skill) ?? skill);
       if (renamedActions.size && Array.isArray(modifier.dc?.actions)) modifier.dc.actions = modifier.dc.actions.map((key) => renamedActions.get(key) ?? key);
     }
   }
+  return source;
+}
+
+/**
+ * Bring a modifier's targets from the old shape (before 0.3.0): `dc.allSkills` became `dc.all`, and a subject's entry named its checks by id,
+ * where it now names their skill keys (Justin, 2026-11-15). A DC change with no `dc.all`, as a hand-written import can have, gets Every check
+ * only if it lists no actions or skills, so listed targets keep meaning what they say. Run before dedupeIds,
+ * while check ids still match. Changes the challenge's source in place.
+ */
+export function migrateModifierTargets(source) {
+  const actionsOf = (subject) => (Array.isArray(subject?.actions) ? subject.actions : []);
+  const fix = (modifier, subject) => {
+    const dc = modifier?.dc;
+    if (!dc || typeof dc !== "object") return;
+    if (subject && Array.isArray(dc.skills)) {
+      const keys = new Map(actionsOf(subject).flatMap((action) => action.checks ?? []).map((check) => [check.id, skillKey(check)]));
+      dc.skills = [...new Set(dc.skills.map((skill) => keys.get(skill) ?? skill))];
+    }
+    if ("allSkills" in dc) {
+      dc.all = dc.allSkills !== false;
+      delete dc.allSkills;
+    }
+    if (!("all" in dc)) dc.all = !(dc.actions?.length || dc.skills?.length);
+  };
+  for (const modifier of source?.modifiers ?? []) fix(modifier, null);
+  for (const subject of Array.isArray(source?.subjects) ? source.subjects : []) for (const modifier of subject.modifiers ?? []) fix(modifier, subject);
   return source;
 }
 
@@ -504,13 +541,10 @@ export function removeRow(system, path) {
   if (!Array.isArray(list) || !list[index]) return false;
   if (KEEP_ONE.has(listName) && list.length === 1) return false;
   const [removed] = list.splice(index, 1);
-  const gone = listName === "checks" ? [removed.id] : listName === "actions" ? removed.checks.map((check) => check.id) : [];
-  if (gone.length) {
+  // A subject's modifiers name its actions by id. Skills are named by key, which another check may still use, so they stay until the modifier is saved.
+  if (listName === "actions" && keys[0] === "subjects") {
     const subject = getPath(system, keys.slice(0, 2).join("."));
-    for (const modifier of subject?.modifiers ?? []) {
-      modifier.dc.skills = modifier.dc.skills.filter((skill) => !gone.includes(skill));
-      if (listName === "actions") modifier.dc.actions = (modifier.dc.actions ?? []).filter((key) => key !== removed.id);
-    }
+    for (const modifier of subject?.modifiers ?? []) modifier.dc.actions = (modifier.dc.actions ?? []).filter((key) => key !== removed.id);
   }
   return true;
 }
@@ -659,14 +693,16 @@ export function entryChanges(base, draft, fields) {
 /** A copy of the latest entry with the window's changes on top, so an update from elsewhere keeps the GM's unsaved edits. */
 export const rebaseEntry = (latest, changes) => ({ ...structuredClone(latest), ...structuredClone(changes), id: latest.id });
 
-/** The skill keys a challenge-level DC change can name: each skill used by a check anywhere in the challenge. */
+/** The skill keys a challenge-level entry can name: each skill used by a check anywhere in the challenge. */
 export const challengeSkillKeys = (system) => [...new Set(system.subjects.flatMap(allChecks).map(skillKey))];
+/** The skill keys an entry can name: its subject's checks' skills, or for a challenge-level entry (no subject) the challenge's. */
+export const modifierSkillKeys = (system, subject) => (subject ? [...new Set(allChecks(subject).map(skillKey))] : challengeSkillKeys(system));
 /** The action keys a challenge-level entry can name: each named action's `actionKey`, once, on any subject. */
 export const challengeActionKeys = (system) => [...new Set(system.subjects.flatMap((subject) => subject.actions).map(actionKey).filter(Boolean))];
 
 /**
- * Save the window's changes onto a modifier. Its DC change drops links to checks that no longer exist.
- * A challenge-level entry names skills, not checks (spec 14.7). Returns false if the modifier is gone.
+ * Save the window's changes onto a modifier. Its targets drop skills no check uses and actions that no longer exist (spec 14.7).
+ * Returns false if the modifier is gone.
  */
 export function saveModifier(system, subjectId, modifierId, changes) {
   const modifier = findModifier(system, subjectId, modifierId);
@@ -674,8 +710,8 @@ export function saveModifier(system, subjectId, modifierId, changes) {
   for (const key of MODIFIER_FIELDS) if (key in changes) modifier[key] = structuredClone(changes[key]);
   modifier.category = String(modifier.category ?? "").trim();
   const subject = subjectId ? subjectById(system, subjectId) : null;
-  const checks = new Set(subject ? allChecks(subject).map((check) => check.id) : challengeSkillKeys(system));
-  modifier.dc.skills = modifier.dc.skills.filter((skill) => checks.has(skill));
+  const skills = new Set(modifierSkillKeys(system, subject));
+  modifier.dc.skills = modifier.dc.skills.filter((skill) => skills.has(skill));
   const actions = new Set(subject ? subject.actions.map((action) => action.id) : challengeActionKeys(system));
   modifier.dc.actions = (modifier.dc.actions ?? []).filter((key) => actions.has(key));
   return true;
@@ -720,15 +756,13 @@ export function saveSubject(system, subjectId, entryId, changes) {
   return true;
 }
 
-/** Save the action window's changes. The subject's modifiers drop links to checks the window removed. Returns false if the action is gone. */
+/** Save the action window's changes. Returns false if the action is gone. */
 export function saveAction(system, subjectId, actionId, changes) {
   const action = findAction(system, subjectId, actionId);
   if (!action) return false;
   copyFields(action, changes, ACTION_FIELDS);
   const subject = subjectById(system, subjectId);
   settleDifficulties(subject.level ?? null, action.checks);
-  const checks = new Set(allChecks(subject).map((check) => check.id));
-  for (const modifier of subject.modifiers) modifier.dc.skills = modifier.dc.skills.filter((skill) => checks.has(skill));
   return true;
 }
 

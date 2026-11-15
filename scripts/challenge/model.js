@@ -1,4 +1,4 @@
-import { COUNTER_DISPLAYS, DEFAULT_PRESET, dedupeIds, DIRECTIONS, DURATIONS, PRESETS, ROLL_MODIFIER_TYPES, STATUSES, THRESHOLD_REVEALS } from "./data.js";
+import { COUNTER_DISPLAYS, DEFAULT_PRESET, dedupeIds, migrateModifierTargets, DIRECTIONS, DURATIONS, PRESETS, ROLL_MODIFIER_TYPES, STATUSES, THRESHOLD_REVEALS } from "./data.js";
 
 const { ArrayField, BooleanField, HTMLField, NumberField, ObjectField, SchemaField, StringField } = foundry.data.fields;
 
@@ -11,8 +11,8 @@ const list = (fields) => new ArrayField(new SchemaField(fields), { required: tru
 const choice = (choices, initial) => new StringField({ required: true, blank: false, choices, initial });
 const ids = () => new ArrayField(new StringField({ blank: false }), { required: true, initial: [] });
 
-/** A modifier's DC change (spec 14.7). An amount of 0 means none. */
-const modifierDcFields = () => ({ amount: int(), allSkills: flag(true), actions: ids(), skills: ids() });
+/** A modifier's DC change (spec 14.7). An amount of 0 means none. `all`, or else `actions` and `skills`, name the checks it and the roll bonus apply to. */
+const modifierDcFields = () => ({ amount: int(), all: flag(true), actions: ids(), skills: ids() });
 /** A modifier's bonus (or, below 0, penalty) on the roll itself, as a PF2e modifier of this type. An amount of 0 means none. It applies to the checks `dc` names. */
 const modifierRollFields = () => ({ amount: int(), type: choice(ROLL_MODIFIER_TYPES, "circumstance") });
 
@@ -125,8 +125,9 @@ export class ChallengeModel extends foundry.abstract.TypeDataModel {
     };
   }
 
-  /** Repeated ids, as a hand-written import can hold, become unique (dedupeIds). */
+  /** Modifiers from before 0.3.0 get the new targets (migrateModifierTargets); repeated ids, as a hand-written import can hold, become unique (dedupeIds). */
   static migrateData(source) {
+    migrateModifierTargets(source);
     dedupeIds(source);
     return super.migrateData(source);
   }

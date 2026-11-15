@@ -47,6 +47,7 @@
           {
             "id": "s001",
             "name": "Crowded Market",
+            "level": 1,
             "description": "<p>Stalls and shoppers press in on every side.</p>",
             "revealed": true,
             "counters": [
@@ -68,18 +69,21 @@
                     "id": "k001",
                     "skill": "acrobatics",
                     "dc": 13,
+                    "difficulty": "easy",
                     "revealed": true
                   },
                   {
                     "id": "k002",
                     "skill": "intimidation",
                     "dc": 15,
+                    "difficulty": "normal",
                     "revealed": true
                   },
                   {
                     "id": "k003",
                     "skill": "perception",
                     "dc": 15,
+                    "difficulty": "normal",
                     "revealed": true
                   }
                 ]
@@ -89,6 +93,7 @@
           {
             "id": "s002",
             "name": "Fruit Cart",
+            "level": 1,
             "description": "<p>A cart of melons blocks the alley.</p>",
             "revealed": false,
             "counters": [
@@ -110,12 +115,14 @@
                     "id": "k004",
                     "skill": "athletics",
                     "dc": 13,
+                    "difficulty": "easy",
                     "revealed": true
                   },
                   {
                     "id": "k005",
                     "skill": "acrobatics",
                     "dc": 15,
+                    "difficulty": "normal",
                     "revealed": true
                   }
                 ]
@@ -125,6 +132,7 @@
           {
             "id": "s003",
             "name": "Laundry Lines",
+            "level": 1,
             "description": "<p>Wet sheets hang across the lane, hiding the way ahead.</p>",
             "revealed": false,
             "counters": [
@@ -146,18 +154,21 @@
                     "id": "k006",
                     "skill": "perception",
                     "dc": 13,
+                    "difficulty": "easy",
                     "revealed": true
                   },
                   {
                     "id": "k007",
                     "skill": "acrobatics",
                     "dc": 15,
+                    "difficulty": "normal",
                     "revealed": true
                   },
                   {
                     "id": "k008",
                     "skill": "survival",
                     "dc": 15,
+                    "difficulty": "normal",
                     "revealed": true
                   }
                 ]
@@ -167,6 +178,7 @@
           {
             "id": "s004",
             "name": "Rooftop Ladder",
+            "level": 1,
             "description": "<p>The pickpocket scrambles up onto the roofs.</p>",
             "revealed": false,
             "counters": [
@@ -188,12 +200,14 @@
                     "id": "k009",
                     "skill": "athletics",
                     "dc": 15,
+                    "difficulty": "normal",
                     "revealed": true
                   },
                   {
                     "id": "k010",
                     "skill": "acrobatics",
                     "dc": 13,
+                    "difficulty": "easy",
                     "revealed": true
                   }
                 ]
@@ -203,6 +217,7 @@
           {
             "id": "s005",
             "name": "Temple Procession",
+            "level": 1,
             "description": "<p>Chanting worshippers fill the street below.</p>",
             "revealed": false,
             "counters": [
@@ -224,18 +239,21 @@
                     "id": "k011",
                     "skill": "religion",
                     "dc": 13,
+                    "difficulty": "easy",
                     "revealed": true
                   },
                   {
                     "id": "k012",
                     "skill": "diplomacy",
                     "dc": 15,
+                    "difficulty": "normal",
                     "revealed": true
                   },
                   {
                     "id": "k013",
                     "skill": "stealth",
                     "dc": 15,
+                    "difficulty": "normal",
                     "revealed": true
                   }
                 ]
@@ -245,6 +263,7 @@
           {
             "id": "s006",
             "name": "Canal Steps",
+            "level": 1,
             "description": "<p>Slick steps down to a sewer grate.</p>",
             "revealed": false,
             "counters": [
@@ -266,12 +285,14 @@
                     "id": "k014",
                     "skill": "athletics",
                     "dc": 15,
+                    "difficulty": "normal",
                     "revealed": true
                   },
                   {
                     "id": "k015",
                     "skill": "reflex",
                     "dc": 13,
+                    "difficulty": "easy",
                     "revealed": true
                   }
                 ]

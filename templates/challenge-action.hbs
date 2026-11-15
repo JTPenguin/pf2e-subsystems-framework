@@ -14,14 +14,13 @@
   {{/with}}
   <fieldset>
     <legend>{{localize "SSM.Challenge.Checks"}} <button type="button" class="icon fa-solid fa-plus" data-action="addRow" data-list="checks" aria-label="{{localize "SSM.Challenge.AddCheck"}}" data-tooltip-text="{{localize "SSM.Challenge.AddCheck"}}"></button></legend>
-    <p class="ssm-muted ssm-level-dc">{{levelText}}</p>
     {{#if checks.length}}
     <div class="ssm-checks-wrap"><table class="ssm-checks">
       <thead><tr>
         <th class="col-skill">{{localize "SSM.Challenge.Skill"}}</th>
         <th class="col-lore">{{localize "SSM.Challenge.LoreName"}}</th>
         <th class="col-dc">{{localize "SSM.Challenge.DC"}}</th>
-        <th class="col-difficulty">{{localize "SSM.Challenge.DifficultyLabel"}}</th>
+        <th class="col-difficulty"><span data-tooltip-text="{{levelText}}">{{localize "SSM.Challenge.DifficultyLabel"}} <i class="fa-solid fa-circle-info" aria-hidden="true"></i></span></th>
         <th class="col-flag">{{localize "SSM.Challenge.Revealed"}}</th>
         <th class="col-flag">{{localize "SSM.Challenge.Decoy"}}</th>
         <th class="col-delete"></th>
@@ -31,8 +30,8 @@
       <tr>
         <td><select name="{{path}}.skill" data-redraw>{{selectOptions @root.choices.skills selected=skill}}</select></td>
         <td>{{#if isLore}}<input type="text" name="{{path}}.lore" value="{{lore}}">{{/if}}</td>
-        <td><input type="number" min="0" step="1" name="{{path}}.dc" value="{{dc}}"><input type="hidden" name="{{path}}.difficulty" value="{{difficulty}}"></td>
-        <td class="col-difficulty"><span class="ssm-steps">{{#each steps}}<button type="button" data-action="setDifficulty" data-index="{{../index}}" data-step="{{step}}" class="{{#if active}}active{{/if}}" aria-pressed="{{#if active}}true{{else}}false{{/if}}" data-tooltip-text="{{tooltip}}" {{#if @root.noLevel}}disabled{{/if}}>{{label}}</button>{{/each}}</span></td>
+        <td><input type="number" min="0" step="1" name="{{path}}.dc" value="{{dc}}" data-dc-input><input type="hidden" name="{{path}}.difficulty" value="{{difficulty}}" data-difficulty-input></td>
+        <td class="col-difficulty"><span class="ssm-steps">{{#each steps}}<button type="button" data-action="setDifficulty" data-index="{{../index}}" data-step="{{step}}" data-dc="{{dc}}" class="{{#if active}}active{{/if}}{{#if match}}match{{/if}}" aria-pressed="{{#if active}}true{{else}}false{{/if}}" data-tooltip-text="{{tooltip}}" {{#if @root.noLevel}}disabled{{/if}}>{{label}}</button>{{/each}}</span></td>
         <td class="col-flag"><input type="checkbox" name="{{path}}.revealed" {{checked revealed}}></td>
         <td class="col-flag"><input type="checkbox" name="{{path}}.decoy" {{checked decoy}}></td>
         <td class="col-delete"><button type="button" class="icon fa-solid fa-trash" data-action="removeRow" data-path="{{path}}" aria-label="{{localize "SSM.Challenge.Remove"}}"></button></td>

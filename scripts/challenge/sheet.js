@@ -8,7 +8,7 @@ import { advanceRound, canAdvanceRound, hasRounds, canUndoRound, changeCounter, 
 import { LINK_ROLL_ID } from "../roll-option.js";
 import { rollCheck, rollTarget } from "./roll.js";
 import { DEFAULT_PC_IMAGE, rollBonusText } from "./panel-view.js";
-import { addParticipant, addRow, allCounters, applyForm, BOTH_WAYS, categoryKey, clampTracks, collapseAllAction, counterMoves, counterValueText, EDITABLE, entryListPath, groupByCategory, isDecoyCheck, moveCounter, moveModifier, moveSubject, nextThresholdReveal, pickFields, removeEntry, removeParticipant, setCounterNote, subjectGroups } from "./data.js";
+import { addParticipant, addRow, allCounters, applyForm, BOTH_WAYS, categoryKey, clampTracks, collapseAllAction, counterMoves, counterValueText, EDITABLE, entryListPath, groupByCategory, isDecoyCheck, keySkill, modifierSkillKeys, moveCounter, moveModifier, moveSubject, nextThresholdReveal, pickFields, removeEntry, removeParticipant, setCounterNote, sortChecks, subjectGroups } from "./data.js";
 import { ActionWindow, CounterWindow, hasKeptBlank, ModifierWindow, SubjectWindow, ThresholdWindow } from "./entry-window.js";
 import { markDescriptionFields } from "./description-field.js";
 
@@ -290,7 +290,8 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
     const partyIds = [...new Set([...participants(system).map((actor) => actor.id), ...system.participants])];
     const subjectLabel = system.subjectLabel || loc("SSM.Challenge.Subject");
     const signed = (n) => (n > 0 ? `+${n}` : `${n}`.replace("-", "−"));
-    const rollRows = (subject, action) => action.checks.map((row) => {
+    // Perception, saves, skills, Lores, A–Z within each.
+    const rollRows = (subject, action) => sortChecks(action.checks, skillLabel).map((row) => {
       const dc = currentDc(system, subject, row);
       const label = skillLabel(row);
       // The chip shows the name and current DC. The tooltip adds the base DC and whether the check is a decoy.
@@ -371,6 +372,7 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
       subjectGroups: subjectGroups(system, system.subjects.map((subject, n) => ({
         id: subject.id,
         name: subjectName(subject, n, subjectLabel),
+        levelText: subject.level === null || subject.level === undefined ? "" : game.i18n.format("SSM.Challenge.LevelTag", { level: subject.level }),
         collapsed: isCollapsed(subject.id),
         noDelete: system.subjects.length < 2,
         descriptionHtml: this.#subjectHtml.get(subject.id) ?? "",
@@ -431,17 +433,18 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
     return game.i18n.format("SSM.Challenge.RollChangeText", { bonus, skills: this.#targetText(system, subject, row.dc) });
   }
 
-  /** The checks a modifier applies to, for both its changes: its actions ("Discover checks"), then its single checks. A challenge-level entry (no subject) names both by key. */
+  /** The checks a modifier applies to, for both its changes: its actions ("Discover checks"), then its skills. A challenge-level entry (no subject) names actions by key. */
   #targetText(system, subject, dc) {
-    if (dc.allSkills) return loc("SSM.Challenge.AllSkills");
+    if (dc.all) return loc("SSM.Challenge.AllChecksText");
     const listed = dc.actions ?? [];
     const actions = subject
       ? subject.actions.filter((action) => listed.includes(action.id)).map(actionName)
       : listed.map((key) => actionKeyLabel(system, key));
-    const checks = subject
-      ? subject.actions.flatMap((action) => action.checks).filter((row) => dc.skills.includes(row.id)).map(skillLabel)
-      : dc.skills.map((key) => skillKeyLabel(system, key));
-    return [...actions.map((action) => game.i18n.format("SSM.Panel.Change.actionChecks", { action })), ...checks].join(", ");
+    // Only skills a check still uses: a key whose checks were removed stays until the entry is saved, and does nothing.
+    const used = new Set(modifierSkillKeys(system, subject));
+    const skills = sortChecks(dc.skills.filter((key) => used.has(key)), (key) => skillKeyLabel(system, key), keySkill).map((key) => skillKeyLabel(system, key));
+    const text = [...actions.map((action) => game.i18n.format("SSM.Panel.Change.actionChecks", { action })), ...skills].join(", ");
+    return text || loc("SSM.Challenge.NoTargets");
   }
 
   /* -------------------------------------------- */

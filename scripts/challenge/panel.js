@@ -1,8 +1,8 @@
 import { MODULE } from "../constants.js";
-import { counterMoves, findCounter, isDecoyCheck } from "./data.js";
+import { counterMoves, findCounter, isDecoyCheck, sortChecks } from "./data.js";
 import { actionName, skillLabel, subjectName } from "./skill-label.js";
 import { refreshPanel } from "../panel/panel.js";
-import { barTicks, bothWaysBar, buildPanelView, changeText, findPanelRow, pointsBar, roundSegments, sortByLabel } from "./panel-view.js";
+import { barTicks, bothWaysBar, buildPanelView, changeText, findPanelRow, pointsBar, roundSegments } from "./panel-view.js";
 import { rollCheck, rollTarget } from "./roll.js";
 import { advanceRound, canAdvanceRound, canUndoRound, changeCounter, counterValueOf, toggleActed, toggleModifier, undoRound } from "./run.js";
 import { ChallengeSheet } from "./sheet.js";
@@ -151,8 +151,8 @@ async function prepareView(view, state) {
         secret: action.secret,
         descriptionHtml: await enrichDescription(action.description),
         open: openRows.has(rowKey(state.id, subject.id, action.id)),
-        // A–Z, never the GM's order, which may run easiest first.
-        checks: sortByLabel(action.checks.map((row) => ({ id: row.id, subjectId: subject.id, actionId: action.id, label: skillLabel(row), decoy: decoys.has(`${subject.id}:${row.id}`) }))),
+        // Perception, saves, skills, Lores, A–Z within each: never the GM's order, which may run easiest first.
+        checks: sortChecks(action.checks, skillLabel).map((row) => ({ id: row.id, subjectId: subject.id, actionId: action.id, label: skillLabel(row), decoy: decoys.has(`${subject.id}:${row.id}`) })),
       }))),
       // One section per category; the heading names the category, so the cards leave out its label (spec 14.7).
       modifierGroups: await Promise.all(subject.modifierGroups.map(async (group) => ({

@@ -37,6 +37,7 @@
           {
             "id": "s001",
             "name": "Seaweed Flats",
+            "level": 5,
             "description": "<p>Slick weed over the stones.</p>",
             "revealed": true,
             "counters": [
@@ -58,12 +59,14 @@
                     "id": "k001",
                     "skill": "acrobatics",
                     "dc": 18,
+                    "difficulty": "easy",
                     "revealed": true
                   },
                   {
                     "id": "k002",
                     "skill": "survival",
                     "dc": 20,
+                    "difficulty": "normal",
                     "revealed": true
                   }
                 ]
@@ -73,6 +76,7 @@
           {
             "id": "s002",
             "name": "Broken Span",
+            "level": 5,
             "description": "<p>A gap where the causeway has sunk.</p>",
             "revealed": false,
             "counters": [
@@ -94,12 +98,14 @@
                     "id": "k003",
                     "skill": "athletics",
                     "dc": 20,
+                    "difficulty": "normal",
                     "revealed": true
                   },
                   {
                     "id": "k004",
                     "skill": "crafting",
                     "dc": 18,
+                    "difficulty": "easy",
                     "revealed": true
                   }
                 ]
@@ -109,6 +115,7 @@
           {
             "id": "s003",
             "name": "Fog Bank",
+            "level": 5,
             "description": "<p>Fog rolls in off the sea, hiding the marker posts.</p>",
             "revealed": false,
             "counters": [
@@ -130,18 +137,21 @@
                     "id": "k005",
                     "skill": "perception",
                     "dc": 18,
+                    "difficulty": "easy",
                     "revealed": true
                   },
                   {
                     "id": "k006",
                     "skill": "survival",
                     "dc": 20,
+                    "difficulty": "normal",
                     "revealed": true
                   },
                   {
                     "id": "k007",
                     "skill": "lore",
                     "dc": 18,
+                    "difficulty": "easy",
                     "revealed": true,
                     "lore": "Sailing Lore"
                   }
@@ -152,6 +162,7 @@
           {
             "id": "s004",
             "name": "Gull Rookery",
+            "level": 5,
             "description": "<p>Thousands of nesting gulls take offence.</p>",
             "revealed": false,
             "counters": [
@@ -173,12 +184,14 @@
                     "id": "k008",
                     "skill": "nature",
                     "dc": 18,
+                    "difficulty": "easy",
                     "revealed": true
                   },
                   {
                     "id": "k009",
                     "skill": "intimidation",
                     "dc": 20,
+                    "difficulty": "normal",
                     "revealed": true
                   }
                 ]
@@ -188,6 +201,7 @@
           {
             "id": "s005",
             "name": "Tidal Channel",
+            "level": 5,
             "description": "<p>The first of the tide is pouring through a channel.</p>",
             "revealed": false,
             "counters": [
@@ -209,12 +223,14 @@
                     "id": "k010",
                     "skill": "athletics",
                     "dc": 20,
+                    "difficulty": "normal",
                     "revealed": true
                   },
                   {
                     "id": "k011",
                     "skill": "reflex",
                     "dc": 18,
+                    "difficulty": "easy",
                     "revealed": true
                   }
                 ]
@@ -224,6 +240,7 @@
           {
             "id": "s006",
             "name": "Monastery Stair",
+            "level": 5,
             "description": "<p>Two hundred worn steps up the cliff.</p>",
             "revealed": false,
             "counters": [
@@ -245,12 +262,14 @@
                     "id": "k012",
                     "skill": "fortitude",
                     "dc": 18,
+                    "difficulty": "easy",
                     "revealed": true
                   },
                   {
                     "id": "k013",
                     "skill": "athletics",
                     "dc": 20,
+                    "difficulty": "normal",
                     "revealed": true
                   }
                 ]

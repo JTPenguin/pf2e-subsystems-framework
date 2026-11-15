@@ -3,7 +3,7 @@ import { actionKeyLabel, actionName, skillKeyLabel, skillLabel } from "./skill-l
 import { writeChallenge } from "./state.js";
 import { CategoryAutocomplete } from "./category-autocomplete.js";
 import { markDescriptionFields } from "./description-field.js";
-import { ACTION_FIELDS, addRow, BOTH_WAYS, categoryOrder, challengeActionKeys, challengeSkillKeys, COUNTER_DISPLAYS, COUNTER_FIELDS, DIFFICULTIES, DIRECTIONS, DURATIONS, entryChanges, findAction, findCounter, findCounterEntry, findModifier, findSubject, findThreshold, levelCheckFields, levelDc, LORE, mergeForm, MODIFIER_FIELDS, PERCEPTION, QUICK_DC_AMOUNTS, rebaseEntry, removeRow, ROLL_MODIFIER_TYPES, SAVES, saveAction, saveCounter, saveModifier, saveSubject, saveThreshold, setDcAmount, stepDc, SUBJECT_FIELDS, subjectCategoryOrder, THRESHOLD_FIELDS, THRESHOLD_REVEALS } from "./data.js";
+import { ACTION_FIELDS, addRow, BOTH_WAYS, categoryOrder, challengeActionKeys, COUNTER_DISPLAYS, COUNTER_FIELDS, DIFFICULTIES, DIRECTIONS, DURATIONS, entryChanges, findAction, findCounter, findCounterEntry, findModifier, findSubject, findThreshold, keySkill, levelCheckFields, levelDc, LORE, mergeForm, modifierSkillKeys, MODIFIER_FIELDS, PERCEPTION, QUICK_DC_AMOUNTS, rebaseEntry, removeRow, ROLL_MODIFIER_TYPES, SAVES, saveAction, saveCounter, saveModifier, saveSubject, saveThreshold, setDcAmount, sortChecks, stepDc, SUBJECT_FIELDS, subjectCategoryOrder, THRESHOLD_FIELDS, THRESHOLD_REVEALS } from "./data.js";
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
@@ -68,7 +68,12 @@ class EntryWindow extends HandlebarsApplicationMixin(ApplicationV2) {
     this.subjectId = subjectId;
     this.entryId = entryId;
     this.#base = structuredClone(this.#latest());
-    this.#draft = structuredClone(this.#base);
+    this.#draft = this._openDraft(structuredClone(this.#base));
+  }
+
+  /** The draft as the window opens with it, for a subclass to arrange. A change here saves with the GM's first edit. */
+  _openDraft(draft) {
+    return draft;
   }
 
   get #entry() {
@@ -224,7 +229,23 @@ export const hasKeptBlank = (form) => [...(form?.querySelectorAll('input[type="n
 export class ModifierWindow extends EntryWindow {
   static ENTRY = { key: "modifier", find: findModifier, fields: MODIFIER_FIELDS, save: saveModifier, titleKey: "SSM.Challenge.EditModifierTitle", unnamed: "SSM.Challenge.UnnamedEntry", goneKey: "SSM.Challenge.ModifierGone" };
 
+  static DEFAULT_OPTIONS = { actions: { selectAllTargets: ModifierWindow.#onSelectAllTargets } };
+
   static PARTS = { form: { template: `modules/${MODULE}/templates/challenge-modifier.hbs`, scrollable: [""] } };
+
+  /** The values a target list offers, by its field, as the window last drew them. */
+  #targetValues = {};
+
+  /** A list's Select all ticks every option it offers; once all are ticked, it clears them. */
+  static #onSelectAllTargets(event, target) {
+    const key = target.dataset.field?.split(".").at(-1);
+    const values = this.#targetValues[target.dataset.field] ?? [];
+    if (!key || !values.length) return;
+    return this._editAndSave((draft) => {
+      const all = values.every((value) => draft.dc[key].includes(value));
+      draft.dc[key] = all ? [] : [...values];
+    });
+  }
 
   /** The category field's suggestions: the preset's and every modifier category in use. */
   #categories = new CategoryAutocomplete({
@@ -244,22 +265,29 @@ export class ModifierWindow extends EntryWindow {
   }
 
   async _entryContext(system, subject, modifier) {
-    // A subject's entry picks its checks: a check's name alone can repeat across actions, so each is listed with its action.
-    // A challenge-level entry (no subject) picks skills, matching that skill on any subject (spec 14.7).
-    const skillOptions = subject
-      ? Object.fromEntries(subject.actions.flatMap((action) => action.checks.map((row) => [row.id, `${actionName(action)}: ${skillLabel(row)}`])))
-      : Object.fromEntries(challengeSkillKeys(system).map((key) => [key, skillKeyLabel(system, key)]));
     // Every check of a listed action, added later too. A challenge-level entry names actions by name, matching them on any subject.
-    const actionOptions = subject
-      ? Object.fromEntries(subject.actions.map((action) => [action.id, actionName(action)]))
-      : Object.fromEntries(challengeActionKeys(system).map((key) => [key, actionKeyLabel(system, key)]));
+    const actions = subject
+      ? subject.actions.map((action) => ({ value: action.id, label: actionName(action) }))
+      : challengeActionKeys(system).map((key) => ({ value: key, label: actionKeyLabel(system, key) }));
+    // Checks are skills, apart from any action: Perception, saves, skills, Lores, each once (spec 14.7).
+    const skills = sortChecks(modifierSkillKeys(system, subject), (key) => skillKeyLabel(system, key), keySkill)
+      .map((key) => ({ value: key, label: skillKeyLabel(system, key) }));
+    const targetList = (field, options, label, hint, empty) => {
+      const selected = modifier.dc[field.split(".").at(-1)] ?? [];
+      this.#targetValues[field] = options.map((option) => option.value);
+      const all = options.length > 0 && options.every((option) => selected.includes(option.value));
+      return {
+        field, label: loc(label), hint: loc(hint), empty: loc(empty), toggleLabel: loc(all ? "SSM.Challenge.ClearAll" : "SSM.Challenge.SelectAll"),
+        options: options.map((option) => ({ ...option, selected: selected.includes(option.value) })),
+      };
+    };
     return {
       modifier,
       descriptionHtml: await enrichDescription(modifier.description, this.page),
-      challengeLevel: !subject,
-      skillOptions,
-      actionOptions,
-      hasActionOptions: Object.keys(actionOptions).length > 0,
+      targetLists: [
+        targetList("dc.actions", actions, "SSM.Challenge.AppliesToActions", subject ? "SSM.Challenge.ActionsHint" : "SSM.Challenge.ChallengeActionsHint", "SSM.Challenge.NoActionOptions"),
+        targetList("dc.skills", skills, "SSM.Challenge.AppliesToChecks", subject ? "SSM.Challenge.ChecksHint" : "SSM.Challenge.ChallengeChecksHint", "SSM.Challenge.NoCheckOptions"),
+      ],
       quickDcAmounts: QUICK_DC_AMOUNTS.map((amount) => ({ amount, label: amount > 0 ? `+${amount}` : `${amount}`.replace("-", "−") })),
       choices: { durations: labels(DURATIONS, "Duration"), rollTypes: labels(ROLL_MODIFIER_TYPES, "RollType") },
     };
@@ -305,6 +333,36 @@ export class ActionWindow extends EntryWindow {
 
   static PARTS = { form: { template: `modules/${MODULE}/templates/challenge-action.hbs`, scrollable: [""] } };
 
+  /**
+   * The checks open in check order: Perception, saves, skills, Lores, A–Z within each. They stay put while the window is open,
+   * so a check never jumps away from the GM editing it (Justin, 2026-11-15).
+   */
+  _openDraft(draft) {
+    draft.checks = sortChecks(draft.checks ?? [], skillLabel);
+    return draft;
+  }
+
+  /**
+   * The DC field and the difficulty buttons agree as the GM works: typing a DC clears the step and faintly marks a button whose DC it equals;
+   * a button takes effect on the first click, since holding focus in the DC field stops its change from redrawing the window under the click.
+   */
+  async _onRender(context, options) {
+    await super._onRender(context, options);
+    for (const input of this.form.querySelectorAll("input[data-dc-input]")) {
+      input.addEventListener("input", () => {
+        const row = input.closest("tr");
+        const hidden = row.querySelector("input[data-difficulty-input]");
+        if (hidden) hidden.value = "";
+        for (const button of row.querySelectorAll("button[data-step]")) {
+          button.classList.remove("active");
+          button.setAttribute("aria-pressed", "false");
+          button.classList.toggle("match", input.value !== "" && button.dataset.dc === String(Number(input.value)));
+        }
+      });
+    }
+    for (const button of this.form.querySelectorAll("button[data-step]")) button.addEventListener("mousedown", (event) => event.preventDefault());
+  }
+
   /** A new check under a levelled subject starts at Normal, the level-based DC. */
   _newRowFields(list) {
     return list === "checks" ? levelCheckFields(this._subject?.level ?? null) : {};
@@ -315,6 +373,19 @@ export class ActionWindow extends EntryWindow {
     const dc = stepDc(this._subject?.level ?? null, target.dataset.step);
     if (dc === null) return;
     const index = Number(target.dataset.index);
+    // Show it at once; the save redraws the window the same way.
+    const row = target.closest("tr");
+    // The form is read back into the draft on every redraw, so it must hold the step too.
+    const input = row?.querySelector("input[data-dc-input]");
+    if (input) input.value = dc;
+    const hidden = row?.querySelector("input[data-difficulty-input]");
+    if (hidden) hidden.value = target.dataset.step;
+    for (const button of row?.querySelectorAll("button[data-step]") ?? []) {
+      const on = button === target;
+      button.classList.toggle("active", on);
+      button.classList.remove("match");
+      button.setAttribute("aria-pressed", String(on));
+    }
     return this._editAndSave((draft) => {
       const check = draft.checks[index];
       if (check) Object.assign(check, { dc, difficulty: target.dataset.step });
@@ -328,7 +399,10 @@ export class ActionWindow extends EntryWindow {
       step,
       label: loc(`SSM.Challenge.Difficulty.${step}.Short`),
       tooltip: base === null ? loc("SSM.Challenge.DifficultyNeedsLevel") : game.i18n.format("SSM.Challenge.DifficultyTooltip", { step: loc(`SSM.Challenge.Difficulty.${step}.Name`), dc: stepDc(level, step) }),
+      dc: stepDc(level, step) ?? "",
       active: row.difficulty === step,
+      // A typed DC that equals a step's: a faint mark, while the DC stays as typed.
+      match: !row.difficulty && base !== null && row.dc === stepDc(level, step),
     }));
     return {
       action,

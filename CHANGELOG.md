@@ -2,9 +2,10 @@
 
 ## Unreleased
 
-- A subject can have a **level**. New checks start at its level-based DC, and the action window's VE, E, N, H and VH buttons set a check's DC to Very easy through Very hard from it. Changing the level moves every check that has a step; a typed DC clears it. New `level` (subject) and `difficulty` (check) fields in the import format.
-- A modifier can apply to whole **actions**, such as every Discover check, beside single checks. On a challenge modifier, an action means every action with that name. New `dc.actions` field in the import format.
-- The panel lists each action's checks in alphabetical order, so the sheet's easiest-to-hardest order doesn't give the DCs away.
+- A subject can have a **level**. New checks start at its level-based DC, and the action window's VE, E, N, H and VH buttons set a check's DC to Very easy through Very hard from it. Changing the level moves every check that has a step. A typed DC stays as typed, even when it equals a step; a faint button marks the step it equals. The subject's header shows its level. New `level` (subject) and `difficulty` (check) fields in the import format.
+- A modifier picks what it applies to from two lists, each with **Select all**: **Actions**, such as every Discover check, and **Checks**, which are skills on any of its actions. On a challenge modifier, an action means every action with that name. **Every check**, above the lists, replaces All skills and covers checks and actions added later; new modifiers start with it on. A subject modifier's checks become their skills. New `dc.all` and `dc.actions` fields in the import format; `dc.skills` holds skill keys everywhere, and `dc.allSkills` is gone (older files still import).
+- The example challenges give each subject a level and each check a difficulty step. The Toll Captain's Intimidation check is now Very hard, DC 23 (was 22).
+- Checks are listed Perception, saves, skills, then Lores, A–Z within each, on the sheet, the panel and in the windows, so an easiest-to-hardest order doesn't give the DCs away.
 
 ## 0.2.0
 

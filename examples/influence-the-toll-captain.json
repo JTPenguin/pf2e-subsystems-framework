@@ -45,6 +45,7 @@
           {
             "id": "s001",
             "name": "Captain Orsola Brenn",
+            "level": 3,
             "description": "<p>The captain of the bridge guard, grey at the temples, with a ledger under one arm.</p><div data-visibility=\"gm\"><p>She doubled the toll on the town council's orders, to pay for repairs the council never made. She resents it.</p></div>",
             "revealed": true,
             "counters": [
@@ -87,10 +88,10 @@
                 "revealed": false,
                 "dc": {
                   "amount": -2,
-                  "allSkills": false,
                   "skills": [
-                    "k001"
-                  ]
+                    "diplomacy"
+                  ],
+                  "all": false
                 },
                 "note": "Turn On when a PC brings up military service."
               },
@@ -104,8 +105,8 @@
                 "revealed": false,
                 "dc": {
                   "amount": -2,
-                  "allSkills": true,
-                  "skills": []
+                  "skills": [],
+                  "all": true
                 },
                 "note": "Turn On whenever the PCs show evidence about the council."
               },
@@ -119,10 +120,10 @@
                 "revealed": false,
                 "dc": {
                   "amount": 2,
-                  "allSkills": false,
                   "skills": [
-                    "k002"
-                  ]
+                    "deception"
+                  ],
+                  "all": false
                 },
                 "note": "A bribe offered openly loses 1 Influence Point."
               },
@@ -135,10 +136,10 @@
                 "revealed": false,
                 "dc": {
                   "amount": 2,
-                  "allSkills": false,
                   "skills": [
-                    "k003"
-                  ]
+                    "intimidation"
+                  ],
+                  "all": false
                 },
                 "note": "A failed Intimidation adds 1 Suspicion."
               }
@@ -153,18 +154,21 @@
                     "id": "k005",
                     "skill": "perception",
                     "dc": 16,
+                    "difficulty": "easy",
                     "revealed": true
                   },
                   {
                     "id": "k006",
                     "skill": "society",
                     "dc": 18,
+                    "difficulty": "normal",
                     "revealed": true
                   },
                   {
                     "id": "k004",
                     "skill": "lore",
                     "dc": 16,
+                    "difficulty": "easy",
                     "revealed": false,
                     "lore": "Mercantile Lore"
                   }
@@ -179,24 +183,28 @@
                     "id": "k001",
                     "skill": "diplomacy",
                     "dc": 18,
+                    "difficulty": "normal",
                     "revealed": true
                   },
                   {
                     "id": "k002",
                     "skill": "deception",
                     "dc": 20,
+                    "difficulty": "hard",
                     "revealed": true
                   },
                   {
                     "id": "k003",
                     "skill": "intimidation",
-                    "dc": 22,
+                    "dc": 23,
+                    "difficulty": "very-hard",
                     "revealed": true
                   },
                   {
                     "id": "k007",
                     "skill": "lore",
                     "dc": 16,
+                    "difficulty": "easy",
                     "revealed": false,
                     "lore": "Mercantile Lore"
                   }

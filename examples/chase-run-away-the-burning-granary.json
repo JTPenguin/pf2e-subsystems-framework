@@ -47,6 +47,7 @@
           {
             "id": "s001",
             "name": "Smoke-Filled Loft",
+            "level": 3,
             "description": "<p>Smoke chokes the hayloft. The ladder is already burning.</p>",
             "revealed": true,
             "counters": [
@@ -68,18 +69,21 @@
                     "id": "k001",
                     "skill": "fortitude",
                     "dc": 16,
+                    "difficulty": "easy",
                     "revealed": true
                   },
                   {
                     "id": "k002",
                     "skill": "athletics",
                     "dc": 18,
+                    "difficulty": "normal",
                     "revealed": true
                   },
                   {
                     "id": "k003",
                     "skill": "acrobatics",
                     "dc": 18,
+                    "difficulty": "normal",
                     "revealed": true
                   }
                 ]
@@ -89,6 +93,7 @@
           {
             "id": "s002",
             "name": "Granary Yard",
+            "level": 3,
             "description": "<p>Carts, sacks and panicked mules.</p>",
             "revealed": false,
             "counters": [
@@ -110,12 +115,14 @@
                     "id": "k004",
                     "skill": "nature",
                     "dc": 16,
+                    "difficulty": "easy",
                     "revealed": true
                   },
                   {
                     "id": "k005",
                     "skill": "athletics",
                     "dc": 18,
+                    "difficulty": "normal",
                     "revealed": true
                   }
                 ]
@@ -125,6 +132,7 @@
           {
             "id": "s003",
             "name": "Locked Side Gate",
+            "level": 3,
             "description": "<p>The gate to the lane is barred from outside.</p>",
             "revealed": false,
             "counters": [
@@ -146,18 +154,21 @@
                     "id": "k006",
                     "skill": "thievery",
                     "dc": 18,
+                    "difficulty": "normal",
                     "revealed": true
                   },
                   {
                     "id": "k007",
                     "skill": "athletics",
                     "dc": 18,
+                    "difficulty": "normal",
                     "revealed": true
                   },
                   {
                     "id": "k008",
                     "skill": "crafting",
                     "dc": 16,
+                    "difficulty": "easy",
                     "revealed": true
                   }
                 ]
@@ -167,6 +178,7 @@
           {
             "id": "s004",
             "name": "Market Crowd",
+            "level": 3,
             "description": "<p>People rush toward the fire to gawk.</p>",
             "revealed": false,
             "counters": [
@@ -188,18 +200,21 @@
                     "id": "k009",
                     "skill": "intimidation",
                     "dc": 16,
+                    "difficulty": "easy",
                     "revealed": true
                   },
                   {
                     "id": "k010",
                     "skill": "stealth",
                     "dc": 18,
+                    "difficulty": "normal",
                     "revealed": true
                   },
                   {
                     "id": "k011",
                     "skill": "deception",
                     "dc": 18,
+                    "difficulty": "normal",
                     "revealed": true
                   }
                 ]
@@ -209,6 +224,7 @@
           {
             "id": "s005",
             "name": "Tannery Vats",
+            "level": 3,
             "description": "<p>A shortcut through stinking vats.</p>",
             "revealed": false,
             "counters": [
@@ -230,12 +246,14 @@
                     "id": "k012",
                     "skill": "fortitude",
                     "dc": 16,
+                    "difficulty": "easy",
                     "revealed": true
                   },
                   {
                     "id": "k013",
                     "skill": "acrobatics",
                     "dc": 18,
+                    "difficulty": "normal",
                     "revealed": true
                   }
                 ]
@@ -245,6 +263,7 @@
           {
             "id": "s006",
             "name": "Ferry Landing",
+            "level": 3,
             "description": "<p>The ferryman is casting off.</p>",
             "revealed": false,
             "counters": [
@@ -266,12 +285,14 @@
                     "id": "k014",
                     "skill": "diplomacy",
                     "dc": 16,
+                    "difficulty": "easy",
                     "revealed": true
                   },
                   {
                     "id": "k015",
                     "skill": "athletics",
                     "dc": 18,
+                    "difficulty": "normal",
                     "revealed": true
                   }
                 ]

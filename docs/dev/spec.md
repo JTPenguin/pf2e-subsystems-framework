@@ -107,7 +107,7 @@ Sidebar tab -> Challenge (journal entry + typed page, GM only) -> GM sheet
 | Kind | Resistance, weakness or Other. Other holds anything that is not a resistance or weakness. On the panel its cards say Other, as the others say Resistance or Weakness. |
 | Duration | **One-time** (spent once used), **multi-use** (turns Off once used; the GM turns it On again each time it is exploited, with no limit) or **ongoing** (active until the GM turns it off) |
 | State | Active or off; spent; revealed; decoy |
-| DC change | One signed amount, on all skills, or on chosen actions and chosen checks (Justin, 2026-11-14). A chosen action covers every check under it, including checks added later. The window offers quick −5, −2, +2 and +5. An amount of 0 means no DC change. A split such as +2 to Diplomacy and −2 to Deception is two entries (Justin, 2026-11-12). |
+| DC change | One signed amount, on the ticked actions and the ticked checks, picked in two separate lists, each with Select all (Justin, 2026-11-15). A ticked action covers every check under it, including checks added later. The Checks list holds skills, not one action's check: a ticked skill covers every check of it in any of the subject's actions. An **Every check** box above the lists covers every check, checks and actions added later too; while it is on, the lists show all ticked and can't change. A new modifier starts with it on. Off, nothing ticked changes nothing (Justin, 2026-11-15). Older data migrates: All skills becomes Every check, and a check id becomes its skill. The window offers quick −5, −2, +2 and +5. An amount of 0 means no DC change. A split such as +2 to Diplomacy and −2 to Deception is two entries (Justin, 2026-11-12). |
 | Note | A consequence with no number, such as "she ends the conversation". May be empty. |
 
 Points, counter and rounds effects were removed (Justin, 2026-11-12): the GM makes those changes by hand.
@@ -176,7 +176,7 @@ Every window takes the sheet's theme. There is one window per entry: opening it 
 - Modifier entries as rows, in three sections, in order: Resistances, Weaknesses, Other. An empty section is hidden. In the GM window, no row carries a kind label, since its section heading says the kind. Each row shows its name, tags and controls (eye, on, off and apply, edit and delete); the DC change and note, then the description, GM text included, show under it when the row is open. A row collapses like an action card (Justin, 2026-11-12): it starts collapsed, its caret comes first in the row (14.4) and works only when there are details to show, and each user's open rows last until the page reloads. The kind's colour stripe shows only while the entry is On: no stripe means Off or Spent. Off is not dimmed. The On button is a green icon.
 - Counters.
 
-**The modifier window** holds the name, category, duration, the On, Spent, Revealed and Decoy boxes, the description, the DC change (amount, quick buttons, All skills, then the Actions and Checks lists) and the Note. Either can be left empty.
+**The modifier window** holds the name, category, duration, the On, Spent, Revealed and Decoy boxes, the description, the DC change (amount and quick buttons), then Every check, then the Actions and Checks lists, each in its own section with Select all (Justin, 2026-11-15), and the Note. Either can be left empty.
 
 **Reveal is one click and can be undone.** The panel updates at once.
 
@@ -227,7 +227,7 @@ Every window takes the sheet's theme. There is one window per entry: opening it 
 | DC change | Shown as a DC change, never negated: "−2 to DCs vs Diplomacy" (a list for several skills), "−2 to DCs vs Discover checks" for a chosen action, or "−2 to all DCs" when it covers every skill. | A DC number |
 | Note only | Left out: the note is the GM's text. The description covers it. | The note |
 
-Each action's check buttons are in alphabetical order by the name players see, Lores, Perception and saves mixed in, whatever the GM's order (Justin, 2026-11-14). Adventures list skills from easiest to hardest, so the GM's order could give the DCs away.
+Each action's check buttons are in check order, whatever the GM's order: Perception, saves, skills, then Lores, A–Z by name within each (Justin, 2026-11-15). Adventures list skills from easiest to hardest, so the GM's order could give the DCs away. The sheet, the modifier window's Checks list and modifier text use the same order. The action window sorts its checks when it opens and never moves them while open.
 
 A DC change names only skills the panel shows (revealed), and only chosen actions with a check the panel shows. It says nothing about hidden skills it covers, and a change that covers only hidden skills is left out (Justin, 2026-11-09). A change of zero, or one that points at a removed skill or counter, is left out. A revealed decoy's card looks like any other to players. On the GM's panel, a decoy skill button and a decoy card carry the orange Decoy tag, as in the GM window; it is read from the challenge on the GM's client, never from the shared copy.
 
@@ -360,7 +360,7 @@ Every subsystem runs on one data model, one sheet and one panel: GM Core's [Vict
 |---|---|
 | Name, description | The description is rich text. Players see it on the panel, except its GM text |
 | Category | Free text, such as Obstacle or Complication. The field suggests the preset's subject categories and those already on subjects, as the GM types; modifier categories stay separate (14.6) |
-| Level | Optional, typed by the GM; a linked actor's level is not used. New checks start at its level-based DC (GM Core Table 10-5), at the Normal step. A new level moves every check that has a step (Justin, 2026-11-14). |
+| Level | Optional, typed by the GM; a linked actor's level is not used. New checks start at its level-based DC (GM Core Table 10-5), at the Normal step. A new level moves every check that has a step (Justin, 2026-11-14). The sheet shows it in the subject's header as "Level 3"; the panel doesn't (Justin, 2026-11-15). |
 | Revealed | Off: not on the panel at all |
 | Counters | Zero or more, each a full counter (14.13). A subject with none holds only actions, such as an Infiltration opportunity. |
 | Complete | Set and cleared by the GM only |
@@ -374,7 +374,7 @@ Every subsystem runs on one data model, one sheet and one panel: GM Core's [Vict
 | Name | "Influence", "Discover", "Overcome" |
 | Secret | The check gets PF2e's `secret` trait, as Discover has today |
 | Description | Plain text everyone sees: what the action is and how players use it |
-| Checks | Rows as today: skill, Perception, Lore or a saving throw (14.8); DC; difficulty; revealed; decoy. **Difficulty** is a step from the subject's level-based DC: Very easy −5, Easy −2, Normal, Hard +2, Very hard +5 (no Incredibly easy or hard). The action window has a button per step, which sets the DC from the level, so pressing Hard twice stays at Hard; the buttons are disabled when the subject has no level. Typing a DC by hand clears the step (Justin, 2026-11-14). Every row has an eye and a decoy flag; there is no always-shown flag. Every new check starts revealed (Justin, 2026-11-12). This replaces the fixed universal-skill lists. |
+| Checks | Rows as today: skill, Perception, Lore or a saving throw (14.8); DC; difficulty; revealed; decoy. **Difficulty** is a step from the subject's level-based DC: Very easy −5, Easy −2, Normal, Hard +2, Very hard +5 (no Incredibly easy or hard). The action window has a button per step, which sets the DC from the level, so pressing Hard twice stays at Hard; the buttons are disabled when the subject has no level. Typing a DC by hand clears the step at once, and the DC stays as typed even when it equals a step's DC; that step's button gets a faint mark (Justin, 2026-11-15). A button sets the DC field at once and works on the first click, even while the DC field is being typed in. Every row has an eye and a decoy flag; there is no always-shown flag. Every new check starts revealed (Justin, 2026-11-12). This replaces the fixed universal-skill lists. |
 
 An action has no outcome table and no maximum points (Justin, 2026-11-12).
 
@@ -463,7 +463,7 @@ A preset makes one kind of subject, so the sheet has one Add subject button, nam
 | Rule | Detail |
 |---|---|
 | Shape | The same entry as a subject's: name, category, duration, texts, state, DC change and note. |
-| DC change | Applies to every check in the challenge, still filtered by chosen actions and skills. Actions are named, matching every action with that name on any subject (Justin, 2026-11-14). The skills are named, not picked by check: the choices are the skills used by checks in the challenge (a Lore by its name), and each matches that skill on any subject (Justin, 2026-11-11). A one-time one is spent by the next matching check anywhere. A change meant for one subject goes on that subject. |
+| DC change | Applies to every check in the challenge, still filtered by ticked actions and skills. Actions are named, matching every action with that name on any subject (Justin, 2026-11-14). The skills are the skills used by checks in the challenge (a Lore by its name), and each matches that skill on any subject (Justin, 2026-11-11). A one-time one is spent by the next matching check anywhere. A change meant for one subject goes on that subject. |
 | Sheet | A Modifiers box above the subjects, with its rows grouped by category, as a subject's are, and a + on its bar. |
 | Panel | Revealed ones show in a full-width strip above the subject columns, grouped by category with no section headings, in the same card style (with the category label) and with the same GM click. Hidden if none are revealed. |
 

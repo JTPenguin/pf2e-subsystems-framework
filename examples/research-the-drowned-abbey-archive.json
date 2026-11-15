@@ -89,6 +89,7 @@
           {
             "id": "s001",
             "name": "Chapter-House Shelves",
+            "level": 3,
             "description": "<p>Dry shelves of letters and accounts, mostly in good order.</p>",
             "revealed": true,
             "counters": [
@@ -111,12 +112,14 @@
                     "id": "k001",
                     "skill": "society",
                     "dc": 16,
+                    "difficulty": "easy",
                     "revealed": true
                   },
                   {
                     "id": "k002",
                     "skill": "religion",
                     "dc": 18,
+                    "difficulty": "normal",
                     "revealed": true
                   }
                 ]
@@ -126,6 +129,7 @@
           {
             "id": "s002",
             "name": "Flooded Crypt Records",
+            "level": 3,
             "description": "<p>Waterlogged boxes in knee-deep water below the chapel.</p><div data-visibility=\"gm\"><p>Critical failure: a false clue that the chest was buried in the crypt.</p></div>",
             "revealed": true,
             "counters": [
@@ -148,18 +152,21 @@
                     "id": "k003",
                     "skill": "athletics",
                     "dc": 18,
+                    "difficulty": "normal",
                     "revealed": true
                   },
                   {
                     "id": "k004",
                     "skill": "occultism",
                     "dc": 20,
+                    "difficulty": "hard",
                     "revealed": true
                   },
                   {
                     "id": "k005",
                     "skill": "lore",
                     "dc": 16,
+                    "difficulty": "easy",
                     "revealed": true,
                     "lore": "Library Lore"
                   }
@@ -170,6 +177,7 @@
           {
             "id": "s003",
             "name": "Brother Tam",
+            "level": 3,
             "description": "<p>The last old archivist, deaf and kind, who remembers more than the books.</p>",
             "revealed": true,
             "counters": [
@@ -192,12 +200,14 @@
                     "id": "k006",
                     "skill": "diplomacy",
                     "dc": 16,
+                    "difficulty": "easy",
                     "revealed": true
                   },
                   {
                     "id": "k007",
                     "skill": "medicine",
                     "dc": 18,
+                    "difficulty": "normal",
                     "revealed": true
                   }
                 ]
@@ -207,6 +217,7 @@
           {
             "id": "s004",
             "name": "The Map Room",
+            "level": 3,
             "description": "<p>Rotting charts of the coast, pinned to every wall.</p>",
             "revealed": true,
             "counters": [
@@ -229,18 +240,21 @@
                     "id": "k008",
                     "skill": "survival",
                     "dc": 18,
+                    "difficulty": "normal",
                     "revealed": true
                   },
                   {
                     "id": "k009",
                     "skill": "society",
                     "dc": 18,
+                    "difficulty": "normal",
                     "revealed": true
                   },
                   {
                     "id": "k010",
                     "skill": "lore",
                     "dc": 16,
+                    "difficulty": "easy",
                     "revealed": true,
                     "lore": "Sailing Lore"
                   }

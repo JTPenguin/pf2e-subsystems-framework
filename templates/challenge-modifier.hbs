@@ -49,23 +49,21 @@
         <select name="roll.type" aria-label="{{localize "SSM.Challenge.RollTypeLabel"}}">{{selectOptions choices.rollTypes selected=modifier.roll.type}}</select>
       </div>
     </div>
-    <div class="form-group">
-      <label{{#if challengeLevel}} data-tooltip="SSM.Challenge.ChallengeSkillsHint"{{/if}}>{{localize "SSM.Challenge.AllSkills"}}</label>
-      <input type="checkbox" name="dc.allSkills" data-redraw {{checked modifier.dc.allSkills}}>
-    </div>
-    {{#unless modifier.dc.allSkills}}
-    {{#if hasActionOptions}}
-    <div class="form-group stacked">
-      <label data-tooltip="{{#if challengeLevel}}SSM.Challenge.ChallengeActionsHint{{else}}SSM.Challenge.ActionsHint{{/if}}">{{localize "SSM.Challenge.AppliesToActions"}}</label>
-      <multi-checkbox name="dc.actions">{{selectOptions actionOptions selected=modifier.dc.actions}}</multi-checkbox>
-    </div>
-    {{/if}}
-    <div class="form-group stacked">
-      <label>{{localize "SSM.Challenge.AppliesToChecks"}}</label>
-      <multi-checkbox name="dc.skills">{{selectOptions skillOptions selected=modifier.dc.skills}}</multi-checkbox>
-    </div>
-    {{/unless}}
   </fieldset>
+  {{!-- Every check covers checks added later; the lists then show all ticked and can't change (Justin, 2026-11-15). --}}
+  <div class="form-group">
+    <label><span data-tooltip="SSM.Challenge.EveryCheckHint">{{localize "SSM.Challenge.EveryCheck"}} <i class="fa-solid fa-circle-info" aria-hidden="true"></i></span></label>
+    <input type="checkbox" name="dc.all" data-redraw {{checked modifier.dc.all}}>
+  </div>
+  {{!-- Actions and checks are picked apart: a check is a skill, on any of the entry's actions (Justin, 2026-11-15). --}}
+  {{#each targetLists}}
+  <fieldset class="ssm-target-list{{#if @root.modifier.dc.all}} ssm-all{{/if}}">
+    <legend><span data-tooltip-text="{{hint}}">{{label}} <i class="fa-solid fa-circle-info" aria-hidden="true"></i></span>{{#if options.length}}{{#unless @root.modifier.dc.all}} <button type="button" class="ssm-select-all" data-action="selectAllTargets" data-field="{{field}}">{{toggleLabel}}</button>{{/unless}}{{/if}}</legend>
+    {{#if options.length}}
+    <multi-checkbox name="{{field}}"{{#if @root.modifier.dc.all}} disabled{{/if}}>{{#each options}}<option value="{{value}}" {{#if (or selected @root.modifier.dc.all)}}selected{{/if}}>{{label}}</option>{{/each}}</multi-checkbox>
+    {{else}}<p class="ssm-muted">{{empty}}</p>{{/if}}
+  </fieldset>
+  {{/each}}
   <div class="form-group">
     <label>{{localize "SSM.Challenge.Note"}}</label>
     <input type="text" name="note" value="{{modifier.note}}">
