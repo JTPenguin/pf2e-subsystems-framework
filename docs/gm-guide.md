@@ -50,11 +50,21 @@ The **Example Challenges** compendium holds one challenge for each preset, and o
 
 Before the Saltworks is the preparation for The Saltworks Office: run it first and carry its points over.
 
+![The Tide Causeway on the panel: the Party track at 4 of 6, and one obstacle](images/chase.png)
+
+*A chase on the panel, as players see it. The Party track is drawn as a track, and only the current obstacle shows.*
+
 Challenges have folders, can be duplicated, and can be exported and imported from the right-click menu, like any Foundry document.
 
 ## The challenge window
 
-The window is laid out like a PF2e NPC sheet, with a sidebar on the left. The sidebar holds, from top to bottom:
+The window is laid out like a PF2e NPC sheet, with a sidebar on the left.
+
+![The Toll Captain's challenge window](images/challenge-window.png)
+
+*The challenge window of a running Influence challenge. The sidebar is on the left; GM notes, counters, modifiers and subjects are on the right.*
+
+The sidebar holds, from top to bottom:
 
 | Part | What it holds |
 |---|---|
@@ -104,6 +114,10 @@ Subjects, actions, thresholds and modifiers have a rich-text description that pl
 
 1. **Start.** The challenge starts running and goes on the panel for everyone. Start also saves the state that Reset goes back to.
 2. **Reveal.** Click an eye to show or hide an entry. A threshold's eye steps through hidden, points only ("6 ???") and points with its name.
+
+   ![The captain's card on the sheet beside the player's panel](images/reveal-sheet-vs-panel.png)
+
+   *Left: the subject on the sheet. A crossed-out eye means hidden. Right: what players see. Threats, The Council's Ledger, Society, Intimidation and both Lore checks are hidden; the 4-point threshold shows its points only.*
 3. **Rolls.** Players click a check on the panel. You can click the same checks, or use the chip on the sheet to roll for the **Roll as** PC, or its chat icon to post a link. On the panel, your roll is for the selected token, or for the Roll as PC with no token selected.
 4. **Apply results by hand.** Read the degree of success on the chat card. Use + and − on the counter. Mark a subject **Complete** when it's done.
 5. **Next round.** Clears the acted marks and applies each counter's change each round. Previous round undoes the last advance.
@@ -125,6 +139,10 @@ A modifier is **On** or **Off**. Its colour stripe shows only while it's On.
 | **Multi-use** | It turns Off. Turn it On again the next time a PC exploits it. |
 | **Ongoing** | Nothing. It stays On until you turn it Off. |
 
+![The edit window of the Old Soldier modifier](images/edit-window.png)
+
+*A modifier's edit window. Old Soldier takes 2 off the DC of Diplomacy checks, once.*
+
 A modifier can change the DC, give a **roll bonus**, or both. A roll bonus is a PF2e modifier with a type (circumstance, status, item or untyped), so PF2e's stacking rules apply and players see it in the roll's breakdown. Below 0 it is a penalty. Both changes apply to every check when **Every check** is ticked, including checks and actions you add later. A new modifier starts with it ticked. Otherwise they apply to what you tick in two lists, each with a **Select all** button that ticks what exists now. **Actions** covers every check under a ticked action, including checks you add later. **Checks** lists skills (Perception, saves, skills, then Lores): a ticked skill covers every check of it, in any action. Tick both to narrow it: Overcome plus Acrobatics and Athletics means only Acrobatics and Athletics checks made for Overcome. On a challenge modifier, an action means every action with that name on any subject, such as every NPC's Discover, and a skill means that skill on any subject. A modifier with nothing ticked changes nothing.
 
 On the sheet, each modifier row shows its effect in a tag after its name, such as "−2 DC vs Diplomacy", "+1 to Diplomacy", "−1 DC, +1 to Diplomacy, Deception" or "+2 to Overcome with Acrobatics, Athletics", without the bonus type. Its Decoy and Duration tags line up on the right. Open the row to read its note and description.
@@ -135,11 +153,19 @@ A chat link from the sheet can't carry a roll bonus: it rolls against the change
 
 The roll's chat card names what changed its DC, on a line under the degree of success, such as "DC: Old Soldier −2, Suspicion 4 +2". It never shows the DC itself. Players see revealed modifiers and reached thresholds that are fully revealed on a revealed counter. You see everything; what players don't see is dimmed. A chat link's card names the modifiers only when it was rolled at the current DC. The line appears a moment after the card, once your client has read the roll.
 
+![A Diplomacy roll's chat card, with the line "DC: Old Soldier −2"](images/chat-card.png)
+
+*A roll's chat card as the player sees it. It names Old Soldier but not the DC.*
+
 ### Several challenges
 
 Any number of challenges can run at once, such as a Reputation challenge for the whole campaign beside tonight's Influence scene. One is on the panel. Start or **Show on panel** (right-click it in the Subsystems tab) puts a challenge on the panel; the one it replaces keeps running. The **Running** button in the tab's search bar lists only running challenges.
 
 ## The panel
+
+![The Toll Captain on the panel, as a player sees it](images/panel-player.png)
+
+*The panel as a player sees it: the round, the party's portraits (Kyra has acted), the revealed counters, modifiers and checks.*
 
 | Who | Can |
 |---|---|

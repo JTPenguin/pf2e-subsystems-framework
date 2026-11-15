@@ -2,6 +2,10 @@
 
 A Foundry VTT module for running Pathfinder 2e subsystems: Influence, Infiltration, Chases, Research, Reputation, or any Victory Points challenge of your own. The GM runs each challenge from a sheet like a PF2e NPC sheet. While it runs, players see a panel over the canvas with what you have revealed, and roll from it.
 
+![The Toll Captain's challenge window beside the panel over a scene](docs/images/hero.png)
+
+*The GM's challenge window for an Influence challenge, and the panel over the scene.*
+
 **Requires:** Foundry VTT 14 and the PF2e system 8.6 or later.
 
 ## What it does
@@ -65,6 +69,12 @@ ELECTRON_RUN_AS_NODE=1 ~/foundryvtt/foundryvtt tools/check-load.mjs
 
 ```bash
 ELECTRON_RUN_AS_NODE=1 ~/foundryvtt/foundryvtt tools/build-zip.mjs
+```
+
+The screenshots in `docs/images/` come from a script. It drives headless Firefox against a running Foundry with the `subsystem-docs` world loaded, sets each challenge's state, and logs in as Gamemaster and Player, so nobody else may hold those seats:
+
+```bash
+ELECTRON_RUN_AS_NODE=1 ~/foundryvtt/foundryvtt tools/screenshots.mjs
 ```
 
 The zip build first builds the Example Challenges compendium (`packs/examples`, not in git) from the files in `examples/`. To build only the compendium:
