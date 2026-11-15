@@ -442,6 +442,9 @@ button.ssm-reached { color: #4f9d5d; }
 
 /* Each entry's edit and delete buttons, at the right of its row (spec section 6). */
 .ssm-sheet .ssm-row-tools { flex: none; display: inline-flex; gap: 0.1rem; margin-left: auto; }
+/* A modifier's effect tag wraps with its name; Decoy and Duration sit in a column before the tools (Justin, 2026-11-15). */
+.ssm-sheet .ssm-modifier .ssm-effect { display: inline-block; max-width: 100%; box-sizing: border-box; font-weight: normal; vertical-align: baseline; }
+.ssm-sheet .ssm-mod-tags { flex: none; display: inline-flex; gap: 0.25rem; white-space: nowrap; }
 /* An edit window scrolls when its rows are taller than the window: Foundry caps an auto height at the screen, and a resized window has a fixed height. The form part is scrollable in PARTS, so a redraw after each save keeps the place. */
 .ssm-modifier-window .window-content > .ssm-layout { flex: 1 1 auto; overflow-y: auto; scrollbar-width: thin; }
 /* The entry windows' description editors: about 3 lines when short, growing with the text up to 14rem, then scrolling. Foundry places the editor's text absolutely, filling a fixed height; here it sits in the flow instead, as with Foundry's .content-sized editors, so it can grow. This holds for the shown text and the open editor alike; the menu sits above it. */

@@ -262,7 +262,7 @@ The same shape on the challenge and on a subject.
 | `roll.type` | `circumstance`, `status`, `item` or `untyped` | `circumstance` | The PF2e modifier type. PF2e's stacking rules apply. |
 | `note` | Plain | `""` | GM only: a consequence with no number, such as "she ends the conversation". |
 
-`dc.all`, `dc.actions` and `dc.skills` name the checks for both the DC change and the roll bonus. With `dc.all` off, a check counts if its action is listed or its skill is; with both lists empty, the modifier changes nothing. A modifier with only a roll bonus still uses them; leave `dc.amount` at `0`.
+`dc.all`, `dc.actions` and `dc.skills` name the checks for both the DC change and the roll bonus. With `dc.all` off, a check counts if its action is listed (when `dc.actions` has entries) and its skill is listed (when `dc.skills` has entries). So one list alone works on its own, and both together mean that skill within that action; with both lists empty, the modifier changes nothing. A modifier with only a roll bonus still uses them; leave `dc.amount` at `0`.
 
 **`dc.actions` on a subject's modifier** lists that subject's **action ids**, such as `["kVanceDiscover1"]`.
 

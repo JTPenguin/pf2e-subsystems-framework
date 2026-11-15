@@ -19,17 +19,24 @@ const skillName = (row) => ({ skill: row.skill, lore: row.lore });
 
 /**
  * The checks a modifier applies to, in terms players may see: { all, actions, skills }, or null if it covers only checks they can't see.
- * `actions` are the names of the listed actions with a check players can see; `skills` the listed skills of visible checks outside those actions.
+ * `actions` are the names of the listed actions with a matching check players can see; `skills` the listed skills of those checks.
+ * With both lists, a check must be in a listed action and use a listed skill, and both show: "Overcome checks with Acrobatics" (Justin, 2026-11-15).
  * One target, under `dc`, names the checks for both its DC change and its roll bonus. A check or action players can't see is left out without a trace.
  */
 function targetView(system, subject, dc) {
   if (dc.all) return { all: true, actions: [], skills: [] };
   // A challenge-level entry (no subject) names actions by name, so it matches them on any revealed subject (spec 14.7). Both name skills by key.
-  const listed = dc.actions ?? [];
-  const actions = (subject ? [subject] : system.subjects.filter(isVisible)).flatMap((row) => row.actions)
-    .filter((action) => listed.includes(subject ? action.id : actionKey(action)) && action.checks.some(isVisibleCheck));
-  const inActions = new Set(actions.flatMap((action) => action.checks.map((row) => row.id)));
-  const rows = (subject ? visibleChecks(subject) : allVisibleChecks(system)).filter((row) => dc.skills.includes(skillKey(row)) && !inActions.has(row.id));
+  const listedActions = dc.actions ?? [];
+  const listedSkills = dc.skills ?? [];
+  const skillMatches = (row) => !listedSkills.length || listedSkills.includes(skillKey(row));
+  const pool = (subject ? [subject] : system.subjects.filter(isVisible)).flatMap((row) => row.actions);
+  const actions = listedActions.length
+    ? pool.filter((action) => listedActions.includes(subject ? action.id : actionKey(action)) && action.checks.some((row) => isVisibleCheck(row) && skillMatches(row)))
+    : [];
+  // Skills show only from listed skills: from the listed actions' visible checks when there are actions, else from any visible check.
+  const rows = !listedSkills.length ? []
+    : listedActions.length ? actions.flatMap((action) => action.checks.filter((row) => isVisibleCheck(row) && skillMatches(row)))
+    : (subject ? visibleChecks(subject) : allVisibleChecks(system)).filter(skillMatches);
   if (!actions.length && !rows.length) return null;
   // Two subjects can share an action name, and two actions a skill: name each once.
   return {
@@ -80,6 +87,13 @@ export function changeText(change, { format, list, label }) {
   // Skills in check order: Perception, saves, skills, Lores.
   const skills = sortChecks(change.skills, label);
   const targets = (skillText) => list([...(change.actions ?? []).map(actionText), ...skills.map(skillText)]);
+  // Both lists mean checks of those actions with those skills: "Overcome checks with Acrobatics and Athletics" (Justin, 2026-11-15).
+  if (!change.all && change.actions?.length && skills.length) {
+    const names = change.actions.map((name) => name || format("SSM.Challenge.UnnamedAction", {}));
+    const text = format("SSM.Panel.Change.actionsWithSkills", { actions: format("SSM.Panel.Change.actionChecks", { action: list(names) }), skills: list(skills.map(label)) });
+    if (change.type === "roll") return format("SSM.Panel.Change.roll", { bonus: rollBonusText(change.amount, change.rollType, format), targets: text });
+    return format("SSM.Panel.Change.dc", { amount: change.amount > 0 ? `+${change.amount}` : `−${-change.amount}`, targets: text });
+  }
   if (change.type === "roll") {
     const bonus = rollBonusText(change.amount, change.rollType, format);
     if (change.all) return format("SSM.Panel.Change.rollAll", { bonus });
@@ -91,6 +105,23 @@ export function changeText(change, { format, list, label }) {
   const amount = change.amount > 0 ? `+${change.amount}` : `−${-change.amount}`;
   if (change.all) return format("SSM.Panel.Change.dcAll", { amount });
   return format("SSM.Panel.Change.dc", { amount, targets: targets(label) });
+}
+
+/**
+ * A modifier's effect as the sheet's tag after its name (Justin, 2026-11-15): "−2 DC vs Diplomacy", "+1 to Diplomacy", or both with the targets once,
+ * "−1 DC, +1 to Diplomacy, Deception". With actions and skills both listed, the check must match both: "+2 to Overcome with Acrobatics, Athletics".
+ * No bonus type. `actions` and `skills` are names in order (actions by name alone); `all` is Every check.
+ * Empty when the modifier changes nothing. `format(key, data)` is Foundry's localisation.
+ */
+export function effectTagText({ dc = 0, roll = 0, all = false, actions = [], skills = [] }, format) {
+  const signed = (amount) => (amount > 0 ? `+${amount}` : `−${-amount}`);
+  const kind = dc && roll ? "both" : dc ? "dc" : roll ? "roll" : "";
+  if (!kind) return "";
+  const scope = all ? "All" : actions.length || skills.length ? "" : "None";
+  const targets = actions.length && skills.length
+    ? format("SSM.Challenge.Effect.withSkills", { actions: actions.join(", "), skills: skills.join(", ") })
+    : [...actions, ...skills].join(", ");
+  return format(`SSM.Challenge.Effect.${kind}${scope}`, { dc: signed(dc), roll: signed(roll), targets });
 }
 
 /** A threshold's points as the panel prints them: a real minus sign, and on a both-ways track a + on positives, so −30 and +30 line up. */

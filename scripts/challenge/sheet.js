@@ -7,7 +7,7 @@ import { announceTriggers, writeChallenge } from "./state.js";
 import { advanceRound, canAdvanceRound, hasRounds, canUndoRound, changeCounter, counterValueOf, currentDc, cycleThresholdReveal, endRun, resetRun, restoreModifier, rollBonuses, startRun, toggleActed, toggleComplete, toggleModifier, toggleReached, toggleReveal, undoRound, usedModifierIds } from "./run.js";
 import { LINK_ROLL_ID } from "../roll-option.js";
 import { rollCheck, rollTarget } from "./roll.js";
-import { DEFAULT_PC_IMAGE, rollBonusText } from "./panel-view.js";
+import { DEFAULT_PC_IMAGE, effectTagText } from "./panel-view.js";
 import { addParticipant, addRow, allCounters, applyForm, BOTH_WAYS, categoryKey, clampTracks, collapseAllAction, counterMoves, counterValueText, EDITABLE, entryListPath, groupByCategory, isDecoyCheck, keySkill, modifierSkillKeys, moveCounter, moveModifier, moveSubject, nextThresholdReveal, pickFields, removeEntry, removeParticipant, setCounterNote, sortChecks, subjectGroups } from "./data.js";
 import { ActionWindow, CounterWindow, hasKeptBlank, ModifierWindow, SubjectWindow, ThresholdWindow } from "./entry-window.js";
 import { markDescriptionFields } from "./description-field.js";
@@ -400,9 +400,10 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
   #modifierView(system, subject, row, canChange) {
     const state = row.spent ? "spent" : row.active ? "on" : "off";
     const label = row.name || loc("SSM.Challenge.UnnamedEntry");
-    const effectsText = [row.dc?.amount ? this.#dcText(system, subject, row.dc) : "", row.roll?.amount ? this.#rollText(system, subject, row) : "", row.note].filter(Boolean).join("; ");
+    // The effect sits on the row; opening it shows the note and description only (Justin, 2026-11-15).
+    const effectText = effectTagText({ dc: row.dc?.amount ?? 0, roll: row.roll?.amount ?? 0, all: !!row.dc?.all, ...(row.dc ? this.#targetNames(system, subject, row.dc) : {}) }, (key, data) => game.i18n.format(key, data));
     const descriptionHtml = this.#rowHtml.get(`${subject?.id ?? ""}:${row.id}`) ?? "";
-    const hasDetails = !!(effectsText || descriptionHtml);
+    const hasDetails = !!(row.note || descriptionHtml);
     return {
       ...row,
       label,
@@ -414,28 +415,15 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
       stateTooltip: loc(`SSM.Challenge.StateClick.${state}`),
       stateLabel: loc(`SSM.Challenge.State.${state}`),
       canChange,
-      effectsText,
+      effectText,
       descriptionHtml,
       hasDetails,
       open: hasDetails && openActions.has(`${this.page.id}:${row.id}`),
     };
   }
 
-  /** A modifier's DC change, as the GM reads it. */
-  #dcText(system, subject, dc) {
-    const amount = dc.amount > 0 ? `+${dc.amount}` : `${dc.amount}`.replace("-", "−");
-    return game.i18n.format("SSM.Challenge.DcChangeText", { amount, skills: this.#targetText(system, subject, dc) });
-  }
-
-  /** A modifier's roll bonus, as the GM reads it: "+1 circumstance to rolls (Diplomacy)". */
-  #rollText(system, subject, row) {
-    const bonus = rollBonusText(row.roll.amount, row.roll.type, (key, data) => game.i18n.format(key, data));
-    return game.i18n.format("SSM.Challenge.RollChangeText", { bonus, skills: this.#targetText(system, subject, row.dc) });
-  }
-
-  /** The checks a modifier applies to, for both its changes: its actions ("Discover checks"), then its skills. A challenge-level entry (no subject) names actions by key. */
-  #targetText(system, subject, dc) {
-    if (dc.all) return loc("SSM.Challenge.AllChecksText");
+  /** The checks a modifier applies to, for both its changes, by name: { actions, skills }, skills in check order. A challenge-level entry (no subject) names actions by key. */
+  #targetNames(system, subject, dc) {
     const listed = dc.actions ?? [];
     const actions = subject
       ? subject.actions.filter((action) => listed.includes(action.id)).map(actionName)
@@ -443,8 +431,7 @@ export class ChallengeSheet extends HandlebarsApplicationMixin(DocumentSheetV2) 
     // Only skills a check still uses: a key whose checks were removed stays until the entry is saved, and does nothing.
     const used = new Set(modifierSkillKeys(system, subject));
     const skills = sortChecks(dc.skills.filter((key) => used.has(key)), (key) => skillKeyLabel(system, key), keySkill).map((key) => skillKeyLabel(system, key));
-    const text = [...actions.map((action) => game.i18n.format("SSM.Panel.Change.actionChecks", { action })), ...skills].join(", ");
-    return text || loc("SSM.Challenge.NoTargets");
+    return { actions, skills };
   }
 
   /* -------------------------------------------- */

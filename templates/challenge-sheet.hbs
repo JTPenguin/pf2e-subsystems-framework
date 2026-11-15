@@ -6,7 +6,9 @@
   <button type="button" class="ssm-skill-roll" data-action="rollSkill" data-subject="{{subjectId}}" data-act="{{actionId}}" data-id="{{id}}" aria-label="{{rollLabel}}" data-tooltip-text="{{tooltip}}" {{#unless root.rollable}}disabled{{/unless}}><i class="fa-solid fa-dice-d20" aria-hidden="true"></i><span class="ssm-skill-name">{{label}}</span><span class="ssm-skill-dc{{#if dcChanged}} ssm-dc-changed {{#if dcUp}}ssm-dc-up{{else}}ssm-dc-down{{/if}}{{/if}}">{{localize "SSM.Challenge.DC"}} {{currentDc}}</span></button>
   <button type="button" class="ssm-skill-post" data-action="postLink" data-subject="{{subjectId}}" data-act="{{actionId}}" data-id="{{id}}" aria-label="{{postLabel}}" data-tooltip="SSM.Challenge.PostLink" {{#unless root.rollable}}disabled{{/unless}}><i class="fa-solid fa-comment" aria-hidden="true"></i></button>
 </span>{{/inline}}
-{{#*inline "ssmModifierName"}}<span class="ssm-grow">{{label}} <span class="ssm-tag">{{durationLabel}}</span>{{#if decoy}} <span class="ssm-tag ssm-decoy">{{localize "SSM.Challenge.Decoy"}}</span>{{/if}}</span>{{/inline}}
+{{!-- A modifier's name with its effect tag after it, wrapping with the name; then Decoy and Duration in a column on the right, lined up down the list (Justin, 2026-11-15). --}}
+{{#*inline "ssmModifierName"}}<span class="ssm-grow">{{label}}{{#if effectText}} <span class="ssm-tag ssm-effect">{{effectText}}</span>{{/if}}</span>
+            <span class="ssm-mod-tags">{{#if decoy}}<span class="ssm-tag ssm-decoy">{{localize "SSM.Challenge.Decoy"}}</span>{{/if}}<span class="ssm-tag">{{durationLabel}}</span></span>{{/inline}}
 {{!-- An entry's edit and delete buttons. `kind` is subjects, counters, actions or modifiers; `subject` is the owning subject's id, empty for the challenge's own; `name` names it in the delete dialog. --}}
 {{#*inline "ssmRowTools"}}<span class="ssm-row-tools">
   <button type="button" class="icon fa-solid fa-pen-to-square" data-action="editEntry" data-kind="{{kind}}" data-subject="{{subject}}" data-id="{{id}}" aria-label="{{localize "SSM.Challenge.Edit"}}" data-tooltip="SSM.Challenge.Edit"></button>
@@ -14,7 +16,7 @@
 </span>{{/inline}}
 {{!-- A + that adds an entry and opens its window. `category` starts a new modifier or subject in that category. --}}
 {{#*inline "ssmAdd"}}<button type="button" class="icon fa-solid fa-plus" data-action="addEntry" data-kind="{{kind}}" data-subject="{{subject}}"{{#if category}} data-category="{{category}}"{{/if}} aria-label="{{addLabel}}" data-tooltip-text="{{addLabel}}"></button>{{/inline}}
-{{#*inline "ssmModifierDetails"}}{{#if effectsText}}<div class="ssm-muted ssm-detail">{{effectsText}}</div>{{/if}}
+{{#*inline "ssmModifierDetails"}}{{#if note}}<div class="ssm-muted ssm-detail">{{note}}</div>{{/if}}
 {{#if descriptionHtml}}<div class="ssm-detail ssm-run-description">{{{descriptionHtml}}}</div>{{/if}}{{/inline}}
 {{!-- A threshold under its counter: caret, eye, points, name, DC change, Reached, then edit and delete. Open, its description shows under it. --}}
 {{#*inline "ssmThresholdRun"}}<div class="ssm-threshold ssm-reveal-{{reveal}} {{#if reached}}ssm-reached-row{{/if}} {{#unless textShown}}ssm-hidden{{/unless}}">

@@ -9,14 +9,18 @@ const isOneTime = (modifier) => modifier.duration === "oneTime";
 const isMultiUse = (modifier) => modifier.duration === "multiUse";
 /**
  * Whether an entry applies to this check, which belongs to `action`. One target, under `dc`, names the checks for both its DC change and its roll bonus:
- * every check (Every check), or the checks of its listed actions plus the checks of its listed skills (by key). A subject's entry names its actions by id;
+ * every check (Every check), or the checks of its listed actions, or of its listed skills (by key). With both lists, a check must be in a listed action
+ * and use a listed skill: "Overcome with Acrobatics" (Justin, 2026-11-15). Both empty matches nothing. A subject's entry names its actions by id;
  * a challenge-level entry names them by name, so it matches them on any subject (spec 14.7).
  */
 const appliesTo = ({ dc }, check, action, challengeLevel) => {
   if (!dc) return false;
   if (dc.all) return true;
-  if (action && (dc.actions ?? []).includes(challengeLevel ? actionKey(action) : action.id)) return true;
-  return dc.skills.includes(skillKey(check));
+  const actions = dc.actions ?? [];
+  const skills = dc.skills ?? [];
+  if (!actions.length && !skills.length) return false;
+  const inAction = !actions.length || (!!action && actions.includes(challengeLevel ? actionKey(action) : action.id));
+  return inAction && (!skills.length || skills.includes(skillKey(check)));
 };
 /** The subject's action holding this check, found by id, since a caller may pass a copy of the check. */
 const actionOf = (subject, check) => subject.actions.find((action) => action.checks.some((row) => row.id === check.id));

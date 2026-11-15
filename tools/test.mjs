@@ -137,6 +137,22 @@ test("every change type has an English string", () => {
   assert.deepEqual(texts, ["−2 to DCs vs Diplomacy", "+1 status to Discover checks", "+2 to all DCs", "−1 to all checks"]);
 });
 
+test("a modifier's effect tag on the sheet is short, with no bonus type", () => {
+  // The amount and "DC" are held together by a no-break space.
+  const tag = (effect) => V.effectTagText(effect, enText.format).replace(/\u00a0/g, " ");
+  assert.equal(tag({ dc: -2, skills: ["Diplomacy"] }), "−2 DC vs Diplomacy");
+  assert.equal(tag({ roll: 1, actions: ["Discover", "Influence"] }), "+1 to Discover, Influence");
+  assert.equal(tag({ dc: -1, roll: 1, skills: ["Diplomacy", "Deception"] }), "−1 DC, +1 to Diplomacy, Deception");
+  assert.equal(tag({ dc: 2, all: true }), "+2 DC on all checks");
+  assert.equal(tag({ roll: -1, all: true }), "−1 to all checks");
+  assert.equal(tag({ dc: -1, roll: 1, all: true, skills: ["Diplomacy"] }), "−1 DC, +1 on all checks");
+  assert.equal(tag({ roll: 2, actions: ["Overcome"], skills: ["Acrobatics", "Athletics"] }), "+2 to Overcome with Acrobatics, Athletics");
+  assert.equal(tag({ dc: -2, actions: ["Overcome", "Discover"], skills: ["Acrobatics"] }), "−2 DC vs Overcome, Discover with Acrobatics");
+  assert.equal(tag({ dc: -2 }), "−2 DC (no checks)");
+  assert.equal(tag({ roll: 2 }), "+2 (no checks)");
+  assert.equal(tag({ dc: 0, roll: 0, skills: ["Diplomacy"] }), "");
+});
+
 test("a modifier has one DC change and a note, both empty to start", () => {
   const m = D.newModifier();
   assert.deepEqual([m.dc, m.note], [{ amount: 0, all: true, actions: [], skills: [] }, ""]);
@@ -2050,14 +2066,23 @@ test("Every check covers checks and actions added later, and ignores the lists",
   assert.deepEqual([Run.currentDc(s, sub(s), discover(s).checks[0]), Run.currentDc(s, sub(s), later)], [17, 17]);
 });
 
-test("a modifier aimed at an action changes every check of it, checks added later too, beside its single checks", () => {
+test("a modifier aimed at an action changes every check of it, checks added later too", () => {
   const s = running();
-  addModifier(s, {}, dcEffect(2, { actions: [discover(s).id], skills: [D.skillKey(influence(s).checks[0])] }));
+  addModifier(s, {}, dcEffect(2, { actions: [discover(s).id] }));
   const later = { ...D.newCheck(), skill: "society" };
   discover(s).checks.push(later);
-  assert.deepEqual([Run.currentDc(s, sub(s), discover(s).checks[0]), Run.currentDc(s, sub(s), later), Run.currentDc(s, sub(s), influence(s).checks[0]), dcOf(s)], [17, 17, 17, 15]);
+  assert.deepEqual([Run.currentDc(s, sub(s), discover(s).checks[0]), Run.currentDc(s, sub(s), later), Run.currentDc(s, sub(s), influence(s).checks[0])], [17, 17, 15]);
   // A copy of the check, as a roll passes, still finds its action.
   assert.equal(Run.currentDc(s, sub(s), { ...later }), 17);
+});
+
+test("a modifier aimed at an action and a skill changes only that skill's checks in that action (Justin, 2026-11-15)", () => {
+  const s = running();
+  const later = { ...D.newCheck(), skill: "society" };
+  discover(s).checks.push(later);
+  // Society in Discover counts; Discover's other check and Influence's Deception don't, though Deception is listed too.
+  addModifier(s, {}, dcEffect(2, { actions: [discover(s).id], skills: ["society", D.skillKey(influence(s).checks[0])] }));
+  assert.deepEqual([Run.currentDc(s, sub(s), later), Run.currentDc(s, sub(s), discover(s).checks[0]), Run.currentDc(s, sub(s), influence(s).checks[0])], [17, 15, 15]);
 });
 
 test("a challenge-level modifier aimed at an action name reaches that action on every subject, and only that one", () => {
@@ -2085,12 +2110,21 @@ test("a modifier drops an action that is gone, on save, on removal and when a co
   assert.deepEqual(copy.subjects.map((row) => [row.actions[0].id, row.modifiers[0].dc.actions]), [["act", ["act"]], ["act2", ["act2"]]], "a copied subject's entry follows its own action");
 });
 
-test("a card names an aimed action as its checks, leaves out its own checks from the skill list, and hides an action players can't see", () => {
+test("a card names an aimed action as its checks, names its skills within it, and hides an action players can't see", () => {
   const named = (s) => { discover(s).name = "Discover"; influence(s).name = "Influence"; };
+  const action = cardOf((s) => { named(s); return dcEffect(-2, { actions: [discover(s).id] }); });
+  assert.deepEqual(action.texts, ["−2 to DCs vs Discover checks"]);
+  // Both lists: the skills within the action. Deception, listed but only in Influence, is left out.
   const both = cardOf((s) => { named(s); return dcEffect(-2, { actions: [discover(s).id], skills: [D.skillKey(discover(s).checks[0]), D.skillKey(influence(s).checks[0])] }); });
-  assert.deepEqual(both.texts, ["−2 to DCs vs Discover checks and Deception"]);
-  const roll = cardOf((s) => { named(s); return rollEffect(1, "circumstance", { actions: [discover(s).id], skills: [D.skillKey(influence(s).checks[0])] }); });
-  assert.deepEqual(roll.texts, ["+1 circumstance to Discover checks and Deception checks"]);
+  const skill = (s) => D.skillKey(discover(s).checks[0]);
+  assert.equal(both.texts.length, 1);
+  assert.match(both.texts[0], /^−2 to DCs vs Discover checks with \w+$/);
+  assert.ok(!both.texts[0].includes("Deception"), both.texts[0]);
+  const roll = cardOf((s) => { named(s); return rollEffect(1, "circumstance", { actions: [discover(s).id], skills: [skill(s)] }); });
+  assert.match(roll.texts[0], /^\+1 circumstance to Discover checks with \w+$/);
+  // No listed skill in the action: nothing to show.
+  const none = cardOf((s) => { named(s); return dcEffect(-2, { actions: [discover(s).id], skills: [D.skillKey(influence(s).checks[0])] }); });
+  assert.deepEqual(none.card.changes, []);
   const hidden = cardOf((s) => {
     named(s);
     for (const row of discover(s).checks) row.revealed = false;
